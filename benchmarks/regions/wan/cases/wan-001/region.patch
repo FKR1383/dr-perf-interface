@@ -1,0 +1,72 @@
+--- a/src/diffusers/image_processor.py
++++ b/src/diffusers/image_processor.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ import warnings
+ 
+@@ -757,33 +758,34 @@
+             `PIL.Image.Image`, `np.ndarray` or `torch.Tensor`:
+                 The postprocessed image.
+         """
+-        if not isinstance(image, torch.Tensor):
+-            raise ValueError(
+-                f"Input for postprocessing is in incorrect format: {type(image)}. We only support pytorch tensor"
+-            )
+-        if output_type not in ["latent", "pt", "np", "pil"]:
+-            deprecation_message = (
+-                f"the output_type {output_type} is outdated and has been set to `np`. Please make sure to set it to one of these instead: "
+-                "`pil`, `np`, `pt`, `latent`"
+-            )
+-            deprecate("Unsupported output_type", "1.0.0", deprecation_message, standard_warn=False)
+-            output_type = "np"
+-
+-        if output_type == "latent":
+-            return image
+-
+-        image = self._denormalize_conditionally(image, do_denormalize)
+-
+-        if output_type == "pt":
+-            return image
+-
+-        image = self.pt_to_numpy(image)
+-
+-        if output_type == "np":
+-            return image
+-
+-        if output_type == "pil":
+-            return self.numpy_to_pil(image)
++        with perfmark.region("wan-001"):
++            if not isinstance(image, torch.Tensor):
++                raise ValueError(
++                    f"Input for postprocessing is in incorrect format: {type(image)}. We only support pytorch tensor"
++                )
++            if output_type not in ["latent", "pt", "np", "pil"]:
++                deprecation_message = (
++                    f"the output_type {output_type} is outdated and has been set to `np`. Please make sure to set it to one of these instead: "
++                    "`pil`, `np`, `pt`, `latent`"
++                )
++                deprecate("Unsupported output_type", "1.0.0", deprecation_message, standard_warn=False)
++                output_type = "np"
++
++            if output_type == "latent":
++                return image
++
++            image = self._denormalize_conditionally(image, do_denormalize)
++
++            if output_type == "pt":
++                return image
++
++            image = self.pt_to_numpy(image)
++
++            if output_type == "np":
++                return image
++
++            if output_type == "pil":
++                return self.numpy_to_pil(image)
+ 
+     def apply_overlay(
+         self,

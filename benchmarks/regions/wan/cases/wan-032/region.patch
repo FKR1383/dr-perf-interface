@@ -1,0 +1,20 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -167,7 +168,8 @@
+         dtype = dtype or self.text_encoder.dtype
+ 
+         prompt = [prompt] if isinstance(prompt, str) else prompt
+-        prompt = [prompt_clean(u) for u in prompt]
++        with perfmark.region("wan-032"):
++            prompt = [prompt_clean(u) for u in prompt]
+         batch_size = len(prompt)
+ 
+         text_inputs = self.tokenizer(

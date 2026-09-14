@@ -1,0 +1,22 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import heapq
+ from abc import ABC, abstractmethod
+ from collections import deque
+@@ -174,8 +175,9 @@
+ 
+     def remove_request(self, request: Request) -> None:
+         """Remove a specific request from the queue."""
+-        self._heap.remove(request)
+-        heapq.heapify(self._heap)
++        with perfmark.region("vllm-025"):
++            self._heap.remove(request)
++            heapq.heapify(self._heap)
+ 
+     def remove_requests(self, requests: Iterable[Request]) -> None:
+         """Remove multiple specific requests from the queue."""

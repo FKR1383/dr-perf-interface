@@ -1,0 +1,18 @@
+--- a/src/regexp/experimental/experimental-compiler.cc
++++ b/src/regexp/experimental/experimental-compiler.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/experimental/experimental-compiler.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/flags/flags.h"
+ #include "src/regexp/experimental/experimental.h"
+@@ -1218,6 +1219,7 @@
+ 
+ ZoneList<Instruction> ExperimentalCompiler::Compile(Tree* tree, Flags flags,
+                                                     Zone* zone) {
++  DRPERF_BENCH_REGION("v8-regexp-027");
+   return CompileVisitor::Compile(tree, flags, zone);
+ }
+ 

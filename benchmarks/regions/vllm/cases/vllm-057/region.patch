@@ -1,0 +1,69 @@
+--- a/vllm/v1/spec_decode/ngram_proposer.py
++++ b/vllm/v1/spec_decode/ngram_proposer.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import os
+ 
+ import numpy as np
+@@ -142,32 +143,33 @@
+         | list[dict[str, torch.Tensor]]
+         | None = None,  # unused
+     ) -> list[list[int]]:
+-        assert num_speculative_tokens <= self.k
+-
+-        # find which requests need ngram proposals
+-        valid_ngram_requests = []
+-        for i, sampled_ids in enumerate(sampled_token_ids):
+-            num_sampled_ids = len(sampled_ids)
+-            if not num_sampled_ids:
+-                # Skip speculative decoding.
+-                continue
+-
+-            num_tokens = num_tokens_no_spec[i]
+-            if num_tokens >= self.max_model_len:
+-                # Skip requests that have already reached the max model length.
+-                continue
+-
+-            valid_ngram_requests.append(i)
+-
+-        draft_token_ids = self.batch_propose(
+-            len(sampled_token_ids),
+-            valid_ngram_requests,
+-            num_tokens_no_spec,
+-            token_ids_cpu,
+-            num_speculative_tokens,
+-        )
+-
+-        return draft_token_ids
++        with perfmark.region("vllm-057"):
++            assert num_speculative_tokens <= self.k
++
++            # find which requests need ngram proposals
++            valid_ngram_requests = []
++            for i, sampled_ids in enumerate(sampled_token_ids):
++                num_sampled_ids = len(sampled_ids)
++                if not num_sampled_ids:
++                    # Skip speculative decoding.
++                    continue
++
++                num_tokens = num_tokens_no_spec[i]
++                if num_tokens >= self.max_model_len:
++                    # Skip requests that have already reached the max model length.
++                    continue
++
++                valid_ngram_requests.append(i)
++
++            draft_token_ids = self.batch_propose(
++                len(sampled_token_ids),
++                valid_ngram_requests,
++                num_tokens_no_spec,
++                token_ids_cpu,
++                num_speculative_tokens,
++            )
++
++            return draft_token_ids
+ 
+     def load_model(self, *args, **kwargs):
+         # No model to load.

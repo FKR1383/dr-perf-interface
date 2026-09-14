@@ -41,10 +41,10 @@ coefficient that moves points at the code that moved it.
 That is the whole interface: `drperf` followed by the command you would have
 run anyway. No options.
 
-[Agent discovery benchmarks](benchmarks/README.md) package the historical FTL,
-vLLM, Wan and other systems cases for paired evaluation with timing profiles
-and with drperf feedback. The suite includes evidence, a region expansion
-inventory, pilot workloads and an evaluator scorer.
+[Source-region benchmarks](benchmarks/README.md) collect vLLM, Wan, V8 RegExp,
+JavaScript runtime and accidental-quadratic cases. Each target has pinned source
+and an empty marker, ready for PCV discovery. Historical evidence and future
+evaluation designs are kept alongside the collection.
 
 Start with `examples/playground`, a 250-line C system with three regions and a
 one-line change to measure. `SPEC.md` states exactly what is computed, on one

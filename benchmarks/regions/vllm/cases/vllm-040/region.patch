@@ -1,0 +1,33 @@
+--- a/vllm/v1/core/single_type_kv_cache_manager.py
++++ b/vllm/v1/core/single_type_kv_cache_manager.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import itertools
+ from abc import ABC, abstractmethod
+ from collections import defaultdict
+@@ -821,14 +822,15 @@
+         )
+ 
+     def get_num_common_prefix_blocks(self, running_request_id: str) -> int:
+-        blocks = self.req_to_blocks[running_request_id]
+-        num_common_blocks = 0
+-        for block in blocks:
+-            if block.ref_cnt == len(self.req_to_blocks):
+-                num_common_blocks += 1
+-            else:
+-                break
+-        return num_common_blocks
++        with perfmark.region("vllm-040"):
++            blocks = self.req_to_blocks[running_request_id]
++            num_common_blocks = 0
++            for block in blocks:
++                if block.ref_cnt == len(self.req_to_blocks):
++                    num_common_blocks += 1
++                else:
++                    break
++            return num_common_blocks
+ 
+ 
+ class RSWAManager(FullAttentionManager):

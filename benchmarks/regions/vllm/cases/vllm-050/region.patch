@@ -1,0 +1,35 @@
+--- a/vllm/v1/sample/ops/penalties.py
++++ b/vllm/v1/sample/ops/penalties.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import torch
+ 
+ from vllm.model_executor.layers.utils import apply_penalties
+@@ -44,13 +45,14 @@
+     """
+     Convert the different list data structures to tensors.
+     """
+-    output_tokens_tensor = make_tensor_with_pad(
+-        output_token_ids,
+-        # Use the value of vocab_size as a pad since we don't have a
+-        # token_id of this value.
+-        pad=vocab_size,
+-        device="cpu",
+-        dtype=torch.int64,
+-        pin_memory=PIN_MEMORY,
+-    )
+-    return output_tokens_tensor.to(device, non_blocking=True)
++    with perfmark.region("vllm-050"):
++        output_tokens_tensor = make_tensor_with_pad(
++            output_token_ids,
++            # Use the value of vocab_size as a pad since we don't have a
++            # token_id of this value.
++            pad=vocab_size,
++            device="cpu",
++            dtype=torch.int64,
++            pin_memory=PIN_MEMORY,
++        )
++        return output_tokens_tensor.to(device, non_blocking=True)

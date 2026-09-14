@@ -1,0 +1,7 @@
+# Scan RegExp capture groups
+
+Instrument `v8::internal::regexp::ParserImpl::ScanForCaptures` with an empty DRPerf RAII region. This target belongs to the regular-expression parsing phase. The marker measures parser work while constructing the RegExp representation; it does not measure compilation or later matching.
+
+Suggested bounded workload: Scan a bounded regular expression for capture groups.
+
+Build context: compile V8 at the pinned revision with its documented GN/Ninja workflow. Add `benchmarks/regions/support` to the compiler include path so the patch can resolve `drperf_bench_region.h`, and link the PerfMark implementation that supplies `perfmark_begin_v` and `perfmark_end`. The workload command remains unverified.

@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-interpreter.cc
++++ b/src/regexp/regexp-interpreter.cc
+@@ -5,6 +5,7 @@
+ // A simple interpreter for the Irregexp byte code.
+ 
+ #include "src/regexp/regexp-interpreter.h"
++#include "drperf_bench_region.h"
+ 
+ #include <limits>
+ 
+@@ -504,6 +505,7 @@
+     int* output_registers, int output_register_count, int total_register_count,
+     int current, uint32_t current_char, RegExp::CallOrigin call_origin,
+     const uint32_t backtrack_limit) {
++  DRPERF_BENCH_REGION("v8-regexp-005");
+   DisallowGarbageCollection no_gc;
+ 
+ #if V8_USE_COMPUTED_GOTO

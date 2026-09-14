@@ -1,0 +1,20 @@
+--- a/src/diffusers/image_processor.py
++++ b/src/diffusers/image_processor.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ import warnings
+ 
+@@ -772,7 +773,8 @@
+         if output_type == "latent":
+             return image
+ 
+-        image = self._denormalize_conditionally(image, do_denormalize)
++        with perfmark.region("wan-002"):
++            image = self._denormalize_conditionally(image, do_denormalize)
+ 
+         if output_type == "pt":
+             return image

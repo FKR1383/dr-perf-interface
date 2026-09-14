@@ -1,0 +1,91 @@
+--- a/vllm/v1/engine/core.py
++++ b/vllm/v1/engine/core.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import gc
+ import os
+ import queue
+@@ -442,44 +443,45 @@
+         belong to in DP case
+         """
+         # Validate the request_id type.
+-        if not isinstance(request.request_id, str):
+-            raise TypeError(
+-                f"request_id must be a string, got {type(request.request_id)}"
+-            )
+-
+-        if pooling_params := request.pooling_params:
+-            supported_pooling_tasks = [
+-                task for task in self.get_supported_tasks() if task in POOLING_TASKS
+-            ]
+-
+-            if pooling_params.task not in supported_pooling_tasks:
+-                raise ValueError(
+-                    f"Unsupported task: {pooling_params.task!r} "
+-                    f"Supported tasks: {supported_pooling_tasks}"
++        with perfmark.region("vllm-041"):
++            if not isinstance(request.request_id, str):
++                raise TypeError(
++                    f"request_id must be a string, got {type(request.request_id)}"
+                 )
+ 
+-        if request.kv_transfer_params is not None and (
+-            not self.scheduler.get_kv_connector()
+-        ):
+-            logger.warning(
+-                "Got kv_transfer_params, but no KVConnector found. "
+-                "Disabling KVTransfer for this request."
+-            )
+-
+-        if (
+-            request.ec_transfer_params is not None
+-            and self.scheduler.get_ec_connector() is None
+-        ):
+-            logger.warning(
+-                "Got ec_transfer_params, but no ECConnector found. "
+-                "Disabling ECTransfer for this request."
+-            )
+-
+-        self.scheduler.add_request(request)
+-        if request.abort_immediately:
+-            # Immediately abort so the connector's request_finished hook runs
+-            # to free any pre-admission KV-transfer resources.
+-            self.abort_requests([request.request_id])
++            if pooling_params := request.pooling_params:
++                supported_pooling_tasks = [
++                    task for task in self.get_supported_tasks() if task in POOLING_TASKS
++                ]
++
++                if pooling_params.task not in supported_pooling_tasks:
++                    raise ValueError(
++                        f"Unsupported task: {pooling_params.task!r} "
++                        f"Supported tasks: {supported_pooling_tasks}"
++                    )
++
++            if request.kv_transfer_params is not None and (
++                not self.scheduler.get_kv_connector()
++            ):
++                logger.warning(
++                    "Got kv_transfer_params, but no KVConnector found. "
++                    "Disabling KVTransfer for this request."
++                )
++
++            if (
++                request.ec_transfer_params is not None
++                and self.scheduler.get_ec_connector() is None
++            ):
++                logger.warning(
++                    "Got ec_transfer_params, but no ECConnector found. "
++                    "Disabling ECTransfer for this request."
++                )
++
++            self.scheduler.add_request(request)
++            if request.abort_immediately:
++                # Immediately abort so the connector's request_finished hook runs
++                # to free any pre-admission KV-transfer resources.
++                self.abort_requests([request.request_id])
+ 
+     def abort_requests(self, request_ids: list[str]):
+         """Abort requests from the scheduler."""

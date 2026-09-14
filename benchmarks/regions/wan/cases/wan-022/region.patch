@@ -1,0 +1,48 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ from typing import Any
+ 
+@@ -334,21 +335,22 @@
+         encoder_hidden_states_image: torch.Tensor | None = None,
+         timestep_seq_len: int | None = None,
+     ):
+-        timestep = self.timesteps_proj(timestep)
+-        if timestep_seq_len is not None:
+-            timestep = timestep.unflatten(0, (-1, timestep_seq_len))
+-
+-        time_embedder_dtype = next(iter(self.time_embedder.parameters())).dtype
+-        if timestep.dtype != time_embedder_dtype and time_embedder_dtype != torch.int8:
+-            timestep = timestep.to(time_embedder_dtype)
+-        temb = self.time_embedder(timestep).type_as(encoder_hidden_states)
+-        timestep_proj = self.time_proj(self.act_fn(temb))
+-
+-        encoder_hidden_states = self.text_embedder(encoder_hidden_states)
+-        if encoder_hidden_states_image is not None:
+-            encoder_hidden_states_image = self.image_embedder(encoder_hidden_states_image)
+-
+-        return temb, timestep_proj, encoder_hidden_states, encoder_hidden_states_image
++        with perfmark.region("wan-022"):
++            timestep = self.timesteps_proj(timestep)
++            if timestep_seq_len is not None:
++                timestep = timestep.unflatten(0, (-1, timestep_seq_len))
++
++            time_embedder_dtype = next(iter(self.time_embedder.parameters())).dtype
++            if timestep.dtype != time_embedder_dtype and time_embedder_dtype != torch.int8:
++                timestep = timestep.to(time_embedder_dtype)
++            temb = self.time_embedder(timestep).type_as(encoder_hidden_states)
++            timestep_proj = self.time_proj(self.act_fn(temb))
++
++            encoder_hidden_states = self.text_embedder(encoder_hidden_states)
++            if encoder_hidden_states_image is not None:
++                encoder_hidden_states_image = self.image_embedder(encoder_hidden_states_image)
++
++            return temb, timestep_proj, encoder_hidden_states, encoder_hidden_states_image
+ 
+ 
+ class WanRotaryPosEmbed(nn.Module):

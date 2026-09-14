@@ -1,0 +1,45 @@
+--- a/vllm/v1/engine/core.py
++++ b/vllm/v1/engine/core.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import gc
+ import os
+ import queue
+@@ -974,20 +975,21 @@
+         # Note on thread safety: no race condition.
+         # `mm_receiver_cache` is reset at the end of LLMEngine init,
+         # and will only be accessed in the input processing thread afterwards.
+-        if self.mm_receiver_cache is not None and request.mm_features:
+-            request.mm_features = self.mm_receiver_cache.get_and_update_features(
+-                request.mm_features
+-            )
+-
+-        req = Request.from_engine_core_request(request, self.request_block_hasher)
+-        if req.use_structured_output:
+-            # Note on thread safety: no race condition.
+-            # `grammar_init` is only invoked in input processing thread. For
+-            # `structured_output_manager`, each request is independent and
+-            # grammar compilation is async. Scheduler always checks grammar
+-            # compilation status before scheduling request.
+-            self.structured_output_manager.grammar_init(req)
+-        return req, request.current_wave
++        with perfmark.region("vllm-042"):
++            if self.mm_receiver_cache is not None and request.mm_features:
++                request.mm_features = self.mm_receiver_cache.get_and_update_features(
++                    request.mm_features
++                )
++
++            req = Request.from_engine_core_request(request, self.request_block_hasher)
++            if req.use_structured_output:
++                # Note on thread safety: no race condition.
++                # `grammar_init` is only invoked in input processing thread. For
++                # `structured_output_manager`, each request is independent and
++                # grammar compilation is async. Scheduler always checks grammar
++                # compilation status before scheduling request.
++                self.structured_output_manager.grammar_init(req)
++            return req, request.current_wave
+ 
+     def _eep_scale_up_before_kv_init(self):
+         raise NotImplementedError

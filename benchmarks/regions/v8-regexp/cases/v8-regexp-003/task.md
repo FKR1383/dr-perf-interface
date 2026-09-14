@@ -1,0 +1,7 @@
+# Handle interrupts during interpreted matching
+
+Instrument `v8::internal::regexp::HandleInterrupts` with an empty DRPerf RAII region. This target belongs to the regular-expression execution phase. The marker measures work performed while executing the selected matching path.
+
+Suggested bounded workload: Run an interpreted regular expression while a bounded interrupt request is serviced.
+
+Build context: compile V8 at the pinned revision with its documented GN/Ninja workflow. Add `benchmarks/regions/support` to the compiler include path so the patch can resolve `drperf_bench_region.h`, and link the PerfMark implementation that supplies `perfmark_begin_v` and `perfmark_end`. The workload command remains unverified.

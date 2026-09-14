@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -3441,6 +3442,7 @@
+ }
+ 
+ void BytecodeGenerator::VisitTryCatchStatement(TryCatchStatement* stmt) {
++  DRPERF_BENCH_REGION("v8-interpreter-023");
+   // Update catch prediction tracking. The updated catch_prediction value lasts
+   // until the end of the try_block in the AST node, and does not apply to the
+   // catch_block.

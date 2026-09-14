@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -20,6 +20,7 @@
+ #include "src/objects/property-details.h"
+ #include "src/objects/swiss-name-dictionary-inl.h"
+ #include "src/runtime/runtime.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -772,6 +773,7 @@
+ }  // namespace
+ 
+ RUNTIME_FUNCTION(Runtime_DeleteProperty) {
++  DRPERF_BENCH_REGION("v8-interpreter-048");
+   HandleScope scope(isolate);
+   DCHECK_EQ(3, args.length());
+   DirectHandle<Object> object = args.at(0);

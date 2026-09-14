@@ -1,0 +1,22 @@
+--- a/vllm/v1/worker/block_table.py
++++ b/vllm/v1/worker/block_table.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import math
+ from enum import Enum
+ 
+@@ -364,8 +365,9 @@
+             block_table.compute_slot_mapping(num_reqs, query_start_loc, positions)
+ 
+     def commit_block_table(self, num_reqs: int) -> None:
+-        for block_table in self.block_tables:
+-            block_table.commit_block_table(num_reqs)
++        with perfmark.region("vllm-059"):
++            for block_table in self.block_tables:
++                block_table.commit_block_table(num_reqs)
+ 
+     def clear(self) -> None:
+         for block_table in self.block_tables:

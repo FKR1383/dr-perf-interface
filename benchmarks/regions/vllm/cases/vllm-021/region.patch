@@ -1,0 +1,24 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import heapq
+ from abc import ABC, abstractmethod
+ from collections import deque
+@@ -153,9 +154,10 @@
+ 
+     def peek_request(self) -> Request:
+         """Peek at the next request in the queue without removing it."""
+-        if not self._heap:
+-            raise IndexError("peek from empty heap")
+-        return self._heap[0]
++        with perfmark.region("vllm-021"):
++            if not self._heap:
++                raise IndexError("peek from empty heap")
++            return self._heap[0]
+ 
+     def prepend_request(self, request: Request) -> None:
+         """Add a request to the queue according to priority policy.

@@ -1,0 +1,20 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -629,7 +630,8 @@
+                             attention_kwargs=attention_kwargs,
+                             return_dict=False,
+                         )[0]
+-                    noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
++                    with perfmark.region("wan-030"):
++                        noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
+ 
+                 # compute the previous noisy sample x_t -> x_t-1
+                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]

@@ -1,0 +1,20 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import heapq
+ from abc import ABC, abstractmethod
+ from collections import deque
+@@ -91,7 +92,8 @@
+ 
+     def prepend_request(self, request: Request) -> None:
+         """Prepend a request to the front of the queue."""
+-        self.appendleft(request)
++        with perfmark.region("vllm-017"):
++            self.appendleft(request)
+ 
+     def prepend_requests(self, requests: RequestQueue) -> None:
+         """Prepend all requests from another queue to the front of this

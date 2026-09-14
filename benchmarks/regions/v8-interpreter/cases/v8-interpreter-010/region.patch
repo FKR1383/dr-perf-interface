@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -815,6 +816,7 @@
+ MaybeDirectHandle<Object> LoadLookupSlot(
+     Isolate* isolate, Handle<String> name, ShouldThrow should_throw,
+     Handle<Object>* receiver_return = nullptr) {
++  DRPERF_BENCH_REGION("v8-interpreter-010");
+   int index;
+   PropertyAttributes attributes;
+   InitializationFlag flag;

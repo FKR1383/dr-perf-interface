@@ -1,0 +1,76 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+@@ -1185,35 +1186,36 @@
+         return AutoencoderKLOutput(latent_dist=posterior)
+ 
+     def _decode(self, z: torch.Tensor, return_dict: bool = True):
+-        _, _, num_frame, height, width = z.shape
+-        tile_latent_min_height = self.tile_sample_min_height // self.spatial_compression_ratio
+-        tile_latent_min_width = self.tile_sample_min_width // self.spatial_compression_ratio
+-
+-        if self.use_tiling and (width > tile_latent_min_width or height > tile_latent_min_height):
+-            return self.tiled_decode(z, return_dict=return_dict)
+-
+-        self.clear_cache()
+-        x = self.post_quant_conv(z)
+-        for i in range(num_frame):
+-            self._conv_idx = [0]
+-            if i == 0:
+-                out = self.decoder(
+-                    x[:, :, i : i + 1, :, :], feat_cache=self._feat_map, feat_idx=self._conv_idx, first_chunk=True
+-                )
+-            else:
+-                out_ = self.decoder(x[:, :, i : i + 1, :, :], feat_cache=self._feat_map, feat_idx=self._conv_idx)
+-                out = torch.cat([out, out_], 2)
+-
+-        if self.config.patch_size is not None:
+-            out = unpatchify(out, patch_size=self.config.patch_size)
+-
+-        out = torch.clamp(out, min=-1.0, max=1.0)
+-
+-        self.clear_cache()
+-        if not return_dict:
+-            return (out,)
+-
+-        return DecoderOutput(sample=out)
++        with perfmark.region("wan-005"):
++            _, _, num_frame, height, width = z.shape
++            tile_latent_min_height = self.tile_sample_min_height // self.spatial_compression_ratio
++            tile_latent_min_width = self.tile_sample_min_width // self.spatial_compression_ratio
++
++            if self.use_tiling and (width > tile_latent_min_width or height > tile_latent_min_height):
++                return self.tiled_decode(z, return_dict=return_dict)
++
++            self.clear_cache()
++            x = self.post_quant_conv(z)
++            for i in range(num_frame):
++                self._conv_idx = [0]
++                if i == 0:
++                    out = self.decoder(
++                        x[:, :, i : i + 1, :, :], feat_cache=self._feat_map, feat_idx=self._conv_idx, first_chunk=True
++                    )
++                else:
++                    out_ = self.decoder(x[:, :, i : i + 1, :, :], feat_cache=self._feat_map, feat_idx=self._conv_idx)
++                    out = torch.cat([out, out_], 2)
++
++            if self.config.patch_size is not None:
++                out = unpatchify(out, patch_size=self.config.patch_size)
++
++            out = torch.clamp(out, min=-1.0, max=1.0)
++
++            self.clear_cache()
++            if not return_dict:
++                return (out,)
++
++            return DecoderOutput(sample=out)
+ 
+     @apply_forward_hook
+     def decode(self, z: torch.Tensor, return_dict: bool = True) -> DecoderOutput | torch.Tensor:

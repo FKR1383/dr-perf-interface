@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-strings.cc
++++ b/src/runtime/runtime-strings.cc
+@@ -13,6 +13,7 @@
+ #include "src/runtime/runtime-utils.h"
+ #include "src/strings/string-builder-inl.h"
+ #include "src/strings/unicode-inl.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -513,6 +514,7 @@
+ }
+ 
+ RUNTIME_FUNCTION(Runtime_StringCompare) {
++  DRPERF_BENCH_REGION("v8-interpreter-034");
+   DCHECK_EQ(2, args.length());
+   HandleScope scope(isolate);
+   DirectHandle<String> lhs(Cast<String>(args[0]), isolate);

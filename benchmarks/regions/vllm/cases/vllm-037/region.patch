@@ -1,0 +1,31 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import itertools
+ import time
+ from collections import defaultdict, deque
+@@ -1158,13 +1159,14 @@
+                             self.ec_connector.update_state_after_alloc(request, i)
+ 
+             # re-queue requests skipped in this pass ahead of older skipped items.
+-            if step_skipped_waiting:
+-                self.skipped_waiting.prepend_requests(step_skipped_waiting)
+-
+-            # DP prefill balancing: on a step that admitted prefills (release),
+-            # record whether it was capacity-bound.
+-            if not defer_prefills:
+-                self.prefill_capacity_bound = bool(self.waiting)
++            with perfmark.region("vllm-037"):
++                if step_skipped_waiting:
++                    self.skipped_waiting.prepend_requests(step_skipped_waiting)
++
++                # DP prefill balancing: on a step that admitted prefills (release),
++                # record whether it was capacity-bound.
++                if not defer_prefills:
++                    self.prefill_capacity_bound = bool(self.waiting)
+ 
+         # Check if the scheduling constraints are satisfied.
+         total_num_scheduled_tokens = sum(num_scheduled_tokens.values())

@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -20,6 +20,7 @@
+ #include "src/objects/property-details.h"
+ #include "src/objects/swiss-name-dictionary-inl.h"
+ #include "src/runtime/runtime.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -321,6 +322,7 @@
+ // TODO(verwaest): Support the common cases with precached map directly in
+ // an Object.create stub.
+ RUNTIME_FUNCTION(Runtime_ObjectCreate) {
++  DRPERF_BENCH_REGION("v8-interpreter-042");
+   HandleScope scope(isolate);
+   DirectHandle<Object> maybe_prototype = args.at(0);
+   DirectHandle<Object> properties = args.at(1);

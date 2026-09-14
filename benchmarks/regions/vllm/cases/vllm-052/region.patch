@@ -1,0 +1,52 @@
+--- a/vllm/v1/sample/ops/topk_topp_sampler.py
++++ b/vllm/v1/sample/ops/topk_topp_sampler.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
+ 
++import perfmark
+ import torch
+ import torch.nn as nn
+ 
+@@ -193,23 +194,24 @@
+ 
+         The logits tensor may be updated in-place.
+         """
+-        logits = apply_top_k_top_p(logits, k, p)
+-        logits_to_return = None
+-        if self.logprobs_mode == "processed_logits":
+-            logits_to_return = logits
+-        elif self.logprobs_mode == "processed_logprobs":
+-            logits_to_return = logits.log_softmax(dim=-1, dtype=torch.float32)
+-
+-        if len(generators) != logits.shape[0] and not self.use_fp64_gumbel:
+-            return compiled_random_sample(logits), logits_to_return
+-
+-        probs = logits.softmax(dim=-1, dtype=torch.float32)
+-        q = empty_exponential_noise_like(probs, self.use_fp64_gumbel)
+-        q.exponential_()
+-        for i, generator in generators.items():
+-            q[i].exponential_(generator=generator)
+-
+-        return sample_with_exponential_noise(probs, q), logits_to_return
++        with perfmark.region("vllm-052"):
++            logits = apply_top_k_top_p(logits, k, p)
++            logits_to_return = None
++            if self.logprobs_mode == "processed_logits":
++                logits_to_return = logits
++            elif self.logprobs_mode == "processed_logprobs":
++                logits_to_return = logits.log_softmax(dim=-1, dtype=torch.float32)
++
++            if len(generators) != logits.shape[0] and not self.use_fp64_gumbel:
++                return compiled_random_sample(logits), logits_to_return
++
++            probs = logits.softmax(dim=-1, dtype=torch.float32)
++            q = empty_exponential_noise_like(probs, self.use_fp64_gumbel)
++            q.exponential_()
++            for i, generator in generators.items():
++                q[i].exponential_(generator=generator)
++
++            return sample_with_exponential_noise(probs, q), logits_to_return
+ 
+     def _init_aiter_ops(self) -> bool:
+         if self._aiter_ops_import_failed:

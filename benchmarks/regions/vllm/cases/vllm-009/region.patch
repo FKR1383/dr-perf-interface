@@ -1,0 +1,30 @@
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import itertools
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+@@ -542,12 +543,13 @@
+                 num_external_computed_tokens=num_external_computed_tokens,
+             )
+ 
+-        new_blocks = self.coordinator.allocate_new_blocks(
+-            request.request_id,
+-            num_tokens_need_slot,
+-            num_tokens_main_model,
+-            num_encoder_tokens,
+-        )
++        with perfmark.region("vllm-009"):
++            new_blocks = self.coordinator.allocate_new_blocks(
++                request.request_id,
++                num_tokens_need_slot,
++                num_tokens_main_model,
++                num_encoder_tokens,
++            )
+ 
+         # P/D: delay caching blocks if we have to recv from
+         # remote. Update state for locally cached blocks.

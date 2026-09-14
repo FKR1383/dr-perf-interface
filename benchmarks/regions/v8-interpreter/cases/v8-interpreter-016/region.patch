@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -1897,6 +1898,7 @@
+ }
+ 
+ void BytecodeGenerator::GenerateAsyncFunctionBody() {
++  DRPERF_BENCH_REGION("v8-interpreter-016");
+   DCHECK((IsAsyncFunction(function_kind()) &&
+           !IsAsyncGeneratorFunction(function_kind())) ||
+          IsModuleWithTopLevelAwait(function_kind()));

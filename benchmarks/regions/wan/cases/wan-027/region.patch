@@ -1,0 +1,36 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -621,15 +622,16 @@
+                     )[0]
+ 
+                 if self.do_classifier_free_guidance:
+-                    with current_model.cache_context("uncond"):
+-                        noise_uncond = current_model(
+-                            hidden_states=latent_model_input,
+-                            timestep=timestep,
+-                            encoder_hidden_states=negative_prompt_embeds,
+-                            attention_kwargs=attention_kwargs,
+-                            return_dict=False,
+-                        )[0]
+-                    noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
++                    with perfmark.region("wan-027"):
++                        with current_model.cache_context("uncond"):
++                            noise_uncond = current_model(
++                                hidden_states=latent_model_input,
++                                timestep=timestep,
++                                encoder_hidden_states=negative_prompt_embeds,
++                                attention_kwargs=attention_kwargs,
++                                return_dict=False,
++                            )[0]
++                        noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
+ 
+                 # compute the previous noisy sample x_t -> x_t-1
+                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]

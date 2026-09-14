@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -934,6 +935,7 @@
+     Isolate* isolate, Handle<Context> context, Handle<String> name,
+     DirectHandle<Object> value, LanguageMode language_mode,
+     ContextLookupFlags context_lookup_flags = FOLLOW_CHAINS) {
++  DRPERF_BENCH_REGION("v8-interpreter-011");
+   int index;
+   PropertyAttributes attributes;
+   InitializationFlag flag;

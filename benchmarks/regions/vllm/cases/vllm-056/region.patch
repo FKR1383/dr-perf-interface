@@ -1,0 +1,102 @@
+--- a/vllm/v1/spec_decode/ngram_proposer.py
++++ b/vllm/v1/spec_decode/ngram_proposer.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import os
+ 
+ import numpy as np
+@@ -88,49 +89,50 @@
+                 A list where each element is a list of proposed
+                 token IDs for the corresponding request.
+         """
+-        draft_token_ids: list[list[int]] = []
+-
+-        # Only run batch propose if there are requests needing ngram proposals.
+-        # avoid calling numba function with empty list which causes error
+-        # ValueError: cannot compute fingerprint of empty list
+-        if num_ngram_requests := len(valid_ngram_requests):
+-            original_num_numba_threads = get_num_threads()
+-            # Ensure we use at least one thread.
+-            # If total tokens is small, using multiple threads
+-            # may slow down due to overhead.
+-            total_tokens = np.sum(num_tokens_no_spec)
+-            if total_tokens >= self.num_tokens_threshold:
+-                final_num_threads = max(
+-                    1, min(self.num_numba_thread_available, num_ngram_requests)
++        with perfmark.region("vllm-056"):
++            draft_token_ids: list[list[int]] = []
++
++            # Only run batch propose if there are requests needing ngram proposals.
++            # avoid calling numba function with empty list which causes error
++            # ValueError: cannot compute fingerprint of empty list
++            if num_ngram_requests := len(valid_ngram_requests):
++                original_num_numba_threads = get_num_threads()
++                # Ensure we use at least one thread.
++                # If total tokens is small, using multiple threads
++                # may slow down due to overhead.
++                total_tokens = np.sum(num_tokens_no_spec)
++                if total_tokens >= self.num_tokens_threshold:
++                    final_num_threads = max(
++                        1, min(self.num_numba_thread_available, num_ngram_requests)
++                    )
++                    set_num_threads(final_num_threads)
++                else:
++                    set_num_threads(1)
++
++                batch_propose_numba(
++                    valid_ngram_requests,
++                    num_tokens_no_spec,
++                    token_ids_cpu,
++                    self.min_n,
++                    self.max_n,
++                    self.max_model_len,
++                    k,
++                    self.valid_ngram_draft,
++                    self.valid_ngram_num_drafts,
+                 )
+-                set_num_threads(final_num_threads)
+-            else:
+-                set_num_threads(1)
+-
+-            batch_propose_numba(
+-                valid_ngram_requests,
+-                num_tokens_no_spec,
+-                token_ids_cpu,
+-                self.min_n,
+-                self.max_n,
+-                self.max_model_len,
+-                k,
+-                self.valid_ngram_draft,
+-                self.valid_ngram_num_drafts,
+-            )
+-
+-            # Restore original number of threads.
+-            set_num_threads(original_num_numba_threads)
+-
+-        for i in range(num_requests):
+-            if i in valid_ngram_requests and self.valid_ngram_num_drafts[i] > 0:
+-                draft_token_ids.append(
+-                    self.valid_ngram_draft[i, : self.valid_ngram_num_drafts[i]].tolist()
+-                )
+-            else:
+-                draft_token_ids.append([])
+-
+-        return draft_token_ids
++
++                # Restore original number of threads.
++                set_num_threads(original_num_numba_threads)
++
++            for i in range(num_requests):
++                if i in valid_ngram_requests and self.valid_ngram_num_drafts[i] > 0:
++                    draft_token_ids.append(
++                        self.valid_ngram_draft[i, : self.valid_ngram_num_drafts[i]].tolist()
++                    )
++                else:
++                    draft_token_ids.append([])
++
++            return draft_token_ids
+ 
+     def propose(
+         self,

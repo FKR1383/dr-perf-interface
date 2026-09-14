@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -20,6 +20,7 @@
+ #include "src/objects/property-details.h"
+ #include "src/objects/swiss-name-dictionary-inl.h"
+ #include "src/runtime/runtime.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -276,6 +277,7 @@
+ }
+ 
+ RUNTIME_FUNCTION(Runtime_AddPrivateBrand) {
++  DRPERF_BENCH_REGION("v8-interpreter-041");
+   HandleScope scope(isolate);
+   DCHECK_EQ(args.length(), 4);
+   DirectHandle<JSReceiver> receiver = args.at<JSReceiver>(0);

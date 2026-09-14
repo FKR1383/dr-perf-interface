@@ -1,0 +1,20 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import heapq
+ from abc import ABC, abstractmethod
+ from collections import deque
+@@ -162,7 +163,8 @@
+ 
+         Note: In a priority queue, there is no concept of prepending to the
+         front. Requests are ordered by (priority, arrival_time)."""
+-        self.add_request(request)
++        with perfmark.region("vllm-023"):
++            self.add_request(request)
+ 
+     def prepend_requests(self, requests: RequestQueue) -> None:
+         """Add all requests from another queue according to priority policy.

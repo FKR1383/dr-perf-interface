@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-strings.cc
++++ b/src/runtime/runtime-strings.cc
+@@ -13,6 +13,7 @@
+ #include "src/runtime/runtime-utils.h"
+ #include "src/strings/string-builder-inl.h"
+ #include "src/strings/unicode-inl.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -395,6 +396,7 @@
+ // Converts a String to JSArray.
+ // For example, "foo" => ["f", "o", "o"].
+ RUNTIME_FUNCTION(Runtime_StringToArray) {
++  DRPERF_BENCH_REGION("v8-interpreter-033");
+   HandleScope scope(isolate);
+   DCHECK_EQ(2, args.length());
+   DirectHandle<String> s = args.at<String>(0);

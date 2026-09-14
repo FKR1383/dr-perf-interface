@@ -1,0 +1,107 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ # Datastructures defining a GPU input batch
+ 
++import perfmark
+ from dataclasses import dataclass
+ from typing import cast
+ 
+@@ -537,51 +538,52 @@
+           Removed request index, or `None` if `req_id` not recognized
+         """
+ 
+-        req_index = self.req_id_to_index.pop(req_id, None)
+-        if req_index is None:
+-            return None
+-
+-        self.batch_update_builder.removed_append(req_index)
+-        self._req_ids[req_index] = None
+-        self.req_output_token_ids[req_index] = None
+-        self.spec_token_ids[req_index].clear()
+-        self.block_table.clear_row(req_index)
+-
+-        # LoRA
+-        lora_id = self.request_lora_mapping[req_index]
+-        if lora_id != 0:
+-            lora_req_ids = self.lora_id_to_request_ids[lora_id]
+-            lora_req_ids.discard(req_id)
+-            if not lora_req_ids:
+-                del self.lora_id_to_request_ids[lora_id]
+-                del self.lora_id_to_lora_request[lora_id]
+-            self.request_lora_mapping[req_index] = 0
+-
+-        if self.is_pooling_model:
+-            self.pooling_params.pop(req_id, None)
+-            self.pooling_states.pop(req_id, None)
++        with perfmark.region("vllm-064"):
++            req_index = self.req_id_to_index.pop(req_id, None)
++            if req_index is None:
++                return None
++
++            self.batch_update_builder.removed_append(req_index)
++            self._req_ids[req_index] = None
++            self.req_output_token_ids[req_index] = None
++            self.spec_token_ids[req_index].clear()
++            self.block_table.clear_row(req_index)
++
++            # LoRA
++            lora_id = self.request_lora_mapping[req_index]
++            if lora_id != 0:
++                lora_req_ids = self.lora_id_to_request_ids[lora_id]
++                lora_req_ids.discard(req_id)
++                if not lora_req_ids:
++                    del self.lora_id_to_request_ids[lora_id]
++                    del self.lora_id_to_lora_request[lora_id]
++                self.request_lora_mapping[req_index] = 0
++
++            if self.is_pooling_model:
++                self.pooling_params.pop(req_id, None)
++                self.pooling_states.pop(req_id, None)
++                return req_index
++
++            self.greedy_reqs.discard(req_id)
++            self.random_reqs.discard(req_id)
++            self.top_p_reqs.discard(req_id)
++            self.top_k_reqs.discard(req_id)
++            self.frequency_penalties_reqs.discard(req_id)
++            self.presence_penalties_reqs.discard(req_id)
++            self.repetition_penalties_reqs.discard(req_id)
++            self.generators.pop(req_index, None)
++            self.num_logprobs.pop(req_id, None)
++            self.logprob_token_ids.pop(req_id, None)
++            if self.prev_req_id_to_index is not None:
++                self.prev_req_id_to_index.pop(req_id, None)
++
++            self.has_allowed_token_ids.discard(req_id)
++            if self.allowed_token_ids_mask_cpu_tensor is not None:
++                # False means we don't fill with -inf.
++                self.allowed_token_ids_mask_cpu_tensor[req_index].fill_(False)
++            self.bad_words_token_ids.pop(req_index, None)
++            self.thinking_token_budget_reqs.discard(req_id)
+             return req_index
+-
+-        self.greedy_reqs.discard(req_id)
+-        self.random_reqs.discard(req_id)
+-        self.top_p_reqs.discard(req_id)
+-        self.top_k_reqs.discard(req_id)
+-        self.frequency_penalties_reqs.discard(req_id)
+-        self.presence_penalties_reqs.discard(req_id)
+-        self.repetition_penalties_reqs.discard(req_id)
+-        self.generators.pop(req_index, None)
+-        self.num_logprobs.pop(req_id, None)
+-        self.logprob_token_ids.pop(req_id, None)
+-        if self.prev_req_id_to_index is not None:
+-            self.prev_req_id_to_index.pop(req_id, None)
+-
+-        self.has_allowed_token_ids.discard(req_id)
+-        if self.allowed_token_ids_mask_cpu_tensor is not None:
+-            # False means we don't fill with -inf.
+-            self.allowed_token_ids_mask_cpu_tensor[req_index].fill_(False)
+-        self.bad_words_token_ids.pop(req_index, None)
+-        self.thinking_token_budget_reqs.discard(req_id)
+-        return req_index
+ 
+     def swap_states(self, i1: int, i2: int) -> None:
+         old_id_i1 = self._req_ids[i1]

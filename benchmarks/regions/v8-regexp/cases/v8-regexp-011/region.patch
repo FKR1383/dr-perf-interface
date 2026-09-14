@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-parser.cc
++++ b/src/regexp/regexp-parser.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-parser.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/base/logging.h"
+ #include "src/execution/isolate.h"
+@@ -2172,6 +2173,7 @@
+ // This parses RegExpUnicodeEscapeSequence as described in ECMA262.
+ template <class CharT, ParseMode mode>
+ bool ParserImpl<CharT, mode>::ParseUnicodeEscape(base::uc32* value) {
++  DRPERF_BENCH_REGION("v8-regexp-011");
+   // Accept both \uxxxx and \u{xxxxxx} (if harmony unicode escapes are
+   // allowed). In the latter case, the number of hex digits between { } is
+   // arbitrary. \ and u have already been read.

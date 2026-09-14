@@ -1,0 +1,34 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ from typing import Any
+ 
+@@ -90,14 +91,15 @@
+             encoder_hidden_states_img = encoder_hidden_states[:, :image_context_length]
+             encoder_hidden_states = encoder_hidden_states[:, image_context_length:]
+ 
+-        query, key, value = _get_qkv_projections(attn, hidden_states, encoder_hidden_states)
+-
+-        query = attn.norm_q(query)
+-        key = attn.norm_k(key)
+-
+-        query = query.unflatten(2, (attn.heads, -1))
+-        key = key.unflatten(2, (attn.heads, -1))
+-        value = value.unflatten(2, (attn.heads, -1))
++        with perfmark.region("wan-018"):
++            query, key, value = _get_qkv_projections(attn, hidden_states, encoder_hidden_states)
++
++            query = attn.norm_q(query)
++            key = attn.norm_k(key)
++
++            query = query.unflatten(2, (attn.heads, -1))
++            key = key.unflatten(2, (attn.heads, -1))
++            value = value.unflatten(2, (attn.heads, -1))
+ 
+         if rotary_emb is not None:
+ 

@@ -1,0 +1,30 @@
+--- a/vllm/entrypoints/offline_utils.py
++++ b/vllm/entrypoints/offline_utils.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ from collections.abc import Callable, Iterable, Sequence
+ from typing import Any
+ 
+@@ -148,12 +149,13 @@
+         tokenization_kwargs: dict[str, Any] | None = None,
+         mm_processor_kwargs: dict[str, Any] | None = None,
+     ) -> EngineInput:
+-        (engine_input,) = self._preprocess_cmpl(
+-            [prompt],
+-            tokenization_kwargs,
+-            mm_processor_kwargs=mm_processor_kwargs,
+-        )
+-        return engine_input
++        with perfmark.region("vllm-001"):
++            (engine_input,) = self._preprocess_cmpl(
++                [prompt],
++                tokenization_kwargs,
++                mm_processor_kwargs=mm_processor_kwargs,
++            )
++            return engine_input
+ 
+     def _preprocess_chat(
+         self,

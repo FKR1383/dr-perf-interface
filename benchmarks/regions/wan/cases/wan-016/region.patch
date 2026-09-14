@@ -1,0 +1,38 @@
+--- a/src/diffusers/models/autoencoders/vae.py
++++ b/src/diffusers/models/autoencoders/vae.py
+@@ -11,6 +11,7 @@
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
++import perfmark
+ from dataclasses import dataclass
+ 
+ import numpy as np
+@@ -686,16 +687,17 @@
+ 
+ class DiagonalGaussianDistribution(object):
+     def __init__(self, parameters: torch.Tensor, deterministic: bool = False):
+-        self.parameters = parameters
+-        self.mean, self.logvar = torch.chunk(parameters, 2, dim=1)
+-        self.logvar = torch.clamp(self.logvar, -30.0, 20.0)
+-        self.deterministic = deterministic
+-        self.std = torch.exp(0.5 * self.logvar)
+-        self.var = torch.exp(self.logvar)
+-        if self.deterministic:
+-            self.var = self.std = torch.zeros_like(
+-                self.mean, device=self.parameters.device, dtype=self.parameters.dtype
+-            )
++        with perfmark.region("wan-016"):
++            self.parameters = parameters
++            self.mean, self.logvar = torch.chunk(parameters, 2, dim=1)
++            self.logvar = torch.clamp(self.logvar, -30.0, 20.0)
++            self.deterministic = deterministic
++            self.std = torch.exp(0.5 * self.logvar)
++            self.var = torch.exp(self.logvar)
++            if self.deterministic:
++                self.var = self.std = torch.zeros_like(
++                    self.mean, device=self.parameters.device, dtype=self.parameters.dtype
++                )
+ 
+     def sample(self, generator: torch.Generator | None = None) -> torch.Tensor:
+         # make sure sample is on the same device as the parameters and has same dtype

@@ -1,0 +1,20 @@
+--- a/src/diffusers/image_processor.py
++++ b/src/diffusers/image_processor.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ import warnings
+ 
+@@ -783,7 +784,8 @@
+             return image
+ 
+         if output_type == "pil":
+-            return self.numpy_to_pil(image)
++            with perfmark.region("wan-004"):
++                return self.numpy_to_pil(image)
+ 
+     def apply_overlay(
+         self,

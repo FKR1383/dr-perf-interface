@@ -1,0 +1,14 @@
+# Collection provenance
+
+Source: [DiagonalGaussianDistribution.__init__](https://github.com/huggingface/diffusers/blob/c5469b7ceb606edd7ba6570dcd17d38590a18db6/src/diffusers/models/autoencoders/vae.py).
+
+This location was selected from earlier annotations in the local experiment
+archive. The following expressions are historical hypotheses, not a reviewed
+answer key or a complexity guarantee:
+
+- `videogen/wan-more/diffusers/models/autoencoders/vae.py`: `perfmark.region('dgd_init', tag=916, chans=parameters.shape[1], numel=parameters.numel())`
+- `videogen/wan-t5/diffusers/models/autoencoders/vae.py`: `perfmark.region('dgd_init', tag=916, chans=parameters.shape[1], numel=parameters.numel())`
+
+The source snapshot is exported from pristine Git, and this case patch starts
+with zero PCVs. Whole-function cases and child-block cases share a source family
+and must remain together when splitting or aggregating a future evaluation.
