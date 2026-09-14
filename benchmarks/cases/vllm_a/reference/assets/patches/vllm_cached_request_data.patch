@@ -1,0 +1,115 @@
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -88,9 +88,22 @@
+                 - each inner list contains the block_ids of the blocks in that
+                   group
+         """
+-        if allow_none and all(len(group) == 0 for group in self.blocks):
++        blocks = self.blocks
++        if len(blocks) == 1:
++            # OPTIMIZATION: single KV cache group, which is the common case and
++            # the only one the scheduler's per-step rebuild ever sees here.
++            # The general path below creates two generator *functions* per call
++            # (the `all(...)` genexpr and the tuple genexpr) plus their frames;
++            # this one creates neither.  Same values: one empty group means
++            # `all(len(group) == 0 ...)` is true, and the tuple of one list
++            # comprehension is what `tuple(genexpr)` would have built.
++            group = blocks[0]
++            if not group:
++                return None if allow_none else ([],)
++            return ([blk.block_id for blk in group],)
++        if allow_none and all(len(group) == 0 for group in blocks):
+             return None
+-        return tuple([blk.block_id for blk in group] for group in self.blocks)
++        return tuple([blk.block_id for blk in group] for group in blocks)
+ 
+     def get_unhashed_block_ids(self) -> list[int]:
+         """Get block_ids of unhashed blocks from KVCacheBlocks instance."""
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1489,14 +1489,37 @@
+             num_output_tokens: list[int] = []
+             resumed_req_ids = set()
+ 
+-            num_running_reqs = len(running_reqs)
+-            for idx, req in enumerate(itertools.chain(running_reqs, resumed_reqs)):
++            # OPTIMIZATION: everything below that does not vary per request is
++            # read once, and the six parallel lists are filled through bound
++            # `append`s.  The body runs once per running request per step, so
++            # each `self.<attr>` load, each property call and each method
++            # lookup it drops is paid back `num_running` times every step.
++            resumed_req_ids.update(req.request_id for req in resumed_reqs)
++            send_token_ids = self.use_pp and not self.scheduler_config.async_scheduling
++            # `all_token_ids` is MRV1-only; skip the whole branch under the v2
++            # runner exactly as before.
++            prev_scheduled = (
++                None if self.use_v2_model_runner else self.prev_step_scheduled_req_ids
++            )
++            # `create_kv_cache_blocks` hands back this shared singleton whenever
++            # a request got no new blocks this step, which in steady decode is
++            # fifteen steps in sixteen.  `get_block_ids(allow_none=True)` returns
++            # None for it, so the identity test is the same answer without the
++            # call.
++            empty_blocks = self.kv_cache_manager.empty_kv_cache_blocks
++            append_req_id = req_ids.append
++            append_new_token_ids = new_token_ids.append
++            append_new_block_ids = new_block_ids.append
++            append_num_computed = num_computed_tokens.append
++            append_num_output = num_output_tokens.append
++
++            for req in itertools.chain(running_reqs, resumed_reqs):
+                 req_id = req.request_id
+-                req_ids.append(req_id)
++                append_req_id(req_id)
+                 # NOTE: In PP+async scheduling, we consume token ids via a direct GPU
+                 # broadcast path (`input_batch.prev_sampled_token_ids`), so we can
+                 # omit this payload.
+-                if self.use_pp and not self.scheduler_config.async_scheduling:
++                if send_token_ids:
+                     # When using PP, the scheduler sends the sampled tokens back,
+                     # because there's no direct communication between the first-
+                     # stage worker and the last-stage worker. Otherwise, we don't
+@@ -1505,22 +1528,30 @@
+                     num_tokens = num_scheduled_tokens[req_id] - len(
+                         spec_decode_tokens.get(req_id, ())
+                     )
+-                    token_ids = req.all_token_ids[
++                    # `req.all_token_ids` is a ConstantList wrapper around this
++                    # list; slicing it costs a Python frame for the same slice.
++                    token_ids = req._all_token_ids[
+                         req.num_computed_tokens : req.num_computed_tokens + num_tokens
+                     ]
+-                    new_token_ids.append(token_ids)
+-                if idx >= num_running_reqs:
+-                    resumed_req_ids.add(req_id)
+-                if not self.use_v2_model_runner:  # noqa: SIM102
+-                    if req_id not in self.prev_step_scheduled_req_ids:
+-                        all_token_ids[req_id] = req.all_token_ids.copy()
+-                new_block_ids.append(
+-                    req_to_new_blocks[req_id].get_block_ids(allow_none=True)
+-                )
+-                num_computed_tokens.append(req.num_computed_tokens)
+-                num_output_tokens.append(
+-                    req.num_output_tokens + req.num_output_placeholders
++                    append_new_token_ids(token_ids)
++                num_output = req.num_output_placeholders + len(req._output_token_ids)
++                if prev_scheduled is not None and req_id not in prev_scheduled:
++                    # The one consumer of this payload
++                    # (`GPUModelRunner._update_states`) reads it as
++                    # `all_token_ids[req_id][-num_output_tokens:]`, so only that
++                    # tail has to be copied.  `ConstantList.copy()` copied the
++                    # whole prompt as well, which for a long prompt dominates
++                    # this loop and is thrown away by the reader.
++                    tokens = req._all_token_ids
++                    all_token_ids[req_id] = (
++                        tokens[len(tokens) - num_output :] if num_output else []
++                    )
++                blocks = req_to_new_blocks[req_id]
++                append_new_block_ids(
++                    None if blocks is empty_blocks else blocks.get_block_ids(True)
+                 )
++                append_num_computed(req.num_computed_tokens)
++                append_num_output(num_output)
+ 
+             return CachedRequestData(
+                 req_ids=req_ids,

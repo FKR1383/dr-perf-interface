@@ -1,0 +1,15 @@
+{
+  "case": "sqlglot",
+  "track": "small-to-large",
+  "status": "design-only",
+  "small_input_envelope": {"n_joins": {"min": 2, "max": 32}},
+  "held_out_inputs": [{"n_joins": 64}, {"n_joins": 128}, {"n_joins": 256}],
+  "expanding_timing_ladder": [4, 8, 16, 32, 64, 128, 256],
+  "coefficient_policy": "Fit only on small-input observations; freeze before held-out execution.",
+  "review_required": [
+    "Validate these sizes and timeout/resource ceilings on the pinned environment.",
+    "Review executable PCV ground truth and a fixed region boundary.",
+    "Pre-register prediction tolerances and the accuracy target for the expanding arm.",
+    "Keep large input measurements out of agent sessions until final submissions are frozen."
+  ]
+}

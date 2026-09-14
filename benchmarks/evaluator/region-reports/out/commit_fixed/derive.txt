@@ -1,0 +1,35 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4,ladder=12,resident=8 x24, requests=4,ladder=12,resident=16 x24, requests=4,ladder=12,resident=32 x24, requests=4,ladder=12,resident=64 x24, requests=8,ladder=32,resident=8 x24, requests=8,ladder=32,resident=16 x24, requests=8,ladder=32,resident=32 x24, requests=8,ladder=32,resident=64 x24, requests=16,ladder=80,resident=8 x24, requests=16,ladder=80,resident=16 x24, requests=16,ladder=80,resident=32 x24, requests=16,ladder=80,resident=64 x12, requests=32,ladder=192,resident=0 x12, requests=32,ladder=192,resident=1 x12, requests=32,ladder=192,resident=2 x12, requests=32,ladder=192,resident=3 x12, requests=32,ladder=192,resident=4 x12, requests=32,ladder=192,resident=5 x12, requests=32,ladder=192,resident=6 x12, requests=32,ladder=192,resident=7 x12, requests=32,ladder=192,resident=8 x40, requests=32,ladder=192,resident=9 x10, requests=32,ladder=192,resident=10 x10, requests=32,ladder=192,resident=11 x10, requests=32,ladder=192,resident=12 x10, requests=32,ladder=192,resident=13 x10, requests=32,ladder=192,resident=14 x10, requests=32,ladder=192,resident=15 x10, requests=32,ladder=192,resident=16 x38, requests=32,ladder=192,resident=17 x8, requests=32,ladder=192,resident=18 x8, requests=32,ladder=192,resident=19 x8, requests=32,ladder=192,resident=20 x8, requests=32,ladder=192,resident=21 x8, requests=32,ladder=192,resident=22 x8, requests=32,ladder=192,resident=23 x8, requests=32,ladder=192,resident=24 x8, requests=32,ladder=192,resident=25 x8, requests=32,ladder=192,resident=26 x8, requests=32,ladder=192,resident=27 x8, requests=32,ladder=192,resident=28 x8, requests=32,ladder=192,resident=29 x8, requests=32,ladder=192,resident=30 x8, requests=32,ladder=192,resident=31 x8, requests=32,ladder=192,resident=32 x36, requests=32,ladder=192,resident=33 x6, requests=32,ladder=192,resident=34 x6, requests=32,ladder=192,resident=35 x6, requests=32,ladder=192,resident=36 x6, requests=32,ladder=192,resident=37 x6, requests=32,ladder=192,resident=38 x6, requests=32,ladder=192,resident=39 x6, requests=32,ladder=192,resident=40 x6, requests=32,ladder=192,resident=41 x6, requests=32,ladder=192,resident=42 x6, requests=32,ladder=192,resident=43 x6, requests=32,ladder=192,resident=44 x6, requests=32,ladder=192,resident=45 x6, requests=32,ladder=192,resident=46 x6, requests=32,ladder=192,resident=47 x6, requests=32,ladder=192,resident=48 x6, requests=32,ladder=192,resident=49 x6, requests=32,ladder=192,resident=50 x6, requests=32,ladder=192,resident=51 x6, requests=32,ladder=192,resident=52 x6, requests=32,ladder=192,resident=53 x6, requests=32,ladder=192,resident=54 x6, requests=32,ladder=192,resident=55 x6, requests=32,ladder=192,resident=56 x6, requests=32,ladder=192,resident=57 x6, requests=32,ladder=192,resident=58 x6, requests=32,ladder=192,resident=59 x6, requests=32,ladder=192,resident=60 x6, requests=32,ladder=192,resident=61 x6, requests=32,ladder=192,resident=62 x6, requests=32,ladder=192,resident=63 x6, requests=32,ladder=192,resident=64 x34, requests=32,ladder=192,resident=65 x2, requests=32,ladder=192,resident=66 x2, requests=32,ladder=192,resident=67 x2, requests=32,ladder=192,resident=68 x2, requests=32,ladder=192,resident=69 x2, requests=32,ladder=192,resident=70 x2, requests=32,ladder=192,resident=71 x2, requests=32,ladder=192,resident=72 x2, requests=32,ladder=192,resident=73 x2, requests=32,ladder=192,resident=74 x2, requests=32,ladder=192,resident=75 x2, requests=32,ladder=192,resident=76 x2, requests=32,ladder=192,resident=77 x2, requests=32,ladder=192,resident=78 x2, requests=32,ladder=192,resident=79 x2, requests=32,ladder=192,resident=80 x2, requests=32,ladder=192,resident=81 x2, requests=32,ladder=192,resident=82 x2, requests=32,ladder=192,resident=83 x2, requests=32,ladder=192,resident=84 x2, requests=32,ladder=192,resident=85 x2, requests=32,ladder=192,resident=86 x2, requests=32,ladder=192,resident=87 x2, requests=32,ladder=192,resident=88 x2, requests=32,ladder=192,resident=89 x2, requests=32,ladder=192,resident=90 x2, requests=32,ladder=192,resident=91 x2, requests=32,ladder=192,resident=92 x2, requests=32,ladder=192,resident=93 x2, requests=32,ladder=192,resident=94 x2, requests=32,ladder=192,resident=95 x2
+  cost(requests, ladder, resident) = 284*requests + 124.9*ladder + 41.4*resident + 3,316.4        [all requests, ladder, resident]   blocks: 226 affine, 418 constant, 126 irregular (67.3% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 6,127 .. 296,482.2
+    per-requests coefficient by function:
+              -202.1  _int_malloc  [libc.so.6]
+               142.6  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               -75.3  malloc_consolidate  [libc.so.6]
+                  75  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+                  66  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+               -56.3  unlink_chunk  [libc.so.6]
+    per-ladder coefficient by function:
+                51.7  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+                42.3  _int_malloc  [libc.so.6]
+                14.1  __GI___libc_malloc  [libc.so.6]
+                12.9  malloc_consolidate  [libc.so.6]
+                10.7  unlink_chunk  [libc.so.6]
+                  -5  _int_realloc  [libc.so.6]
+    per-resident coefficient by function:
+                34.3  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+                   6  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                 1.2  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+    constant by function:
+                 621  _int_malloc  [libc.so.6]
+               416.3  _int_free  [libc.so.6]
+               360.8  __GI___libc_malloc  [libc.so.6]
+               309.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               220.2  __memcpy_avx_unaligned_erms  [libc.so.6]
+               214.6  malloc_consolidate  [libc.so.6]
+    irregular by function:
+              24,246  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+            21,555.4  __memcmp_avx2_movbe  [libc.so.6]
+             9,823.1  _int_malloc  [libc.so.6]
+

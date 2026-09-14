@@ -1,0 +1,43 @@
+derive hm_insert   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: n=8,size=40 x20, n=8,size=60 x20, n=8,size=80 x20, n=8,size=100 x20, n=8,size=120 x20, n=8,size=160 x20, n=8,size=200 x20, n=8,size=240 x20, n=8,size=300 x20, n=8,size=340 x20, n=16,size=40 x20, n=16,size=60 x20, n=16,size=80 x20, n=16,size=100 x20, n=16,size=120 x20, n=16,size=160 x20, n=16,size=200 x20, n=16,size=240 x20, n=16,size=300 x20, n=16,size=340 x20, n=32,size=40 x20, n=32,size=60 x20, n=32,size=80 x20, n=32,size=100 x20, n=32,size=120 x20, n=32,size=160 x20, n=32,size=200 x20, n=32,size=240 x20, n=32,size=300 x20, n=32,size=340 x20
+  cost(n, size) = 1,970.2*n + 0*size + 2,624        [all n, size]   blocks: 259 affine, 510 constant, 25 irregular (10.6% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,129 .. 12,493
+    per-n coefficient by function:
+                 330  _PyEval_EvalFrameDefault  [python3.12]
+               306.1  PyDict_Contains+?  [python3.12]
+                 242  _PyUnicode_JoinArray  [python3.12]
+                 220  PyDict_SetItem  [python3.12]
+                 177  PyLong_AsLongAndOverflow  [python3.12]
+               117.2  PyObject_Malloc  [python3.12]
+    constant by function:
+                 564  _Py_HashBytes  [python3.12]
+                 444  _PyEval_EvalFrameDefault  [python3.12]
+               424.2  PyDict_Contains+?  [python3.12]
+                 325  PyDict_SetItem  [python3.12]
+               300.2  PyObject_Free  [python3.12]
+                 192  _PyMem_Strdup+?  [python3.12]
+    irregular by function:
+             2,020.4  PyDict_Contains+?  [python3.12]
+             1,292.7  PyDict_SetItem  [python3.12]
+                 672  _Py_HashBytes  [python3.12]
+
+derive hm_lookup   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: n=8,size=40 x20, n=8,size=60 x20, n=8,size=80 x20, n=8,size=100 x20, n=8,size=120 x20, n=8,size=160 x20, n=8,size=200 x20, n=8,size=240 x20, n=8,size=300 x20, n=8,size=340 x20, n=16,size=40 x20, n=16,size=60 x20, n=16,size=80 x20, n=16,size=100 x20, n=16,size=120 x20, n=16,size=160 x20, n=16,size=200 x20, n=16,size=240 x20, n=16,size=300 x20, n=16,size=340 x20, n=32,size=40 x20, n=32,size=60 x20, n=32,size=80 x20, n=32,size=100 x20, n=32,size=120 x20, n=32,size=160 x20, n=32,size=200 x20, n=32,size=240 x20, n=32,size=300 x20, n=32,size=340 x20
+  cost(n, size) = 768.7*n + 0*size + 1,298.9        [all n, size]   blocks: 79 affine, 313 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-n coefficient by function:
+               376.7  PyDict_Contains+?  [python3.12]
+                 200  _PyEval_EvalFrameDefault  [python3.12]
+                 109  PyDict_SetItem  [python3.12]
+                  63  PyDict_GetItemWithError  [python3.12]
+                  11  PyList_AsTuple+?  [python3.12]
+                   9  PyList_GetItem+?  [python3.12]
+    constant by function:
+               369.5  _PyEval_EvalFrameDefault  [python3.12]
+               200.1  PyDict_Contains+?  [python3.12]
+               121.6  PyObject_Free  [python3.12]
+                  72  PyCMethod_New+?  [python3.12]
+                  70  PyTuple_New+?  [python3.12]
+                  66  PyList_GetItem+?  [python3.12]
+

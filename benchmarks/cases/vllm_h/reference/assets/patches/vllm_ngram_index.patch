@@ -1,0 +1,232 @@
+--- vllm/v1/spec_decode/ngram_proposer.py
++++ vllm/v1/spec_decode/ngram_proposer.py
+@@ -32,6 +32,25 @@
+         self.valid_ngram_draft = np.zeros((max_num_seqs, self.k), dtype=np.int32)
+         self.valid_ngram_num_drafts = np.zeros((max_num_seqs), dtype=np.int32)
+ 
++        # Incremental n-gram index, one open-addressed table per (row, n-gram
++        # length).  A slot holds `first occurrence + 1` of the n-gram that
++        # starts there, 0 when empty; keys are compared against the tokens
++        # themselves, so the table is exact for any vocabulary and any
++        # `prompt_lookup_max`.  `ngram_index_cov` is how much of each row is
++        # already indexed and `ngram_index_snap` a copy of it, so a row that
++        # the engine reassigned (condense, swap, a new request) is detected
++        # and rebuilt.
++        num_lengths = self.max_n - self.min_n + 1
++        cap = 1
++        while cap < 2 * self.max_model_len:
++            cap *= 2
++        self.ngram_index_cap = cap
++        self.ngram_index = np.zeros((max_num_seqs, num_lengths, cap), dtype=np.int32)
++        self.ngram_index_snap = np.zeros(
++            (max_num_seqs, self.max_model_len), dtype=np.int32
++        )
++        self.ngram_index_cov = np.zeros((max_num_seqs), dtype=np.int32)
++
+         # Threshold of total number of tokens in the batch to enable
+         # multi-threading in numba batch propose.
+         self.num_tokens_threshold = 8192
+@@ -111,7 +130,7 @@
+             with perfmark.region("ngram_scan", num_valid=num_ngram_requests,
+                                  ctx=int(num_tokens_no_spec[valid_ngram_requests].sum()), k=k,
+                                  tag=9003):
+-                batch_propose_numba(
++                batch_propose_index_numba(
+                     valid_ngram_requests,
+                     num_tokens_no_spec,
+                     token_ids_cpu,
+@@ -121,6 +140,9 @@
+                     k,
+                     self.valid_ngram_draft,
+                     self.valid_ngram_num_drafts,
++                    self.ngram_index,
++                    self.ngram_index_snap,
++                    self.ngram_index_cov,
+                 )
+ 
+             # Restore original number of threads.
+@@ -128,8 +150,11 @@
+ 
+         with perfmark.region("ngram_gather", num_reqs=num_requests,
+                              num_valid=len(valid_ngram_requests), tag=9004):
++            # A set, not the list: `i in valid_ngram_requests` walked the list
++            # once per request, which is quadratic in the batch size.
++            valid_set = set(valid_ngram_requests)
+             for i in range(num_requests):
+-                if i in valid_ngram_requests and self.valid_ngram_num_drafts[i] > 0:
++                if i in valid_set and self.valid_ngram_num_drafts[i] > 0:
+                     draft_token_ids.append(
+                         self.valid_ngram_draft[i, : self.valid_ngram_num_drafts[i]].tolist()
+                     )
+@@ -181,6 +206,171 @@
+         pass
+ 
+ 
++@njit
++def _ngram_hash(tokens: np.ndarray, start: int, n: int) -> int:
++    """FNV-1a over `n` tokens.  Only used to pick a slot: every hit is
++    confirmed against the tokens themselves, so collisions cost a probe,
++    never a wrong answer."""
++    h = np.int64(-3750763034362895579)  # 14695981039346656037 as int64
++    for d in range(n):
++        h = (h ^ np.int64(tokens[start + d])) * np.int64(1099511628211)
++    return h
++
++
++@njit
++def _ngram_index_insert(table: np.ndarray, tokens: np.ndarray, start: int, n: int):
++    """Record `start` as the position of the n-gram tokens[start:start+n],
++    keeping the earliest position already recorded for it."""
++    cap = table.shape[0]
++    slot = _ngram_hash(tokens, start, n) & (cap - 1)
++    while True:
++        held = table[slot]
++        if held == 0:
++            table[slot] = start + 1
++            return
++        pos = held - 1
++        same = True
++        for d in range(n):
++            if tokens[pos + d] != tokens[start + d]:
++                same = False
++                break
++        if same:
++            # Inserted in increasing order, so the stored one is earlier.
++            return
++        slot = (slot + 1) & (cap - 1)
++
++
++@njit
++def _ngram_index_find(table: np.ndarray, tokens: np.ndarray, start: int, n: int) -> int:
++    """Earliest recorded position of tokens[start:start+n], or -1."""
++    cap = table.shape[0]
++    slot = _ngram_hash(tokens, start, n) & (cap - 1)
++    while True:
++        held = table[slot]
++        if held == 0:
++            return -1
++        pos = held - 1
++        same = True
++        for d in range(n):
++            if tokens[pos + d] != tokens[start + d]:
++                same = False
++                break
++        if same:
++            return pos
++        slot = (slot + 1) & (cap - 1)
++
++
++@njit
++def _ngram_index_propose(
++    tokens: np.ndarray,
++    table: np.ndarray,
++    snap: np.ndarray,
++    covered: int,
++    num_tokens: int,
++    min_ngram: int,
++    max_ngram: int,
++    max_model_len: int,
++    k: int,
++    draft: np.ndarray,
++):
++    """The incremental form of `_find_longest_matched_ngram_and_propose_tokens`.
++
++    Selection rule of the KMP scan it replaces, in the original (unreversed)
++    token order: let L* be the largest L in [min_ngram, max_ngram] such that
++    the last L tokens occur again starting at some s <= num_tokens-1-L (an
++    occurrence that may overlap the suffix but must not be the suffix
++    itself); the match taken is the *earliest* such s (the reversed scan
++    updates `position` on ties, i.e. at the latest reversed index), and the
++    draft is the k tokens that follow it.  A table of first occurrences keyed
++    by n-gram reproduces exactly that: it is the earliest s by construction,
++    the tables are only appended to (first occurrences never move, the token
++    history is append-only), and lengths are tried from max_ngram down.
++    """
++    # Validate the cached index against the row: rebuild if the engine gave
++    # this row to another request, or rolled its history back.
++    if covered > num_tokens:
++        covered = 0
++    if covered > 0:
++        diff = 0
++        for t in range(covered):
++            diff |= tokens[t] ^ snap[t]
++        if diff != 0:
++            covered = 0
++    if covered == 0:
++        table[:, :] = 0
++
++    # Index the tokens appended since the last step (all of them, first time).
++    if covered < num_tokens:
++        for j in range(table.shape[0]):
++            n = min_ngram + j
++            if num_tokens < n:
++                break
++            start = covered - n + 1
++            if start < 0:
++                start = 0
++            for s in range(start, num_tokens - n + 1):
++                _ngram_index_insert(table[j], tokens, s, n)
++        for t in range(covered, num_tokens):
++            snap[t] = tokens[t]
++        covered = num_tokens
++
++    # Same guards as the scan: too short to match, or at the model length.
++    if num_tokens < min_ngram:
++        return covered, 0
++    if k > max_model_len - num_tokens:
++        k = max_model_len - num_tokens
++    if k <= 0:
++        return covered, 0
++
++    longest = max_ngram
++    if longest > num_tokens - 1:
++        longest = num_tokens - 1
++    for n in range(longest, min_ngram - 1, -1):
++        pos = _ngram_index_find(table[n - min_ngram], tokens, num_tokens - n, n)
++        if pos >= 0 and pos < num_tokens - n:
++            start_position = pos + n
++            if k > num_tokens - start_position:
++                k = num_tokens - start_position
++            for d in range(k):
++                draft[d] = tokens[start_position + d]
++            return covered, k
++    return covered, 0
++
++
++@njit(parallel=True)
++def batch_propose_index_numba(
++    valid_ngram_requests: list,
++    num_tokens_no_spec: np.ndarray,
++    token_ids_cpu: np.ndarray,
++    min_n: int,
++    max_n: int,
++    max_model_len: int,
++    k: int,
++    valid_ngram_draft: np.ndarray,
++    valid_ngram_num_drafts: np.ndarray,
++    ngram_index: np.ndarray,
++    ngram_index_snap: np.ndarray,
++    ngram_index_cov: np.ndarray,
++):
++    for i in prange(len(valid_ngram_requests)):
++        idx = valid_ngram_requests[i]
++        num_tokens = num_tokens_no_spec[idx]
++        covered, num_draft = _ngram_index_propose(
++            token_ids_cpu[idx],
++            ngram_index[idx],
++            ngram_index_snap[idx],
++            ngram_index_cov[idx],
++            num_tokens,
++            min_n,
++            max_n,
++            max_model_len,
++            k,
++            valid_ngram_draft[idx],
++        )
++        ngram_index_cov[idx] = covered
++        valid_ngram_num_drafts[idx] = num_draft
++
++
+ @njit(parallel=True)
+ def batch_propose_numba(
+     valid_ngram_requests: list,

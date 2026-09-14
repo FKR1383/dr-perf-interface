@@ -1,0 +1,31 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=8,resident=0 x32, requests=8,resident=1 x32, requests=8,resident=2 x16, requests=16,resident=2 x16, requests=16,resident=3 x32, requests=16,resident=4 x32, requests=32,resident=5 x32, requests=32,resident=6 x32, requests=32,resident=7 x16
+  cost(requests, resident) = 1,269.9*requests + 492.1*resident + 3,167        [all requests, resident]   blocks: 178 affine, 527 constant, 63 irregular (60.7% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 12,286.9 .. 95,523.1
+    per-requests coefficient by function:
+               376.1  _int_malloc  [libc.so.6]
+               334.1  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               135.6  __GI___libc_malloc  [libc.so.6]
+                78.3  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+                  66  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                  46  <_ditto_ftl_core::directory::DirectoryState>::unmap_logged  [_ditto_ftl_core.abi3.so]
+    per-resident coefficient by function:
+                 501  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+                -119  _int_malloc  [libc.so.6]
+                86.1  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                21.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+                  15  __GI___libc_malloc  [libc.so.6]
+                 -12  unlink_chunk  [libc.so.6]
+    constant by function:
+               529.4  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+               424.2  _int_free  [libc.so.6]
+                -347  _int_malloc  [libc.so.6]
+               328.9  __GI___libc_malloc  [libc.so.6]
+                 320  __realloc  [libc.so.6]
+               298.1  _int_realloc  [libc.so.6]
+    irregular by function:
+            18,263.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+            13,861.5  __memcmp_avx2_movbe  [libc.so.6]
+             5,039.4  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+

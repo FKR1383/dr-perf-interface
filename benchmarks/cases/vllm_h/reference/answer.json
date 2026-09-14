@@ -1,0 +1,19 @@
+{
+  "case": "vllm_h",
+  "factors": [
+    {
+      "id": "f1",
+      "criterion": "context length, request count and number of proposed/accepted tokens"
+    },
+    {
+      "id": "f2",
+      "criterion": "ngram search and gather/index work; nonlinear context-dependent repeated work"
+    },
+    {
+      "id": "f3",
+      "criterion": "separate hit and miss regimes; warm up JIT before measuring"
+    }
+  ],
+  "grading": "Semantic review against the record and code, not keyword matching. Equivalent expressions and well-supported alternative decompositions count. Historical coefficients are not acceptance thresholds.",
+  "scope": "Observed historical workloads, not an all-input guarantee. Read shared follow-up records for measurement corrections and GPU limits."
+}

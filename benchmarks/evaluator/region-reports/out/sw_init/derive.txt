@@ -1,0 +1,20 @@
+derive ftl_place_page_ids   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: width=8 x24, width=16 x24, width=32 x24, width=64 x24, width=128 x24, width=256 x24
+  cost(width) = 442.9*width + 12,663.3        [all width]   blocks: 121 affine, 1929 constant, 1 irregular (0.1% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 0 .. 193.4
+    per-width coefficient by function:
+                  85  PyArray_DiscoverDTypeAndShape_Recursive  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                  55  PyArray_Pack  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                  42  LONG_setitem  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                  36  signed_integers_is_known_scalar_types  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                  33  PyArray_AssignFromCache_Recursive  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                  33  PyLong_AsLong  [python3.12]
+    constant by function:
+             1,000.1  PyDict_Contains+?  [python3.12]
+               459.7  _int_malloc  [libc.so.6]
+                 458  PyUnicode_FromString+?  [python3.12]
+               431.7  _Py_HashBytes  [python3.12]
+               401.4  _PyType_Lookup  [python3.12]
+               380.7  PyObject_Free  [python3.12]
+

@@ -1,0 +1,350 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -3,6 +3,7 @@
+ # Datastructures defining a GPU input batch
+ 
+ import perfmark
++from array import array
+ from dataclasses import dataclass
+ from typing import cast
+ 
+@@ -139,6 +140,13 @@
+             pin_memory=False,
+         )
+         self.token_ids_cpu = self.token_ids_cpu_tensor.numpy()
++        # One memoryview per row of token_ids_cpu, cast to the row's item type.
++        # Filling a row from an `array("i", ids)` through it is a single memcpy;
++        # `token_ids_cpu[row, :n] = ids` makes numpy walk the Python list and
++        # convert element by element (~333 instrs/token).
++        self._token_ids_row_mv = [
++            memoryview(row).cast("B").cast("i") for row in self.token_ids_cpu
++        ]
+         self.is_token_ids_tensor = torch.zeros(
+             (max_num_reqs, max_model_len),
+             device="cpu",
+@@ -259,6 +267,33 @@
+ 
+         # lora related
+         self.request_lora_mapping = np.zeros((self.max_num_reqs,), dtype=np.int64)
++
++        # Every per-request scalar row that condense() has to carry from a
++        # vacated index to a lower one, gathered once: the set is fixed for the
++        # life of the batch, so the move loop iterates a list instead of doing
++        # two attribute lookups per array per moved row.
++        self._condense_scalar_arrays: list[np.ndarray] = [
++            self.num_tokens_no_spec,
++            self.num_prompt_tokens,
++            self.num_computed_tokens_cpu,
++            self.request_lora_mapping,
++        ]
++        if use_replayssm:
++            self._condense_scalar_arrays.append(self.replayssm_decode_base)
++        if not is_pooling_model:
++            # Sampling state is unused by pooling models.
++            self._condense_scalar_arrays += [
++                self.temperature_cpu,
++                self.top_p_cpu,
++                self.top_k_cpu,
++                self.frequency_penalties_cpu,
++                self.presence_penalties_cpu,
++                self.repetition_penalties_cpu,
++                self.num_accepted_tokens_cpu,
++            ]
++        # Scratch index buffers for the batched (fancy-index) move path.
++        self._move_src_idx = np.empty(self.max_num_reqs, dtype=np.intp)
++        self._move_dst_idx = np.empty(self.max_num_reqs, dtype=np.intp)
+         self.lora_id_to_request_ids: dict[int, set[str]] = {}
+         self.lora_id_to_lora_request: dict[int, LoRARequest] = {}
+ 
+@@ -300,6 +335,11 @@
+         # Store last speculative tokens for sampler.
+         self.spec_token_ids: list[list[int]] = [[] for _ in range(max_num_reqs)]
+ 
++        # `_make_sampling_metadata` returns the cached instance when nothing it
++        # would build has changed; this is the key it was built with.
++        self._sampling_metadata_key: tuple | None = None
++        self._cached_sampling_metadata: SamplingMetadata | None = None
++
+         # This is updated each time the batch constituents change.
+         self.sampling_metadata = self._make_sampling_metadata()
+ 
+@@ -375,7 +415,12 @@
+             start_idx = num_prompt_tokens
+             end_idx = start_idx + len(request.output_token_ids)
+             if request.prompt_token_ids is not None:
+-                self.token_ids_cpu[req_index, :num_prompt_tokens] = request.prompt_token_ids
++                if num_prompt_tokens:
++                    # Bulk conversion: array("i", ...) packs the Python ints in
++                    # one C loop and the memoryview slice copy is a memcpy.
++                    self._token_ids_row_mv[req_index][:num_prompt_tokens] = array(
++                        "i", request.prompt_token_ids
++                    )
+                 if request.prompt_is_token_ids is not None:
+                     self.is_token_ids[req_index, :num_prompt_tokens] = (
+                         request.prompt_is_token_ids
+@@ -386,8 +431,11 @@
+                 self.is_token_ids[req_index, :num_prompt_tokens] = False
+             if request.prompt_embeds is not None:
+                 self.req_prompt_embeds[req_index] = request.prompt_embeds
+-            self.token_ids_cpu[req_index, start_idx:end_idx] = request.output_token_ids
+-            self.is_token_ids[req_index, start_idx:end_idx] = True
++            if end_idx > start_idx:
++                self._token_ids_row_mv[req_index][start_idx:end_idx] = array(
++                    "i", request.output_token_ids
++                )
++                self.is_token_ids[req_index, start_idx:end_idx] = True
+             # Number of tokens without spec decode tokens.
+             self.num_tokens_no_spec[req_index] = request.num_tokens
+ 
+@@ -735,6 +783,8 @@
+             # NOTE(woosuk): This function assumes that the empty_req_indices
+             # is sorted in descending order.
+             last_req_index = num_reqs + len(empty_req_indices) - 1
++            move_srcs: list[int] = []
++            move_dsts: list[int] = []
+             while empty_req_indices:
+                 # Find the largest non-empty index.
+                 while last_req_index in empty_req_indices:
+@@ -776,22 +826,16 @@
+                     self.req_prompt_embeds[empty_index] = self.req_prompt_embeds.pop(
+                         last_req_index
+                     )
+-                self.num_tokens_no_spec[empty_index] = self.num_tokens_no_spec[
+-                    last_req_index
+-                ]
+-                self.num_prompt_tokens[empty_index] = self.num_prompt_tokens[last_req_index]
+-                if self.use_replayssm:
+-                    self.replayssm_decode_base[empty_index] = self.replayssm_decode_base[
+-                        last_req_index
+-                    ]
+-                self.num_computed_tokens_cpu[empty_index] = self.num_computed_tokens_cpu[
+-                    last_req_index
+-                ]
+-                self.block_table.move_row(last_req_index, empty_index)
++                # The per-request scalar rows (num_tokens_no_spec, the penalty
++                # and temperature/top-p/top-k rows, ...) are moved together
++                # after the loop: nothing read below depends on them, and every
++                # destination index is strictly below every source index (the
++                # empty indices rise while last_req_index falls, and the loop
++                # stops as soon as they meet), so the moves are independent.
++                move_srcs.append(last_req_index)
++                move_dsts.append(empty_index)
+ 
+-                self.request_lora_mapping[empty_index] = self.request_lora_mapping[
+-                    last_req_index
+-                ]
++                self.block_table.move_row(last_req_index, empty_index)
+ 
+                 if self.is_pooling_model:
+                     last_req_index -= 1
+@@ -804,21 +848,6 @@
+                     (last_req_index, empty_index, MoveDirectionality.UNIDIRECTIONAL)
+                 )
+ 
+-                self.temperature_cpu[empty_index] = self.temperature_cpu[last_req_index]
+-                self.top_p_cpu[empty_index] = self.top_p_cpu[last_req_index]
+-                self.top_k_cpu[empty_index] = self.top_k_cpu[last_req_index]
+-                self.frequency_penalties_cpu[empty_index] = self.frequency_penalties_cpu[
+-                    last_req_index
+-                ]
+-                self.presence_penalties_cpu[empty_index] = self.presence_penalties_cpu[
+-                    last_req_index
+-                ]
+-                self.repetition_penalties_cpu[empty_index] = self.repetition_penalties_cpu[
+-                    last_req_index
+-                ]
+-                self.num_accepted_tokens_cpu[empty_index] = self.num_accepted_tokens_cpu[
+-                    last_req_index
+-                ]
+                 generator = self.generators.pop(last_req_index, None)
+                 if generator is not None:
+                     self.generators[empty_index] = generator
+@@ -836,11 +865,44 @@
+                 # Decrement last_req_index since it is now empty.
+                 last_req_index -= 1
+ 
++            if move_srcs:
++                self._move_scalar_rows(move_srcs, move_dsts)
++
+             # Trim lists to the batch size.
+             del self._req_ids[num_reqs:]
+             del self.req_output_token_ids[num_reqs:]
+             del self.spec_token_ids[num_reqs:]
+ 
++    # Below this many moved rows, one scalar assignment per array per row is
++    # cheaper than filling the index buffers and dispatching a fancy-index
++    # assignment per array (measured crossover on this CPU/numpy: 3 rows).
++    _BATCH_MOVE_MIN = 3
++
++    def _move_scalar_rows(self, srcs: list[int], dsts: list[int]) -> None:
++        """Carry every per-request scalar row from `srcs` to `dsts`.
++
++        `condense` only ever moves a higher index down into a lower, vacated
++        one, so `srcs` and `dsts` are disjoint and the moves are independent;
++        with enough of them each array is done in a single fancy-index
++        assignment instead of two numpy dispatches per row.
++        """
++        arrays = self._condense_scalar_arrays
++        num_moves = len(srcs)
++        if num_moves < self._BATCH_MOVE_MIN:
++            for i in range(num_moves):
++                src = srcs[i]
++                dst = dsts[i]
++                for arr in arrays:
++                    arr[dst] = arr[src]
++            return
++        src_idx = self._move_src_idx[:num_moves]
++        dst_idx = self._move_dst_idx[:num_moves]
++        for i in range(num_moves):
++            src_idx[i] = srcs[i]
++            dst_idx[i] = dsts[i]
++        for arr in arrays:
++            arr[dst_idx] = arr[src_idx]
++
+     def refresh_metadata(self):
+         """Apply any batch updates to sampling metadata."""
+         with perfmark.region("refresh_metadata", num_reqs=self.num_reqs, num_added=len(self.batch_update_builder.added), num_moved=len(self.batch_update_builder.moved)):
+@@ -864,18 +926,25 @@
+ 
+     def _make_sampling_metadata(self) -> SamplingMetadata:
+         num_reqs = self.num_reqs
+-        if not self.all_greedy:
++        all_greedy = self.all_greedy
++        all_random = self.all_random
++        no_top_p = self.no_top_p
++        no_top_k = self.no_top_k
++        no_penalties = self.no_penalties
++        no_allowed_token_ids = self.no_allowed_token_ids
++        max_num_logprobs = self.max_num_logprobs
++        if not all_greedy:
+             temperature = copy_slice(
+                 self.temperature_cpu_tensor, self.temperature, num_reqs
+             )
+         else:
+             temperature = None
+-        if not self.no_top_p:
++        if not no_top_p:
+             copy_slice(self.top_p_cpu_tensor, self.top_p, num_reqs)
+-        if not self.no_top_k:
++        if not no_top_k:
+             copy_slice(self.top_k_cpu_tensor, self.top_k, num_reqs)
+ 
+-        if not self.no_penalties:
++        if not no_penalties:
+             # Since syncing these tensors is expensive only copy them
+             # if necessary i.e. if there are requests which require
+             # penalties to be applied during sampling.
+@@ -892,8 +961,7 @@
+             )
+ 
+         needs_prompt_token_ids = (
+-            not self.no_penalties
+-            or self.logits_processing_needs_token_ids[:num_reqs].any()
++            not no_penalties or self.logits_processing_needs_token_ids[:num_reqs].any()
+         )
+         # The prompt tokens are used only for applying penalties or
+         # step pooling during the sampling/pooling process.
+@@ -915,7 +983,7 @@
+             holder is not None and holder.has_tracked_requests()
+         )
+         needs_output_token_ids = (
+-            not self.no_penalties
++            not no_penalties
+             or bool(self.bad_words_token_ids)
+             or self.logitsprocs_need_output_token_ids
+             or thinking_budget_tracks_reqs
+@@ -927,7 +995,7 @@
+         )
+ 
+         allowed_token_ids_mask: torch.Tensor | None = None
+-        if not self.no_allowed_token_ids:
++        if not no_allowed_token_ids:
+             assert self.allowed_token_ids_mask is not None
+             copy_slice(
+                 self.allowed_token_ids_mask_cpu_tensor,
+@@ -945,14 +1013,43 @@
+                     req_index = self.req_id_to_index[req_id]
+                     logprob_token_ids_by_index[req_index] = token_ids
+ 
+-        return SamplingMetadata(
++        # Everything above either has a side effect that must happen on every
++        # change (the copy_slice() host-to-device copies) or builds a fresh
++        # object.  Everything below is either a scalar taken from the key, a
++        # `[:num_reqs]` view of a tensor whose storage never moves, or a
++        # reference to a container the batch mutates in place -- so when the
++        # key is unchanged the previously built instance is field-for-field the
++        # one this call would return, and rebuilding it is pure overhead.
++        # Only the two freshly built objects (the prompt-token-id tensor and
++        # the logprob token id map) cannot be carried over; they disable the
++        # reuse when present.
++        cache_key = (
++            num_reqs,
++            all_greedy,
++            all_random,
++            no_top_p,
++            no_top_k,
++            no_penalties,
++            no_allowed_token_ids,
++            max_num_logprobs,
++            needs_output_token_ids,
++        )
++        reusable = prompt_token_ids is None and logprob_token_ids_by_index is None
++        if (
++            reusable
++            and self._sampling_metadata_key == cache_key
++            and self._cached_sampling_metadata is not None
++        ):
++            return self._cached_sampling_metadata
++
++        sampling_metadata = SamplingMetadata(
+             temperature=temperature,
+-            all_greedy=self.all_greedy,
+-            all_random=self.all_random,
+-            top_p=None if self.no_top_p else self.top_p[:num_reqs],
+-            top_k=None if self.no_top_k else self.top_k[:num_reqs],
++            all_greedy=all_greedy,
++            all_random=all_random,
++            top_p=None if no_top_p else self.top_p[:num_reqs],
++            top_k=None if no_top_k else self.top_k[:num_reqs],
+             generators=self.generators,
+-            max_num_logprobs=self.max_num_logprobs,
++            max_num_logprobs=max_num_logprobs,
+             logprob_token_ids=logprob_token_ids_by_index,
+             prompt_token_ids=prompt_token_ids,
+             frequency_penalties=self.frequency_penalties[:num_reqs],
+@@ -960,12 +1057,15 @@
+             repetition_penalties=self.repetition_penalties[:num_reqs],
+             output_token_ids=output_token_ids,
+             spec_token_ids=self.spec_token_ids,
+-            no_penalties=self.no_penalties,
++            no_penalties=no_penalties,
+             allowed_token_ids_mask=allowed_token_ids_mask,
+             bad_words_token_ids=self.bad_words_token_ids,
+             logitsprocs=self.logitsprocs,
+             thinking_budget_state_holder=self.thinking_budget_state_holder,
+         )
++        self._sampling_metadata_key = cache_key if reusable else None
++        self._cached_sampling_metadata = sampling_metadata if reusable else None
++        return sampling_metadata
+ 
+     def get_pooling_params(self) -> list[PoolingParams]:
+         assert len(self.req_ids) == len(self.pooling_params)
+--- a/vllm/v1/worker/gpu_model_runner.py
++++ b/vllm/v1/worker/gpu_model_runner.py
+@@ -1295,7 +1295,15 @@
+             # that case we include the resumed_req_ids in the unscheduled set so
+             # that they get cleared from the persistent batch before being re-scheduled
+             # in the normal resumed request path.
+-            unscheduled_req_ids = cached_req_ids - (scheduled_req_ids - resumed_req_ids)
++            if resumed_req_ids:
++                unscheduled_req_ids = cached_req_ids - (
++                    scheduled_req_ids - resumed_req_ids
++                )
++            else:
++                # `X - (Y - {})` is `X - Y`: skip building the intermediate set,
++                # which is the common case (resumed_req_ids is only non-empty
++                # after a forced preemption).
++                unscheduled_req_ids = cached_req_ids - scheduled_req_ids
+             # NOTE(woosuk): The persistent batch optimization assumes that
+             # consecutive batches contain mostly the same requests. If batches
+             # have low request overlap (e.g., alternating between two distinct

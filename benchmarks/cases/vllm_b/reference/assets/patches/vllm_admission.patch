@@ -1,0 +1,94 @@
+--- a/vllm/v1/engine/input_processor.py
++++ b/vllm/v1/engine/input_processor.py
+@@ -3,9 +3,12 @@
+ 
+ import perfmark
+ import time
++from array import array
+ from collections.abc import Mapping
+ from typing import Any, Literal
+ 
++import numpy as np
++
+ import vllm.envs as envs
+ from vllm.config import VllmConfig
+ from vllm.exceptions import VLLMValidationError
+@@ -35,6 +38,9 @@
+ 
+ logger = init_logger(__name__)
+ 
++# array("L") holds C `unsigned long`: 8 bytes on LP64, 4 elsewhere.
++_ULONG_DTYPE = np.dtype("u%d" % array("L").itemsize)
++
+ 
+ class InputProcessor:
+     def __init__(
+@@ -484,8 +490,23 @@
+                         )
+ 
+         if prompt_ids and tokenizer is not None:
+-            max_input_id = max(prompt_ids, default=0)
+-            min_input_id = min(prompt_ids, default=0)
++            # Bounds check without two full Python scans (max() then min())
++            # of the id list.  array("L") converts the whole list in a single
++            # C pass and refuses -- OverflowError -- as soon as an id is
++            # negative, so a successful conversion already proves min >= 0;
++            # the max is then read out of that buffer by numpy.  Any refusal
++            # (a negative id, a non-integer, an id too large for an unsigned
++            # long) falls back to the original two scans, so `min_input_id`
++            # and `max_input_id`, and hence the messages raised below, are
++            # exactly what they were.
++            try:
++                id_buf = array("L", prompt_ids)
++            except (OverflowError, TypeError, ValueError):
++                max_input_id = max(prompt_ids, default=0)
++                min_input_id = min(prompt_ids, default=0)
++            else:
++                min_input_id = 0
++                max_input_id = int(np.frombuffer(id_buf, dtype=_ULONG_DTYPE).max())
+ 
+             # NOTE: tokenizer.max_token_id is the tokenizer’s vocab size while
+             # self.model_config.get_vocab_size() is the model’s vocab size.
+--- a/vllm/v1/engine/detokenizer.py
++++ b/vllm/v1/engine/detokenizer.py
+@@ -12,6 +12,7 @@
+ from vllm.logger import init_logger
+ from vllm.tokenizers import TokenizerLike
+ from vllm.tokenizers.detokenizer_utils import (
++    INITIAL_INCREMENTAL_DETOKENIZATION_OFFSET,
+     convert_prompt_ids_to_tokens,
+     detokenize_incrementally,
+ )
+@@ -27,6 +28,10 @@
+ # Error string from https://github.com/huggingface/tokenizers/blob/909fdde2a4ffedd9295206f705eb612be2a91b12/tokenizers/src/tokenizer/mod.rs#L1042
+ INVALID_PREFIX_ERR_MSG = "Invalid prefix encountered"
+ 
++# Number of trailing prompt ids used to prime a DecodeStream -- the same
++# prefix context the slow path keeps in convert_prompt_ids_to_tokens().
++STREAM_PREFILL_LEN = INITIAL_INCREMENTAL_DETOKENIZATION_OFFSET + 2
++
+ 
+ class IncrementalDetokenizer:
+     def __init__(self):
+@@ -178,11 +183,20 @@
+         self.tokenizer: Tokenizer = tokenizer._tokenizer
+ 
+         # Use native prefill to prime the decode stream with prompt tokens.
++        # Only the tail of the prompt is needed: a step returns the suffix of
++        # decode(context + new ids) past decode(context), so a concatenative
++        # decoder makes everything before the last few ids cancel out.  Prime
++        # with the same number of trailing ids the slow path keeps as prefix
++        # context (convert_prompt_ids_to_tokens) rather than the whole prompt,
++        # which costs O(prompt) here and again on the first step.
+         # Look up DecodeStream on the module so backend patches (e.g. the
+         # fastokens shim that replaces ``tokenizers.decoders.DecodeStream``)
+         # are honored regardless of import order.
++        prefill_ids = request.prompt_token_ids
++        if prefill_ids is not None:
++            prefill_ids = prefill_ids[-STREAM_PREFILL_LEN:]
+         self.stream = tokenizers.decoders.DecodeStream(
+-            ids=request.prompt_token_ids,
++            ids=prefill_ids,
+             skip_special_tokens=self.skip_special_tokens,
+         )
+ 

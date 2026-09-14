@@ -1,0 +1,37 @@
+derive ftl_handle_adopt: only 1 state point(s) observed; need at least 4
+derive ftl_handle_alloc_rows_create: only 1 state point(s) observed; need at least 6
+derive ftl_handle_alloc_rows_validate: only 1 state point(s) observed; need at least 3
+derive ftl_handle_chain_ranges   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: chunks=1 x5, chunks=2 x5, chunks=4 x5, chunks=8 x5, chunks=16 x5
+  cost(chunks) = 39*chunks + 250        [all chunks]   blocks: 6 affine, 55 constant, 0 irregular (0.0% of cost)
+    per-chunks coefficient by function:
+                  39  <_ditto_ftl_core::handle_manager::ManagerCore>::ranges  [_ditto_ftl_core.abi3.so]
+    constant by function:
+                  54  _int_free  [libc.so.6]
+                  45  __GI___libc_malloc  [libc.so.6]
+                  40  <alloc::raw_vec::RawVecInner>::finish_grow  [_ditto_ftl_core.abi3.so]
+                  31  __free  [libc.so.6]
+                  24  <alloc::raw_vec::RawVec<(usize, usize)>>::grow_one  [_ditto_ftl_core.abi3.so]
+                  16  <perfmark::Region>::new  [_ditto_ftl_core.abi3.so]
+
+derive ftl_handle_reserve_landing   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=1,chunks=1,rehash=0 x5, handles=1,chunks=2,rehash=0 x5, handles=1,chunks=4,rehash=0 x5, handles=1,chunks=8,rehash=0 x5, handles=1,chunks=16,rehash=0 x5
+  cost(handles, chunks, rehash) = 0*handles + 378*chunks + 0*rehash + 1,581.6        [all handles, chunks, rehash]   blocks: 38 affine, 168 constant, 0 irregular (0.0% of cost)
+    note: handles is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: rehash is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    per-chunks coefficient by function:
+               192.5  <alloc::collections::btree::map::BTreeMap<usize, alloc::collections::b  [_ditto_ftl_core.abi3.so]
+                  63  <_ditto_ftl_core::handle_manager::ManagerCore>::take_chunks  [_ditto_ftl_core.abi3.so]
+                51.1  <alloc::collections::btree::node::Handle<alloc::collections::btree::no  [_ditto_ftl_core.abi3.so]
+                25.4  <alloc::collections::btree::map::Iter<usize, alloc::collections::btree  [_ditto_ftl_core.abi3.so]
+                  18  <alloc::collections::btree::node::Handle<alloc::collections::btree::no  [_ditto_ftl_core.abi3.so]
+                  10  <alloc::vec::Vec<usize> as alloc::vec::spec_from_iter_nested::SpecFrom  [_ditto_ftl_core.abi3.so]
+    constant by function:
+                 339  _int_free  [libc.so.6]
+               192.2  __free  [libc.so.6]
+                 172  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                 112  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                  86  <hashbrown::map::HashMap<u64, _ditto_ftl_core::handle_manager::Record,  [_ditto_ftl_core.abi3.so]
+                83.9  <alloc::collections::btree::node::BalancingContext<usize, alloc::colle  [_ditto_ftl_core.abi3.so]
+
+derive ftl_handle_stream_indices: only 1 state point(s) observed; need at least 3

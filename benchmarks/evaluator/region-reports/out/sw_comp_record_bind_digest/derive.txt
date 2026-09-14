@@ -1,0 +1,19 @@
+derive vllm_compaction_record_bind_digest   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: pages=1 x24, pages=2 x24, pages=4 x24, pages=8 x24, pages=16 x24, pages=32 x24
+  cost(pages) = 2,753.5*pages + 13,492.8        [all pages]   blocks: 260 affine, 1150 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-pages coefficient by function:
+             1,028.6  _PyEval_EvalFrameDefault  [python3.12]
+                 217  PyTuple_GetItem+?  [python3.12]
+                 207  _PyTuple_Resize+?  [python3.12]
+                 128  _PyObject_MakeTpCall  [python3.12]
+               113.8  PyDict_Contains+?  [python3.12]
+                 110  PyDict_SetItem+?  [python3.12]
+    constant by function:
+             3,218.5  _PyEval_EvalFrameDefault  [python3.12]
+             1,288.2  _PyTuple_Resize+?  [python3.12]
+               818.5  PyType_GenericNew+?  [python3.12]
+                 649  PyTuple_New+?  [python3.12]
+                 548  _PyObject_MakeTpCall  [python3.12]
+                 495  PyTuple_GetSlice  [python3.12]
+

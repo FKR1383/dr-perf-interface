@@ -1,0 +1,86 @@
+The rotary embedding application in `WanAttnProcessor` builds two full-size
+temporaries and then copies each into a strided half of the output.  Measured
+(out/videogen_more_shape, region `attn_rope`, 0.4% irregular):
+
+    attn_rope = 5,764.3*seq_len + 320,506        (inner_dim 64, i.e. 45 instructions
+                                                  per rotary'd element)
+
+against, in the same attention, `attn_qkv = 1,622.5*seq_len + 3,023.2*kv_len +
+405,871` and `attn_sdpa = 157*seq_len + 1.9*kv_len + 97,709`.  Not one of the
+top functions behind the 5,764 is arithmetic: they are
+`c10::function_ref<...>::callback` (3,064), `at::internal::serial_for_each`
+(1,264) and `at::DimCounter::increment` (352) -- TensorIterator's scalar
+fallback, forced by the stride-2 interleaved layout, plus one allocation and
+two whole extra passes for the temporaries.
+
+Writing the products straight into the two halves of the output with `out=`
+removes the temporaries and the two copies.  The expressions and their order
+are unchanged, so the result is bit-for-bit what the original produced
+(equiv_wan.py: latents and video identical at 5 grid points; equiv_more.py:
+the processor's output identical at 6 (seq_len, heads, head_dim) points).
+The closure is hoisted to module scope while we are here; nothing in it
+captured the call, and it was rebuilt on every attention of every layer of
+every forward.
+
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -65,6 +65,38 @@
+     return key_img, value_img
+ 
+ 
++def _apply_rotary_emb(
++    hidden_states: torch.Tensor,
++    freqs_cos: torch.Tensor,
++    freqs_sin: torch.Tensor,
++) -> torch.Tensor:
++    """Rotary embedding for Wan, applied to one of (query, key).
++
++    Wan interleaves the rotary pairs, so `x1`, `x2`, `cos` and `sin` all have
++    stride 2 in their last dimension and TensorIterator has to fall back to its
++    scalar DimCounter loop; the elementwise cost here is host-side iteration,
++    not arithmetic.  Writing the two results into `out[..., 0::2]` and
++    `out[..., 1::2]` builds a full-size contiguous temporary for each and then
++    copies it into the strided half -- two extra passes over the tensor and one
++    extra allocation per call, on every attention of every layer of every
++    forward.  Writing the same expressions straight into those halves with
++    `out=` removes them; the operations and their order are unchanged, so the
++    result is bit-for-bit what the original produced.
++
++    This used to be a closure inside `WanAttnProcessor.__call__`, rebuilt on
++    every attention call; nothing in it captures the call, so it lives here.
++    """
++    x = hidden_states.unflatten(-1, (-1, 2))
++    x1, x2 = x[..., 0], x[..., 1]
++    cos = freqs_cos[..., 0::2]
++    sin = freqs_sin[..., 1::2]
++    out = torch.empty_like(x)
++    torch.sub(x1 * cos, x2 * sin, out=out[..., 0])
++    torch.add(x1 * sin, x2 * cos, out=out[..., 1])
++    return out.flatten(-2).type_as(hidden_states)
++
++
+ class WanAttnProcessor:
+     _attention_backend = None
+     _parallel_config = None
+@@ -101,21 +133,8 @@
+             value = value.unflatten(2, (attn.heads, -1))
+ 
+             if rotary_emb is not None:
+-
+-                def apply_rotary_emb(
+-                    hidden_states: torch.Tensor,
+-                    freqs_cos: torch.Tensor,
+-                    freqs_sin: torch.Tensor,
+-                ):
+-                    x1, x2 = hidden_states.unflatten(-1, (-1, 2)).unbind(-1)
+-                    cos = freqs_cos[..., 0::2]
+-                    sin = freqs_sin[..., 1::2]
+-                    out = torch.empty_like(hidden_states)
+-                    out[..., 0::2] = x1 * cos - x2 * sin
+-                    out[..., 1::2] = x1 * sin + x2 * cos
+-                    return out.type_as(hidden_states)
+-
+-                query = apply_rotary_emb(query, *rotary_emb)
+-                key = apply_rotary_emb(key, *rotary_emb)
++                query = _apply_rotary_emb(query, *rotary_emb)
++                key = _apply_rotary_emb(key, *rotary_emb)

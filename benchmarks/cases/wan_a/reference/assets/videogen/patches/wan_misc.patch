@@ -1,0 +1,14 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -571,7 +571,10 @@
+             latents,
+         )
+ 
+-        mask = torch.ones(latents.shape, dtype=torch.float32, device=device)
++        # only read by the `expand_timesteps` branch of the denoising loop below;
++        # every other configuration allocates and fills a full-size latent tensor
++        # once per call and never looks at it.
++        mask = torch.ones(latents.shape, dtype=torch.float32, device=device) if self.config.expand_timesteps else None
+ 
+         # 6. Denoising loop
+         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order

@@ -1,0 +1,20 @@
+derive case_invalidate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: blocks=1,digests=64 x8, blocks=1,digests=128 x8, blocks=1,digests=256 x8, blocks=1,digests=512 x8, blocks=2,digests=64 x8, blocks=2,digests=128 x8, blocks=2,digests=256 x8, blocks=2,digests=512 x8, blocks=4,digests=64 x8, blocks=4,digests=128 x8, blocks=4,digests=256 x8, blocks=4,digests=512 x8, blocks=8,digests=64 x8, blocks=8,digests=128 x8, blocks=8,digests=256 x8, blocks=8,digests=512 x8
+  cost(blocks, digests) = 82,090.1*blocks + 0*digests + 20,904.3        [all blocks, digests]   blocks: 788 affine, 1923 constant, 1 irregular (0.1% of cost)
+    marker cost subtracted from the constant: 2,225.6 per call (calibrated)
+    irregular blocks, per call: 99.7 .. 1,080
+    per-blocks coefficient by function:
+            55,934.1  _PyEval_EvalFrameDefault  [python3.12]
+            11,604.7  PyDict_Clear+?  [python3.12]
+             3,119.2  _PyTuple_Resize+?  [python3.12]
+             2,763.4  PySequence_Tuple  [python3.12]
+             2,227.6  _PyUnicode_Equal  [python3.12]
+               509.6  PyObject_Free  [python3.12]
+    constant by function:
+             6,122.7  _PyEval_EvalFrameDefault  [python3.12]
+               797.9  _PyTuple_Resize+?  [python3.12]
+               734.7  PyEval_EvalCode+?  [python3.12]
+               704.1  PyObject_Free  [python3.12]
+               686.2  PyType_GenericNew  [python3.12]
+               662.5  PyObject_Malloc  [python3.12]
+

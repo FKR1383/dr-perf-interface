@@ -1,0 +1,25 @@
+derive process_outputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_outputs=1,num_active=1 x5, num_outputs=2,num_active=2 x5, num_outputs=3,num_active=3 x7, num_outputs=4,num_active=4 x7, num_outputs=5,num_active=5 x9, num_outputs=6,num_active=6 x7, num_outputs=7,num_active=7 x9, num_outputs=8,num_active=8 x4, num_outputs=8,num_active=12 x1, num_outputs=9,num_active=9 x4, num_outputs=10,num_active=10 x1, num_outputs=11,num_active=11 x3, num_outputs=12,num_active=12 x3
+  cost(num_outputs, num_active) = 15,470.6*num_outputs + 15,294.7*num_active + 10,620        [all num_outputs, num_active]   blocks: 1583 affine, 1688 constant, 257 irregular (34.5% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 16,224.8 .. 718,659
+    per-num_outputs coefficient by function:
+            11,080.4  _PyEval_EvalFrameDefault  [python3.12]
+            -3,928.8  _int_malloc  [libc.so.6]
+             2,029.9  PyDict_SetItem  [python3.12]
+             1,830.6  PyEval_EvalCode+?  [python3.12]
+    per-num_active coefficient by function:
+             4,031.7  _int_malloc  [libc.so.6]
+             1,196.8  _PyEval_EvalFrameDefault  [python3.12]
+             1,079.4  __realloc  [libc.so.6]
+             1,065.6  _PyOS_URandom+?  [python3.12]
+    constant by function:
+             1,059.4  PyEval_EvalCode+?  [python3.12]
+               641.3  _PyObject_Call_Prepend  [python3.12]
+               533.4  PyType_GenericNew+?  [python3.12]
+                 457  _PyEval_EvalFrameDefault  [python3.12]
+    irregular by function:
+            26,922.6  _$LT$core..iter..adapters..flatten..FlatMap$LT$I$C$U$C$F$GT$$u20$as$u2  [tokenizers.abi3.so]
+            13,796.1  _int_free  [libc.so.6]
+             9,141.1  __GI___libc_malloc  [libc.so.6]
+

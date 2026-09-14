@@ -1,0 +1,57 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -658,23 +658,44 @@
+                         # Preempt the lowest-priority request.
+                         with perfmark.region("sched_preempt", running=len(self.running), preempted=len(preempted_reqs), num_new_tokens=num_new_tokens):
+                             if self.policy == SchedulingPolicy.PRIORITY:
+-                                preempted_req = max(
+-                                    self.running,
+-                                    key=lambda r: (r.priority, r.arrival_time),
+-                                )
+-                                # Record the index of the preemption victim to
+-                                # maintain accurate loop state.
+-                                victim_index = self.running.index(preempted_req)
+-                                del self.running[victim_index]
++                                # One pass for the victim and its index: `max`
++                                # with a tuple key built a 2-tuple per running
++                                # request and was followed by `.index()`.  A
++                                # strict `>` keeps `max`'s tie-break (the first
++                                # maximal element wins).
++                                running = self.running
++                                victim_index = 0
++                                preempted_req = running[0]
++                                victim_priority = preempted_req.priority
++                                victim_arrival = preempted_req.arrival_time
++                                for i in range(1, len(running)):
++                                    candidate = running[i]
++                                    candidate_priority = candidate.priority
++                                    if candidate_priority > victim_priority or (
++                                        candidate_priority == victim_priority
++                                        and candidate.arrival_time > victim_arrival
++                                    ):
++                                        victim_index = i
++                                        preempted_req = candidate
++                                        victim_priority = candidate_priority
++                                        victim_arrival = candidate.arrival_time
++                                del running[victim_index]
+                                 # Decrement the loop cursor if the removed request
+                                 # preceded the current iteration, preventing the
+                                 # silent omission of the subsequent request.
+                                 if victim_index < req_index:
+                                     req_index -= 1
+ 
+-                                if preempted_req in scheduled_running_reqs:
++                                # One pass for `in` + `.remove()`; Request has no
++                                # __eq__, so `is` is what both were testing.
++                                scheduled_index = -1
++                                for i, scheduled_req in enumerate(scheduled_running_reqs):
++                                    if scheduled_req is preempted_req:
++                                        scheduled_index = i
++                                        break
++                                if scheduled_index >= 0:
+                                     preempted_req_id = preempted_req.request_id
+-                                    scheduled_running_reqs.remove(preempted_req)
++                                    del scheduled_running_reqs[scheduled_index]
+                                     restored = num_scheduled_tokens.pop(preempted_req_id)
+                                     token_budget += restored
+                                     input_budget += restored + draft_slots

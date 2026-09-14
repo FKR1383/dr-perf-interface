@@ -1,0 +1,14 @@
+derive case_invalidate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: blocks=4,digests=32,scan=128 x8, blocks=4,digests=64,scan=256 x8, blocks=4,digests=128,scan=512 x8, blocks=4,digests=256,scan=1,024 x8, blocks=4,digests=512,scan=2,048 x8, blocks=4,digests=1,024,scan=4,096 x8
+  cost(blocks, digests, scan) = 0*blocks + 0*digests + 0*scan + 459,603.9        [all blocks, digests, scan]   blocks: 0 affine, 2691 constant, 0 irregular (0.0% of cost)
+    note: blocks is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: scan is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 2,225.2 per call (calibrated)
+    constant by function:
+           310,261.2  _PyEval_EvalFrameDefault  [python3.12]
+              63,992  PyDict_Clear+?  [python3.12]
+            17,464.1  _PyTuple_Resize+?  [python3.12]
+              15,162  PySequence_Tuple  [python3.12]
+            12,173.1  _PyUnicode_Equal  [python3.12]
+             2,753.4  PyObject_Free  [python3.12]
+

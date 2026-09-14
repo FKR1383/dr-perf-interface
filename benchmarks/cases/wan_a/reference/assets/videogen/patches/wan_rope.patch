@@ -1,0 +1,35 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -392,11 +392,22 @@
+         self.register_buffer("freqs_cos", torch.cat(freqs_cos, dim=1), persistent=False)
+         self.register_buffer("freqs_sin", torch.cat(freqs_sin, dim=1), persistent=False)
+ 
++        # The (cos, sin) tables depend only on the latent shape and on the
++        # buffers' device/dtype, never on the values in `hidden_states`, so the
++        # whole forward below is recomputed identically on every denoising step
++        # and every classifier-free-guidance branch.  Cache the last shape.
++        self._freqs_cache_key = None
++        self._freqs_cache = None
++
+     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+         batch_size, num_channels, num_frames, height, width = hidden_states.shape
+         p_t, p_h, p_w = self.patch_size
+         ppf, pph, ppw = num_frames // p_t, height // p_h, width // p_w
+ 
++        cache_key = (num_frames, height, width, self.freqs_cos.device, self.freqs_cos.dtype)
++        if self._freqs_cache_key == cache_key:
++            return self._freqs_cache
++
+         split_sizes = [self.t_dim, self.h_dim, self.w_dim]
+ 
+         freqs_cos = self.freqs_cos.split(split_sizes, dim=1)
+@@ -413,6 +424,9 @@
+         freqs_cos = torch.cat([freqs_cos_f, freqs_cos_h, freqs_cos_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
+         freqs_sin = torch.cat([freqs_sin_f, freqs_sin_h, freqs_sin_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
+ 
++        self._freqs_cache_key = cache_key
++        self._freqs_cache = (freqs_cos, freqs_sin)
++
+         return freqs_cos, freqs_sin
+ 
+ 

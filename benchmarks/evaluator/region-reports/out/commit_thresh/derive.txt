@@ -1,0 +1,36 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=8,resident=0,rehash=0 x22, requests=8,resident=0,rehash=16 x2, requests=8,resident=0,rehash=40 x2, requests=8,resident=0,rehash=48 x2, requests=8,resident=0,rehash=96 x2, requests=8,resident=0,rehash=104 x2, requests=8,resident=1,rehash=0 x28, requests=8,resident=1,rehash=208 x2, requests=8,resident=1,rehash=216 x2, requests=8,resident=2,rehash=0 x26, requests=32,resident=2,rehash=0 x4, requests=32,resident=2,rehash=392 x2, requests=32,resident=3,rehash=0 x30, requests=32,resident=3,rehash=840 x2, requests=32,resident=4,rehash=0 x32, requests=32,resident=5,rehash=0 x18, requests=32,resident=5,rehash=1,736 x2
+  cost(requests, resident, rehash) = 999.6*requests + 638.5*resident + 0.552*rehash + 4,230.8        [all requests, resident, rehash]   blocks: 215 affine, 422 constant, 72 irregular (65.0% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 8,410 .. 98,678.9
+    per-requests coefficient by function:
+               370.9  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               101.4  __GI___libc_malloc  [libc.so.6]
+                85.8  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+                79.6  _int_malloc  [libc.so.6]
+                  66  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                48.5  <alloc::collections::btree::node::Handle<alloc::collections::btree::no  [_ditto_ftl_core.abi3.so]
+    per-resident coefficient by function:
+               324.4  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+               126.8  _int_malloc  [libc.so.6]
+                83.7  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                  63  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+                53.9  __memcmp_avx2_movbe  [libc.so.6]
+               -13.3  alloc_perturb  [libc.so.6]
+    per-rehash coefficient by function:
+               0.281  <hashbrown::raw::RawTable<(i64, (alloc::string::String, usize))>>::rem  [_ditto_ftl_core.abi3.so]
+               0.208  _int_malloc  [libc.so.6]
+               0.192  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+              -0.129  unlink_chunk  [libc.so.6]
+    constant by function:
+             1,177.8  _int_malloc  [libc.so.6]
+               468.5  _int_free  [libc.so.6]
+               403.5  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+               227.7  _int_realloc  [libc.so.6]
+                 198  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+               191.5  __free  [libc.so.6]
+    irregular by function:
+            15,444.5  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+            12,388.8  __memcmp_avx2_movbe  [libc.so.6]
+             4,995.6  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+

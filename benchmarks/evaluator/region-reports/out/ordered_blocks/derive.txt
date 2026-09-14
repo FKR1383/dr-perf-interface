@@ -1,0 +1,58 @@
+derive case_ordered_blocks   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: nblocks=4,square=16 x20, nblocks=8,square=64 x20, nblocks=12,square=144 x20, nblocks=16,square=256 x20, nblocks=24,square=576 x20, nblocks=32,square=1,024 x20, nblocks=48,square=2,304 x20, nblocks=64,square=4,096 x20
+  cost(nblocks, square) = 2,049.7*nblocks + 416.9*square + 4,942.8        [all nblocks, square]   blocks: 534 affine, 973 constant, 132 irregular (16.1% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,197.9 .. 365,455.3
+    per-nblocks coefficient by function:
+               465.6  _PyEval_EvalFrameDefault  [python3.12]
+                 111  PyDict_Update+?  [python3.12]
+                98.5  <alloc::collections::btree::map::IntoIter<usize, i64>>::dying_next  [_ditto_ftl_core.abi3.so]
+                95.4  PyDict_SetItem  [python3.12]
+                83.7  PyObject_Malloc  [python3.12]
+                79.5  PyObject_Free  [python3.12]
+    per-square coefficient by function:
+               127.4  PyDict_SetItem  [python3.12]
+                  55  PyDict_Contains+?  [python3.12]
+                45.2  <alloc::collections::btree::map::IntoIter<usize, i64>>::dying_next  [_ditto_ftl_core.abi3.so]
+                  26  PyLong_FromLong  [python3.12]
+                  25  <alloc::collections::btree::map::BTreeMap<usize, i64> as pyo3::convers  [_ditto_ftl_core.abi3.so]
+                  21  PyLong_FromUnsignedLongLong  [python3.12]
+    constant by function:
+             1,672.9  _PyEval_EvalFrameDefault  [python3.12]
+               427.4  _int_malloc  [libc.so.6]
+              -397.5  PyDict_SetItem  [python3.12]
+               254.7  _PyTuple_Resize+?  [python3.12]
+              -213.7  PyObject_Free  [python3.12]
+               210.6  <alloc::collections::btree::map::BTreeMap<_, _, _> as core::clone::Clo  [_ditto_ftl_core.abi3.so]
+    irregular by function:
+            18,729.5  PyDict_SetDefault+?  [python3.12]
+               9,860  PyDict_SetItem  [python3.12]
+             9,333.7  _int_malloc  [libc.so.6]
+
+derive case_ordered_once   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: nblocks=4,square=16 x20, nblocks=8,square=64 x20, nblocks=12,square=144 x20, nblocks=16,square=256 x20, nblocks=24,square=576 x20, nblocks=32,square=1,024 x20, nblocks=48,square=2,304 x20, nblocks=64,square=4,096 x20
+  cost(nblocks, square) = 1,499.7*nblocks + -0.196*square + 6,363.1        [all nblocks, square]   blocks: 286 affine, 1151 constant, 6 irregular (1.3% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 88 .. 1,212
+    per-nblocks coefficient by function:
+               410.9  _PyEval_EvalFrameDefault  [python3.12]
+               142.6  PyDict_SetItem  [python3.12]
+               120.5  PyDict_Contains+?  [python3.12]
+                  72  _PyTuple_Resize+?  [python3.12]
+                  64  _PyObject_MakeTpCall  [python3.12]
+                  55  PyTuple_New+?  [python3.12]
+    per-square coefficient by function:
+               -0.12  PyDict_SetItem  [python3.12]
+             -0.0647  PyDict_SetDefault+?  [python3.12]
+              0.0591  _int_malloc  [libc.so.6]
+             -0.0437  _PyTuple_Resize+?  [python3.12]
+              0.0362  _int_free_merge_chunk  [libc.so.6]
+              -0.025  _int_free  [libc.so.6]
+    constant by function:
+             1,314.5  _PyEval_EvalFrameDefault  [python3.12]
+               398.7  PyObject_Free  [python3.12]
+               343.3  PyObject_Malloc  [python3.12]
+               254.7  _PyTuple_Resize+?  [python3.12]
+               204.7  <alloc::collections::btree::map::IntoIter<usize, i64>>::dying_next  [_ditto_ftl_core.abi3.so]
+               195.9  _int_malloc  [libc.so.6]
+

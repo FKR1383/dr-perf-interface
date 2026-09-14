@@ -1,0 +1,20 @@
+derive vllm_compaction_candidate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: blocks=1 x24, blocks=2 x24, blocks=4 x24, blocks=8 x24, blocks=16 x24, blocks=32 x24
+  cost(blocks) = 17,507.8*blocks + 41,193.4        [all blocks]   blocks: 627 affine, 1659 constant, 6 irregular (0.3% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 50 .. 2,672
+    per-blocks coefficient by function:
+             8,602.1  _PyEval_EvalFrameDefault  [python3.12]
+               1,126  PyException_SetCause+?  [python3.12]
+               748.5  _PyTuple_Resize+?  [python3.12]
+                 740  PyObject_RichCompareBool  [python3.12]
+               735.7  PyDict_Contains+?  [python3.12]
+                 699  PyTuple_GetItem  [python3.12]
+    constant by function:
+             9,507.3  _PyEval_EvalFrameDefault  [python3.12]
+             2,569.2  _PyTuple_Resize+?  [python3.12]
+             1,839.2  PyDict_Contains+?  [python3.12]
+             1,569.8  PyObject_Free  [python3.12]
+             1,455.7  PyObject_Malloc  [python3.12]
+               1,358  PyException_SetCause+?  [python3.12]
+

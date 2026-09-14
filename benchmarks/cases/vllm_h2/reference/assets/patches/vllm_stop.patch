@@ -1,0 +1,104 @@
+diff -u -r '--exclude=*.lp.orig' ./vllm/v1/sample/metadata.py /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/sample/metadata.py
+--- ./vllm/v1/sample/metadata.py	2026-09-07 04:54:24.041471822 +0200
++++ /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/sample/metadata.py	2026-09-07 04:54:24.078473141 +0200
+@@ -53,3 +53,8 @@
+     # When non-None, use ``holder.has_tracked_requests()`` to see if this batch applies
+     # thinking-token-budget logits (holder may exist with an empty tracking set).
+     thinking_budget_state_holder: ThinkingBudgetStateHolder | None = None
++
++    # Row indices (into the sampled dimension) of the requests that asked for
++    # sample logprobs, paired with the number of rows the mapping was built
++    # for.  None means every row wants them, or the mapping is unavailable.
++    logprobs_rows: tuple[int, torch.Tensor] | None = None
+diff -u -r '--exclude=*.lp.orig' ./vllm/v1/sample/sampler.py /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/sample/sampler.py
+--- ./vllm/v1/sample/sampler.py	2026-09-07 04:54:24.044471929 +0200
++++ /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/sample/sampler.py	2026-09-07 04:54:24.079473177 +0200
+@@ -127,9 +127,18 @@
+             )
+         else:
+             # Gather the logprobs and ranks of the topk and sampled token.
+-            logprobs_tensors = self.gather_logprobs(
+-                raw_logprobs, num_logprobs, token_ids=sampled
+-            )
++            # `max_num_logprobs` is a batch-wide maximum, so without the
++            # restriction below every row pays the vocabulary-wide top-k as
++            # soon as one request asks for logprobs.
++            rows = sampling_metadata.logprobs_rows
++            if rows is not None and rows[0] == raw_logprobs.shape[0]:
++                logprobs_tensors = self._gather_logprobs_rows(
++                    raw_logprobs, num_logprobs, sampled, rows[1]
++                )
++            else:
++                logprobs_tensors = self.gather_logprobs(
++                    raw_logprobs, num_logprobs, token_ids=sampled
++                )
+ 
+         # If we have both num_logprobs and logprob_token_ids, prefer
+         # logprob_token_ids as it's more specific
+@@ -306,6 +315,32 @@
+     def compute_logprobs(logits: torch.Tensor) -> torch.Tensor:
+         return logits.log_softmax(dim=-1, dtype=torch.float32)
+ 
++    def _gather_logprobs_rows(
++        self,
++        logprobs: torch.Tensor,
++        num_logprobs: int,
++        token_ids: torch.Tensor,
++        rows: torch.Tensor,
++    ) -> LogprobsTensors:
++        """`gather_logprobs` for `rows` only, padded back to full height.
++
++        The rows no request asked about are left at zero; nothing reads them
++        (`Scheduler.update_from_output` slices per request and only for a
++        request whose `sampling_params.num_logprobs` is set).
++        """
++        sub = self.gather_logprobs(
++            logprobs[rows], num_logprobs, token_ids=token_ids[rows]
++        )
++        n = logprobs.shape[0]
++        width = sub.logprob_token_ids.shape[1]
++        ids = logprobs.new_zeros((n, width), dtype=sub.logprob_token_ids.dtype)
++        lps = logprobs.new_zeros((n, width), dtype=sub.logprobs.dtype)
++        ranks = logprobs.new_zeros((n,), dtype=sub.selected_token_ranks.dtype)
++        ids.index_copy_(0, rows, sub.logprob_token_ids)
++        lps.index_copy_(0, rows, sub.logprobs)
++        ranks.index_copy_(0, rows, sub.selected_token_ranks)
++        return LogprobsTensors(ids, lps, ranks)
++
+     @staticmethod
+     def gather_logprobs(
+         logprobs: torch.Tensor,
+diff -u -r '--exclude=*.lp.orig' ./vllm/v1/worker/gpu_input_batch.py /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/worker/gpu_input_batch.py
+--- ./vllm/v1/worker/gpu_input_batch.py	2026-09-07 04:54:24.047472036 +0200
++++ /tmp/claude-1013/-home-ubuntu-drperf-cases/ebbc7ca6-f369-48e0-8f04-fedbbb40eef3/scratchpad/after_stop/vllm/v1/worker/gpu_input_batch.py	2026-09-07 04:54:24.078473141 +0200
+@@ -940,6 +940,22 @@
+                     req_index = self.req_id_to_index[req_id]
+                     logprob_token_ids_by_index[req_index] = token_ids
+ 
++        # Row indices of the requests that asked for sample logprobs.  When
++        # only part of the batch asked, `Sampler` keeps the vocabulary-wide
++        # top-k off the rows nothing will read.
++        logprobs_rows: tuple[int, torch.Tensor] | None = None
++        if self.num_logprobs and len(self.num_logprobs) < num_reqs:
++            rows = sorted(
++                self.req_id_to_index[req_id]
++                for req_id in self.num_logprobs
++                if req_id in self.req_id_to_index
++            )
++            if rows and len(rows) < num_reqs:
++                logprobs_rows = (
++                    num_reqs,
++                    torch.tensor(rows, dtype=torch.int64, device=self.device),
++                )
++
+         return SamplingMetadata(
+             temperature=temperature,
+             all_greedy=self.all_greedy,
+@@ -948,6 +964,7 @@
+             top_k=None if self.no_top_k else self.top_k[:num_reqs],
+             generators=self.generators,
+             max_num_logprobs=self.max_num_logprobs,
++            logprobs_rows=logprobs_rows,
+             logprob_token_ids=logprob_token_ids_by_index,
+             prompt_token_ids=prompt_token_ids,
+             frequency_penalties=self.frequency_penalties[:num_reqs],

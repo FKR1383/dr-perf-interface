@@ -1,0 +1,24 @@
+derive np_outer   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: outer=1 x10, outer=2 x10, outer=4 x10, outer=8 x10
+  cost(outer) = 20,212.9*outer + 28,767.6        [all outer]   blocks: 63 affine, 2050 constant, 47 irregular (45.3% of cost)
+    marker cost subtracted from the constant: 2,242.8 per call (calibrated)
+    irregular blocks, per call: 29,821.2 .. 195,939
+    per-outer coefficient by function:
+            12,592.8  _PyEval_EvalFrameDefault  [python3.12]
+             5,604.8  PyLong_FromLongLong+?  [python3.12]
+               1,300  PyLong_FromLong  [python3.12]
+               144.4  PyObject_Malloc  [python3.12]
+               118.7  __memcpy_avx_unaligned_erms  [libc.so.6]
+               104.7  PyMem_Realloc  [python3.12]
+    constant by function:
+             9,122.8  _PyEval_EvalFrameDefault  [python3.12]
+             1,123.9  PyMem_Realloc  [python3.12]
+               961.2  PyMem_Free  [python3.12]
+               890.3  PyList_Append+?  [python3.12]
+               885.3  PyDict_Contains+?  [python3.12]
+                 773  _PyTuple_Resize+?  [python3.12]
+    irregular by function:
+            27,863.6  PyObject_Free  [python3.12]
+            21,078.3  PyObject_Malloc  [python3.12]
+              11,905  _PyEval_EvalFrameDefault  [python3.12]
+

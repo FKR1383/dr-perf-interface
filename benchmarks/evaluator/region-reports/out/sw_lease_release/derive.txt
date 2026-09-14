@@ -1,0 +1,20 @@
+derive vllm_lease_release   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: entries=2 x32, entries=4 x32, entries=8 x32, entries=16 x32, entries=32 x32, entries=64 x32
+  cost(entries) = 949.4*entries + 3,478.6        [all entries]   blocks: 270 affine, 721 constant, 1 irregular (0.6% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 0 .. 637
+    per-entries coefficient by function:
+               437.6  _PyEval_EvalFrameDefault  [python3.12]
+                89.6  _PyDictView_New+?  [python3.12]
+                  66  PyDict_Contains+?  [python3.12]
+                50.5  PySet_Contains+?  [python3.12]
+                43.3  _PyTuple_Resize+?  [python3.12]
+                30.5  PySet_Discard+?  [python3.12]
+    constant by function:
+             1,259.6  _PyEval_EvalFrameDefault  [python3.12]
+               495.6  _PyDictView_New+?  [python3.12]
+               392.2  PyObject_Free  [python3.12]
+               220.3  _PyObject_GC_New  [python3.12]
+               219.5  PyObject_Malloc  [python3.12]
+               203.6  PyDict_Contains+?  [python3.12]
+

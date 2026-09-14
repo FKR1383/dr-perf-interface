@@ -1,0 +1,19 @@
+{
+  "case": "wan_c",
+  "factors": [
+    {
+      "id": "f1",
+      "criterion": "prompt length / projected tensor sizes"
+    },
+    {
+      "id": "f2",
+      "criterion": "layer count times steps times CFG passes"
+    },
+    {
+      "id": "f3",
+      "criterion": "cross-attention key/value projection repeats despite unchanged prompt"
+    }
+  ],
+  "grading": "Semantic review against the record and code, not keyword matching. Equivalent expressions and well-supported alternative decompositions count. Historical coefficients are not acceptance thresholds.",
+  "scope": "Observed historical workloads, not an all-input guarantee. Read shared follow-up records for measurement corrections and GPU limits."
+}

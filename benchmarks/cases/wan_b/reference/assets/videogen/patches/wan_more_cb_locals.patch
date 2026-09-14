@@ -1,0 +1,25 @@
+`callback_on_step_end` builds its kwargs with one `locals()` call per requested
+tensor name, per denoising step; each call materialises the whole ~45-entry
+frame dictionary of `WanPipeline.__call__`.  Measured (out/videogen_more_cb,
+region `callback_step`, 5.4% irregular):
+
+    callback_step = 14,019.5*ninputs + 0.00755*numel + 10,873
+
+with the per-name coefficient made of PyDict_Contains (2,436), PyDict_SetItem
+(2,044), PyDict_Update (1,850), PyObject_SetItem (1,469) -- the frame snapshot,
+not the values.  The diffusers default is three names, so 42k instructions per
+step to read three variables that are in scope.  Hoisting the call leaves one
+snapshot per step; the dict that reaches the callback is the same.
+
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -636,9 +636,12 @@
+                 if callback_on_step_end is not None:
++                    # `locals()` materialises the whole frame dict; it used to be
++                    # called once per requested name, per step.
++                    step_locals = locals()
+                     callback_kwargs = {}
+                     for k in callback_on_step_end_tensor_inputs:
+-                        callback_kwargs[k] = locals()[k]
++                        callback_kwargs[k] = step_locals[k]
+                     callback_outputs = callback_on_step_end(self, i, t, callback_kwargs)

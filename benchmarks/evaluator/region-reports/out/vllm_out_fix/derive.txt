@@ -1,0 +1,63 @@
+derive make_request_output   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: kind=0 x370, kind=1 x370, kind=2 x13
+  cost(kind) = 331.9*kind + 24,748.3        [all kind]   blocks: 8 affine, 1867 constant, 2 irregular (4.1% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 868.4 .. 1,489.2
+    OpenMP runtime waiting, per call (excluded): 67,204.7 .. 106,932.2
+    per-kind coefficient by function:
+               124.4  _PyEval_EvalFrameDefault  [python3.12]
+                96.5  PyDict_Contains+?  [python3.12]
+                38.9  _PyDict_GetItem_KnownHash  [python3.12]
+                37.1  _PyType_Lookup  [python3.12]
+                  35  _PyDict_DelItem_KnownHash+?  [python3.12]
+    constant by function:
+             7,975.8  _PyEval_EvalFrameDefault  [python3.12]
+               2,064  PyEval_EvalCode+?  [python3.12]
+               2,027  PyDict_SetItem  [python3.12]
+             1,049.7  _PyDict_DelItem_KnownHash+?  [python3.12]
+             1,038.8  _PyObject_Call_Prepend  [python3.12]
+                 878  PyDict_Next  [python3.12]
+               868.2  PyDict_Contains+?  [python3.12]
+               861.1  _PyErr_ChainStackItem+?  [python3.12]
+    irregular by function:
+               845.7  PyDict_Contains+?  [python3.12]
+               229.7  _PyType_Lookup  [python3.12]
+
+derive process_outputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_outputs=1,num_active=1 x11, num_outputs=2,num_active=2 x15, num_outputs=3,num_active=3 x24, num_outputs=4,num_active=4 x21, num_outputs=5,num_active=5 x27, num_outputs=6,num_active=6 x21, num_outputs=7,num_active=7 x27, num_outputs=8,num_active=8 x12, num_outputs=8,num_active=12 x3, num_outputs=9,num_active=9 x12, num_outputs=10,num_active=10 x3, num_outputs=11,num_active=11 x9, num_outputs=12,num_active=12 x9
+  cost(num_outputs, num_active) = 21,882*num_outputs + 12,977.6*num_active + 11,937.3        [all num_outputs, num_active]   blocks: 1655 affine, 2239 constant, 227 irregular (31.8% of cost)
+    marker cost subtracted from the constant: 6,683.1 per call (calibrated)
+    irregular blocks, per call: 16,896.6 .. 716,984.9
+    OpenMP runtime waiting, per call (excluded): 398,714.6 .. 3,866,809.3
+    per-num_outputs coefficient by function:
+            11,921.1  _PyEval_EvalFrameDefault  [python3.12]
+            -3,693.3  _int_malloc  [libc.so.6]
+             1,700.1  PyEval_EvalCode+?  [python3.12]
+             1,510.1  PyDict_SetItem  [python3.12]
+             1,353.4  _PyErr_ChainStackItem+?  [python3.12]
+            -1,020.5  __realloc  [libc.so.6]
+               811.5  PyType_GenericNew+?  [python3.12]
+              -802.8  _int_free_merge_chunk  [libc.so.6]
+    per-num_active coefficient by function:
+             3,807.7  _int_malloc  [libc.so.6]
+             1,079.7  __realloc  [libc.so.6]
+               829.7  _int_free_merge_chunk  [libc.so.6]
+               717.3  _int_realloc  [libc.so.6]
+               694.6  __memcpy_avx_unaligned_erms  [libc.so.6]
+               514.3  _PyEval_EvalFrameDefault  [python3.12]
+               476.9  alloc::raw_vec::RawVecInner$LT$A$GT$::reserve::do_reserve_and_handle  [tokenizers.abi3.so]
+               456.2  __GI___libc_malloc  [libc.so.6]
+    constant by function:
+               1,610  _PyEval_EvalFrameDefault  [python3.12]
+             1,182.1  PyEval_EvalCode+?  [python3.12]
+             1,150.8  PyType_GenericNew+?  [python3.12]
+                 828  _PyErr_CheckSignalsTstate+?  [python3.12]
+               786.4  _PyObject_Call_Prepend  [python3.12]
+               749.7  PyCMethod_New+?  [python3.12]
+               629.2  _PyArg_ParseTupleAndKeywords_SizeT  [python3.12]
+               528.1  _PyType_Lookup  [python3.12]
+    irregular by function:
+              26,787  _$LT$core..iter..adapters..flatten..FlatMap$LT$I$C$U$C$F$GT$$u20$as$u2  [tokenizers.abi3.so]
+            13,743.7  _int_free  [libc.so.6]
+             9,204.2  __GI___libc_malloc  [libc.so.6]
+

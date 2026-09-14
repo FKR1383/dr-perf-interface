@@ -1,0 +1,19 @@
+derive vllm_store_wait_conflicts   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: completions=1 x30, completions=2 x30, completions=3 x30, completions=4 x30, completions=6 x30, completions=8 x30
+  cost(completions) = 606.4*completions + 1,681        [all completions]   blocks: 61 affine, 218 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 571.9 per call (calibrated)
+    per-completions coefficient by function:
+               480.2  _PyEval_EvalFrameDefault  [python3.12]
+                  47  PyFrozenSet_New+?  [python3.12]
+                26.9  _PyErr_ChainStackItem+?  [python3.12]
+                  15  _PyLong_New+?  [python3.12]
+                14.4  PyInterpreterState_Get+?  [python3.12]
+                  14  PyObject_Hash  [python3.12]
+    constant by function:
+               1,242  _PyEval_EvalFrameDefault  [python3.12]
+               207.9  _PyErr_ChainStackItem+?  [python3.12]
+               117.2  PyObject_Free  [python3.12]
+                88.8  _PyLong_FromByteArray+?  [python3.12]
+                  72  PyCMethod_New+?  [python3.12]
+                  70  PyTuple_New+?  [python3.12]
+

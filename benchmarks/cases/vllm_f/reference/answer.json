@@ -1,0 +1,19 @@
+{
+  "case": "vllm_f",
+  "factors": [
+    {
+      "id": "f1",
+      "criterion": "new/full/cached block counts"
+    },
+    {
+      "id": "f2",
+      "criterion": "resident KV conservation across allocation and release"
+    },
+    {
+      "id": "f3",
+      "criterion": "distinguish a no-op hash call from one processing new blocks"
+    }
+  ],
+  "grading": "Semantic review against the record and code, not keyword matching. Equivalent expressions and well-supported alternative decompositions count. Historical coefficients are not acceptance thresholds.",
+  "scope": "Observed historical workloads, not an all-input guarantee. Read shared follow-up records for measurement corrections and GPU limits."
+}

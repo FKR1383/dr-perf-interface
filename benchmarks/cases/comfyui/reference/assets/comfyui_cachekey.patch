@@ -1,0 +1,100 @@
+ComfyUI: make cache-key computation linear in the size of the workflow.
+
+CacheKeySetInputSignature.get_node_signature built a node's key from a flat list of
+every ancestor's immediate signature and hashed the whole list, for every node. That
+is O(nodes * depth), paid on every prompt execution before any work begins. A straight
+800-node chain spent 8.3 s there; 800 nodes with no depth took 18 ms.
+
+Signatures are now built bottom-up and memoised: a node's key is its own inputs plus
+the already-computed signature of each node it links to, shared by reference. The walk
+is iterative so deep workflows cannot exhaust the stack, and the key is assembled
+already-hashable because to_hashable does not recognise a frozenset and would other-
+wise reduce every parent signature to an Unhashable sentinel.
+
+Keys change shape. The caches are in-memory and rebuilt per prompt, so nothing
+persistent depends on the old form. What must not change is which nodes are treated as
+equal and which are invalidated when one changes; verify_comfy.py checks both.
+
+  chain, 800 nodes:   8,312 ms -> 4.42 ms
+  diamond, 800 nodes: 10,598 ms -> 4.66 ms
+  wide, 800 nodes:       18.2 ms -> 4.32 ms
+  drperf: 318.1*n_sq -> 0.351*n_sq
+
+--- a/comfy_execution/caching.py
++++ b/comfy_execution/caching.py
+@@ -84,6 +84,9 @@
+         super().__init__(dynprompt, node_ids, is_changed_cache)
+         self.dynprompt = dynprompt
+         self.is_changed_cache = is_changed_cache
++        # One signature per node for the life of this key set; shared by reference so a
++        # deep chain costs the same per node as a shallow one.
++        self._signature_cache = {}
+ 
+     def include_node_id_in_input(self) -> bool:
+         return False
+@@ -99,12 +102,59 @@
+             self.subcache_keys[node_id] = (node_id, node["class_type"])
+ 
+     async def get_node_signature(self, dynprompt, node_id):
+-        signature = []
+-        ancestors, order_mapping = self.get_ordered_ancestry(dynprompt, node_id)
+-        signature.append(await self.get_immediate_node_signature(dynprompt, node_id, order_mapping))
+-        for ancestor_id in ancestors:
+-            signature.append(await self.get_immediate_node_signature(dynprompt, ancestor_id, order_mapping))
+-        return to_hashable(signature)
++        # Built bottom-up and memoised. The previous form walked every ancestor of every
++        # node and rehashed the whole list each time, which is quadratic in the depth of
++        # the workflow; a node's signature is instead its own inputs plus the signatures
++        # of the nodes it links to, each computed once and shared by reference.
++        cached = self._signature_cache.get(node_id)
++        if cached is not None:
++            return cached
++
++        # Iterative post-order walk, so a deep workflow cannot exhaust the stack.
++        stack = [(node_id, False)]
++        while stack:
++            current, expanded = stack.pop()
++            if current in self._signature_cache:
++                continue
++            if not dynprompt.has_node(current):
++                self._signature_cache[current] = to_hashable([float("NaN")])
++                continue
++            if not expanded:
++                stack.append((current, True))
++                inputs = dynprompt.get_node(current)["inputs"]
++                for key in sorted(inputs.keys(), reverse=True):
++                    if is_link(inputs[key]):
++                        parent = inputs[key][0]
++                        if parent not in self._signature_cache:
++                            stack.append((parent, False))
++                continue
++            self._signature_cache[current] = await self.get_linked_node_signature(
++                dynprompt, current)
++        return self._signature_cache[node_id]
++
++    async def get_linked_node_signature(self, dynprompt, node_id):
++        """This node's own inputs, with each link carrying that parent's signature.
++
++        The result is assembled already-hashable rather than handed to `to_hashable`,
++        because a parent signature is a frozenset and `to_hashable` does not recognise
++        one: it would fall through to `Unhashable` and make every key distinct.
++        """
++        node = dynprompt.get_node(node_id)
++        class_type = node["class_type"]
++        class_def = nodes.NODE_CLASS_MAPPINGS[class_type]
++        items = [to_hashable(class_type), to_hashable(await self.is_changed_cache.get(node_id))]
++        if self.include_node_id_in_input() or (hasattr(class_def, "NOT_IDEMPOTENT") and class_def.NOT_IDEMPOTENT) or include_unique_id_in_input(class_type):
++            items.append(to_hashable(node_id))
++        inputs = node["inputs"]
++        for key in sorted(inputs.keys()):
++            if is_link(inputs[key]):
++                (ancestor_id, ancestor_socket) = inputs[key]
++                items.append((to_hashable(key),
++                              ("ANCESTOR", self._signature_cache[ancestor_id],
++                               to_hashable(ancestor_socket))))
++            else:
++                items.append((to_hashable(key), to_hashable(inputs[key])))
++        return frozenset(zip(itertools.count(), items))
+ 
+     async def get_immediate_node_signature(self, dynprompt, node_id, ancestor_order_mapping):
+         if not dynprompt.has_node(node_id):
