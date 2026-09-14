@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "wan-007",
+  "stage": "annotation",
+  "status": "qualified",
+  "attempts": 3,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "blend_extent",
+      "expression": "int(blend_extent)"
+    },
+    {
+      "name": "active",
+      "expression": "int(blend_extent > 0)"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "passed-gate",
+    "gate": {
+      "case": "wan-007",
+      "validity_warnings": [],
+      "pcv_names": [
+        "blend_extent"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "blend_extent": 1
+          },
+          "calls": 3,
+          "instructions_per_call": 136073.33333333334,
+          "unexplained_instructions_per_call": 779.0,
+          "unexplained_share": 0.0057248542452599084
+        },
+        {
+          "state": {
+            "blend_extent": 2
+          },
+          "calls": 3,
+          "instructions_per_call": 241281.33333333334,
+          "unexplained_instructions_per_call": 783.0,
+          "unexplained_share": 0.0032451743745889996
+        },
+        {
+          "state": {
+            "blend_extent": 3
+          },
+          "calls": 3,
+          "instructions_per_call": 356850.3333333333,
+          "unexplained_instructions_per_call": 1190.3333333333333,
+          "unexplained_share": 0.0033356654657274616
+        }
+      ],
+      "max_unexplained_share": 0.0057248542452599084,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": true,
+      "gate_reasons": [],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "blend_extent": 113356.66666666672
+        },
+        "constant": 17104.222222222277,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 9.723216335987672,
+      "raw_files": [
+        "run.3193485.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-007\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-007\"}\n",
+    "correctness_seconds": 5.293,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "The final performance workload uses positive extents 1, 2, and 3 and passed the strict gate. Separate edge tests cover nonpositive extents, dtype tolerances, and aliasing; including those branch regimes in one unsplit affine model failed the gate.",
+  "gate_pass": true,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "eligible-for-review",
+    "reason": "Annotation passed the strict measurement gate."
+  }
+}

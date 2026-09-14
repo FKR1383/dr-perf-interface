@@ -1,0 +1,36 @@
+{
+  "case": "vllm-034",
+  "status": "annotation-not-qualified",
+  "pcvs": [
+    {
+      "name": "running_count",
+      "expression": "len(self.running)"
+    },
+    {
+      "name": "waiting_count",
+      "expression": "len(self.waiting)"
+    }
+  ],
+  "gate_pass": false,
+  "final_measurement": "measurements/screen-1/metrics.json",
+  "attempts": 1,
+  "evidence": {
+    "budget": "one DRPerf attempt, 60 second timeout",
+    "metrics": {
+      "case": "vllm-034",
+      "gate_pass": false,
+      "gate_reasons": [
+        "no drperf files",
+        "workload return code 1"
+      ],
+      "returncode": 1,
+      "instrumented_wall_seconds": 20.73139790399,
+      "raw_files": []
+    },
+    "wrapper_output": "{\"out\": \"/home/ubuntu/drperf/bench_anontated/vllm/vllm-034/measurements/screen-1\", \"returncode\": 1, \"gate_pass\": false, \"max_unexplained_share\": null, \"gate_reasons\": [\"no drperf files\", \"workload return code 1\"]}\n"
+  },
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict gate in its single budgeted attempt."
+  }
+}

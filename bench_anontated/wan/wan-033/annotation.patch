@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -171,7 +171,7 @@
+         prompt = [prompt_clean(u) for u in prompt]
+         batch_size = len(prompt)
+ 
+-        with perfmark.region("wan-033"):
++        with perfmark.region("wan-033", padded_tokens=int(max_sequence_length * (1 if isinstance(prompt, str) else len(prompt)))):
+             text_inputs = self.tokenizer(
+                 prompt,
+                 padding="max_length",

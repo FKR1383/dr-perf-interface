@@ -1,0 +1,11 @@
+--- a/vllm/v1/spec_decode/ngram_proposer.py
++++ b/vllm/v1/spec_decode/ngram_proposer.py
+@@ -143,7 +143,7 @@
+         | list[dict[str, torch.Tensor]]
+         | None = None,  # unused
+     ) -> list[list[int]]:
+-        with perfmark.region("vllm-057"):
++        with perfmark.region("vllm-057", request_count=len(sampled_token_ids)):
+             assert num_speculative_tokens <= self.k
+ 
+             # find which requests need ngram proposals

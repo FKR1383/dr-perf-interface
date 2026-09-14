@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -576,7 +576,7 @@
+         Args:
+             request: The request to free the blocks.
+         """
+-        with perfmark.region("vllm-011"):
++        with perfmark.region("vllm-011", computed_token_count=request.num_computed_tokens, block_hash_count=len(request.block_hashes)):
+             pins = self._partial_tail_pins.pop(request.request_id, None)
+             if pins:
+                 self.block_pool.free_blocks(pins)

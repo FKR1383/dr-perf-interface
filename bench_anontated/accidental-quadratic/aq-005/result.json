@@ -1,0 +1,32 @@
+{
+  "case": "aq-005",
+  "status": "annotation-qualified",
+  "attempts": 2,
+  "pcvs": [
+    "input_len",
+    "input_pairs"
+  ],
+  "pcv_expressions": "input_len=len(path), input_pairs=len(path) * len(path)",
+  "gate_pass": true,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 6,
+    "required_states": 4,
+    "max_unexplained_share": 0.013058726960674576,
+    "reasons": [],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round2b/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "reviewed-no-safe-candidate",
+    "reason": "The obvious rewrite is a new combined tokenizer/substitution engine for percent, dollar, brace, quote, bytes, and missing-variable cases. It changes the parser rather than one local data operation, and compiling/caching it outside the region would shift measured work. No bounded differential corpus here is broad enough to justify that semantic risk."
+  }
+}

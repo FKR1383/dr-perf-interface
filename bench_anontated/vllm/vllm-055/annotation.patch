@@ -1,0 +1,11 @@
+--- a/vllm/v1/sample/sampler.py
++++ b/vllm/v1/sample/sampler.py
+@@ -78,7 +78,7 @@
+         predict_bonus_token: bool = False,
+         logprobs_mode_override: LogprobsMode | None = None,
+     ) -> SamplerOutput:
+-        with perfmark.region("vllm-055"):
++        with perfmark.region("vllm-055", logits_rows=logits.shape[0]):
+             logprobs_mode = logprobs_mode_override or self.logprobs_mode
+             # NOTE(woosuk): Use the original logits (before any penalties or
+             # temperature scaling) for the top-k logprobs.

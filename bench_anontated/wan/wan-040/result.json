@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-040",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "video_elements",
+      "expression": "int(video.numel())"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-040",
+      "validity_warnings": [],
+      "pcv_names": [
+        "video_elements"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "video_elements": 108
+          },
+          "calls": 3,
+          "instructions_per_call": 109075.33333333333,
+          "unexplained_instructions_per_call": 23885.999999999996,
+          "unexplained_share": 0.21898626637247648
+        },
+        {
+          "state": {
+            "video_elements": 1152
+          },
+          "calls": 3,
+          "instructions_per_call": 188372.33333333334,
+          "unexplained_instructions_per_call": 44873.0,
+          "unexplained_share": 0.2382143874631271
+        },
+        {
+          "state": {
+            "video_elements": 1500
+          },
+          "calls": 3,
+          "instructions_per_call": 103830.0,
+          "unexplained_instructions_per_call": 23430.999999999996,
+          "unexplained_share": 0.2256669556005008
+        }
+      ],
+      "max_unexplained_share": 0.2382143874631271,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "video_elements": -1.522141173003242
+        },
+        "constant": 104429.59210138522,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 8.28268748591654,
+      "raw_files": [
+        "run.3228280.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-040\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-040\"}\n",
+    "correctness_seconds": 3.654,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-040\", video_elements=int(video.numel())):",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Refined annotation still did not pass the strict 5% gate."
+  }
+}

@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1387,7 +1387,7 @@
+         #    scheduling step.
+         # 3. If some tokens (e.g. spec tokens) are rejected later, the number of
+         #    computed tokens will be adjusted in update_from_output.
+-        with perfmark.region("vllm-029"):
++        with perfmark.region("vllm-029", scheduled_request_count=len(scheduler_output.num_scheduled_tokens)):
+             num_scheduled_tokens = scheduler_output.num_scheduled_tokens
+             for req_id, num_scheduled_token in num_scheduled_tokens.items():
+                 request = self.requests[req_id]

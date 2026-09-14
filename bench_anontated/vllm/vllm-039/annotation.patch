@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/utils.py
++++ b/vllm/v1/core/sched/utils.py
+@@ -79,7 +79,7 @@
+         For single item removal, this modifies the original list in-place
+         and returns it. For multiple items, it creates and returns a new list.
+     """
+-    with perfmark.region("vllm-039"):
++    with perfmark.region("vllm-039", removal_count=len(items_to_remove)):
+         if not items_to_remove:
+             return lst
+ 

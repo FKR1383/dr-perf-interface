@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -105,7 +105,7 @@
+ 
+     def remove_request(self, request: Request) -> None:
+         """Remove a specific request from the queue."""
+-        with perfmark.region("vllm-019"):
++        with perfmark.region("vllm-019", request_priority=request.priority):
+             self.remove(request)
+ 
+     def remove_requests(self, requests: Iterable[Request]) -> None:

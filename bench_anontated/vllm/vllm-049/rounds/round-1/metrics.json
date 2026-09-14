@@ -1,0 +1,62 @@
+{
+  "case": "vllm-049",
+  "validity_warnings": [],
+  "pcv_names": [
+    "max_tokens"
+  ],
+  "distinct_states": 3,
+  "required_states": 3,
+  "calls": 30,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "max_tokens": 1
+      },
+      "calls": 20,
+      "instructions_per_call": 27262.9,
+      "unexplained_instructions_per_call": 1665.0,
+      "unexplained_share": 0.06107200627959608
+    },
+    {
+      "state": {
+        "max_tokens": 2
+      },
+      "calls": 5,
+      "instructions_per_call": 24345.0,
+      "unexplained_instructions_per_call": 1184.0,
+      "unexplained_share": 0.048634216471554734
+    },
+    {
+      "state": {
+        "max_tokens": 4
+      },
+      "calls": 5,
+      "instructions_per_call": 25551.8,
+      "unexplained_instructions_per_call": 1413.6,
+      "unexplained_share": 0.05532291267151433
+    }
+  ],
+  "max_unexplained_share": 0.06107200627959608,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "max_tokens": 0.0
+    },
+    "constant": 24299.033333333347,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 10.301421052892692,
+  "raw_files": [
+    "run.3195819.json"
+  ]
+}

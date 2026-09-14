@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/single_type_kv_cache_manager.py
++++ b/vllm/v1/core/single_type_kv_cache_manager.py
+@@ -822,7 +822,7 @@
+         )
+ 
+     def get_num_common_prefix_blocks(self, running_request_id: str) -> int:
+-        with perfmark.region("vllm-040"):
++        with perfmark.region("vllm-040", request_block_count=len(self.req_to_blocks[running_request_id]), request_count=len(self.req_to_blocks)):
+             blocks = self.req_to_blocks[running_request_id]
+             num_common_blocks = 0
+             for block in blocks:

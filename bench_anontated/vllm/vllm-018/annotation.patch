@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -101,7 +101,7 @@
+         Note: The requests will be prepended in reverse order of their
+         appearance in the `requests` queue.
+         """
+-        with perfmark.region("vllm-018"):
++        with perfmark.region("vllm-018", incoming_count=len(requests)):
+             self.extendleft(requests)
+ 
+     def remove_request(self, request: Request) -> None:

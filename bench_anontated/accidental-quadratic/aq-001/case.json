@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-001",
+  "title": "Member registration",
+  "language": "python",
+  "region": {
+    "symbol": "_proto_member.__set_name__",
+    "start_line": 201,
+    "end_line": 292
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-001",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Construct an enumeration with many distinct hashable member values.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "2d21612f0dd84bf6d0ce35bcfcc9f0e1a41c202d",
+    "path": "Lib/enum.py",
+    "sha256": "b095105cefa4f798bb465c17898da67045a686ac5a522f4da0fd03153caa3441"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises _proto_member.__set_name__ with bounded input, and verifies entry into the empty region marker."
+  }
+}

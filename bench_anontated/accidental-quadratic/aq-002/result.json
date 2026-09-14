@@ -1,0 +1,30 @@
+{
+  "case": "aq-002",
+  "status": "annotation-gate-failed",
+  "attempts": 1,
+  "pcvs": [
+    "type_count",
+    "type_pairs"
+  ],
+  "pcv_expressions": "type_count=len(type_order), type_pairs=len(type_order) * len(type_order)",
+  "gate_pass": false,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 5,
+    "required_states": 4,
+    "max_unexplained_share": 0.2549165796842123,
+    "reasons": [
+      "unexplained share exceeds 5% at an observed state"
+    ],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round1/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json"
+  ],
+  "notes": [],
+  "optimization": {
+    "status": "not-qualified",
+    "reason": "The final annotation did not pass the strict measurement gate."
+  }
+}

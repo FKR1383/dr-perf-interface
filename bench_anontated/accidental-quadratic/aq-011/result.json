@@ -1,0 +1,32 @@
+{
+  "case": "aq-011",
+  "status": "annotation-qualified",
+  "attempts": 2,
+  "pcvs": [
+    "input_len",
+    "input_pairs"
+  ],
+  "pcv_expressions": "input_len=len(value), input_pairs=len(value) * len(value)",
+  "gate_pass": true,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 5,
+    "required_states": 4,
+    "max_unexplained_share": 0.0,
+    "reasons": [],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round2b/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "reviewed-no-safe-candidate",
+    "reason": "The function delegates consumption to get_word/get_cfws, which return sliced remainders. Removing repeated suffix creation safely requires changing those shared parser contracts and their callers outside this region; a local container tweak does not address the measured work."
+  }
+}

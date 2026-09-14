@@ -1,0 +1,12 @@
+vllm-050 = 3293.5*batch_size + 33926.6 + unexplained
+  unexplained 520.8 instr/call: PyDict_Contains+? [python3.12]
+  unexplained 49.133333 instr/call: _Py_HashBytes [python3.12]
+  unexplained 33.8 instr/call: torch::FunctionParameter::FunctionParameter [libtorch_python.so]
+  batch_size coefficient 356.1: _PyEval_EvalFrameDefault [python3.12]
+  batch_size coefficient 154: prepare_index [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+  batch_size coefficient 152.4: std::__cxx11::basic_string<>::substr [libtorch_python.so]
+  batch_size coefficient 150: PyArray_DiscoverDTypeAndShape_Recursive [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+  batch_size coefficient 133: PyArray_NewFromDescr_int [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+  batch_size coefficient 122: array_assign_subscript [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+  batch_size coefficient 113: get_view_from_index [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+  batch_size coefficient 104: PyLong_FromSsize_t [python3.12]

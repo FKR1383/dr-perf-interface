@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/llm_engine.py
++++ b/vllm/v1/engine/llm_engine.py
+@@ -297,7 +297,7 @@
+         return req_id
+ 
+     def step(self) -> list[RequestOutput | PoolingRequestOutput]:
+-        with perfmark.region("vllm-046"):
++        with perfmark.region("vllm-046", dummy_batch=int(self.should_execute_dummy_batch)):
+             if self.should_execute_dummy_batch:
+                 self.should_execute_dummy_batch = False
+                 self.engine_core.execute_dummy_batch()

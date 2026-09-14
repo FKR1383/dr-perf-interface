@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/llm_engine.py
++++ b/vllm/v1/engine/llm_engine.py
+@@ -230,7 +230,7 @@
+         prompt_text: str | None = None,
+     ) -> str:
+         # Validate the request_id type.
+-        with perfmark.region("vllm-045"):
++        with perfmark.region("vllm-045", core_request=int(isinstance(prompt, EngineCoreRequest)), tokenization_option_count=len(tokenization_kwargs or {})):
+             if not isinstance(request_id, str):
+                 raise TypeError(f"request_id must be a string, got {type(request_id)}")
+ 

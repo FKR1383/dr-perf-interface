@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -92,7 +92,7 @@
+ 
+     def prepend_request(self, request: Request) -> None:
+         """Prepend a request to the front of the queue."""
+-        with perfmark.region("vllm-017"):
++        with perfmark.region("vllm-017", request_priority=request.priority):
+             self.appendleft(request)
+ 
+     def prepend_requests(self, requests: RequestQueue) -> None:

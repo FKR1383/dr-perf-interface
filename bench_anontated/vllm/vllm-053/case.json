@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "vllm-053",
+  "title": "RejectionSampler.forward body",
+  "language": "python",
+  "region": {
+    "symbol": "RejectionSampler.forward",
+    "start_line": 123,
+    "end_line": 201,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-053",
+    "pcvs": [
+      "logits_rows"
+    ]
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/sample/rejection_sampler.py",
+    "sha256": "4bb87d7984d967be9c7e5b6a6b489c02571ef2f2913211cb3f1eea74b2e1f32f"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/driver.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Runs n-gram speculative decoding with repeated token sequences and varied output limits. Probe.finish requires the exact rejection-sampler or n-gram-proposer marker; target-specific reachability is not yet verified."
+  }
+}

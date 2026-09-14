@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "wan-014",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 1,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "frame_count",
+      "expression": "int(x.shape[2])"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-014",
+      "validity_warnings": [],
+      "pcv_names": [
+        "frame_count"
+      ],
+      "distinct_states": 1,
+      "required_states": 3,
+      "calls": 18,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "frame_count": 1
+          },
+          "calls": 18,
+          "instructions_per_call": 131584309.0
+        }
+      ],
+      "max_unexplained_share": null,
+      "threshold": 0.05,
+      "sufficient_points": false,
+      "gate_pass": false,
+      "gate_reasons": [
+        "insufficient state points: 1; need 3"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "returncode": 0,
+      "instrumented_wall_seconds": 26.68626894406043,
+      "raw_files": [
+        "run.3199732.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-014\": 6}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-014\"}\n",
+    "correctness_seconds": 5.426,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "Feedback and source were reviewed for a second PCV; final source retains the measured first-round marker. The observed calls are internal temporal chunks with frame count fixed at one; spatial extent and cache state vary, requiring a purpose-built chunk/cache matrix.",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict measurement gate within the bounded run budget."
+  }
+}

@@ -1,0 +1,12 @@
+diff --git a/socketsecurity/core/__init__.py b/socketsecurity/core/__init__.py
+--- a/socketsecurity/core/__init__.py
++++ b/socketsecurity/core/__init__.py
+@@ -402,7 +402,7 @@
+         :param files: override finding the manifest files using the glob matcher
+         :return:
+         """
+-        with perfmark.region('aq-010'):
++        with perfmark.region('aq-010', path_len=len(path), pattern_count=sum(len(patterns) for patterns in socket_globs.values())):
+             log.debug("Starting Find Files")
+             start_time = time.time()
+             files = []

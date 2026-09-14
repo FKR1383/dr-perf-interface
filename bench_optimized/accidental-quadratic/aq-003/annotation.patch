@@ -1,0 +1,12 @@
+diff --git a/Lib/http/cookies.py b/Lib/http/cookies.py
+--- a/Lib/http/cookies.py
++++ b/Lib/http/cookies.py
+@@ -191,7 +191,7 @@
+ def _unquote(str):
+     # If there aren't any doublequotes,
+     # then there can't be any special characters.  See RFC 2109.
+-    with perfmark.region('aq-003'):
++    with perfmark.region('aq-003', input_len=len(str), input_pairs=len(str) * len(str)):
+         if str is None or len(str) < 2:
+             return str
+         if str[0] != '"' or str[-1] != '"':

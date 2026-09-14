@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "aq-009",
+  "title": "Parenthesis normalization",
+  "language": "python",
+  "region": {
+    "symbol": "normalize_invisible_parens",
+    "start_line": 1659,
+    "end_line": 1826
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-009",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Normalize a syntax node with many children that require invisible-parenthesis checks.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/psf/black",
+    "revision": "3224f36a0fcad002d3aa32f61ab21e14598aded9",
+    "path": "src/black/linegen.py",
+    "sha256": "6ebdf38fd23382a9c1636eb686007454d404eaa216e0933682dae70a51a91829"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/README.md",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 in an isolated pinned Black checkout installed editable in a temporary virtual environment at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the pinned linegen target."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises normalize_invisible_parens with bounded input, and verifies entry into the empty region marker."
+  }
+}

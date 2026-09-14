@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/block_table.py
++++ b/vllm/v1/worker/block_table.py
+@@ -336,7 +336,7 @@
+         ]
+ 
+     def append_row(self, block_ids: tuple[list[int], ...], row_idx: int) -> None:
+-        with perfmark.region("vllm-058"):
++        with perfmark.region("vllm-058", table_count=len(self.block_tables), block_count=len(block_ids)):
+             for i, block_table in enumerate(self.block_tables):
+                 block_table.append_row(block_ids[i], row_idx)
+ 

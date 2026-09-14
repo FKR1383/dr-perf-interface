@@ -1,0 +1,12 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -1434,7 +1434,7 @@
+     even the obsolete grammar.
+ 
+     """
+-    with perfmark.region('aq-011'):
++    with perfmark.region('aq-011', input_len=len(value), input_pairs=len(value) * len(value)):
+         phrase = Phrase()
+         try:
+             token, value = get_word(value)

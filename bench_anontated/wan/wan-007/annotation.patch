@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1250,7 +1250,7 @@
+         return b
+ 
+     def blend_h(self, a: torch.Tensor, b: torch.Tensor, blend_extent: int) -> torch.Tensor:
+-        with perfmark.region("wan-007"):
++        with perfmark.region("wan-007", blend_extent=int(blend_extent)):
+             blend_extent = min(a.shape[-1], b.shape[-1], blend_extent)
+             for x in range(blend_extent):
+                 b[:, :, :, :, x] = a[:, :, :, :, -blend_extent + x] * (1 - x / blend_extent) + b[:, :, :, :, x] * (

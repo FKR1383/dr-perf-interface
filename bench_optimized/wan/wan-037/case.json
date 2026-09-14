@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "wan-037",
+  "title": "FlowMatchEulerDiscreteScheduler.index_for_timestep body",
+  "language": "python",
+  "region": {
+    "symbol": "FlowMatchEulerDiscreteScheduler.index_for_timestep",
+    "start_line": 402,
+    "end_line": 413,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "wan-037",
+    "pcvs": [
+      "schedule_length"
+    ]
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named diffusers Wan method with a tiny random model on CPU. Use a bounded video or prompt-encoding call appropriate to this method; full model downloads are unnecessary.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/huggingface/diffusers",
+    "revision": "c5469b7ceb606edd7ba6570dcd17d38590a18db6",
+    "path": "src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py",
+    "sha256": "1af27be5b2f92b7d139d3c50239be5ce3eafc4a7eddf59c2d30689f8ec31e93d"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/helper.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed with the pinned patch applied to an isolated source copy under Python 3.11, PyTorch 2.14.0+cpu, and Diffusers runtime dependencies from the provided environment. Correctness assertions passed across three distinct bounded configurations and the native probe observed the named marker at least three times; this was not an instruction-count measurement."
+    },
+    "coverage_note": "The test imports diffusers from the supplied source root, checks finite outputs and shape or value semantics, and requires the named marker to be observed."
+  }
+}

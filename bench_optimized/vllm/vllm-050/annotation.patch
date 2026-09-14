@@ -1,0 +1,11 @@
+--- a/vllm/v1/sample/ops/penalties.py
++++ b/vllm/v1/sample/ops/penalties.py
+@@ -45,7 +45,7 @@
+     """
+     Convert the different list data structures to tensors.
+     """
+-    with perfmark.region("vllm-050"):
++    with perfmark.region("vllm-050", batch_size=len(output_token_ids)):
+         output_tokens_tensor = make_tensor_with_pad(
+             output_token_ids,
+             # Use the value of vocab_size as a pad since we don't have a

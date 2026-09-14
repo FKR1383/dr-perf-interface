@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -148,7 +148,7 @@
+ 
+     def pop_request(self) -> Request:
+         """Pop a request from the queue according to priority policy."""
+-        with perfmark.region("vllm-022"):
++        with perfmark.region("vllm-022", queue_len=len(self._heap)):
+             if not self._heap:
+                 raise IndexError("pop from empty heap")
+             return heapq.heappop(self._heap)

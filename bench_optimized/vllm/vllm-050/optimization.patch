@@ -1,0 +1,9 @@
+--- a/vllm/v1/sample/ops/penalties.py
++++ b/vllm/v1/sample/ops/penalties.py
+@@ -56,4 +56,6 @@
+             dtype=torch.int64,
+             pin_memory=PIN_MEMORY,
+         )
++        if device.type == "cpu" and device.index is None:
++            return output_tokens_tensor
+         return output_tokens_tensor.to(device, non_blocking=True)

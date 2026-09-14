@@ -1,0 +1,32 @@
+{
+  "case": "aq-009",
+  "status": "workload-failed",
+  "attempts": 1,
+  "pcvs": [
+    "child_count",
+    "child_pairs"
+  ],
+  "pcv_expressions": "child_count=len(node.children), child_pairs=len(node.children) * len(node.children)",
+  "gate_pass": false,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 1,
+    "required_states": 4,
+    "max_unexplained_share": null,
+    "reasons": [
+      "insufficient state points: 1; need 4",
+      "workload return code 1"
+    ],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round1/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json"
+  ],
+  "notes": [],
+  "explicit_block": "The full-checkout formatting path used Black\u2019s canonical linegen module rather than the separately loaded pinned target, so the marked target was not reached.",
+  "optimization": {
+    "status": "not-qualified",
+    "reason": "The final annotation did not pass the strict measurement gate."
+  }
+}

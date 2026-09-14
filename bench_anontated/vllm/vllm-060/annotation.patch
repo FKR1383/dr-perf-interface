@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -859,7 +859,7 @@
+             self.sampling_metadata = self._make_sampling_metadata()
+ 
+     def _make_sampling_metadata(self) -> SamplingMetadata:
+-        with perfmark.region("vllm-060"):
++        with perfmark.region("vllm-060", request_count=self.num_reqs):
+             num_reqs = self.num_reqs
+             if not self.all_greedy:
+                 temperature = copy_slice(

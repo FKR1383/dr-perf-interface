@@ -1,0 +1,35 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -2196,10 +2196,11 @@
+             if not value:
+                 mime_version.defects.append(errors.HeaderMissingRequiredValue(
+                     "Expected MIME version number but found only CFWS"))
+-        digits = ''
+-        while value and value[0] != '.' and value[0] not in CFWS_LEADER:
+-            digits += value[0]
+-            value = value[1:]
++        end = 0
++        while end < len(value) and value[end] != '.' and value[end] not in CFWS_LEADER:
++            end += 1
++        digits = value[:end]
++        value = value[end:]
+         if not digits.isdigit():
+             mime_version.defects.append(errors.InvalidHeaderDefect(
+                 "Expected MIME major version number but found {!r}".format(digits)))
+@@ -2227,10 +2228,11 @@
+                 mime_version.defects.append(errors.InvalidHeaderDefect(
+                     "Incomplete MIME version; found only major number"))
+             return mime_version
+-        digits = ''
+-        while value and value[0] not in CFWS_LEADER:
+-            digits += value[0]
+-            value = value[1:]
++        end = 0
++        while end < len(value) and value[end] not in CFWS_LEADER:
++            end += 1
++        digits = value[:end]
++        value = value[end:]
+         if not digits.isdigit():
+             mime_version.defects.append(errors.InvalidHeaderDefect(
+                 "Expected MIME minor version number but found {!r}".format(digits)))

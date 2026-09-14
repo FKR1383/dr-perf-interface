@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "wan-026",
+  "stage": "annotation",
+  "status": "annotation-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "iteration_index",
+      "expression": "int(i)"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "strict-gate-passed",
+    "gate": {
+      "case": "wan-026",
+      "validity_warnings": [],
+      "pcv_names": [
+        "iteration_index"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 18,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "iteration_index": 0
+          },
+          "calls": 9,
+          "instructions_per_call": 8254425.777777778,
+          "unexplained_instructions_per_call": 343566.8888888889,
+          "unexplained_share": 0.04162214285260465
+        },
+        {
+          "state": {
+            "iteration_index": 1
+          },
+          "calls": 6,
+          "instructions_per_call": 7900415.166666667,
+          "unexplained_instructions_per_call": 243647.00000000003,
+          "unexplained_share": 0.030839771690479308
+        },
+        {
+          "state": {
+            "iteration_index": 2
+          },
+          "calls": 3,
+          "instructions_per_call": 7926383.666666667,
+          "unexplained_instructions_per_call": 252359.66666666663,
+          "unexplained_share": 0.031837932313058606
+        }
+      ],
+      "max_unexplained_share": 0.04162214285260465,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": true,
+      "gate_reasons": [],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "iteration_index": -92545.83333333328
+        },
+        "constant": 7839762.851851699,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 17.229397619958036,
+      "raw_files": [
+        "run.3227622.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-026\": 6}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-026\"}\n",
+    "correctness_seconds": 5.343,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-026\", iteration_index=int(i)):",
+  "gate_pass": true,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "reviewed-no-safe-candidate",
+    "reason": "The denoising-loop region contains scheduler/model calls and state updates; moving, caching, or combining them would change iteration semantics, so no safe local optimization candidate was identified."
+  }
+}

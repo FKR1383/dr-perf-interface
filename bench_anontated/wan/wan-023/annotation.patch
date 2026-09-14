@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -660,7 +660,7 @@
+             If `return_dict` is True, an [`~models.transformer_2d.Transformer2DModelOutput`] is returned, otherwise a
+             `tuple` where the first element is the sample tensor.
+         """
+-        with perfmark.region("wan-023"):
++        with perfmark.region("wan-023", frame_count=int(hidden_states.shape[2])):
+             batch_size, num_channels, num_frames, height, width = hidden_states.shape
+             p_t, p_h, p_w = self.config.patch_size
+             post_patch_num_frames = num_frames // p_t

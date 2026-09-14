@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-007",
+  "title": "Parameter list parsing",
+  "language": "python",
+  "region": {
+    "symbol": "_parseparam",
+    "start_line": 73,
+    "end_line": 90
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-007",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Parse a long semicolon-separated parameter string, including a quoted malformed variant.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "ff7b5d44a00acfa681afd8aea70abc66ea536723",
+    "path": "Lib/email/message.py",
+    "sha256": "be7e218b73bce794f0a51fedccb2ef14f13824ca3a8dfedecbcc0b9725e20eac"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises _parseparam with bounded input, and verifies entry into the empty region marker."
+  }
+}

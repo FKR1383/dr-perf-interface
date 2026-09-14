@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -630,7 +630,7 @@
+                             attention_kwargs=attention_kwargs,
+                             return_dict=False,
+                         )[0]
+-                    with perfmark.region("wan-030"):
++                    with perfmark.region("wan-030", inference_steps=int(num_inference_steps)):
+                         noise_pred = noise_uncond + current_guidance_scale * (noise_pred - noise_uncond)
+ 
+                 # compute the previous noisy sample x_t -> x_t-1

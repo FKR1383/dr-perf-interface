@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -589,7 +589,7 @@
+         self.gradient_checkpointing = False
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0]):
+-        with perfmark.region("wan-015"):
++        with perfmark.region("wan-015", frame_count=int(x.shape[2])):
+             if feat_cache is not None:
+                 idx = feat_idx[0]
+                 cache_x = x[:, :, -CACHE_T:, :, :].clone()

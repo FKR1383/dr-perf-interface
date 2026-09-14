@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "v8-interpreter-034",
+  "title": "string comparison",
+  "language": "cpp",
+  "region": {
+    "symbol": "v8::internal::Runtime_StringCompare",
+    "start_line": 515,
+    "end_line": 523
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-interpreter-034",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Evaluate bounded lexicographic comparisons across varied string lengths and encodings.",
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/v8/v8",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/runtime/runtime-strings.cc",
+    "sha256": "257e72e344f9174a51ced9803b09495ce00c51e595b5f552403f95cea76974f6"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Public JavaScript assertions passed with host Node.js v18.19.1; this is not the pinned or instrumented V8 build, so region entry was not verified."
+    },
+    "coverage_note": "This test exercises representative public JavaScript behavior, but V8 may use optimized builtins or fast paths instead of the marked native runtime fallback; region entry has not been observed in a patched build."
+  }
+}

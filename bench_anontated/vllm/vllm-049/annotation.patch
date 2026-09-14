@@ -1,0 +1,11 @@
+--- a/vllm/v1/request.py
++++ b/vllm/v1/request.py
+@@ -80,7 +80,7 @@
+         reasoning_parser_kwargs: dict[str, Any] | None = None,
+         abort_immediately: bool = False,
+     ) -> None:
+-        with perfmark.region("vllm-049"):
++        with perfmark.region("vllm-049", max_tokens=(sampling_params.max_tokens if sampling_params is not None else 1)):
+             self.request_id = request_id
+             self.client_index = client_index
+             self.priority = priority

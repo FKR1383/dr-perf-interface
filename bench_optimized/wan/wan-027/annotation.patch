@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -622,7 +622,7 @@
+                     )[0]
+ 
+                 if self.do_classifier_free_guidance:
+-                    with perfmark.region("wan-027"):
++                    with perfmark.region("wan-027", inference_steps=int(num_inference_steps)):
+                         with current_model.cache_context("uncond"):
+                             noise_uncond = current_model(
+                                 hidden_states=latent_model_input,

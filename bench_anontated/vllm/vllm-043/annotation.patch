@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/detokenizer.py
++++ b/vllm/v1/engine/detokenizer.py
+@@ -102,7 +102,7 @@
+ 
+         Return matched stop string or None.
+         """
+-        with perfmark.region("vllm-043"):
++        with perfmark.region("vllm-043", new_token_count=len(new_token_ids), stop_terminated=int(stop_terminated)):
+             if not new_token_ids:
+                 # Skip detokenization if no new token ids.
+                 return None

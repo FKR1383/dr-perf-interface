@@ -1,0 +1,158 @@
+{
+  "checked": 600,
+  "different": 37,
+  "examples": [
+    {
+      "sample": "\" \",\"alpha\",\"a\nb\"\n\"alpha\",\" \",\"x,y\"\n\"a\"\"b\",\" \",\" \"\n",
+      "before": [
+        "\"",
+        false,
+        " ",
+        false
+      ],
+      "after": [
+        "\"",
+        true,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "\" \",\" \",\"a\rb\"\r\n\"a\rb\",\" \",\"a\rb\"\r\n\" \",\"a\"\"b\",\"alpha\"\r\n",
+      "before": [
+        "\"",
+        false,
+        " ",
+        false
+      ],
+      "after": [
+        "\"",
+        true,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "\" \",\"x,y\",\" \"\r\" \",\"a\"\"b\",\"p'q\"\r\"a\rb\",\"a\rb\",\"bravo\"\r",
+      "before": [
+        "\"",
+        false,
+        " ",
+        false
+      ],
+      "after": [
+        "\"",
+        true,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "a\"b,alpha,'p''q'\r\n'a\nb', ,a\"b\r\n'x,y', ,'a\rb'\r\n",
+      "before": [
+        "'",
+        false,
+        ",",
+        false
+      ],
+      "after": [
+        "'",
+        false,
+        ",",
+        true
+      ]
+    },
+    {
+      "sample": "alpha,a\"b,'x,y'\r\n'x,y', ,'p''q'\r\nalpha,a\"b, \r\n",
+      "before": [
+        "'",
+        false,
+        ",",
+        false
+      ],
+      "after": [
+        "'",
+        false,
+        ",",
+        true
+      ]
+    },
+    {
+      "sample": "'p''q', ,a\"b\r'a\rb',alpha,'x,y'\r'a\nb','a\rb','p''q'\r",
+      "before": [
+        "'",
+        false,
+        "\r",
+        false
+      ],
+      "after": [
+        "'",
+        true,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "'x,y',a\"b, \r'a\rb','a\nb',a\"b\ralpha,'p''q','a\nb'\r",
+      "before": [
+        "'",
+        false,
+        "\r",
+        false
+      ],
+      "after": [
+        "'",
+        true,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "' ','bravo','alpha'\r'x,y','a\rb','bravo'\r'a\"b','a\rb',' '\r",
+      "before": [
+        "'",
+        false,
+        " ",
+        false
+      ],
+      "after": [
+        "'",
+        false,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": "' ','bravo','a\nb'\r'bravo','a\"b',' '\r'a\"b','a\"b','p''q'\r",
+      "before": [
+        "'",
+        false,
+        " ",
+        false
+      ],
+      "after": [
+        "'",
+        false,
+        ",",
+        false
+      ]
+    },
+    {
+      "sample": " ;p'q;alpha\r\np'q;x,y;x,y\r\nalpha; ;\"a\"\"b\"\r\n",
+      "before": [
+        "\"",
+        false,
+        ";",
+        false
+      ],
+      "after": [
+        "",
+        false,
+        null,
+        0
+      ]
+    }
+  ],
+  "baseline_sha256": "36c345d255ffe796cf62271fbaf03698a9957be49456227c9e0169500e5814ed",
+  "candidate_sha256": "7ade554b63c9ff7f18625c7faf17a6cf25f8495eea543d37e8e73a9a14059f3c"
+}

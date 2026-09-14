@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/gpu_model_runner.py
++++ b/vllm/v1/worker/gpu_model_runner.py
+@@ -2025,7 +2025,7 @@
+         Returns:
+             tuple[logits_indices, spec_decode_metadata, max_num_sampled_tokens]
+         """
+-        with perfmark.region("vllm-065"):
++        with perfmark.region("vllm-065", request_count=self.input_batch.num_reqs):
+             total_num_scheduled_tokens = scheduler_output.total_num_scheduled_tokens
+             assert total_num_scheduled_tokens > 0
+             num_reqs = self.input_batch.num_reqs

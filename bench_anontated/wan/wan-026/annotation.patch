@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -589,7 +589,7 @@
+ 
+         with self.progress_bar(total=num_inference_steps) as progress_bar:
+             for i, t in enumerate(timesteps):
+-                with perfmark.region("wan-026"):
++                with perfmark.region("wan-026", iteration_index=int(i)):
+                     if self.interrupt:
+                         continue
+ 

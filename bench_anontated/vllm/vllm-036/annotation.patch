@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -765,7 +765,7 @@
+                 request_id = request.request_id
+ 
+                 # try to promote blocked statuses while traversing skipped queue.
+-                with perfmark.region("vllm-036"):
++                with perfmark.region("vllm-036", running_count=len(self.running), waiting_count=len(self.waiting)):
+                     if self._is_blocked_waiting_status(
+                         request.status
+                     ) and not self._try_promote_blocked_waiting_request(request):

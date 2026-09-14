@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -641,7 +641,7 @@
+ 
+                     # The request cannot be scheduled.
+                     # Preempt the lowest-priority request.
+-                    with perfmark.region("vllm-034"):
++                    with perfmark.region("vllm-034", running_count=len(self.running), waiting_count=len(self.waiting)):
+                         if self.policy == SchedulingPolicy.PRIORITY:
+                             preempted_req = max(
+                                 self.running,

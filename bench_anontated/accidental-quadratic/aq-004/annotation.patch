@@ -1,0 +1,12 @@
+diff --git a/Lib/html/parser.py b/Lib/html/parser.py
+--- a/Lib/html/parser.py
++++ b/Lib/html/parser.py
+@@ -151,7 +151,7 @@
+     # and data to be processed by a subsequent call.  If 'end' is
+     # true, force handling all data as if followed by EOF marker.
+     def goahead(self, end):
+-        with perfmark.region('aq-004'):
++        with perfmark.region('aq-004', buffer_len=len(self.rawdata), buffer_pairs=len(self.rawdata) * len(self.rawdata), at_eof=int(end)):
+             rawdata = self.rawdata
+             i = 0
+             n = len(rawdata)

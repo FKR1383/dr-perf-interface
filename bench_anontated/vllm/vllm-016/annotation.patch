@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -82,7 +82,7 @@
+ 
+     def pop_request(self) -> Request:
+         """Pop a request from the queue according to FCFS policy."""
+-        with perfmark.region("vllm-016"):
++        with perfmark.region("vllm-016", queue_len=len(self)):
+             return self.popleft()
+ 
+     def peek_request(self) -> Request:

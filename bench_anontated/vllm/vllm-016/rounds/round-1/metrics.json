@@ -1,0 +1,60 @@
+{
+  "case": "vllm-016",
+  "validity_warnings": [],
+  "pcv_names": [
+    "queue_len"
+  ],
+  "distinct_states": 3,
+  "required_states": 3,
+  "calls": 15,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "queue_len": 1
+      },
+      "calls": 5,
+      "instructions_per_call": 2287.2,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "queue_len": 2
+      },
+      "calls": 5,
+      "instructions_per_call": 2378.2,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "queue_len": 3
+      },
+      "calls": 5,
+      "instructions_per_call": 2296.2,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    }
+  ],
+  "max_unexplained_share": 0.0,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": true,
+  "gate_reasons": [],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "queue_len": 0.0
+    },
+    "constant": 2320.5333333333333,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 10.114585930947214,
+  "raw_files": [
+    "run.3192199.json"
+  ]
+}

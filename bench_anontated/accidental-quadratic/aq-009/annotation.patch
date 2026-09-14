@@ -1,0 +1,12 @@
+diff --git a/src/black/linegen.py b/src/black/linegen.py
+--- a/src/black/linegen.py
++++ b/src/black/linegen.py
+@@ -1668,7 +1668,7 @@
+     Standardizes on visible parentheses for single-element tuples, and keeps
+     existing visible parentheses for other tuples and generator expressions.
+     """
+-    with perfmark.region('aq-009'):
++    with perfmark.region('aq-009', child_count=len(node.children), child_pairs=len(node.children) * len(node.children)):
+         for pc in list_comments(node.prefix, is_endmarker=False, mode=mode):
+             if contains_fmt_directive(pc.value, FMT_OFF):
+                 # This `node` has a prefix with `# fmt: off`, don't mess with parens.

@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -2389,7 +2389,7 @@
+     def _free_request(
+         self, request: Request, delay_free_blocks: bool = False
+     ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+-        with perfmark.region("vllm-026"):
++        with perfmark.region("vllm-026", computed_token_count=request.num_computed_tokens, delay_free=int(delay_free_blocks)):
+             assert request.is_finished()
+ 
+             self._inflight_prefills.discard(request)

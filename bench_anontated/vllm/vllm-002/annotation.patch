@@ -1,0 +1,11 @@
+--- a/vllm/entrypoints/offline_utils.py
++++ b/vllm/entrypoints/offline_utils.py
+@@ -529,7 +529,7 @@
+         lora_requests: Sequence[LoRARequest | None] | None = None,
+         priorities: Sequence[int] | None = None,
+     ) -> list[str]:
+-        with perfmark.region("vllm-002"):
++        with perfmark.region("vllm-002", param_count=len(params), has_lora=int(lora_requests is not None)):
+             added_request_ids: list[str] = []
+ 
+             try:

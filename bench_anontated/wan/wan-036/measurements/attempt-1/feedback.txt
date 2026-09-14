@@ -1,0 +1,17 @@
+wan-036 = 740.54167*frame_count + 38297.736 + unexplained
+  unexplained 22488 instr/call: at::CPUGeneratorImpl::random [libtorch_cpu.so]
+  unexplained 10323.333 instr/call: at::native::(anonymous namespace)::normal_kernel [libtorch_cpu.so]
+  unexplained 7744 instr/call: at::native::templates::cpu::(anonymous namespace)::NormalFill16<>::operator() [libtorch_cpu.so]
+  unexplained 938.66667 instr/call: _init [libtorch_cpu.so]
+  unexplained 566.22222 instr/call: PyDict_Contains+? [python3.12]
+  unexplained 536 instr/call: _PyType_Lookup [python3.12]
+  unexplained 199.33333 instr/call: _PyEval_EvalFrameDefault [python3.12]
+  unexplained 75 instr/call: _PyDict_DelItem_KnownHash+? [python3.12]
+  unexplained 39.111111 instr/call: _PyOS_URandom+? [python3.12]
+  frame_count coefficient 703.5: at::CPUGeneratorImpl::random [libtorch_cpu.so]
+  frame_count coefficient 91: at::native::(anonymous namespace)::normal_kernel [libtorch_cpu.so]
+  frame_count coefficient -37.666667: PyDict_Contains+? [python3.12]
+  frame_count coefficient -9.375: _PyEval_EvalFrameDefault [python3.12]
+  frame_count coefficient -8.75: _PyDict_DelItem_KnownHash+? [python3.12]
+  frame_count coefficient 1.8333333: _int_malloc [libc.so.6]
+gate: unexplained share exceeds 5% at an observed state

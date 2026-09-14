@@ -1,0 +1,46 @@
+diff --git a/Lib/http/cookies.py b/Lib/http/cookies.py
+--- a/Lib/http/cookies.py
++++ b/Lib/http/cookies.py
+@@ -203,34 +203,14 @@
+         # Remove the "s
+         str = str[1:-1]
+ 
+-        # Check for special sequences.  Examples:
+-        #    \012 --> \n
+-        #    \"   --> "
+-        #
+-        i = 0
+-        n = len(str)
+-        res = []
+-        while 0 <= i < n:
+-            o_match = _OctalPatt.search(str, i)
+-            q_match = _QuotePatt.search(str, i)
+-            if not o_match and not q_match:              # Neither matched
+-                res.append(str[i:])
+-                break
+-            # else:
+-            j = k = -1
+-            if o_match:
+-                j = o_match.start(0)
+-            if q_match:
+-                k = q_match.start(0)
+-            if q_match and (not o_match or k < j):     # QuotePatt matched
+-                res.append(str[i:k])
+-                res.append(str[k+1])
+-                i = k + 2
+-            else:                                      # OctalPatt matched
+-                res.append(str[i:j])
+-                res.append(chr(int(str[j+1:j+4], 8)))
+-                i = j + 4
+-        return _nulljoin(res)
++        # Match each escape once instead of restarting two searches at every escape.
++        escape = re.compile(r'\\(?:([0-3][0-7][0-7])|(.))').sub
++
++        def replace(match):
++            octal = match[1]
++            return chr(int(octal, 8)) if octal else match[2]
++
++        return escape(replace, str)
+ 
+ # The _getdate() routine is used to set the expiration time in the cookie's HTTP
+ # header.  By default, _getdate() returns the current time in the appropriate

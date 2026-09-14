@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1231,7 +1231,7 @@
+                 If return_dict is True, a [`~models.vae.DecoderOutput`] is returned, otherwise a plain `tuple` is
+                 returned.
+         """
+-        with perfmark.region("wan-010"):
++        with perfmark.region("wan-010", frame_count=int(z.shape[2])):
+             if self.use_slicing and z.shape[0] > 1:
+                 decoded_slices = [self._decode(z_slice).sample for z_slice in z.split(1)]
+                 decoded = torch.cat(decoded_slices)

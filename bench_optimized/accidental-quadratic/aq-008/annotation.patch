@@ -1,0 +1,12 @@
+diff --git a/Lib/csv.py b/Lib/csv.py
+--- a/Lib/csv.py
++++ b/Lib/csv.py
+@@ -285,7 +285,7 @@
+         If there is no quotechar the delimiter can't be determined
+         this way.
+         """
+-        with perfmark.region('aq-008'):
++        with perfmark.region('aq-008', input_len=len(data), input_pairs=len(data) * len(data)):
+             import re
+ 
+             matches = []

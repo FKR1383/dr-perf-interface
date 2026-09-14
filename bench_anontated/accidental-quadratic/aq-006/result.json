@@ -1,0 +1,32 @@
+{
+  "case": "aq-006",
+  "status": "annotation-qualified",
+  "attempts": 2,
+  "pcvs": [
+    "input_len",
+    "input_pairs"
+  ],
+  "pcv_expressions": "input_len=len(path), input_pairs=len(path) * len(path)",
+  "gate_pass": true,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 6,
+    "required_states": 4,
+    "max_unexplained_share": 0.027014085382917198,
+    "reasons": [],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round2b/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "reviewed-no-safe-candidate",
+    "reason": "Avoiding repeated immutable-string reconstruction requires replacing the variable scanner and its index/replacement semantics. The straightforward upstream-style substitution also moves regex setup into module globals outside the region. Without exhaustive str/bytes/environment differential coverage, no local rewrite was accepted."
+  }
+}

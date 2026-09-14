@@ -1,0 +1,126 @@
+{
+  "case": "aq-015",
+  "status": "accepted",
+  "accepted": true,
+  "reason": "Index scans followed by one slice replace character-by-character concatenation and suffix slicing.",
+  "baseline_measurement": "../../../bench_anontated/accidental-quadratic/aq-015/evidence/round3/metrics.json",
+  "optimized_measurement": "evidence/after/metrics.json",
+  "baseline": {
+    "gate_pass": true,
+    "total_instructions": 273667.0,
+    "states": [
+      {
+        "state": {
+          "input_len": 3,
+          "input_pairs": 9
+        },
+        "calls": 2,
+        "instructions_per_call": 33148.0,
+        "total_instructions": 66296.0
+      },
+      {
+        "state": {
+          "input_len": 5,
+          "input_pairs": 25
+        },
+        "calls": 1,
+        "instructions_per_call": 32379.0,
+        "total_instructions": 32379.0
+      },
+      {
+        "state": {
+          "input_len": 9,
+          "input_pairs": 81
+        },
+        "calls": 1,
+        "instructions_per_call": 38775.0,
+        "total_instructions": 38775.0
+      },
+      {
+        "state": {
+          "input_len": 17,
+          "input_pairs": 289
+        },
+        "calls": 1,
+        "instructions_per_call": 53423.0,
+        "total_instructions": 53423.0
+      },
+      {
+        "state": {
+          "input_len": 33,
+          "input_pairs": 1089
+        },
+        "calls": 1,
+        "instructions_per_call": 82794.0,
+        "total_instructions": 82794.0
+      }
+    ],
+    "max_unexplained_share": 0.0062447206467961865
+  },
+  "optimized": {
+    "gate_pass": true,
+    "total_instructions": 235906.0,
+    "states": [
+      {
+        "state": {
+          "input_len": 3,
+          "input_pairs": 9
+        },
+        "calls": 2,
+        "instructions_per_call": 34343.0,
+        "total_instructions": 68686.0
+      },
+      {
+        "state": {
+          "input_len": 5,
+          "input_pairs": 25
+        },
+        "calls": 1,
+        "instructions_per_call": 31922.0,
+        "total_instructions": 31922.0
+      },
+      {
+        "state": {
+          "input_len": 9,
+          "input_pairs": 81
+        },
+        "calls": 1,
+        "instructions_per_call": 34895.0,
+        "total_instructions": 34895.0
+      },
+      {
+        "state": {
+          "input_len": 17,
+          "input_pairs": 289
+        },
+        "calls": 1,
+        "instructions_per_call": 42501.0,
+        "total_instructions": 42501.0
+      },
+      {
+        "state": {
+          "input_len": 33,
+          "input_pairs": 1089
+        },
+        "calls": 1,
+        "instructions_per_call": 57902.0,
+        "total_instructions": 57902.0
+      }
+    ],
+    "max_unexplained_share": 0.006027429170427744
+  },
+  "instruction_reduction_fraction": 0.13798156153281177,
+  "differential_evidence": "evidence/differential.json",
+  "native_timing_evidence": "evidence/native_timings.json",
+  "small_state_regression": {
+    "state": {
+      "input_len": 3,
+      "input_pairs": 9
+    },
+    "baseline_instructions_per_call": 33148,
+    "optimized_instructions_per_call": 34343,
+    "change_fraction": 0.03605044044889586
+  },
+  "differential_reproducer": "evidence/run_differential.py",
+  "independent_validation": "../../_validation/results.json"
+}

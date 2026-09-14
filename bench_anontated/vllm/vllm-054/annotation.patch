@@ -1,0 +1,11 @@
+--- a/vllm/v1/sample/sampler.py
++++ b/vllm/v1/sample/sampler.py
+@@ -377,7 +377,7 @@
+         sampling_metadata: SamplingMetadata,
+         predict_bonus_token: bool,
+     ) -> torch.Tensor:
+-        with perfmark.region("vllm-054"):
++        with perfmark.region("vllm-054", logits_rows=logits.shape[0]):
+             bad_words_token_ids = sampling_metadata.bad_words_token_ids
+             any_penalties_or_bad_words = (
+                 bool(bad_words_token_ids) or not sampling_metadata.no_penalties

@@ -1,0 +1,31 @@
+{
+  "case": "aq-010",
+  "status": "insufficient-entry-states",
+  "attempts": 1,
+  "pcvs": [
+    "path_len",
+    "pattern_count"
+  ],
+  "pcv_expressions": "path_len=len(path), pattern_count=sum(len(patterns) for patterns in socket_globs.values())",
+  "gate_pass": false,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 1,
+    "required_states": 4,
+    "max_unexplained_share": null,
+    "reasons": [
+      "insufficient state points: 1; need 4"
+    ],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round1/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json"
+  ],
+  "notes": [],
+  "explicit_block": "No cheap entry value exposes the number of files returned by recursive globbing; path length and the constant pattern count provide only one state.",
+  "optimization": {
+    "status": "not-qualified",
+    "reason": "The final annotation did not pass the strict measurement gate."
+  }
+}

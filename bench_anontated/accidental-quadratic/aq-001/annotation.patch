@@ -1,0 +1,12 @@
+diff --git a/Lib/enum.py b/Lib/enum.py
+--- a/Lib/enum.py
++++ b/Lib/enum.py
+@@ -203,7 +203,7 @@
+         """
+         convert each quasi-member into an instance of the new enum class
+         """
+-        with perfmark.region('aq-001'):
++        with perfmark.region('aq-001', members_before=len(enum_class._member_map_)):
+             # first step: remove ourself from enum_class
+             delattr(enum_class, member_name)
+             # second step: create member based on enum_class

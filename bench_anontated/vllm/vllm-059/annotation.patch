@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/block_table.py
++++ b/vllm/v1/worker/block_table.py
+@@ -365,7 +365,7 @@
+             block_table.compute_slot_mapping(num_reqs, query_start_loc, positions)
+ 
+     def commit_block_table(self, num_reqs: int) -> None:
+-        with perfmark.region("vllm-059"):
++        with perfmark.region("vllm-059", table_count=len(self.block_tables), request_count=num_reqs):
+             for block_table in self.block_tables:
+                 block_table.commit_block_table(num_reqs)
+ 

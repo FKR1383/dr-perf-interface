@@ -1,0 +1,12 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -1502,7 +1502,7 @@
+ def get_obs_local_part(value):
+     """ obs-local-part = word *("." word)
+     """
+-    with perfmark.region('aq-012'):
++    with perfmark.region('aq-012', input_len=len(value), input_pairs=len(value) * len(value)):
+         obs_local_part = ObsLocalPart()
+         last_non_ws_was_dot = False
+         while value and (value[0]=='\\' or value[0] not in PHRASE_ENDS):

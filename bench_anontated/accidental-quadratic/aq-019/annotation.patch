@@ -1,0 +1,12 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -2637,7 +2637,7 @@
+     """Do our best to find the parameters in an invalid MIME header
+ 
+     """
+-    with perfmark.region('aq-019'):
++    with perfmark.region('aq-019', input_len=len(value), input_pairs=len(value) * len(value), initial_tokens=len(tokenlist)):
+         while value and value[0] != ';':
+             if value[0] in PHRASE_ENDS:
+                 tokenlist.append(ValueTerminal(value[0], 'misplaced-special'))

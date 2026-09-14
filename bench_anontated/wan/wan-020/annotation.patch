@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -152,7 +152,7 @@
+             # Reference: https://github.com/huggingface/diffusers/pull/12909
+             parallel_config=(self._parallel_config if encoder_hidden_states is None else None),
+         )
+-        with perfmark.region("wan-020"):
++        with perfmark.region("wan-020", context_length=0 if encoder_hidden_states is None else int(encoder_hidden_states.shape[1])):
+             hidden_states = hidden_states.flatten(2, 3)
+             hidden_states = hidden_states.type_as(query)
+ 

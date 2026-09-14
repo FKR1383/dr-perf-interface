@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -841,7 +841,7 @@
+     def refresh_metadata(self):
+         """Apply any batch updates to sampling metadata."""
+ 
+-        with perfmark.region("vllm-063"):
++        with perfmark.region("vllm-063", batch_size=self.num_reqs, pooling_model=int(self.is_pooling_model)):
+             if self.is_pooling_model:
+                 batch_changed = self.batch_update_builder.reset()
+                 if batch_changed:

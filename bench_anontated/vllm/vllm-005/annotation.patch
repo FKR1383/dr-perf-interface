@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -257,7 +257,7 @@
+                 that can never serve a hit stay out of the prefix-cache hash
+                 map.
+         """
+-        with perfmark.region("vllm-005"):
++        with perfmark.region("vllm-005", new_block_count=num_full_blocks - num_cached_blocks, block_size=block_size):
+             if num_cached_blocks >= num_full_blocks:
+                 return
+             new_full_blocks = blocks[num_cached_blocks:num_full_blocks]

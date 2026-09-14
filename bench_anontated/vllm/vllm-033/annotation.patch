@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -525,7 +525,7 @@
+         req_index = 0
+         while req_index < len(self.running) and token_budget > 0:
+             request = self.running[req_index]
+-            with perfmark.region("vllm-033"):
++            with perfmark.region("vllm-033", running_count=len(self.running), waiting_count=len(self.waiting)):
+                 if input_budget <= draft_slots:
+                     break
+ 
