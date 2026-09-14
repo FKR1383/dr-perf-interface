@@ -1,9 +1,11 @@
 import contextlib
+import copy
 import importlib.util
 import io
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -34,6 +36,28 @@ class CollectionTests(unittest.TestCase):
             self.assertIn('perfmark.region(',marked)
             self.assertTrue((out/'TASK.md').is_file())
             self.assertTrue(any((out/'LICENSES').rglob('LICENSE*')))
+            exported=json.loads((out/'case.json').read_text())
+            for name in exported['tests']['files']:
+                self.assertTrue((out/name).is_file(),name)
+            self.assertNotIn('resources',exported['tests'])
+
+    def test_bad_test_asset_paths_and_hashes_are_rejected(self):
+        case=BENCH/'regions/accidental-quadratic/cases/aq-001/case.json'
+        data=collection.load(case)
+        bad=copy.deepcopy(data)
+        bad['tests']['files']=['../../reference.md']
+        with self.assertRaisesRegex(ValueError,'inside the case tests'):
+            collection.test_assets(case,bad)
+        bad=copy.deepcopy(data)
+        bad['tests']['resources'][0]['sha256']='0'*64
+        with self.assertRaisesRegex(ValueError,'hash mismatch'):
+            collection.test_assets(case,bad)
+
+    def test_exported_python_workload_reaches_its_marked_source(self):
+        case=BENCH/'regions/accidental-quadratic/cases/aq-001/case.json'
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc=collection.test_case(case,sys.executable,None,None,30)
+        self.assertEqual(rc,0)
 
     @unittest.skipUnless(shutil.which('c++'),'requires a C++ compiler')
     def test_cpp_marker_balances_early_return_with_zero_pcvs(self):

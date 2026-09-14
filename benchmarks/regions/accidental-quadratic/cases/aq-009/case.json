@@ -24,11 +24,40 @@
   "build_status": "not-built",
   "workload": {
     "description": "Normalize a syntax node with many children that require invisible-parenthesis checks.",
-    "command": null
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
   },
   "citations": [
     "https://github.com/psf/black/pull/5322"
   ],
   "source_family": "psf/black:normalize_invisible_parens",
-  "phase": "python-runtime"
+  "phase": "python-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/README.md"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 in an isolated pinned Black checkout installed editable in a temporary virtual environment at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the pinned linegen target."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises normalize_invisible_parens with bounded input, and verifies entry into the empty region marker."
+  }
 }

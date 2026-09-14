@@ -38,3 +38,13 @@ their workload commands are `null`. The bounded trigger descriptions are
 derived from upstream reports, but this collection does not guarantee that a
 region is reachable in the local environment or that quadratic scaling has
 been reproduced or measured here.
+
+Each case also includes a bounded correctness workload in `tests/test_case.py`.
+The workload loads the exported source path, checks a concrete result or error,
+and uses the shared marker probe to verify region entry while forwarding to the
+real marker when run under DrPerf. Native checks verified region entry for all
+21 cases with Python 3.12. Cython, Black, and Socket CLI were checked against
+isolated pinned full checkouts because a single-file export does not contain
+their package trees; their case-local test READMEs record the setup. These
+tests establish correctness and marker reachability only; they do not
+establish a complexity class.

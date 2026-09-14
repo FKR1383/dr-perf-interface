@@ -5,8 +5,8 @@ markers**, ready for an agent or human to investigate. It is not a run of a
 full agent evaluation pipeline. The intended scale is 200–1,000 source regions.
 
 There are currently **207 collected regions**, each with pinned upstream source,
-a patch marking one region without any PCVs, a neutral task, and separate
-reference notes:
+a patch marking one region without any PCVs, a neutral task, a concrete bounded
+test workload with correctness assertions, and separate reference notes:
 
 | Group | Regions | Coverage |
 | --- | ---: | --- |
@@ -27,12 +27,15 @@ JavaScript execution reaches it.
 ```sh
 python3 benchmarks/regions/collect.py list
 python3 benchmarks/regions/collect.py check
+python3 benchmarks/regions/collect.py check --require-tests
 python3 benchmarks/regions/collect.py export v8-regexp-001 /tmp/regexp-case
 python3 benchmarks/regions/collect.py export aq-001 /tmp/python-case
+python3 benchmarks/regions/collect.py test aq-001
+python3 benchmarks/regions/collect.py test v8-regexp-001 --d8 /path/to/patched/d8
 ```
 
 The export contains the source file with its empty marker, the neutral task,
-public metadata, and applicable licenses. Reference notes and solved historical
+test files and fixtures, public metadata, and applicable licenses. Reference notes and solved historical
 annotations stay out of the export. A source file is context for an upstream
 checkout; most cases need that project's dependencies before they can run.
 
@@ -41,7 +44,12 @@ application, unique targets, and empty markers. For Python, removing the added
 marker restores the original AST. For C++, the patch only adds the helper
 include and one scope marker. These checks do not establish reachability,
 successful upstream compilation, a cost formula, or a performance improvement.
-All newly collected cases currently carry `build_status: not-built`.
+`tests.validation` distinguishes tests that have not run, behavior checks on a
+host runtime, and runs verified to enter the marked source region. Passing a
+Node test does not prove entry into an internal V8 function. Python tests use
+a marker observer to require target entry; when run under drperf, that observer
+forwards to the real markers. `build_status: not-built` refers to full upstream
+builds, separately from these native Python checks.
 
 See [the collection format and marking instructions](regions/README.md) and
 [the machine-readable index](regions/catalog.json).

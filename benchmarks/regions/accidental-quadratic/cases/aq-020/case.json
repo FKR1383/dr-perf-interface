@@ -24,12 +24,40 @@
   "build_status": "not-built",
   "workload": {
     "description": "Parse a long malformed transfer-encoding field.",
-    "command": null
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
   },
   "citations": [
     "https://github.com/python/cpython/issues/136063",
     "https://github.com/python/cpython/pull/152521"
   ],
   "source_family": "https://github.com/python/cpython/issues/136063",
-  "phase": "python-runtime"
+  "phase": "python-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises parse_content_transfer_encoding_header with bounded input, and verifies entry into the empty region marker."
+  }
 }

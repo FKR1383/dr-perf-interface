@@ -9,6 +9,8 @@ so a case is more concrete than a hotspot name or an unverified issue link.
 <group>/cases/<id>/region.patch    independent patch against upstream source
 <group>/cases/<id>/task.md         neutral investigation task and trigger suggestion
 <group>/cases/<id>/reference.md    historical findings / selection evidence
+<group>/cases/<id>/tests/          bounded inputs and correctness assertions
+<group>/test-support/             shared workload implementations, when needed
 <group>/upstream/...              shared pristine source files and licenses
 catalog.json                     index of collected cases, distinct from old inventory
 support/drperf_bench_region.h     C++ scope-marker helper
@@ -48,15 +50,47 @@ expressions. Build the project's sources with `support/` and the repository's
 Python needs the PerfMark Python binding and its native library. These source
 patches do not configure V8's GN build or install project dependencies.
 
-Use `collect.py export ID DESTINATION` to get the marked source file and neutral
-task. Reference notes stay behind. The export is not a complete upstream checkout
-or a standalone executable. A future task runner should place the patch into a
-checkout at the recorded revision and supply a verified small workload.
+Use `collect.py export ID DESTINATION` to get the marked source, neutral task,
+and declared tests and shared fixtures. Reference notes stay behind. The export
+is not a complete upstream checkout. The isolated standard-library cases can
+run directly; package-dependent cases need a full checkout at the recorded
+revision with the case patch already applied and matching dependencies.
+
+## Run a collected test
+
+```sh
+python3 benchmarks/regions/collect.py test aq-001
+python3 benchmarks/regions/collect.py test v8-regexp-001 --d8 /path/to/patched/d8
+python3 benchmarks/regions/collect.py test wan-001 \
+  --python /path/to/venv/bin/python --source-root /path/to/patched/diffusers
+```
+
+The runner exports the test files and substitutes `{python}`, `{d8}`, and
+`{source_root}` in the manifest's argument list. It does not install dependencies,
+download models, or modify a supplied checkout. Without `--source-root`, it
+uses the temporary export itself. A 120-second timeout is the default.
+
+Tests contain small input generators and value/shape/error assertions, not
+performance thresholds or PCV answers. Their `tests.validation.status` means:
+
+| Status | Evidence |
+| --- | --- |
+| `not-run` | Concrete test exists; required dependencies, runtime, or target path has not been verified successfully. Details record failures or missing setup. |
+| `behavior-checked` | Value assertions passed on the stated runtime; target marker entry remains unverified. |
+| `region-verified` | Assertions passed and the intended marked source was entered. This is not proof of a cost model or speedup. |
+
+Python workloads use `marker_probe.py` to observe entry and fail if the target
+is missed. Native correctness runs replace only the marker with a recording
+context; the target implementation runs unchanged. Under `DRPERF`, the observer
+also forwards to the real PerfMark context. JavaScript behavior checks on Node
+are explicitly separate from executing the pinned patched V8 shell. Unsupported
+Unicode Sets tests fail rather than reporting a vacuous pass.
 
 ## Collection checks
 
 ```sh
 python3 benchmarks/regions/collect.py check
+python3 benchmarks/regions/collect.py check --require-tests
 python3 benchmarks/regions/collect.py index
 python3 -m unittest discover -s benchmarks/tests -v
 ```
@@ -69,7 +103,8 @@ one macro invocation; full C++ projects have not been compiled. A standalone
 helper test checks zero PCVs and balanced entry/exit on an early return.
 
 These checks are collection integrity checks, not performance validation.
-`workload.command: null` means the suggested trigger has not been verified.
+Declared test assets, shared-resource hashes, and commands are checked too.
+Having a test file is separate from successfully verifying its target entry.
 Marking a V8 runtime function does not guarantee a JavaScript workload takes
 that fallback, and marking a bytecode generator measures compilation work.
 The RegExp parser/compiler/execution phases are likewise distinguished.

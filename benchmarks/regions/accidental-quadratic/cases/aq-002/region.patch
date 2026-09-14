@@ -1,11 +1,14 @@
 diff --git a/Cython/Compiler/ModuleNode.py b/Cython/Compiler/ModuleNode.py
 --- a/Cython/Compiler/ModuleNode.py
 +++ b/Cython/Compiler/ModuleNode.py
-@@ -1,3 +1,4 @@
+@@ -3,6 +3,7 @@
+ #
+ 
+ from __future__ import absolute_import
 +import perfmark
- #
- #   Module parse tree node
- #
+ 
+ import cython
+ cython.declare(Naming=object, Options=object, PyrexTypes=object, TypeSlots=object,
 @@ -613,31 +614,32 @@
      def sort_types_by_inheritance(self, type_dict, type_order, getkey):
          # copy the types into a list moving each parent type before

@@ -179,8 +179,16 @@ def main():
                       'workload':{'description':spec['workload'],'command':None},
                       'source_family':f'{project}:{original}:{symbol}',
                       'citations':[url]}
+                previous=case/'case.json'
+                if previous.exists():
+                    old=json.loads(previous.read_text())
+                    if old.get('source',{}).get('sha256')==data['source']['sha256'] and old.get('region')==data['region']:
+                        if 'tests' in old:
+                            data['tests']=old['tests']
+                            data['workload']=old['workload']
+                        if 'phase' in old:data['phase']=old['phase']
                 (case/'case.json').write_text(json.dumps(data,indent=2)+'\n')
-                (case/'task.md').write_text(f'# {symbol}\n\nInspect the marked {kind} in `{original}` at the pinned revision.\nThe marker has no PCVs; identify useful state expressions for its cost.\n\n{spec["workload"]}\n\nApply this case patch independently in an upstream checkout. The snapshot is\nsource context, not a standalone program. Install the matching project\ndependencies, make `perfmark/python` importable and build libperfmark before\nmeasuring. This collected region has not been built or executed as a new case.\nKeep the code behavior unchanged while adding observation state.\n')
+                (case/'task.md').write_text(f'# {symbol}\n\nInspect the marked {kind} in `{original}` at the pinned revision.\nThe marker has no PCVs; identify useful state expressions for its cost.\n\n{spec["workload"]}\n\nApply this case patch independently in an upstream checkout. The snapshot is\nsource context, not a standalone program. Install the matching project\ndependencies, make `perfmark/python` importable and build libperfmark before\nmeasuring. See `case.json` for the test command and recorded validation status.\nKeep the code behavior unchanged while adding observation state.\n\nThe `tests/` bundle supplies small inputs and correctness assertions. Keep these\nchecks passing while investigating the empty marker.\n')
                 refs='\n'.join(sorted({f'- `{m["file"]}`: `{m["call"]}`' for m in evidence}))
                 (case/'reference.md').write_text(f'# Collection provenance\n\nSource: [{symbol}]({url}).\n\nThis location was selected from earlier annotations in the local experiment\narchive. The following expressions are historical hypotheses, not a reviewed\nanswer key or a complexity guarantee:\n\n{refs}\n\nThe source snapshot is exported from pristine Git, and this case patch starts\nwith zero PCVs. Whole-function cases and child-block cases share a source family\nand must remain together when splitting or aggregating a future evaluation.\n')
         for license in ('LICENSE','LICENSE.md','NOTICE'):
