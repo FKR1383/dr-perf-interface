@@ -74,15 +74,22 @@ def apply(path, manifest, destination):
     if original.is_absolute() or '..' in original.parts:
         raise ValueError('source path must be relative to its upstream checkout')
     target = destination / original
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(snapshot_path(path,manifest), target)
     patch = (path.parent/'region.patch').resolve()
-    stats=subprocess.check_output(['git','apply','--numstat',str(patch)],cwd=destination,text=True)
-    touched=[line.split('\t',2)[-1] for line in stats.splitlines()]
-    if touched != [original.as_posix()]:
-        raise ValueError('a case patch must touch only its declared source file')
-    subprocess.run(['git','apply','--check',str(patch)],cwd=destination,check=True,capture_output=True)
-    subprocess.run(['git','apply',str(patch)],cwd=destination,check=True,capture_output=True)
+    # Git applies path-prefix filtering when cwd belongs to a surrounding
+    # worktree. Stage independently so exports work inside this repository too.
+    with tempfile.TemporaryDirectory(prefix='drperf-region-apply-') as tmp:
+        staging=Path(tmp)
+        staged=staging/original
+        staged.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(snapshot_path(path,manifest),staged)
+        stats=subprocess.check_output(['git','apply','--numstat',str(patch)],cwd=staging,text=True)
+        touched=[line.split('\t',2)[-1] for line in stats.splitlines()]
+        if touched != [original.as_posix()]:
+            raise ValueError('a case patch must touch only its declared source file')
+        subprocess.run(['git','apply','--check',str(patch)],cwd=staging,check=True,capture_output=True)
+        subprocess.run(['git','apply',str(patch)],cwd=staging,check=True,capture_output=True)
+        target.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(staged,target)
     return target
 
 

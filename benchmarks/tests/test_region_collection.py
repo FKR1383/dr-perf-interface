@@ -53,6 +53,15 @@ class CollectionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'hash mismatch'):
             collection.test_assets(case,bad)
 
+    def test_export_inside_git_worktree(self):
+        case=BENCH/'regions/accidental-quadratic/cases/aq-001/case.json'
+        with tempfile.TemporaryDirectory(dir=BENCH.parent) as tmp:
+            out=Path(tmp)/'case'
+            with contextlib.redirect_stdout(io.StringIO()):
+                collection.export(case,out)
+            source=out/collection.load(case)['source']['path']
+            self.assertIn("perfmark.region('aq-001')",source.read_text())
+
     def test_exported_python_workload_reaches_its_marked_source(self):
         case=BENCH/'regions/accidental-quadratic/cases/aq-001/case.json'
         with contextlib.redirect_stdout(io.StringIO()):
