@@ -1,0 +1,57 @@
+--- a/sympy/polys/rationaltools.py
++++ b/sympy/polys/rationaltools.py
+@@ -1,6 +1,7 @@
+ """Tools for manipulation of rational expressions. """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from sympy.core import Basic, Add, sympify
+ from sympy.core.exprtools import gcd_terms
+@@ -65,26 +66,27 @@
+     (x*exp(x) + 1)*exp(-3*x)/x
+ 
+     """
+-    def _together(expr):
+-        if isinstance(expr, Basic):
+-            if expr.is_Atom or (expr.is_Function and not deep):
+-                return expr
+-            elif expr.is_Add:
+-                return gcd_terms(list(map(_together, Add.make_args(expr))), fraction=fraction)
+-            elif expr.is_Pow:
+-                base = _together(expr.base)
++    with perfmark.region("lt-022"):
++        def _together(expr):
++            if isinstance(expr, Basic):
++                if expr.is_Atom or (expr.is_Function and not deep):
++                    return expr
++                elif expr.is_Add:
++                    return gcd_terms(list(map(_together, Add.make_args(expr))), fraction=fraction)
++                elif expr.is_Pow:
++                    base = _together(expr.base)
+ 
+-                if deep:
+-                    exp = _together(expr.exp)
++                    if deep:
++                        exp = _together(expr.exp)
++                    else:
++                        exp = expr.exp
++
++                    return expr.func(base, exp)
+                 else:
+-                    exp = expr.exp
++                    return expr.func(*[ _together(arg) for arg in expr.args ])
++            elif iterable(expr):
++                return expr.__class__([ _together(ex) for ex in expr ])
+ 
+-                return expr.func(base, exp)
+-            else:
+-                return expr.func(*[ _together(arg) for arg in expr.args ])
+-        elif iterable(expr):
+-            return expr.__class__([ _together(ex) for ex in expr ])
++            return expr
+ 
+-        return expr
+-
+-    return _together(sympify(expr))
++        return _together(sympify(expr))

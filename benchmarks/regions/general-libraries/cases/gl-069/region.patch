@@ -1,0 +1,26 @@
+--- a/networkx/drawing/layout.py
++++ b/networkx/drawing/layout.py
+@@ -15,6 +15,7 @@
+ Warning: Most layout routines have only been tested in 2-dimensions.
+ 
+ """
++import perfmark
+ 
+ import networkx as nx
+ from networkx.utils import np_random_state
+@@ -1569,10 +1570,11 @@
+     # init force of springs
+     K = np.ones((N, N)) - np.eye(N)
+     node_order = {node: i for i, node in enumerate(G)}
+-    for x, y in G.edges():
+-        if x != y:
+-            idx, jdx = (node_order[i] for i in (x, y))
+-            K[idx, jdx] = a
++    with perfmark.region("gl-069"):
++        for x, y in G.edges():
++            if x != y:
++                idx, jdx = (node_order[i] for i in (x, y))
++                K[idx, jdx] = a
+ 
+     # vectorize values
+     p = np.asarray(list(pos.values()))

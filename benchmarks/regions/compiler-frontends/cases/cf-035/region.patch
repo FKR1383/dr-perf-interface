@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGDecl.cpp
++++ b/clang/lib/CodeGen/CGDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGBlocks.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+@@ -2617,6 +2618,7 @@
+ /// for the specified parameter and set up LocalDeclMap.
+ void CodeGenFunction::EmitParmDecl(const VarDecl &D, ParamValue Arg,
+                                    unsigned ArgNo) {
++                                     DRPERF_BENCH_REGION("cf-035");
+   bool NoDebugInfo = false;
+   // FIXME: Why isn't ImplicitParamDecl a ParmVarDecl?
+   assert((isa<ParmVarDecl>(D) || isa<ImplicitParamDecl>(D)) &&

@@ -1,0 +1,30 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -303,12 +304,13 @@
+     for interpreter in interpreters:
+         if not interpreter.isidentifier():
+             raise InvalidTag(f"Tag {tag!r} has an invalid interpreter: {interpreter!r}")
+-    return frozenset(
+-        Tag(interpreter, abi, platform_)
+-        for interpreter in interpreters
+-        for abi in abis
+-        for platform_ in platforms
+-    )
++    with perfmark.region("gl-198"):
++        return frozenset(
++            Tag(interpreter, abi, platform_)
++            for interpreter in interpreters
++            for abi in abis
++            for platform_ in platforms
++        )
+ 
+ 
+ def _get_config_var(name: str, warn: bool = False) -> int | str | None:

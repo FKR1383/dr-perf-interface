@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -219,6 +220,7 @@
+                              bool AvoidPartialAvailabilityChecks,
+                              ObjCInterfaceDecl *ClassReceiver,
+                              bool SkipTrailingRequiresClause) {
++                               DRPERF_BENCH_REGION("cf-195");
+   SourceLocation Loc = Locs.front();
+   if (getLangOpts().CPlusPlus && isa<FunctionDecl>(D)) {
+     // If there were any diagnostics suppressed by template argument deduction,

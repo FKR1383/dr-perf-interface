@@ -1,0 +1,440 @@
+--- a/networkx/algorithms/matching.py
++++ b/networkx/algorithms/matching.py
+@@ -1,4 +1,5 @@
+ """Functions for computing and verifying matchings in a graph."""
++import perfmark
+ 
+ from itertools import repeat
+ 
+@@ -926,220 +927,221 @@
+         # Ok.
+ 
+     # Main loop: continue until no further improvement is possible.
+-    while 1:
+-        # Each iteration of this loop is a "stage".
+-        # A stage finds an augmenting path and uses that to improve
+-        # the matching.
+-
+-        # Remove labels from top-level blossoms/vertices.
+-        label.clear()
+-        labeledge.clear()
+-
+-        # Forget all about least-slack edges.
+-        bestedge.clear()
+-        for b in blossomdual:
+-            b.mybestedges = None
+-
+-        # Loss of labeling means that we can not be sure that currently
+-        # allowable edges remain allowable throughout this stage.
+-        allowedge.clear()
+-
+-        # Make queue empty.
+-        queue[:] = []
+-
+-        # Label single blossoms/vertices with S and put them in the queue.
+-        for v in gnodes:
+-            if (v not in mate) and label.get(inblossom[v]) is None:
+-                assignLabel(v, 1, None)
+-
+-        # Loop until we succeed in augmenting the matching.
+-        augmented = 0
++    with perfmark.region("gl-003"):
+         while 1:
+-            # Each iteration of this loop is a "substage".
+-            # A substage tries to find an augmenting path;
+-            # if found, the path is used to improve the matching and
+-            # the stage ends. If there is no augmenting path, the
+-            # primal-dual method is used to pump some slack out of
+-            # the dual variables.
+-
+-            # Continue labeling until all vertices which are reachable
+-            # through an alternating path have got a label.
+-            while queue and not augmented:
+-                # Take an S vertex from the queue.
+-                v = queue.pop()
+-                assert label[inblossom[v]] == 1
+-
+-                # Scan its neighbors:
+-                for w in G.neighbors(v):
+-                    if w == v:
+-                        continue  # ignore self-loops
+-                    # w is a neighbor to v
+-                    bv = inblossom[v]
+-                    bw = inblossom[w]
+-                    if bv == bw:
+-                        # this edge is internal to a blossom; ignore it
+-                        continue
+-                    if (v, w) not in allowedge:
+-                        kslack = slack(v, w)
+-                        if kslack <= 0:
+-                            # edge k has zero slack => it is allowable
+-                            allowedge[(v, w)] = allowedge[(w, v)] = True
+-                    if (v, w) in allowedge:
+-                        if label.get(bw) is None:
+-                            # (C1) w is a free vertex;
+-                            # label w with T and label its mate with S (R12).
+-                            assignLabel(w, 2, v)
++            # Each iteration of this loop is a "stage".
++            # A stage finds an augmenting path and uses that to improve
++            # the matching.
++    
++            # Remove labels from top-level blossoms/vertices.
++            label.clear()
++            labeledge.clear()
++    
++            # Forget all about least-slack edges.
++            bestedge.clear()
++            for b in blossomdual:
++                b.mybestedges = None
++    
++            # Loss of labeling means that we can not be sure that currently
++            # allowable edges remain allowable throughout this stage.
++            allowedge.clear()
++    
++            # Make queue empty.
++            queue[:] = []
++    
++            # Label single blossoms/vertices with S and put them in the queue.
++            for v in gnodes:
++                if (v not in mate) and label.get(inblossom[v]) is None:
++                    assignLabel(v, 1, None)
++    
++            # Loop until we succeed in augmenting the matching.
++            augmented = 0
++            while 1:
++                # Each iteration of this loop is a "substage".
++                # A substage tries to find an augmenting path;
++                # if found, the path is used to improve the matching and
++                # the stage ends. If there is no augmenting path, the
++                # primal-dual method is used to pump some slack out of
++                # the dual variables.
++    
++                # Continue labeling until all vertices which are reachable
++                # through an alternating path have got a label.
++                while queue and not augmented:
++                    # Take an S vertex from the queue.
++                    v = queue.pop()
++                    assert label[inblossom[v]] == 1
++    
++                    # Scan its neighbors:
++                    for w in G.neighbors(v):
++                        if w == v:
++                            continue  # ignore self-loops
++                        # w is a neighbor to v
++                        bv = inblossom[v]
++                        bw = inblossom[w]
++                        if bv == bw:
++                            # this edge is internal to a blossom; ignore it
++                            continue
++                        if (v, w) not in allowedge:
++                            kslack = slack(v, w)
++                            if kslack <= 0:
++                                # edge k has zero slack => it is allowable
++                                allowedge[(v, w)] = allowedge[(w, v)] = True
++                        if (v, w) in allowedge:
++                            if label.get(bw) is None:
++                                # (C1) w is a free vertex;
++                                # label w with T and label its mate with S (R12).
++                                assignLabel(w, 2, v)
++                            elif label.get(bw) == 1:
++                                # (C2) w is an S-vertex (not in the same blossom);
++                                # follow back-links to discover either an
++                                # augmenting path or a new blossom.
++                                base = scanBlossom(v, w)
++                                if base is not NoNode:
++                                    # Found a new blossom; add it to the blossom
++                                    # bookkeeping and turn it into an S-blossom.
++                                    addBlossom(base, v, w)
++                                else:
++                                    # Found an augmenting path; augment the
++                                    # matching and end this stage.
++                                    augmentMatching(v, w)
++                                    augmented = 1
++                                    break
++                            elif label.get(w) is None:
++                                # w is inside a T-blossom, but w itself has not
++                                # yet been reached from outside the blossom;
++                                # mark it as reached (we need this to relabel
++                                # during T-blossom expansion).
++                                assert label[bw] == 2
++                                label[w] = 2
++                                labeledge[w] = (v, w)
+                         elif label.get(bw) == 1:
+-                            # (C2) w is an S-vertex (not in the same blossom);
+-                            # follow back-links to discover either an
+-                            # augmenting path or a new blossom.
+-                            base = scanBlossom(v, w)
+-                            if base is not NoNode:
+-                                # Found a new blossom; add it to the blossom
+-                                # bookkeeping and turn it into an S-blossom.
+-                                addBlossom(base, v, w)
+-                            else:
+-                                # Found an augmenting path; augment the
+-                                # matching and end this stage.
+-                                augmentMatching(v, w)
+-                                augmented = 1
+-                                break
++                            # keep track of the least-slack non-allowable edge to
++                            # a different S-blossom.
++                            if bestedge.get(bv) is None or kslack < slack(*bestedge[bv]):
++                                bestedge[bv] = (v, w)
+                         elif label.get(w) is None:
+-                            # w is inside a T-blossom, but w itself has not
+-                            # yet been reached from outside the blossom;
+-                            # mark it as reached (we need this to relabel
+-                            # during T-blossom expansion).
+-                            assert label[bw] == 2
+-                            label[w] = 2
+-                            labeledge[w] = (v, w)
+-                    elif label.get(bw) == 1:
+-                        # keep track of the least-slack non-allowable edge to
+-                        # a different S-blossom.
+-                        if bestedge.get(bv) is None or kslack < slack(*bestedge[bv]):
+-                            bestedge[bv] = (v, w)
+-                    elif label.get(w) is None:
+-                        # w is a free vertex (or an unreached vertex inside
+-                        # a T-blossom) but we can not reach it yet;
+-                        # keep track of the least-slack edge that reaches w.
+-                        if bestedge.get(w) is None or kslack < slack(*bestedge[w]):
+-                            bestedge[w] = (v, w)
+-
+-            if augmented:
++                            # w is a free vertex (or an unreached vertex inside
++                            # a T-blossom) but we can not reach it yet;
++                            # keep track of the least-slack edge that reaches w.
++                            if bestedge.get(w) is None or kslack < slack(*bestedge[w]):
++                                bestedge[w] = (v, w)
++    
++                if augmented:
++                    break
++    
++                # There is no augmenting path under these constraints;
++                # compute delta and reduce slack in the optimization problem.
++                # (Note that our vertex dual variables, edge slacks and delta's
++                # are pre-multiplied by two.)
++                deltatype = -1
++                delta = deltaedge = deltablossom = None
++    
++                # Compute delta1: the minimum value of any vertex dual.
++                if not maxcardinality:
++                    deltatype = 1
++                    delta = min(dualvar.values())
++    
++                # Compute delta2: the minimum slack on any edge between
++                # an S-vertex and a free vertex.
++                for v in G.nodes():
++                    if label.get(inblossom[v]) is None and bestedge.get(v) is not None:
++                        d = slack(*bestedge[v])
++                        if deltatype == -1 or d < delta:
++                            delta = d
++                            deltatype = 2
++                            deltaedge = bestedge[v]
++    
++                # Compute delta3: half the minimum slack on any edge between
++                # a pair of S-blossoms.
++                for b in blossomparent:
++                    if (
++                        blossomparent[b] is None
++                        and label.get(b) == 1
++                        and bestedge.get(b) is not None
++                    ):
++                        kslack = slack(*bestedge[b])
++                        if allinteger:
++                            assert (kslack % 2) == 0
++                            d = kslack // 2
++                        else:
++                            d = kslack / 2.0
++                        if deltatype == -1 or d < delta:
++                            delta = d
++                            deltatype = 3
++                            deltaedge = bestedge[b]
++    
++                # Compute delta4: minimum z variable of any T-blossom.
++                for b in blossomdual:
++                    if (
++                        blossomparent[b] is None
++                        and label.get(b) == 2
++                        and (deltatype == -1 or blossomdual[b] < delta)
++                    ):
++                        delta = blossomdual[b]
++                        deltatype = 4
++                        deltablossom = b
++    
++                if deltatype == -1:
++                    # No further improvement possible; max-cardinality optimum
++                    # reached. Do a final delta update to make the optimum
++                    # verifiable.
++                    assert maxcardinality
++                    deltatype = 1
++                    delta = max(0, min(dualvar.values()))
++    
++                # Update dual variables according to delta.
++                for v in gnodes:
++                    if label.get(inblossom[v]) == 1:
++                        # S-vertex: 2*u = 2*u - 2*delta
++                        dualvar[v] -= delta
++                    elif label.get(inblossom[v]) == 2:
++                        # T-vertex: 2*u = 2*u + 2*delta
++                        dualvar[v] += delta
++                for b in blossomdual:
++                    if blossomparent[b] is None:
++                        if label.get(b) == 1:
++                            # top-level S-blossom: z = z + 2*delta
++                            blossomdual[b] += delta
++                        elif label.get(b) == 2:
++                            # top-level T-blossom: z = z - 2*delta
++                            blossomdual[b] -= delta
++    
++                # Take action at the point where minimum delta occurred.
++                if deltatype == 1:
++                    # No further improvement possible; optimum reached.
++                    break
++                elif deltatype == 2:
++                    # Use the least-slack edge to continue the search.
++                    (v, w) = deltaedge
++                    assert label[inblossom[v]] == 1
++                    allowedge[(v, w)] = allowedge[(w, v)] = True
++                    queue.append(v)
++                elif deltatype == 3:
++                    # Use the least-slack edge to continue the search.
++                    (v, w) = deltaedge
++                    allowedge[(v, w)] = allowedge[(w, v)] = True
++                    assert label[inblossom[v]] == 1
++                    queue.append(v)
++                elif deltatype == 4:
++                    # Expand the least-z blossom.
++                    expandBlossom(deltablossom, False)
++    
++                # End of a this substage.
++    
++            # Paranoia check that the matching is symmetric.
++            for v in mate:
++                assert mate[mate[v]] == v
++    
++            # Stop when no more augmenting path can be found.
++            if not augmented:
+                 break
+-
+-            # There is no augmenting path under these constraints;
+-            # compute delta and reduce slack in the optimization problem.
+-            # (Note that our vertex dual variables, edge slacks and delta's
+-            # are pre-multiplied by two.)
+-            deltatype = -1
+-            delta = deltaedge = deltablossom = None
+-
+-            # Compute delta1: the minimum value of any vertex dual.
+-            if not maxcardinality:
+-                deltatype = 1
+-                delta = min(dualvar.values())
+-
+-            # Compute delta2: the minimum slack on any edge between
+-            # an S-vertex and a free vertex.
+-            for v in G.nodes():
+-                if label.get(inblossom[v]) is None and bestedge.get(v) is not None:
+-                    d = slack(*bestedge[v])
+-                    if deltatype == -1 or d < delta:
+-                        delta = d
+-                        deltatype = 2
+-                        deltaedge = bestedge[v]
+-
+-            # Compute delta3: half the minimum slack on any edge between
+-            # a pair of S-blossoms.
+-            for b in blossomparent:
+-                if (
+-                    blossomparent[b] is None
+-                    and label.get(b) == 1
+-                    and bestedge.get(b) is not None
+-                ):
+-                    kslack = slack(*bestedge[b])
+-                    if allinteger:
+-                        assert (kslack % 2) == 0
+-                        d = kslack // 2
+-                    else:
+-                        d = kslack / 2.0
+-                    if deltatype == -1 or d < delta:
+-                        delta = d
+-                        deltatype = 3
+-                        deltaedge = bestedge[b]
+-
+-            # Compute delta4: minimum z variable of any T-blossom.
+-            for b in blossomdual:
+-                if (
+-                    blossomparent[b] is None
+-                    and label.get(b) == 2
+-                    and (deltatype == -1 or blossomdual[b] < delta)
+-                ):
+-                    delta = blossomdual[b]
+-                    deltatype = 4
+-                    deltablossom = b
+-
+-            if deltatype == -1:
+-                # No further improvement possible; max-cardinality optimum
+-                # reached. Do a final delta update to make the optimum
+-                # verifiable.
+-                assert maxcardinality
+-                deltatype = 1
+-                delta = max(0, min(dualvar.values()))
+-
+-            # Update dual variables according to delta.
+-            for v in gnodes:
+-                if label.get(inblossom[v]) == 1:
+-                    # S-vertex: 2*u = 2*u - 2*delta
+-                    dualvar[v] -= delta
+-                elif label.get(inblossom[v]) == 2:
+-                    # T-vertex: 2*u = 2*u + 2*delta
+-                    dualvar[v] += delta
+-            for b in blossomdual:
+-                if blossomparent[b] is None:
+-                    if label.get(b) == 1:
+-                        # top-level S-blossom: z = z + 2*delta
+-                        blossomdual[b] += delta
+-                    elif label.get(b) == 2:
+-                        # top-level T-blossom: z = z - 2*delta
+-                        blossomdual[b] -= delta
+-
+-            # Take action at the point where minimum delta occurred.
+-            if deltatype == 1:
+-                # No further improvement possible; optimum reached.
+-                break
+-            elif deltatype == 2:
+-                # Use the least-slack edge to continue the search.
+-                (v, w) = deltaedge
+-                assert label[inblossom[v]] == 1
+-                allowedge[(v, w)] = allowedge[(w, v)] = True
+-                queue.append(v)
+-            elif deltatype == 3:
+-                # Use the least-slack edge to continue the search.
+-                (v, w) = deltaedge
+-                allowedge[(v, w)] = allowedge[(w, v)] = True
+-                assert label[inblossom[v]] == 1
+-                queue.append(v)
+-            elif deltatype == 4:
+-                # Expand the least-z blossom.
+-                expandBlossom(deltablossom, False)
+-
+-            # End of a this substage.
+-
+-        # Paranoia check that the matching is symmetric.
+-        for v in mate:
+-            assert mate[mate[v]] == v
+-
+-        # Stop when no more augmenting path can be found.
+-        if not augmented:
+-            break
+-
+-        # End of a stage; expand all S-blossoms which have zero dual.
+-        for b in list(blossomdual.keys()):
+-            if b not in blossomdual:
+-                continue  # already expanded
+-            if blossomparent[b] is None and label.get(b) == 1 and blossomdual[b] == 0:
+-                expandBlossom(b, True)
++    
++            # End of a stage; expand all S-blossoms which have zero dual.
++            for b in list(blossomdual.keys()):
++                if b not in blossomdual:
++                    continue  # already expanded
++                if blossomparent[b] is None and label.get(b) == 1 and blossomdual[b] == 0:
++                    expandBlossom(b, True)
+ 
+     # Verify that we reached the optimum solution (only for integer weights).
+     if allinteger:

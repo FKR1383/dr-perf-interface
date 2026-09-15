@@ -1,0 +1,168 @@
+--- a/Cython/Compiler/Symtab.py
++++ b/Cython/Compiler/Symtab.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Symbol Table
+ #
+@@ -2530,84 +2531,85 @@
+     def declare_var(self, name, type, pos,
+                     cname=None, visibility='private',
+                     api=False, in_pxd=False, is_cdef=False, pytyping_modifiers=None):
+-        name = self.mangle_class_private_name(name)
+-
+-        if pytyping_modifiers:
+-            if "typing.ClassVar" in pytyping_modifiers:
+-                is_cdef = 0
+-                if not type.is_pyobject:
+-                    if not type.equivalent_type:
+-                        warning(pos, "ClassVar[] requires the type to be a Python object type. Found '%s', using object instead." % type)
+-                        type = py_object_type
++        with perfmark.region("lt-230"):
++            name = self.mangle_class_private_name(name)
++
++            if pytyping_modifiers:
++                if "typing.ClassVar" in pytyping_modifiers:
++                    is_cdef = 0
++                    if not type.is_pyobject:
++                        if not type.equivalent_type:
++                            warning(pos, "ClassVar[] requires the type to be a Python object type. Found '%s', using object instead." % type)
++                            type = py_object_type
++                        else:
++                            type = type.equivalent_type
++                if  "dataclasses.InitVar" in pytyping_modifiers and not self.is_c_dataclass_scope:
++                    error(pos, "Use of cython.dataclasses.InitVar does not make sense outside a dataclass")
++
++            if is_cdef:
++                # Add an entry for an attribute.
++                if self.defined:
++                    error(pos,
++                        "C attributes cannot be added in implementation part of"
++                        " extension type defined in a pxd")
++                if (not self.is_closure_class_scope and
++                        get_slot_table(self.directives).get_special_method_signature(name)):
++                    error(pos,
++                        "The name '%s' is reserved for a special method."
++                            % name)
++                if not cname:
++                    cname = name
++                    if not (self.parent_type.is_external or self.parent_type.entry.api or
++                            self.parent_type.entry.visibility == "public"):
++                        cname = c_safe_identifier(cname)
++                    cname = punycodify_name(cname, Naming.unicode_structmember_prefix)
++                entry = self.declare(name, cname, type, pos, visibility)
++                entry.is_variable = 1
++                self.var_entries.append(entry)
++                entry.pytyping_modifiers = pytyping_modifiers
++                if type.is_cpp_class and visibility != 'extern':
++                    if self.directives['cpp_locals']:
++                        entry.make_cpp_optional()
+                     else:
+-                        type = type.equivalent_type
+-            if  "dataclasses.InitVar" in pytyping_modifiers and not self.is_c_dataclass_scope:
+-                error(pos, "Use of cython.dataclasses.InitVar does not make sense outside a dataclass")
+-
+-        if is_cdef:
+-            # Add an entry for an attribute.
+-            if self.defined:
+-                error(pos,
+-                    "C attributes cannot be added in implementation part of"
+-                    " extension type defined in a pxd")
+-            if (not self.is_closure_class_scope and
+-                    get_slot_table(self.directives).get_special_method_signature(name)):
+-                error(pos,
+-                    "The name '%s' is reserved for a special method."
+-                        % name)
+-            if not cname:
+-                cname = name
+-                if not (self.parent_type.is_external or self.parent_type.entry.api or
+-                        self.parent_type.entry.visibility == "public"):
+-                    cname = c_safe_identifier(cname)
+-                cname = punycodify_name(cname, Naming.unicode_structmember_prefix)
+-            entry = self.declare(name, cname, type, pos, visibility)
+-            entry.is_variable = 1
+-            self.var_entries.append(entry)
+-            entry.pytyping_modifiers = pytyping_modifiers
+-            if type.is_cpp_class and visibility != 'extern':
+-                if self.directives['cpp_locals']:
+-                    entry.make_cpp_optional()
++                        type.check_nullary_constructor(pos)
++                if type.is_memoryviewslice:
++                    self.has_memoryview_attrs = True
++                elif type.needs_explicit_construction(self):
++                    self.has_explicitly_constructable_attrs = True
++                elif type.is_pyobject and (self.is_closure_class_scope or name != '__weakref__'):
++                    self.has_pyobject_attrs = True
++                    if (not type.is_builtin_type
++                            or not type.scope or type.scope.needs_gc()):
++                        self.has_cyclic_pyobject_attrs = True
++                if visibility not in ('private', 'public', 'readonly'):
++                    error(pos,
++                        "Attribute of extension type cannot be declared %s" % visibility)
++                if visibility in ('public', 'readonly'):
++                    # If the field is an external typedef, we cannot be sure about the type,
++                    # so do conversion ourself rather than rely on the CPython mechanism (through
++                    # a property; made in AnalyseDeclarationsTransform).
++                    entry.needs_property = True
++                    if not self.is_closure_class_scope and name in ("__dict__", "__weakref__"):
++                        error(pos, f"Special attribute {name} cannot be exposed to Python")
++                    if not (type.is_pyobject or type.can_coerce_to_pyobject(self)):
++                        # we're not testing for coercion *from* Python here - that would fail later
++                        error(pos, "C attribute of type '%s' cannot be accessed from Python" % type)
+                 else:
+-                    type.check_nullary_constructor(pos)
+-            if type.is_memoryviewslice:
+-                self.has_memoryview_attrs = True
+-            elif type.needs_explicit_construction(self):
+-                self.has_explicitly_constructable_attrs = True
+-            elif type.is_pyobject and (self.is_closure_class_scope or name != '__weakref__'):
+-                self.has_pyobject_attrs = True
+-                if (not type.is_builtin_type
+-                        or not type.scope or type.scope.needs_gc()):
+-                    self.has_cyclic_pyobject_attrs = True
+-            if visibility not in ('private', 'public', 'readonly'):
+-                error(pos,
+-                    "Attribute of extension type cannot be declared %s" % visibility)
+-            if visibility in ('public', 'readonly'):
+-                # If the field is an external typedef, we cannot be sure about the type,
+-                # so do conversion ourself rather than rely on the CPython mechanism (through
+-                # a property; made in AnalyseDeclarationsTransform).
+-                entry.needs_property = True
+-                if not self.is_closure_class_scope and name in ("__dict__", "__weakref__"):
+-                    error(pos, f"Special attribute {name} cannot be exposed to Python")
+-                if not (type.is_pyobject or type.can_coerce_to_pyobject(self)):
+-                    # we're not testing for coercion *from* Python here - that would fail later
+-                    error(pos, "C attribute of type '%s' cannot be accessed from Python" % type)
++                    entry.needs_property = False
++                return entry
+             else:
+-                entry.needs_property = False
+-            return entry
+-        else:
+-            if type is unspecified_type:
+-                type = py_object_type
+-            # Add an entry for a class attribute.
+-            entry = Scope.declare_var(self, name, type, pos,
+-                                      cname=cname, visibility=visibility,
+-                                      api=api, in_pxd=in_pxd, is_cdef=is_cdef, pytyping_modifiers=pytyping_modifiers)
+-            entry.is_member = 1
+-            # xxx: is_pyglobal changes behaviour in so many places that I keep it in for now.
+-            # is_member should be enough later on
+-            entry.is_pyglobal = 1
+-
+-            return entry
++                if type is unspecified_type:
++                    type = py_object_type
++                # Add an entry for a class attribute.
++                entry = Scope.declare_var(self, name, type, pos,
++                                          cname=cname, visibility=visibility,
++                                          api=api, in_pxd=in_pxd, is_cdef=is_cdef, pytyping_modifiers=pytyping_modifiers)
++                entry.is_member = 1
++                # xxx: is_pyglobal changes behaviour in so many places that I keep it in for now.
++                # is_member should be enough later on
++                entry.is_pyglobal = 1
++
++                return entry
+ 
+     def declare_pyfunction(self, name, pos, allow_redefine=False):
+         # Add an entry for a method.

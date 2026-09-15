@@ -1,0 +1,22 @@
+--- a/pandas/plotting/_matplotlib/misc.py
++++ b/pandas/plotting/_matplotlib/misc.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import random
+ from typing import TYPE_CHECKING
+@@ -167,9 +168,10 @@
+         to_plot[kls] = [[], []]
+ 
+     m = len(frame.columns) - 1
+-    s = np.array(
+-        [(np.cos(t), np.sin(t)) for t in [2 * np.pi * (i / m) for i in range(m)]]
+-    )
++    with perfmark.region("gl-143"):
++        s = np.array(
++            [(np.cos(t), np.sin(t)) for t in [2 * np.pi * (i / m) for i in range(m)]]
++        )
+ 
+     for i in range(n):
+         row = df.iloc[i].values

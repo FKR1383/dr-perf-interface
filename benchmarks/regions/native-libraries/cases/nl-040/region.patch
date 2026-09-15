@@ -1,0 +1,18 @@
+--- a/include/rapidjson/stringbuffer.h
++++ b/include/rapidjson/stringbuffer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_STRINGBUFFER_H_
+ #define RAPIDJSON_STRINGBUFFER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/stack.h"
+ 
+@@ -71,6 +72,7 @@
+     void Pop(size_t count) { stack_.template Pop<Ch>(count); }
+ 
+     const Ch* GetString() const {
++        DRPERF_BENCH_REGION("nl-040");
+         // Push and pop a null terminator. This is safe.
+         *stack_.template Push<Ch>() = '\0';
+         stack_.template Pop<Ch>(1);

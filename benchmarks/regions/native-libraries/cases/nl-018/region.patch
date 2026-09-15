@@ -1,0 +1,18 @@
+--- a/include/rapidjson/writer.h
++++ b/include/rapidjson/writer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_WRITER_H_
+ #define RAPIDJSON_WRITER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/clzll.h"
+ #include "internal/meta.h"
+@@ -295,6 +296,7 @@
+     };
+ 
+     bool WriteNull()  {
++        DRPERF_BENCH_REGION("nl-018");
+         PutReserve(*os_, 4);
+         PutUnsafe(*os_, 'n'); PutUnsafe(*os_, 'u'); PutUnsafe(*os_, 'l'); PutUnsafe(*os_, 'l'); return true;
+     }

@@ -1,0 +1,18 @@
+--- a/llvm/lib/AsmParser/LLParser.cpp
++++ b/llvm/lib/AsmParser/LLParser.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/AsmParser/LLParser.h"
+ #include "llvm/ADT/APSInt.h"
+ #include "llvm/ADT/DenseMap.h"
+@@ -6386,6 +6387,7 @@
+ bool LLParser::parseFunctionHeader(Function *&Fn, bool IsDefine,
+                                    unsigned &FunctionNumber,
+                                    SmallVectorImpl<unsigned> &UnnamedArgNums) {
++                                     DRPERF_BENCH_REGION("cf-172");
+   // parse the linkage.
+   LocTy LinkageLoc = Lex.getLoc();
+   unsigned Linkage;

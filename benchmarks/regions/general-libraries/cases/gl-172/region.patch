@@ -1,0 +1,30 @@
+--- a/src/urllib3/util/response.py
++++ b/src/urllib3/util/response.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import http.client as httplib
+ from email.errors import MultipartInvariantViolationDefect, StartBoundaryNotFoundDefect
+@@ -76,13 +77,14 @@
+     #     The claimed start boundary was never found.
+     # - MultipartInvariantViolationDefect:
+     #     A message claimed to be a multipart but no subparts were found.
+-    defects = [
+-        defect
+-        for defect in headers.defects
+-        if not isinstance(
+-            defect, (StartBoundaryNotFoundDefect, MultipartInvariantViolationDefect)
+-        )
+-    ]
++    with perfmark.region("gl-172"):
++        defects = [
++            defect
++            for defect in headers.defects
++            if not isinstance(
++                defect, (StartBoundaryNotFoundDefect, MultipartInvariantViolationDefect)
++            )
++        ]
+ 
+     if defects or unparsed_data:
+         raise HeaderParsingError(defects=defects, unparsed_data=unparsed_data)

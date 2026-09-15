@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaOpenMP.cpp
++++ b/clang/lib/Sema/SemaOpenMP.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Sema/SemaOpenMP.h"
+ 
+ #include "TreeTransform.h"
+@@ -4577,6 +4578,7 @@
+ 
+ StmtResult SemaOpenMP::ActOnOpenMPRegionEnd(StmtResult S,
+                                             ArrayRef<OMPClause *> Clauses) {
++                                              DRPERF_BENCH_REGION("cf-152");
+   handleDeclareVariantConstructTrait(DSAStack, DSAStack->getCurrentDirective(),
+                                      /*ScopeEntry=*/false);
+   if (!isOpenMPCapturingDirective(DSAStack->getCurrentDirective()))

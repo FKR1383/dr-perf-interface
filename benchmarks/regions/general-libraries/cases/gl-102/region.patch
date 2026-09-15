@@ -1,0 +1,61 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -1604,28 +1605,29 @@
+             ndtype.append((fname, fdtype))
+ 
+     # Add the fields from r2
+-    for fname, fdtype in _get_fieldspec(r2.dtype):
+-        # Have we seen the current name already ?
+-        # we need to rebuild this list every time
+-        names = [name for name, dtype in ndtype]
+-        try:
+-            nameidx = names.index(fname)
+-        except ValueError:
+-            #... we haven't: just add the description to the current list
+-            ndtype.append((fname, fdtype))
+-        else:
+-            # collision
+-            _, cdtype = ndtype[nameidx]
+-            if fname in key:
+-                # The current field is part of the key: take the largest dtype
+-                ndtype[nameidx] = (fname, max(fdtype, cdtype))
++    with perfmark.region("gl-102"):
++        for fname, fdtype in _get_fieldspec(r2.dtype):
++            # Have we seen the current name already ?
++            # we need to rebuild this list every time
++            names = [name for name, dtype in ndtype]
++            try:
++                nameidx = names.index(fname)
++            except ValueError:
++                #... we haven't: just add the description to the current list
++                ndtype.append((fname, fdtype))
+             else:
+-                # The current field is not part of the key: add the suffixes,
+-                # and place the new field adjacent to the old one
+-                ndtype[nameidx:nameidx + 1] = [
+-                    (fname + r1postfix, cdtype),
+-                    (fname + r2postfix, fdtype)
+-                ]
++                # collision
++                _, cdtype = ndtype[nameidx]
++                if fname in key:
++                    # The current field is part of the key: take the largest dtype
++                    ndtype[nameidx] = (fname, max(fdtype, cdtype))
++                else:
++                    # The current field is not part of the key: add the suffixes,
++                    # and place the new field adjacent to the old one
++                    ndtype[nameidx:nameidx + 1] = [
++                        (fname + r1postfix, cdtype),
++                        (fname + r2postfix, fdtype)
++                    ]
+     # Rebuild a dtype from the new fields
+     ndtype = np.dtype(ndtype)
+     # Find the largest nb of common fields :

@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ASTStructuralEquivalence.cpp
++++ b/clang/lib/AST/ASTStructuralEquivalence.cpp
+@@ -58,6 +58,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTStructuralEquivalence.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTDiagnostic.h"
+@@ -1630,6 +1631,7 @@
+ /// Determine structural equivalence of two records.
+ static bool IsStructurallyEquivalent(StructuralEquivalenceContext &Context,
+                                      RecordDecl *D1, RecordDecl *D2) {
++                                       DRPERF_BENCH_REGION("cf-127");
+   if (!NameIsStructurallyEquivalent(*D1, *D2)) {
+     return false;
+   }

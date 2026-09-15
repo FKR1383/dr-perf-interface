@@ -1,0 +1,35 @@
+{
+  "case": "cf-109",
+  "phase": "ir-generation",
+  "scenario": "intrinsic-upgrade-shape",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O2",
+    "-x",
+    "c",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "int fold_4(int x) { int s=0; for(int i=0;i<4;i++) s += x+i; return s; }\nint main(void) { return fold_4(2)!=14; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "__attribute__((noinline)) int ir_4_0(int x){return x+0;}\n__attribute__((noinline)) int ir_4_1(int x){return x+1;}\n__attribute__((noinline)) int ir_4_2(int x){return x+2;}\n__attribute__((noinline)) int ir_4_3(int x){return x+3;}\nint main(void){return (ir_4_0(0)+ir_4_1(1)+ir_4_2(2)+ir_4_3(3))<0;}\n"
+    },
+    {
+      "size": 16,
+      "source": "__attribute__((noinline)) int ir_4_0(int x){return x+0;}\n__attribute__((noinline)) int ir_4_1(int x){return x+1;}\n__attribute__((noinline)) int ir_4_2(int x){return x+2;}\n__attribute__((noinline)) int ir_4_3(int x){return x+3;}\n__attribute__((noinline)) int ir_4_4(int x){return x+4;}\n__attribute__((noinline)) int ir_4_5(int x){return x+5;}\n__attribute__((noinline)) int ir_4_6(int x){return x+6;}\n__attribute__((noinline)) int ir_4_7(int x){return x+7;}\n__attribute__((noinline)) int ir_4_8(int x){return x+8;}\n__attribute__((noinline)) int ir_4_9(int x){return x+9;}\n__attribute__((noinline)) int ir_4_10(int x){return x+10;}\n__attribute__((noinline)) int ir_4_11(int x){return x+11;}\n__attribute__((noinline)) int ir_4_12(int x){return x+12;}\n__attribute__((noinline)) int ir_4_13(int x){return x+13;}\n__attribute__((noinline)) int ir_4_14(int x){return x+14;}\n__attribute__((noinline)) int ir_4_15(int x){return x+15;}\nint main(void){return (ir_4_0(0)+ir_4_1(1)+ir_4_2(2)+ir_4_3(3)+ir_4_4(4)+ir_4_5(5)+ir_4_6(6)+ir_4_7(7)+ir_4_8(8)+ir_4_9(9)+ir_4_10(10)+ir_4_11(11)+ir_4_12(12)+ir_4_13(13)+ir_4_14(14)+ir_4_15(15))<0;}\n"
+    },
+    {
+      "size": 64,
+      "source": "__attribute__((noinline)) int ir_4_0(int x){return x+0;}\n__attribute__((noinline)) int ir_4_1(int x){return x+1;}\n__attribute__((noinline)) int ir_4_2(int x){return x+2;}\n__attribute__((noinline)) int ir_4_3(int x){return x+3;}\n__attribute__((noinline)) int ir_4_4(int x){return x+4;}\n__attribute__((noinline)) int ir_4_5(int x){return x+5;}\n__attribute__((noinline)) int ir_4_6(int x){return x+6;}\n__attribute__((noinline)) int ir_4_7(int x){return x+7;}\n__attribute__((noinline)) int ir_4_8(int x){return x+8;}\n__attribute__((noinline)) int ir_4_9(int x){return x+9;}\n__attribute__((noinline)) int ir_4_10(int x){return x+10;}\n__attribute__((noinline)) int ir_4_11(int x){return x+11;}\n__attribute__((noinline)) int ir_4_12(int x){return x+12;}\n__attribute__((noinline)) int ir_4_13(int x){return x+13;}\n__attribute__((noinline)) int ir_4_14(int x){return x+14;}\n__attribute__((noinline)) int ir_4_15(int x){return x+15;}\n__attribute__((noinline)) int ir_4_16(int x){return x+16;}\n__attribute__((noinline)) int ir_4_17(int x){return x+17;}\n__attribute__((noinline)) int ir_4_18(int x){return x+18;}\n__attribute__((noinline)) int ir_4_19(int x){return x+19;}\n__attribute__((noinline)) int ir_4_20(int x){return x+20;}\n__attribute__((noinline)) int ir_4_21(int x){return x+21;}\n__attribute__((noinline)) int ir_4_22(int x){return x+22;}\n__attribute__((noinline)) int ir_4_23(int x){return x+23;}\n__attribute__((noinline)) int ir_4_24(int x){return x+24;}\n__attribute__((noinline)) int ir_4_25(int x){return x+25;}\n__attribute__((noinline)) int ir_4_26(int x){return x+26;}\n__attribute__((noinline)) int ir_4_27(int x){return x+27;}\n__attribute__((noinline)) int ir_4_28(int x){return x+28;}\n__attribute__((noinline)) int ir_4_29(int x){return x+29;}\n__attribute__((noinline)) int ir_4_30(int x){return x+30;}\n__attribute__((noinline)) int ir_4_31(int x){return x+31;}\n__attribute__((noinline)) int ir_4_32(int x){return x+32;}\n__attribute__((noinline)) int ir_4_33(int x){return x+33;}\n__attribute__((noinline)) int ir_4_34(int x){return x+34;}\n__attribute__((noinline)) int ir_4_35(int x){return x+35;}\n__attribute__((noinline)) int ir_4_36(int x){return x+36;}\n__attribute__((noinline)) int ir_4_37(int x){return x+37;}\n__attribute__((noinline)) int ir_4_38(int x){return x+38;}\n__attribute__((noinline)) int ir_4_39(int x){return x+39;}\n__attribute__((noinline)) int ir_4_40(int x){return x+40;}\n__attribute__((noinline)) int ir_4_41(int x){return x+41;}\n__attribute__((noinline)) int ir_4_42(int x){return x+42;}\n__attribute__((noinline)) int ir_4_43(int x){return x+43;}\n__attribute__((noinline)) int ir_4_44(int x){return x+44;}\n__attribute__((noinline)) int ir_4_45(int x){return x+45;}\n__attribute__((noinline)) int ir_4_46(int x){return x+46;}\n__attribute__((noinline)) int ir_4_47(int x){return x+47;}\n__attribute__((noinline)) int ir_4_48(int x){return x+48;}\n__attribute__((noinline)) int ir_4_49(int x){return x+49;}\n__attribute__((noinline)) int ir_4_50(int x){return x+50;}\n__attribute__((noinline)) int ir_4_51(int x){return x+51;}\n__attribute__((noinline)) int ir_4_52(int x){return x+52;}\n__attribute__((noinline)) int ir_4_53(int x){return x+53;}\n__attribute__((noinline)) int ir_4_54(int x){return x+54;}\n__attribute__((noinline)) int ir_4_55(int x){return x+55;}\n__attribute__((noinline)) int ir_4_56(int x){return x+56;}\n__attribute__((noinline)) int ir_4_57(int x){return x+57;}\n__attribute__((noinline)) int ir_4_58(int x){return x+58;}\n__attribute__((noinline)) int ir_4_59(int x){return x+59;}\n__attribute__((noinline)) int ir_4_60(int x){return x+60;}\n__attribute__((noinline)) int ir_4_61(int x){return x+61;}\n__attribute__((noinline)) int ir_4_62(int x){return x+62;}\n__attribute__((noinline)) int ir_4_63(int x){return x+63;}\nint main(void){return (ir_4_0(0)+ir_4_1(1)+ir_4_2(2)+ir_4_3(3)+ir_4_4(4)+ir_4_5(5)+ir_4_6(6)+ir_4_7(7)+ir_4_8(8)+ir_4_9(9)+ir_4_10(10)+ir_4_11(11)+ir_4_12(12)+ir_4_13(13)+ir_4_14(14)+ir_4_15(15)+ir_4_16(16)+ir_4_17(17)+ir_4_18(18)+ir_4_19(19)+ir_4_20(20)+ir_4_21(21)+ir_4_22(22)+ir_4_23(23)+ir_4_24(24)+ir_4_25(25)+ir_4_26(26)+ir_4_27(27)+ir_4_28(28)+ir_4_29(29)+ir_4_30(30)+ir_4_31(31)+ir_4_32(32)+ir_4_33(33)+ir_4_34(34)+ir_4_35(35)+ir_4_36(36)+ir_4_37(37)+ir_4_38(38)+ir_4_39(39)+ir_4_40(40)+ir_4_41(41)+ir_4_42(42)+ir_4_43(43)+ir_4_44(44)+ir_4_45(45)+ir_4_46(46)+ir_4_47(47)+ir_4_48(48)+ir_4_49(49)+ir_4_50(50)+ir_4_51(51)+ir_4_52(52)+ir_4_53(53)+ir_4_54(54)+ir_4_55(55)+ir_4_56(56)+ir_4_57(57)+ir_4_58(58)+ir_4_59(59)+ir_4_60(60)+ir_4_61(61)+ir_4_62(62)+ir_4_63(63))<0;}\n"
+    }
+  ],
+  "target_symbol": "CodeGenModule::EmitCXXGlobalInitFunc",
+  "target_source": "clang/lib/CodeGen/CGDeclCXX.cpp",
+  "mapping_note": "Pinned source coverage observed CodeGenModule::EmitCXXGlobalInitFunc in the combined run of witness cf-004; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "ir-construction"
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGStmtOpenMP.cpp
++++ b/clang/lib/CodeGen/CGStmtOpenMP.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCleanup.h"
+ #include "CGOpenMPRuntime.h"
+ #include "CodeGenFunction.h"
+@@ -3364,6 +3365,7 @@
+     const OMPLoopDirective &S, Expr *EUB,
+     const CodeGenLoopBoundsTy &CodeGenLoopBounds,
+     const CodeGenDispatchBoundsTy &CGDispatchBounds) {
++      DRPERF_BENCH_REGION("cf-054");
+   // Emit the loop iteration variable.
+   const auto *IVExpr = cast<DeclRefExpr>(S.getIterationVariable());
+   const auto *IVDecl = cast<VarDecl>(IVExpr->getDecl());

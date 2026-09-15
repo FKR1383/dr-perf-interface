@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReader.cpp
++++ b/clang/lib/Serialization/ASTReader.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "TemplateArgumentHasher.h"
+@@ -4678,6 +4679,7 @@
+                                             SourceLocation ImportLoc,
+                                             unsigned ClientLoadCapabilities,
+                                             ModuleFile **NewLoadedModuleFile) {
++                                              DRPERF_BENCH_REGION("cf-020");
+   llvm::TimeTraceScope scope("ReadAST", FileName);
+ 
+   llvm::SaveAndRestore SetCurImportLocRAII(CurrentImportLoc, ImportLoc);

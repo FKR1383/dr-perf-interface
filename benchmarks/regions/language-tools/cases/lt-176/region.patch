@@ -1,0 +1,27 @@
+--- a/pyparsing/unicode.py
++++ b/pyparsing/unicode.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # unicode.py
+ 
+ import sys
+@@ -102,12 +103,13 @@
+         all characters in this range that are valid identifier body characters,
+         plus the digits 0-9, and · (Unicode MIDDLE DOT)
+         """
+-        identifier_chars = set(
+-            c for c in cls._chars_for_ranges if f"_{c}".isidentifier()
+-        )
+-        return "".join(
+-            sorted(identifier_chars | set(cls.identchars) | set("0123456789·"))
+-        )
++        with perfmark.region("lt-176"):
++            identifier_chars = set(
++                c for c in cls._chars_for_ranges if f"_{c}".isidentifier()
++            )
++            return "".join(
++                sorted(identifier_chars | set(cls.identchars) | set("0123456789·"))
++            )
+ 
+     @_lazyclassproperty
+     def identifier(cls):

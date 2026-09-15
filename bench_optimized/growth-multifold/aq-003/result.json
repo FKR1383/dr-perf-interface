@@ -1,0 +1,30 @@
+{
+  "case": "aq-003",
+  "status": "accepted",
+  "origin": "Expanded workload for an already implemented and validated cookie-parser optimization; not a new blinded agent discovery.",
+  "workload": "None, plain, and quote-only escaped strings repeated 16,32,64,128,256,512 times; maximum1538characters",
+  "baseline_measurement": "../../../bench_anontated/growth-multifold/aq-003/evidence/round2/metrics.json",
+  "optimized_measurement": "evidence/round1/metrics.json",
+  "baseline_gate_pass": true,
+  "optimized_gate_pass": true,
+  "baseline_total_instructions": 29105026.0,
+  "optimized_total_instructions": 2723101.0,
+  "instruction_ratio": 10.688191881241275,
+  "largest_state_instruction_ratio": 14.974920255652727,
+  "native_largest_state_speedup": 10.02889301102403,
+  "correctness": {
+    "checked": 66045,
+    "mismatches": 0,
+    "seed": 0
+  },
+  "validation": "evidence/validation.json",
+  "limitations": [
+    "Observed states only; not a proof for all cookie strings.",
+    "PCV uncached_indices describes index allocation for this three-character repeating workload and CPython small-integer cache; not a universal cookie cost model.",
+    "Native timing measures function calls with identical no-op marker contexts and PCV evaluation, not HTTP throughput.",
+    "Concurrent collection work may affect native timings.",
+    "Existing baseline benchmark case and earlier experiment evidence remain unchanged.",
+    "Both unexplained-share gates pass, but aggregate formulas have large numerical reconstruction errors on cheap controls; instruction reductions and differential correctness remain directly measured. See numerical_formula_validation."
+  ],
+  "numerical_formula_validation": "../../../bench_anontated/growth-multifold/aq-003/evidence/formula-reconstruction.json"
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/WhitespaceManager.cpp
++++ b/clang/lib/Format/WhitespaceManager.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "WhitespaceManager.h"
+ #include "llvm/ADT/STLExtras.h"
+ #include "llvm/ADT/SmallVector.h"
+@@ -127,6 +128,7 @@
+ }
+ 
+ void WhitespaceManager::calculateLineBreakInformation() {
++  DRPERF_BENCH_REGION("cf-219");
+   Changes[0].PreviousEndOfTokenColumn = 0;
+   Change *LastOutsideTokenChange = &Changes[0];
+   for (unsigned I = 1, e = Changes.size(); I != e; ++I) {

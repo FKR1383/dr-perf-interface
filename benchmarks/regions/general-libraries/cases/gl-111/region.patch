@@ -1,0 +1,69 @@
+--- a/numpy/lib/_histograms_impl.py
++++ b/numpy/lib/_histograms_impl.py
+@@ -1,6 +1,7 @@
+ """
+ Histogram-related functions
+ """
++import perfmark
+ import contextlib
+ import functools
+ import operator
+@@ -1009,32 +1010,33 @@
+         raise ValueError('range argument must have one entry per dimension')
+ 
+     # Create edge arrays
+-    for i in _range(D):
+-        if np.ndim(bins[i]) == 0:
+-            if bins[i] < 1:
++    with perfmark.region("gl-111"):
++        for i in _range(D):
++            if np.ndim(bins[i]) == 0:
++                if bins[i] < 1:
++                    raise ValueError(
++                        f'`bins[{i}]` must be positive, when an integer')
++                smin, smax = _get_outer_edges(sample[:, i], range[i])
++                try:
++                    n = operator.index(bins[i])
++    
++                except TypeError as e:
++                    raise TypeError(
++                        f"`bins[{i}]` must be an integer, when a scalar"
++                    ) from e
++    
++                edges[i] = np.linspace(smin, smax, n + 1)
++            elif np.ndim(bins[i]) == 1:
++                edges[i] = np.asarray(bins[i])
++                if np.any(edges[i][:-1] > edges[i][1:]):
++                    raise ValueError(
++                        f'`bins[{i}]` must be monotonically increasing, when an array')
++            else:
+                 raise ValueError(
+-                    f'`bins[{i}]` must be positive, when an integer')
+-            smin, smax = _get_outer_edges(sample[:, i], range[i])
+-            try:
+-                n = operator.index(bins[i])
+-
+-            except TypeError as e:
+-                raise TypeError(
+-                    f"`bins[{i}]` must be an integer, when a scalar"
+-                ) from e
+-
+-            edges[i] = np.linspace(smin, smax, n + 1)
+-        elif np.ndim(bins[i]) == 1:
+-            edges[i] = np.asarray(bins[i])
+-            if np.any(edges[i][:-1] > edges[i][1:]):
+-                raise ValueError(
+-                    f'`bins[{i}]` must be monotonically increasing, when an array')
+-        else:
+-            raise ValueError(
+-                f'`bins[{i}]` must be a scalar or 1d array')
+-
+-        nbin[i] = len(edges[i]) + 1  # includes an outlier on each end
+-        dedges[i] = np.diff(edges[i])
++                    f'`bins[{i}]` must be a scalar or 1d array')
++    
++            nbin[i] = len(edges[i]) + 1  # includes an outlier on each end
++            dedges[i] = np.diff(edges[i])
+ 
+     # Compute the bin number each sample falls into.
+     Ncount = tuple(

@@ -1,0 +1,72 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -1331,33 +1332,34 @@
+             Traceback (most recent call last):
+             ParseException: Expected end of text, found 'b' ...
+         """
+-        parseAll: bool = deprecate_argument(kwargs, "parseAll", False)
+-
+-        parse_all = parse_all or parseAll
+-
+-        ParserElement.reset_cache()
+-        if not self.streamlined:
+-            self.streamline()
+-        for e in self.ignoreExprs:
+-            e.streamline()
+-        if not self.keepTabs:
+-            instring = instring.expandtabs()
+-        try:
+-            loc, tokens = self._parse(instring, 0)
+-            if parse_all:
+-                loc = self.preParse(instring, loc)
+-                se = Empty() + StringEnd().set_debug(False)
+-                se._parse(instring, loc)
+-        except _ParseActionIndexError as pa_exc:
+-            raise pa_exc.exc
+-        except ParseBaseException as exc:
+-            if ParserElement.verbose_stacktrace:
+-                raise
+-
+-            # catch and re-raise exception from here, clearing out pyparsing internal stack trace
+-            raise exc.with_traceback(None)
+-        else:
+-            return tokens
++        with perfmark.region("lt-188"):
++            parseAll: bool = deprecate_argument(kwargs, "parseAll", False)
++
++            parse_all = parse_all or parseAll
++
++            ParserElement.reset_cache()
++            if not self.streamlined:
++                self.streamline()
++            for e in self.ignoreExprs:
++                e.streamline()
++            if not self.keepTabs:
++                instring = instring.expandtabs()
++            try:
++                loc, tokens = self._parse(instring, 0)
++                if parse_all:
++                    loc = self.preParse(instring, loc)
++                    se = Empty() + StringEnd().set_debug(False)
++                    se._parse(instring, loc)
++            except _ParseActionIndexError as pa_exc:
++                raise pa_exc.exc
++            except ParseBaseException as exc:
++                if ParserElement.verbose_stacktrace:
++                    raise
++
++                # catch and re-raise exception from here, clearing out pyparsing internal stack trace
++                raise exc.with_traceback(None)
++            else:
++                return tokens
+ 
+     def scan_string(
+         self,

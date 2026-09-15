@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-169",
+  "title": "jinja Parser.parse_block body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pallets/jinja",
+    "revision": "5ef70112a1ff19c05324ff889dd30405b1002044",
+    "path": "src/jinja2/parser.py",
+    "snapshot": "../../upstream/jinja/src/jinja2/parser.py",
+    "sha256": "b3f22fe9071e83d6dadb401e747b6777399db83768d4e161c04a3ec404e25cf6"
+  },
+  "region": {
+    "symbol": "Parser.parse_block",
+    "start_line": 293,
+    "end_line": 322,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-169",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise Parser.parse_block with bounded, varied jinja inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "jinja:src/jinja2/parser.py:Parser.parse_block",
+  "citations": [
+    "https://github.com/pallets/jinja/blob/5ef70112a1ff19c05324ff889dd30405b1002044/src/jinja2/parser.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

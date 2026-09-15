@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -4925,6 +4926,7 @@
+ bool CompilerInvocation::CreateFromArgsImpl(
+     CompilerInvocation &Res, ArrayRef<const char *> CommandLineArgs,
+     DiagnosticsEngine &Diags, const char *Argv0) {
++      DRPERF_BENCH_REGION("cf-136");
+   unsigned NumErrorsBefore = Diags.getNumErrors();
+ 
+   // Parse the arguments.

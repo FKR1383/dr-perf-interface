@@ -1,0 +1,24 @@
+--- a/networkx/drawing/nx_pylab.py
++++ b/networkx/drawing/nx_pylab.py
+@@ -16,6 +16,7 @@
+  - :func:`matplotlib.pyplot.scatter`
+  - :obj:`matplotlib.patches.FancyArrowPatch`
+ """
++import perfmark
+ 
+ import collections
+ import itertools
+@@ -1352,9 +1353,10 @@
+         "with_labels",
+     }
+ 
+-    if any(k not in valid_kwds for k in kwds):
+-        invalid_args = ", ".join([k for k in kwds if k not in valid_kwds])
+-        raise ValueError(f"Received invalid argument(s): {invalid_args}")
++    with perfmark.region("gl-049"):
++        if any(k not in valid_kwds for k in kwds):
++            invalid_args = ", ".join([k for k in kwds if k not in valid_kwds])
++            raise ValueError(f"Received invalid argument(s): {invalid_args}")
+ 
+     node_kwds = {k: v for k, v in kwds.items() if k in valid_node_kwds}
+     edge_kwds = {k: v for k, v in kwds.items() if k in valid_edge_kwds}

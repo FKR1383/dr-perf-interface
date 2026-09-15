@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/CXXInheritance.cpp
++++ b/clang/lib/AST/CXXInheritance.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/CXXInheritance.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Decl.h"
+@@ -158,6 +159,7 @@
+                                  const CXXRecordDecl *Record,
+                                  CXXRecordDecl::BaseMatchesCallback BaseMatches,
+                                  bool LookupInDependent) {
++                                   DRPERF_BENCH_REGION("cf-167");
+   bool FoundPath = false;
+ 
+   // The access of the path down to this record.

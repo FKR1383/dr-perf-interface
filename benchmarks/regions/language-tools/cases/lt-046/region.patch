@@ -1,0 +1,213 @@
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import importlib
+ import logging
+@@ -258,106 +259,107 @@
+         return cls._classes.get(key, default)
+ 
+     def __new__(cls, clsname, bases, attrs):
+-        klass = super().__new__(cls, clsname, bases, attrs)
+-        enum = Dialects.__members__.get(clsname.upper())
+-        cls._classes[enum.value if enum is not None else clsname.lower()] = klass
+-
+-        klass.TIME_TRIE = new_trie(klass.TIME_MAPPING)
+-        klass.FORMAT_TRIE = (
+-            new_trie(klass.FORMAT_MAPPING) if klass.FORMAT_MAPPING else klass.TIME_TRIE
+-        )
+-        # Merge class-defined INVERSE_TIME_MAPPING with auto-generated mappings
+-        # This allows dialects to define custom inverse mappings for roundtrip correctness
+-        klass.INVERSE_TIME_MAPPING = _with_strict_time_inverse(
+-            {v: k for k, v in klass.TIME_MAPPING.items()}
+-            | (klass.__dict__.get("INVERSE_TIME_MAPPING") or {})
+-        )
+-        klass.INVERSE_TIME_TRIE = new_trie(klass.INVERSE_TIME_MAPPING)
+-        klass.INVERSE_FORMAT_MAPPING = _with_strict_time_inverse(
+-            {v: k for k, v in klass.FORMAT_MAPPING.items()}
+-        )
+-        klass.INVERSE_FORMAT_TRIE = new_trie(klass.INVERSE_FORMAT_MAPPING)
+-
+-        klass.INVERSE_CREATABLE_KIND_MAPPING = {
+-            v: k for k, v in klass.CREATABLE_KIND_MAPPING.items()
+-        }
+-
+-        base = seq_get(bases, 0)
+-        base_tokenizer = (getattr(base, "tokenizer_class", Tokenizer),)
+-        base_jsonpath_tokenizer = (getattr(base, "jsonpath_tokenizer_class", JSONPathTokenizer),)
+-        base_parser = (getattr(base, "parser_class", Parser),)
+-        base_generator = (getattr(base, "generator_class", Generator),)
+-
+-        klass.tokenizer_class = klass.__dict__.get(
+-            "Tokenizer", type("Tokenizer", base_tokenizer, {})
+-        )
+-        klass.jsonpath_tokenizer_class = klass.__dict__.get(
+-            "JSONPathTokenizer", type("JSONPathTokenizer", base_jsonpath_tokenizer, {})
+-        )
+-        klass.parser_class = klass.__dict__.get(
+-            "Parser", klass.__dict__.get("parser_class", base_parser[0])
+-        )
+-        klass.generator_class = klass.__dict__.get(
+-            "Generator", klass.__dict__.get("generator_class", base_generator[0])
+-        )
+-
+-        # Remove transforms that correspond to unsupported JSONPathPart expressions
+-        gen_cls = klass.generator_class
+-        supported = getattr(gen_cls, "SUPPORTED_JSON_PATH_PARTS", None)
+-        if isinstance(supported, set):
+-            for part in ALL_JSON_PATH_PARTS - supported:
+-                gen_cls.TRANSFORMS.pop(part, None)
+-
+-        klass.QUOTE_START, klass.QUOTE_END = list(klass.tokenizer_class._QUOTES.items())[0]
+-        klass.IDENTIFIER_START, klass.IDENTIFIER_END = list(
+-            klass.tokenizer_class._IDENTIFIERS.items()
+-        )[0]
+-
+-        def get_start_end(token_type: TokenType) -> tuple[str | None, str | None]:
+-            return next(
+-                (
+-                    (s, e)
+-                    for s, (e, t) in klass.tokenizer_class._FORMAT_STRINGS.items()
+-                    if t == token_type
+-                ),
+-                (None, None),
++        with perfmark.region("lt-046"):
++            klass = super().__new__(cls, clsname, bases, attrs)
++            enum = Dialects.__members__.get(clsname.upper())
++            cls._classes[enum.value if enum is not None else clsname.lower()] = klass
++
++            klass.TIME_TRIE = new_trie(klass.TIME_MAPPING)
++            klass.FORMAT_TRIE = (
++                new_trie(klass.FORMAT_MAPPING) if klass.FORMAT_MAPPING else klass.TIME_TRIE
+             )
+-
+-        klass.BIT_START, klass.BIT_END = get_start_end(TokenType.BIT_STRING)
+-        klass.HEX_START, klass.HEX_END = get_start_end(TokenType.HEX_STRING)
+-        klass.BYTE_START, klass.BYTE_END = get_start_end(TokenType.BYTE_STRING)
+-        klass.UNICODE_START, klass.UNICODE_END = get_start_end(TokenType.UNICODE_STRING)
+-
+-        klass.STRINGS_SUPPORT_ESCAPED_SEQUENCES = "\\" in klass.tokenizer_class.STRING_ESCAPES
+-        klass.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES = (
+-            "\\" in klass.tokenizer_class.BYTE_STRING_ESCAPES
+-        )
+-
+-        if klass.STRINGS_SUPPORT_ESCAPED_SEQUENCES or klass.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES:
+-            klass.UNESCAPED_SEQUENCES = {
+-                **UNESCAPED_SEQUENCES,
+-                **klass.UNESCAPED_SEQUENCES,
++            # Merge class-defined INVERSE_TIME_MAPPING with auto-generated mappings
++            # This allows dialects to define custom inverse mappings for roundtrip correctness
++            klass.INVERSE_TIME_MAPPING = _with_strict_time_inverse(
++                {v: k for k, v in klass.TIME_MAPPING.items()}
++                | (klass.__dict__.get("INVERSE_TIME_MAPPING") or {})
++            )
++            klass.INVERSE_TIME_TRIE = new_trie(klass.INVERSE_TIME_MAPPING)
++            klass.INVERSE_FORMAT_MAPPING = _with_strict_time_inverse(
++                {v: k for k, v in klass.FORMAT_MAPPING.items()}
++            )
++            klass.INVERSE_FORMAT_TRIE = new_trie(klass.INVERSE_FORMAT_MAPPING)
++
++            klass.INVERSE_CREATABLE_KIND_MAPPING = {
++                v: k for k, v in klass.CREATABLE_KIND_MAPPING.items()
+             }
+ 
+-        klass.ESCAPED_SEQUENCES = {
+-            # The filter is necessary because of `\\a -> a` in Snowflake; we can't replace `a` with `\a`.
+-            v: k
+-            for k, v in klass.UNESCAPED_SEQUENCES.items()
+-            if not v.isprintable() or v == "\\"
+-        }
+-
+-        klass.SUPPORTS_COLUMN_JOIN_MARKS = "(+)" in klass.tokenizer_class.KEYWORDS
+-
+-        if enum not in ("", "bigquery", "snowflake"):
+-            klass.INITCAP_SUPPORTS_CUSTOM_DELIMITERS = False
+-
+-        klass.VALID_INTERVAL_UNITS = {
+-            *klass.VALID_INTERVAL_UNITS,
+-            *klass.DATE_PART_MAPPING.keys(),
+-            *klass.DATE_PART_MAPPING.values(),
+-        }
+-
+-        return klass
++            base = seq_get(bases, 0)
++            base_tokenizer = (getattr(base, "tokenizer_class", Tokenizer),)
++            base_jsonpath_tokenizer = (getattr(base, "jsonpath_tokenizer_class", JSONPathTokenizer),)
++            base_parser = (getattr(base, "parser_class", Parser),)
++            base_generator = (getattr(base, "generator_class", Generator),)
++
++            klass.tokenizer_class = klass.__dict__.get(
++                "Tokenizer", type("Tokenizer", base_tokenizer, {})
++            )
++            klass.jsonpath_tokenizer_class = klass.__dict__.get(
++                "JSONPathTokenizer", type("JSONPathTokenizer", base_jsonpath_tokenizer, {})
++            )
++            klass.parser_class = klass.__dict__.get(
++                "Parser", klass.__dict__.get("parser_class", base_parser[0])
++            )
++            klass.generator_class = klass.__dict__.get(
++                "Generator", klass.__dict__.get("generator_class", base_generator[0])
++            )
++
++            # Remove transforms that correspond to unsupported JSONPathPart expressions
++            gen_cls = klass.generator_class
++            supported = getattr(gen_cls, "SUPPORTED_JSON_PATH_PARTS", None)
++            if isinstance(supported, set):
++                for part in ALL_JSON_PATH_PARTS - supported:
++                    gen_cls.TRANSFORMS.pop(part, None)
++
++            klass.QUOTE_START, klass.QUOTE_END = list(klass.tokenizer_class._QUOTES.items())[0]
++            klass.IDENTIFIER_START, klass.IDENTIFIER_END = list(
++                klass.tokenizer_class._IDENTIFIERS.items()
++            )[0]
++
++            def get_start_end(token_type: TokenType) -> tuple[str | None, str | None]:
++                return next(
++                    (
++                        (s, e)
++                        for s, (e, t) in klass.tokenizer_class._FORMAT_STRINGS.items()
++                        if t == token_type
++                    ),
++                    (None, None),
++                )
++
++            klass.BIT_START, klass.BIT_END = get_start_end(TokenType.BIT_STRING)
++            klass.HEX_START, klass.HEX_END = get_start_end(TokenType.HEX_STRING)
++            klass.BYTE_START, klass.BYTE_END = get_start_end(TokenType.BYTE_STRING)
++            klass.UNICODE_START, klass.UNICODE_END = get_start_end(TokenType.UNICODE_STRING)
++
++            klass.STRINGS_SUPPORT_ESCAPED_SEQUENCES = "\\" in klass.tokenizer_class.STRING_ESCAPES
++            klass.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES = (
++                "\\" in klass.tokenizer_class.BYTE_STRING_ESCAPES
++            )
++
++            if klass.STRINGS_SUPPORT_ESCAPED_SEQUENCES or klass.BYTE_STRINGS_SUPPORT_ESCAPED_SEQUENCES:
++                klass.UNESCAPED_SEQUENCES = {
++                    **UNESCAPED_SEQUENCES,
++                    **klass.UNESCAPED_SEQUENCES,
++                }
++
++            klass.ESCAPED_SEQUENCES = {
++                # The filter is necessary because of `\\a -> a` in Snowflake; we can't replace `a` with `\a`.
++                v: k
++                for k, v in klass.UNESCAPED_SEQUENCES.items()
++                if not v.isprintable() or v == "\\"
++            }
++
++            klass.SUPPORTS_COLUMN_JOIN_MARKS = "(+)" in klass.tokenizer_class.KEYWORDS
++
++            if enum not in ("", "bigquery", "snowflake"):
++                klass.INITCAP_SUPPORTS_CUSTOM_DELIMITERS = False
++
++            klass.VALID_INTERVAL_UNITS = {
++                *klass.VALID_INTERVAL_UNITS,
++                *klass.DATE_PART_MAPPING.keys(),
++                *klass.DATE_PART_MAPPING.values(),
++            }
++
++            return klass
+ 
+ 
+ class Dialect(metaclass=_Dialect):

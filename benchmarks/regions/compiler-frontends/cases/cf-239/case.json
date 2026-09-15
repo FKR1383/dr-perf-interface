@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-239",
+  "title": "TransferFunctions::Visit compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Analysis/LiveVariables.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Analysis/LiveVariables.cpp",
+    "sha256": "f69052d9d9635868807b3d64287cf0411d4c8c7448f4250283fcd57787942e20"
+  },
+  "region": {
+    "symbol": "TransferFunctions::Visit",
+    "start_line": 233,
+    "end_line": 362,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-239",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "static-analysis",
+  "workload": {
+    "description": "Run the bounded static-analyzer fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Analysis/LiveVariables.cpp:TransferFunctions::Visit",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Analysis/LiveVariables.cpp#L233-L362"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "84427f837bf11125b2f30c82d6d4668addd9fcc0d3afb9ed429175b02aa16fc3",
+      "patch_sha256": "e26489b2dd421a9d8b296ae4f2ef15a2a86d64becae51d7eb8cee17808f2aaad"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

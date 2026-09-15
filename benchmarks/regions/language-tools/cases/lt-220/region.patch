@@ -1,0 +1,53 @@
+--- a/lark/load_grammar.py
++++ b/lark/load_grammar.py
+@@ -1,5 +1,6 @@
+ """Parses and compiles Lark grammars into an internal representation.
+ """
++import perfmark
+ 
+ import hashlib
+ import os.path
+@@ -923,24 +924,25 @@
+ 
+ 
+ def _get_parser():
+-    try:
+-        return _get_parser.cache
+-    except AttributeError:
+-        terminals = [TerminalDef(name, PatternRE(value)) for name, value in TERMINALS.items()]
+-
+-        rules = [(name.lstrip('?'), x, RuleOptions(expand1=name.startswith('?')))
+-                for name, x in RULES.items()]
+-        rules = [Rule(NonTerminal(r), [symbol_from_strcase(s) for s in x.split()], i, None, o)
+-                 for r, xs, o in rules for i, x in enumerate(xs)]
+-
+-        callback = ParseTreeBuilder(rules, ST).create_callback()
+-        import re
+-        lexer_conf = LexerConf(terminals, re, ['WS', 'COMMENT', 'BACKSLASH'])
+-        parser_conf = ParserConf(rules, callback, ['start'])
+-        lexer_conf.lexer_type = 'basic'
+-        parser_conf.parser_type = 'lalr'
+-        _get_parser.cache = ParsingFrontend(lexer_conf, parser_conf, None)
+-        return _get_parser.cache
++    with perfmark.region("lt-220"):
++        try:
++            return _get_parser.cache
++        except AttributeError:
++            terminals = [TerminalDef(name, PatternRE(value)) for name, value in TERMINALS.items()]
++
++            rules = [(name.lstrip('?'), x, RuleOptions(expand1=name.startswith('?')))
++                    for name, x in RULES.items()]
++            rules = [Rule(NonTerminal(r), [symbol_from_strcase(s) for s in x.split()], i, None, o)
++                     for r, xs, o in rules for i, x in enumerate(xs)]
++
++            callback = ParseTreeBuilder(rules, ST).create_callback()
++            import re
++            lexer_conf = LexerConf(terminals, re, ['WS', 'COMMENT', 'BACKSLASH'])
++            parser_conf = ParserConf(rules, callback, ['start'])
++            lexer_conf.lexer_type = 'basic'
++            parser_conf.parser_type = 'lalr'
++            _get_parser.cache = ParsingFrontend(lexer_conf, parser_conf, None)
++            return _get_parser.cache
+ 
+ GRAMMAR_ERRORS = [
+         ('Incorrect type of value', ['a: 1\n']),

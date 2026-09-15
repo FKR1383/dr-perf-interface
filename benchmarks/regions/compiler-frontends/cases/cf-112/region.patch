@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGAtomic.cpp
++++ b/clang/lib/CodeGen/CGAtomic.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCall.h"
+ #include "CGRecordLayout.h"
+ #include "CodeGenFunction.h"
+@@ -844,6 +845,7 @@
+ }
+ 
+ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
++  DRPERF_BENCH_REGION("cf-112");
+   QualType AtomicTy = E->getPtr()->getType()->getPointeeType();
+   QualType MemTy = AtomicTy;
+   if (const AtomicType *AT = AtomicTy->getAs<AtomicType>())

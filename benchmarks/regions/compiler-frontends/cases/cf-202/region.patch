@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaInit.cpp
++++ b/clang/lib/Sema/SemaInit.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclObjC.h"
+@@ -2271,6 +2272,7 @@
+     bool SubobjectIsDesignatorContext, unsigned &Index,
+     InitListExpr *StructuredList, unsigned &StructuredIndex,
+     bool TopLevelObject) {
++      DRPERF_BENCH_REGION("cf-202");
+   const RecordDecl *RD = getRecordDecl(DeclType);
+ 
+   // If the record is invalid, some of it's members are invalid. To avoid

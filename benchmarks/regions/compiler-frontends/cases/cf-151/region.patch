@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/Verifier.cpp
++++ b/llvm/lib/IR/Verifier.cpp
+@@ -47,6 +47,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/Verifier.h"
+ #include "llvm/ADT/APFloat.h"
+ #include "llvm/ADT/APInt.h"
+@@ -1934,6 +1935,7 @@
+ // value of the specified type.  The value V is printed in error messages.
+ void Verifier::verifyParameterAttrs(AttributeSet Attrs, Type *Ty,
+                                     const Value *V) {
++                                      DRPERF_BENCH_REGION("cf-151");
+   if (!Attrs.hasAttributes())
+     return;
+ 

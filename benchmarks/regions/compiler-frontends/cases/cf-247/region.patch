@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/FormatTokenLexer.cpp
++++ b/clang/lib/Format/FormatTokenLexer.cpp
+@@ -12,6 +12,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "FormatTokenLexer.h"
+ #include "FormatToken.h"
+ #include "clang/Basic/SourceLocation.h"
+@@ -115,6 +116,7 @@
+ }
+ 
+ void FormatTokenLexer::tryMergePreviousTokens() {
++  DRPERF_BENCH_REGION("cf-247");
+   if (tryMerge_TMacro())
+     return;
+   if (tryMergeConflictMarkers())

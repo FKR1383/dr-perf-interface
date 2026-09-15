@@ -1,0 +1,36 @@
+--- a/src/requests/help.py
++++ b/src/requests/help.py
+@@ -1,4 +1,5 @@
+ """Module containing bug report helper(s)."""
++import perfmark
+ 
+ import json
+ import platform
+@@ -66,16 +67,17 @@
+ 
+ def info() -> dict[str, Any]:
+     """Generate information for a bug report."""
+-    try:
+-        platform_info = {
+-            "system": platform.system(),
+-            "release": platform.release(),
+-        }
+-    except OSError:
+-        platform_info = {
+-            "system": "Unknown",
+-            "release": "Unknown",
+-        }
++    with perfmark.region("gl-182"):
++        try:
++            platform_info = {
++                "system": platform.system(),
++                "release": platform.release(),
++            }
++        except OSError:
++            platform_info = {
++                "system": "Unknown",
++                "release": "Unknown",
++            }
+ 
+     implementation_info = _implementation()
+     urllib3_info = {"version": urllib3.__version__}

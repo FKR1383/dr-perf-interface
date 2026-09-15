@@ -1,0 +1,50 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1037,22 +1038,23 @@
+         return deepcopy(self)
+ 
+     def add_comments(self, comments: list[str] | None = None, prepend: bool = False) -> None:
+-        if self.comments is None:
+-            self.comments = []
+-
+-        if comments:
+-            for comment in comments:
+-                _, *meta = comment.split(SQLGLOT_META)
+-                if meta:
+-                    for kv in "".join(meta).split(","):
+-                        k, *v = kv.split("=")
+-                        self.meta[k.strip()] = to_bool(v[0].strip() if v else True)
+-
+-                if not prepend:
+-                    self.comments.append(comment)
+-
+-            if prepend:
+-                self.comments = comments + self.comments
++        with perfmark.region("lt-071"):
++            if self.comments is None:
++                self.comments = []
++
++            if comments:
++                for comment in comments:
++                    _, *meta = comment.split(SQLGLOT_META)
++                    if meta:
++                        for kv in "".join(meta).split(","):
++                            k, *v = kv.split("=")
++                            self.meta[k.strip()] = to_bool(v[0].strip() if v else True)
++
++                    if not prepend:
++                        self.comments.append(comment)
++
++                if prepend:
++                    self.comments = comments + self.comments
+ 
+     def pop_comments(self) -> list[str]:
+         comments = self.comments or []

@@ -1,0 +1,50 @@
+--- a/src/jinja2/lexer.py
++++ b/src/jinja2/lexer.py
+@@ -3,6 +3,7 @@
+ the bitshift operators we don't allow in templates. It separates
+ template code and python code in expressions.
+ """
++import perfmark
+ 
+ import re
+ import typing as t
+@@ -404,25 +405,26 @@
+         """Expect a given token type and return it.  This accepts the same
+         argument as :meth:`jinja2.lexer.Token.test`.
+         """
+-        if not self.current.test(expr):
+-            expr = describe_token_expr(expr)
+-
+-            if self.current.type is TOKEN_EOF:
++        with perfmark.region("lt-162"):
++            if not self.current.test(expr):
++                expr = describe_token_expr(expr)
++
++                if self.current.type is TOKEN_EOF:
++                    raise TemplateSyntaxError(
++                        f"unexpected end of template, expected {expr!r}.",
++                        self.current.lineno,
++                        self.name,
++                        self.filename,
++                    )
++
+                 raise TemplateSyntaxError(
+-                    f"unexpected end of template, expected {expr!r}.",
++                    f"expected token {expr!r}, got {describe_token(self.current)!r}",
+                     self.current.lineno,
+                     self.name,
+                     self.filename,
+                 )
+ 
+-            raise TemplateSyntaxError(
+-                f"expected token {expr!r}, got {describe_token(self.current)!r}",
+-                self.current.lineno,
+-                self.name,
+-                self.filename,
+-            )
+-
+-        return next(self)
++            return next(self)
+ 
+ 
+ def get_lexer(environment: "Environment") -> "Lexer":

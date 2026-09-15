@@ -1,0 +1,32 @@
+{
+  "case": "cf-005",
+  "phase": "semantic-analysis",
+  "scenario": "qualified-name-lookup",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_13(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_13 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_13(2)==14);\nint main() { Item_13 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "namespace N0{struct Value{static constexpr int x=0;};}\nnamespace N1{struct Value{static constexpr int x=1;};}\nnamespace N2{struct Value{static constexpr int x=2;};}\nnamespace N3{struct Value{static constexpr int x=3;};}\nstatic_assert(N3::Value::x==3);\n"
+    },
+    {
+      "size": 16,
+      "source": "namespace N0{struct Value{static constexpr int x=0;};}\nnamespace N1{struct Value{static constexpr int x=1;};}\nnamespace N2{struct Value{static constexpr int x=2;};}\nnamespace N3{struct Value{static constexpr int x=3;};}\nnamespace N4{struct Value{static constexpr int x=4;};}\nnamespace N5{struct Value{static constexpr int x=5;};}\nnamespace N6{struct Value{static constexpr int x=6;};}\nnamespace N7{struct Value{static constexpr int x=7;};}\nnamespace N8{struct Value{static constexpr int x=8;};}\nnamespace N9{struct Value{static constexpr int x=9;};}\nnamespace N10{struct Value{static constexpr int x=10;};}\nnamespace N11{struct Value{static constexpr int x=11;};}\nnamespace N12{struct Value{static constexpr int x=12;};}\nnamespace N13{struct Value{static constexpr int x=13;};}\nnamespace N14{struct Value{static constexpr int x=14;};}\nnamespace N15{struct Value{static constexpr int x=15;};}\nstatic_assert(N15::Value::x==15);\n"
+    },
+    {
+      "size": 64,
+      "source": "namespace N0{struct Value{static constexpr int x=0;};}\nnamespace N1{struct Value{static constexpr int x=1;};}\nnamespace N2{struct Value{static constexpr int x=2;};}\nnamespace N3{struct Value{static constexpr int x=3;};}\nnamespace N4{struct Value{static constexpr int x=4;};}\nnamespace N5{struct Value{static constexpr int x=5;};}\nnamespace N6{struct Value{static constexpr int x=6;};}\nnamespace N7{struct Value{static constexpr int x=7;};}\nnamespace N8{struct Value{static constexpr int x=8;};}\nnamespace N9{struct Value{static constexpr int x=9;};}\nnamespace N10{struct Value{static constexpr int x=10;};}\nnamespace N11{struct Value{static constexpr int x=11;};}\nnamespace N12{struct Value{static constexpr int x=12;};}\nnamespace N13{struct Value{static constexpr int x=13;};}\nnamespace N14{struct Value{static constexpr int x=14;};}\nnamespace N15{struct Value{static constexpr int x=15;};}\nnamespace N16{struct Value{static constexpr int x=16;};}\nnamespace N17{struct Value{static constexpr int x=17;};}\nnamespace N18{struct Value{static constexpr int x=18;};}\nnamespace N19{struct Value{static constexpr int x=19;};}\nnamespace N20{struct Value{static constexpr int x=20;};}\nnamespace N21{struct Value{static constexpr int x=21;};}\nnamespace N22{struct Value{static constexpr int x=22;};}\nnamespace N23{struct Value{static constexpr int x=23;};}\nnamespace N24{struct Value{static constexpr int x=24;};}\nnamespace N25{struct Value{static constexpr int x=25;};}\nnamespace N26{struct Value{static constexpr int x=26;};}\nnamespace N27{struct Value{static constexpr int x=27;};}\nnamespace N28{struct Value{static constexpr int x=28;};}\nnamespace N29{struct Value{static constexpr int x=29;};}\nnamespace N30{struct Value{static constexpr int x=30;};}\nnamespace N31{struct Value{static constexpr int x=31;};}\nnamespace N32{struct Value{static constexpr int x=32;};}\nnamespace N33{struct Value{static constexpr int x=33;};}\nnamespace N34{struct Value{static constexpr int x=34;};}\nnamespace N35{struct Value{static constexpr int x=35;};}\nnamespace N36{struct Value{static constexpr int x=36;};}\nnamespace N37{struct Value{static constexpr int x=37;};}\nnamespace N38{struct Value{static constexpr int x=38;};}\nnamespace N39{struct Value{static constexpr int x=39;};}\nnamespace N40{struct Value{static constexpr int x=40;};}\nnamespace N41{struct Value{static constexpr int x=41;};}\nnamespace N42{struct Value{static constexpr int x=42;};}\nnamespace N43{struct Value{static constexpr int x=43;};}\nnamespace N44{struct Value{static constexpr int x=44;};}\nnamespace N45{struct Value{static constexpr int x=45;};}\nnamespace N46{struct Value{static constexpr int x=46;};}\nnamespace N47{struct Value{static constexpr int x=47;};}\nnamespace N48{struct Value{static constexpr int x=48;};}\nnamespace N49{struct Value{static constexpr int x=49;};}\nnamespace N50{struct Value{static constexpr int x=50;};}\nnamespace N51{struct Value{static constexpr int x=51;};}\nnamespace N52{struct Value{static constexpr int x=52;};}\nnamespace N53{struct Value{static constexpr int x=53;};}\nnamespace N54{struct Value{static constexpr int x=54;};}\nnamespace N55{struct Value{static constexpr int x=55;};}\nnamespace N56{struct Value{static constexpr int x=56;};}\nnamespace N57{struct Value{static constexpr int x=57;};}\nnamespace N58{struct Value{static constexpr int x=58;};}\nnamespace N59{struct Value{static constexpr int x=59;};}\nnamespace N60{struct Value{static constexpr int x=60;};}\nnamespace N61{struct Value{static constexpr int x=61;};}\nnamespace N62{struct Value{static constexpr int x=62;};}\nnamespace N63{struct Value{static constexpr int x=63;};}\nstatic_assert(N63::Value::x==63);\n"
+    }
+  ],
+  "target_symbol": "Sema::ParsedFreeStandingDeclSpec",
+  "target_source": "clang/lib/Sema/SemaDecl.cpp",
+  "mapping_note": "Pinned source coverage observed Sema::ParsedFreeStandingDeclSpec in the combined run of witness cf-013; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "semantic-analysis"
+}

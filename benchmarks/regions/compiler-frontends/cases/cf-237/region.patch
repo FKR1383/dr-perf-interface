@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/Intrinsics.cpp
++++ b/llvm/lib/IR/Intrinsics.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/Intrinsics.h"
+ #include "llvm/ADT/StringExtras.h"
+ #include "llvm/ADT/StringTable.h"
+@@ -200,6 +201,7 @@
+ DecodeIITType(unsigned &NextElt, ArrayRef<unsigned char> Infos,
+               IIT_Info LastInfo,
+               SmallVectorImpl<Intrinsic::IITDescriptor> &OutputTable) {
++                DRPERF_BENCH_REGION("cf-237");
+   using namespace Intrinsic;
+ 
+   bool IsScalableVector = (LastInfo == IIT_SCALABLE_VEC);

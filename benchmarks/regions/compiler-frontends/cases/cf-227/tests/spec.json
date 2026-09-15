@@ -1,0 +1,31 @@
+{
+  "case": "cf-227",
+  "phase": "preprocessing",
+  "scenario": "token-pasting",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "#define JOIN(a,b) a##b\nint JOIN(value_,227) = 9;\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "#define JOIN(a,b) a##b\nint JOIN(value_,0)=0;\nint JOIN(value_,1)=1;\nint JOIN(value_,2)=2;\nint JOIN(value_,3)=3;\n"
+    },
+    {
+      "size": 16,
+      "source": "#define JOIN(a,b) a##b\nint JOIN(value_,0)=0;\nint JOIN(value_,1)=1;\nint JOIN(value_,2)=2;\nint JOIN(value_,3)=3;\nint JOIN(value_,4)=4;\nint JOIN(value_,5)=5;\nint JOIN(value_,6)=6;\nint JOIN(value_,7)=7;\nint JOIN(value_,8)=8;\nint JOIN(value_,9)=9;\nint JOIN(value_,10)=10;\nint JOIN(value_,11)=11;\nint JOIN(value_,12)=12;\nint JOIN(value_,13)=13;\nint JOIN(value_,14)=14;\nint JOIN(value_,15)=15;\n"
+    },
+    {
+      "size": 64,
+      "source": "#define JOIN(a,b) a##b\nint JOIN(value_,0)=0;\nint JOIN(value_,1)=1;\nint JOIN(value_,2)=2;\nint JOIN(value_,3)=3;\nint JOIN(value_,4)=4;\nint JOIN(value_,5)=5;\nint JOIN(value_,6)=6;\nint JOIN(value_,7)=7;\nint JOIN(value_,8)=8;\nint JOIN(value_,9)=9;\nint JOIN(value_,10)=10;\nint JOIN(value_,11)=11;\nint JOIN(value_,12)=12;\nint JOIN(value_,13)=13;\nint JOIN(value_,14)=14;\nint JOIN(value_,15)=15;\nint JOIN(value_,16)=16;\nint JOIN(value_,17)=17;\nint JOIN(value_,18)=18;\nint JOIN(value_,19)=19;\nint JOIN(value_,20)=20;\nint JOIN(value_,21)=21;\nint JOIN(value_,22)=22;\nint JOIN(value_,23)=23;\nint JOIN(value_,24)=24;\nint JOIN(value_,25)=25;\nint JOIN(value_,26)=26;\nint JOIN(value_,27)=27;\nint JOIN(value_,28)=28;\nint JOIN(value_,29)=29;\nint JOIN(value_,30)=30;\nint JOIN(value_,31)=31;\nint JOIN(value_,32)=32;\nint JOIN(value_,33)=33;\nint JOIN(value_,34)=34;\nint JOIN(value_,35)=35;\nint JOIN(value_,36)=36;\nint JOIN(value_,37)=37;\nint JOIN(value_,38)=38;\nint JOIN(value_,39)=39;\nint JOIN(value_,40)=40;\nint JOIN(value_,41)=41;\nint JOIN(value_,42)=42;\nint JOIN(value_,43)=43;\nint JOIN(value_,44)=44;\nint JOIN(value_,45)=45;\nint JOIN(value_,46)=46;\nint JOIN(value_,47)=47;\nint JOIN(value_,48)=48;\nint JOIN(value_,49)=49;\nint JOIN(value_,50)=50;\nint JOIN(value_,51)=51;\nint JOIN(value_,52)=52;\nint JOIN(value_,53)=53;\nint JOIN(value_,54)=54;\nint JOIN(value_,55)=55;\nint JOIN(value_,56)=56;\nint JOIN(value_,57)=57;\nint JOIN(value_,58)=58;\nint JOIN(value_,59)=59;\nint JOIN(value_,60)=60;\nint JOIN(value_,61)=61;\nint JOIN(value_,62)=62;\nint JOIN(value_,63)=63;\n"
+    }
+  ],
+  "target_symbol": "TokenLexer::ExpandFunctionArguments",
+  "target_source": "clang/lib/Lex/TokenLexer.cpp",
+  "mapping_note": "The token-pasting construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

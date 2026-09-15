@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ExprConstant.cpp
++++ b/clang/lib/AST/ExprConstant.cpp
+@@ -32,6 +32,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ByteCode/Context.h"
+ #include "ByteCode/Frame.h"
+ #include "ByteCode/State.h"
+@@ -6634,6 +6635,7 @@
+                                   CallRef Call,
+                                   const CXXConstructorDecl *Definition,
+                                   EvalInfo &Info, APValue &Result) {
++                                    DRPERF_BENCH_REGION("cf-199");
+   SourceLocation CallLoc = E->getExprLoc();
+   if (!Info.CheckCallLimit(CallLoc))
+     return false;

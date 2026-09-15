@@ -1,0 +1,32 @@
+{
+  "case": "cf-142",
+  "phase": "compiler-support",
+  "scenario": "attribute-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "[[nodiscard]] constexpr int answer(){return 42;} int main(){return answer()!=42;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "[[nodiscard]] int attr_0(){return 0;}\n[[nodiscard]] int attr_1(){return 1;}\n[[nodiscard]] int attr_2(){return 2;}\n[[nodiscard]] int attr_3(){return 3;}\n"
+    },
+    {
+      "size": 16,
+      "source": "[[nodiscard]] int attr_0(){return 0;}\n[[nodiscard]] int attr_1(){return 1;}\n[[nodiscard]] int attr_2(){return 2;}\n[[nodiscard]] int attr_3(){return 3;}\n[[nodiscard]] int attr_4(){return 4;}\n[[nodiscard]] int attr_5(){return 5;}\n[[nodiscard]] int attr_6(){return 6;}\n[[nodiscard]] int attr_7(){return 7;}\n[[nodiscard]] int attr_8(){return 8;}\n[[nodiscard]] int attr_9(){return 9;}\n[[nodiscard]] int attr_10(){return 10;}\n[[nodiscard]] int attr_11(){return 11;}\n[[nodiscard]] int attr_12(){return 12;}\n[[nodiscard]] int attr_13(){return 13;}\n[[nodiscard]] int attr_14(){return 14;}\n[[nodiscard]] int attr_15(){return 15;}\n"
+    },
+    {
+      "size": 64,
+      "source": "[[nodiscard]] int attr_0(){return 0;}\n[[nodiscard]] int attr_1(){return 1;}\n[[nodiscard]] int attr_2(){return 2;}\n[[nodiscard]] int attr_3(){return 3;}\n[[nodiscard]] int attr_4(){return 4;}\n[[nodiscard]] int attr_5(){return 5;}\n[[nodiscard]] int attr_6(){return 6;}\n[[nodiscard]] int attr_7(){return 7;}\n[[nodiscard]] int attr_8(){return 8;}\n[[nodiscard]] int attr_9(){return 9;}\n[[nodiscard]] int attr_10(){return 10;}\n[[nodiscard]] int attr_11(){return 11;}\n[[nodiscard]] int attr_12(){return 12;}\n[[nodiscard]] int attr_13(){return 13;}\n[[nodiscard]] int attr_14(){return 14;}\n[[nodiscard]] int attr_15(){return 15;}\n[[nodiscard]] int attr_16(){return 16;}\n[[nodiscard]] int attr_17(){return 17;}\n[[nodiscard]] int attr_18(){return 18;}\n[[nodiscard]] int attr_19(){return 19;}\n[[nodiscard]] int attr_20(){return 20;}\n[[nodiscard]] int attr_21(){return 21;}\n[[nodiscard]] int attr_22(){return 22;}\n[[nodiscard]] int attr_23(){return 23;}\n[[nodiscard]] int attr_24(){return 24;}\n[[nodiscard]] int attr_25(){return 25;}\n[[nodiscard]] int attr_26(){return 26;}\n[[nodiscard]] int attr_27(){return 27;}\n[[nodiscard]] int attr_28(){return 28;}\n[[nodiscard]] int attr_29(){return 29;}\n[[nodiscard]] int attr_30(){return 30;}\n[[nodiscard]] int attr_31(){return 31;}\n[[nodiscard]] int attr_32(){return 32;}\n[[nodiscard]] int attr_33(){return 33;}\n[[nodiscard]] int attr_34(){return 34;}\n[[nodiscard]] int attr_35(){return 35;}\n[[nodiscard]] int attr_36(){return 36;}\n[[nodiscard]] int attr_37(){return 37;}\n[[nodiscard]] int attr_38(){return 38;}\n[[nodiscard]] int attr_39(){return 39;}\n[[nodiscard]] int attr_40(){return 40;}\n[[nodiscard]] int attr_41(){return 41;}\n[[nodiscard]] int attr_42(){return 42;}\n[[nodiscard]] int attr_43(){return 43;}\n[[nodiscard]] int attr_44(){return 44;}\n[[nodiscard]] int attr_45(){return 45;}\n[[nodiscard]] int attr_46(){return 46;}\n[[nodiscard]] int attr_47(){return 47;}\n[[nodiscard]] int attr_48(){return 48;}\n[[nodiscard]] int attr_49(){return 49;}\n[[nodiscard]] int attr_50(){return 50;}\n[[nodiscard]] int attr_51(){return 51;}\n[[nodiscard]] int attr_52(){return 52;}\n[[nodiscard]] int attr_53(){return 53;}\n[[nodiscard]] int attr_54(){return 54;}\n[[nodiscard]] int attr_55(){return 55;}\n[[nodiscard]] int attr_56(){return 56;}\n[[nodiscard]] int attr_57(){return 57;}\n[[nodiscard]] int attr_58(){return 58;}\n[[nodiscard]] int attr_59(){return 59;}\n[[nodiscard]] int attr_60(){return 60;}\n[[nodiscard]] int attr_61(){return 61;}\n[[nodiscard]] int attr_62(){return 62;}\n[[nodiscard]] int attr_63(){return 63;}\n"
+    }
+  ],
+  "target_symbol": "DiagnosticIDs::ProcessDiag",
+  "target_source": "clang/lib/Basic/DiagnosticIDs.cpp",
+  "mapping_note": "Pinned source coverage observed DiagnosticIDs::ProcessDiag in the combined run of witness cf-002; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "semantic-analysis"
+}

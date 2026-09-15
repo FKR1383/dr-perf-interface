@@ -1,0 +1,64 @@
+--- a/sympy/utilities/decorator.py
++++ b/sympy/utilities/decorator.py
+@@ -1,5 +1,6 @@
+ """Useful utility decorators. """
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import TypeVar
+ import sys
+@@ -300,28 +301,29 @@
+     sympy.testing.pytest.warns_deprecated_sympy
+ 
+     '''
+-    decorator_kwargs = {"deprecated_since_version": deprecated_since_version,
+-               "active_deprecations_target": active_deprecations_target}
+-    def deprecated_decorator(wrapped):
+-        if hasattr(wrapped, '__mro__'):  # wrapped is actually a class
+-            class wrapper(wrapped):
+-                __doc__ = wrapped.__doc__
+-                __module__ = wrapped.__module__
+-                _sympy_deprecated_func = wrapped
+-                if '__new__' in wrapped.__dict__:
+-                    def __new__(cls, *args, **kwargs):
+-                        sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
+-                        return super().__new__(cls, *args, **kwargs)
+-                else:
+-                    def __init__(self, *args, **kwargs):
+-                        sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
+-                        super().__init__(*args, **kwargs)
+-            wrapper.__name__ = wrapped.__name__
+-        else:
+-            @wraps(wrapped)
+-            def wrapper(*args, **kwargs):
+-                sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
+-                return wrapped(*args, **kwargs)
+-            wrapper._sympy_deprecated_func = wrapped
+-        return wrapper
+-    return deprecated_decorator
++    with perfmark.region("lt-029"):
++        decorator_kwargs = {"deprecated_since_version": deprecated_since_version,
++                   "active_deprecations_target": active_deprecations_target}
++        def deprecated_decorator(wrapped):
++            if hasattr(wrapped, '__mro__'):  # wrapped is actually a class
++                class wrapper(wrapped):
++                    __doc__ = wrapped.__doc__
++                    __module__ = wrapped.__module__
++                    _sympy_deprecated_func = wrapped
++                    if '__new__' in wrapped.__dict__:
++                        def __new__(cls, *args, **kwargs):
++                            sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
++                            return super().__new__(cls, *args, **kwargs)
++                    else:
++                        def __init__(self, *args, **kwargs):
++                            sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
++                            super().__init__(*args, **kwargs)
++                wrapper.__name__ = wrapped.__name__
++            else:
++                @wraps(wrapped)
++                def wrapper(*args, **kwargs):
++                    sympy_deprecation_warning(message, **decorator_kwargs, stacklevel=stacklevel)
++                    return wrapped(*args, **kwargs)
++                wrapper._sympy_deprecated_func = wrapped
++            return wrapper
++        return deprecated_decorator

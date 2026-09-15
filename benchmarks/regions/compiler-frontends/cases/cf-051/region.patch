@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CodeGenModule.cpp
++++ b/clang/lib/CodeGen/CodeGenModule.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CodeGenModule.h"
+ #include "ABIInfo.h"
+ #include "CGBlocks.h"
+@@ -6987,6 +6988,7 @@
+ 
+ /// EmitTopLevelDecl - Emit code for a single top level declaration.
+ void CodeGenModule::EmitTopLevelDecl(Decl *D) {
++  DRPERF_BENCH_REGION("cf-051");
+   // Ignore dependent declarations.
+   if (D->isTemplated())
+     return;

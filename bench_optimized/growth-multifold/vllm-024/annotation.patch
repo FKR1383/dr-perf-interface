@@ -1,0 +1,16 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -170,7 +170,12 @@
+ 
+         Note: In a priority queue, there is no concept of prepending to the
+         front. Requests are ordered by (priority, arrival_time)."""
+-        with perfmark.region("vllm-024"):
++        incoming_count = len(requests)
++        levels = incoming_count.bit_length() - 1
++        sift_comparisons = (0 if incoming_count == 0 else
++                            incoming_count * levels - (1 << (levels + 1))
++                            + levels + 2)
++        with perfmark.region("vllm-024", sift_comparisons=sift_comparisons):
+             for request in requests:
+                 self.add_request(request)
+ 

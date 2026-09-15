@@ -1,0 +1,70 @@
+--- a/pandas/plotting/_matplotlib/boxplot.py
++++ b/pandas/plotting/_matplotlib/boxplot.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import (
+     TYPE_CHECKING,
+@@ -392,33 +393,34 @@
+ 
+         return result
+ 
+-    def plot_group(keys, values, ax: Axes, **kwds):
+-        # GH 45465: xlabel/ylabel need to be popped out before plotting happens
+-        xlabel, ylabel = kwds.pop("xlabel", None), kwds.pop("ylabel", None)
+-        if xlabel:
+-            ax.set_xlabel(pprint_thing(xlabel))
+-        if ylabel:
+-            ax.set_ylabel(pprint_thing(ylabel))
+-
+-        keys = [pprint_thing(x) for x in keys]
+-        values = [remove_na_arraylike(v) for v in values]
+-        bp = ax.boxplot(values, **kwds)
+-        if fontsize is not None:
+-            ax.tick_params(axis="both", labelsize=fontsize)
+-
+-        # GH 45465: x/y are flipped when "vert" changes
+-        _set_ticklabels(
+-            ax=ax, labels=keys, is_vertical=kwds.get("vert", True), rotation=rot
+-        )
+-        maybe_color_bp(bp, color_tup=colors, **kwds)
+-
+-        # Return axes in multiplot case, maybe revisit later # 985
+-        if return_type == "dict":
+-            return bp
+-        elif return_type == "both":
+-            return BoxPlot.BP(ax=ax, lines=bp)
+-        else:
+-            return ax
++    with perfmark.region("gl-150"):
++        def plot_group(keys, values, ax: Axes, **kwds):
++            # GH 45465: xlabel/ylabel need to be popped out before plotting happens
++            xlabel, ylabel = kwds.pop("xlabel", None), kwds.pop("ylabel", None)
++            if xlabel:
++                ax.set_xlabel(pprint_thing(xlabel))
++            if ylabel:
++                ax.set_ylabel(pprint_thing(ylabel))
++    
++            keys = [pprint_thing(x) for x in keys]
++            values = [remove_na_arraylike(v) for v in values]
++            bp = ax.boxplot(values, **kwds)
++            if fontsize is not None:
++                ax.tick_params(axis="both", labelsize=fontsize)
++    
++            # GH 45465: x/y are flipped when "vert" changes
++            _set_ticklabels(
++                ax=ax, labels=keys, is_vertical=kwds.get("vert", True), rotation=rot
++            )
++            maybe_color_bp(bp, color_tup=colors, **kwds)
++    
++            # Return axes in multiplot case, maybe revisit later # 985
++            if return_type == "dict":
++                return bp
++            elif return_type == "both":
++                return BoxPlot.BP(ax=ax, lines=bp)
++            else:
++                return ax
+ 
+     colors = _get_colors()
+     if column is None:

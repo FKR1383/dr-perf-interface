@@ -1,0 +1,55 @@
+--- a/astroid/brain/brain_gi.py
++++ b/astroid/brain/brain_gi.py
+@@ -6,6 +6,7 @@
+ 
+ Helps with understanding everything imported from 'gi.repository'
+ """
++import perfmark
+ 
+ # pylint:disable=import-error,import-outside-toplevel
+ 
+@@ -261,25 +262,26 @@
+ def _looks_like_require_version(node) -> bool:
+     # Return whether this looks like a call to gi.require_version(<name>, <version>)
+     # Only accept function calls with two constant arguments
+-    if len(node.args) != 2:
++    with perfmark.region("lt-134"):
++        if len(node.args) != 2:
++            return False
++
++        if not all(isinstance(arg, nodes.Const) for arg in node.args):
++            return False
++
++        func = node.func
++        if isinstance(func, nodes.Attribute):
++            if func.attrname != "require_version":
++                return False
++            if isinstance(func.expr, nodes.Name) and func.expr.name == "gi":
++                return True
++
++            return False
++
++        if isinstance(func, nodes.Name):
++            return func.name == "require_version"
++
+         return False
+-
+-    if not all(isinstance(arg, nodes.Const) for arg in node.args):
+-        return False
+-
+-    func = node.func
+-    if isinstance(func, nodes.Attribute):
+-        if func.attrname != "require_version":
+-            return False
+-        if isinstance(func.expr, nodes.Name) and func.expr.name == "gi":
+-            return True
+-
+-        return False
+-
+-    if isinstance(func, nodes.Name):
+-        return func.name == "require_version"
+-
+-    return False
+ 
+ 
+ def _register_require_version(node):

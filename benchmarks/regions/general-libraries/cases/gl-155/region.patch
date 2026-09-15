@@ -1,0 +1,78 @@
+--- a/pandas/core/sorting.py
++++ b/pandas/core/sorting.py
+@@ -1,6 +1,7 @@
+ """miscellaneous sorting / groupby utilities"""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ from typing import (
+@@ -180,36 +181,37 @@
+ 
+     # Iteratively process all the labels in chunks sized so less
+     # than lib.i8max unique int ids will be required for each chunk
+-    while True:
+-        # how many levels can be done without overflow:
+-        nlev = _int64_cut_off(lshape)
+-
+-        # compute flat ids for the first `nlev` levels
+-        stride = np.prod(lshape[1:nlev], dtype="i8")
+-        out = stride * labels[0].astype("i8", subok=False, copy=False)
+-
+-        for i in range(1, nlev):
+-            if lshape[i] == 0:
+-                stride = np.int64(0)
+-            else:
+-                stride //= lshape[i]
+-            out += labels[i] * stride
+-
+-        if xnull:  # exclude nulls
+-            mask = labels[0] == -1
+-            for lab in labels[1:nlev]:
+-                mask |= lab == -1
+-            out[mask] = -1
+-
+-        if nlev == len(lshape):  # all levels done!
+-            break
+-
+-        # compress what has been done so far in order to avoid overflow
+-        # to retain lexical ranks, obs_ids should be sorted
+-        comp_ids, obs_ids = compress_group_index(out, sort=sort)
+-
+-        labels = [comp_ids, *labels[nlev:]]
+-        lshape = [len(obs_ids), *lshape[nlev:]]
++    with perfmark.region("gl-155"):
++        while True:
++            # how many levels can be done without overflow:
++            nlev = _int64_cut_off(lshape)
++    
++            # compute flat ids for the first `nlev` levels
++            stride = np.prod(lshape[1:nlev], dtype="i8")
++            out = stride * labels[0].astype("i8", subok=False, copy=False)
++    
++            for i in range(1, nlev):
++                if lshape[i] == 0:
++                    stride = np.int64(0)
++                else:
++                    stride //= lshape[i]
++                out += labels[i] * stride
++    
++            if xnull:  # exclude nulls
++                mask = labels[0] == -1
++                for lab in labels[1:nlev]:
++                    mask |= lab == -1
++                out[mask] = -1
++    
++            if nlev == len(lshape):  # all levels done!
++                break
++    
++            # compress what has been done so far in order to avoid overflow
++            # to retain lexical ranks, obs_ids should be sorted
++            comp_ids, obs_ids = compress_group_index(out, sort=sort)
++    
++            labels = [comp_ids, *labels[nlev:]]
++            lshape = [len(obs_ids), *lshape[nlev:]]
+ 
+     return out
+ 

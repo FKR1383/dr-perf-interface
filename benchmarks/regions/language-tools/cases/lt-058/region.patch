@@ -1,0 +1,191 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -4660,95 +4661,96 @@
+         parse_bracket: bool = False,
+         alias_tokens: t.Collection[TokenType] | None = None,
+     ) -> exp.Join | None:
+-        if self._match(TokenType.COMMA):
+-            table = self._try_parse(lambda: self._parse_table(alias_tokens=alias_tokens))
+-            cross_join = self.expression(exp.Join(this=table)) if table else None
+-
+-            if cross_join and self.JOINS_HAVE_EQUAL_PRECEDENCE:
+-                cross_join.set("kind", "CROSS")
+-
+-            return cross_join
+-
+-        index = self._index
+-        method, side, kind = self._parse_join_parts()
+-        directed = self._match_text_seq("DIRECTED")
+-        hint = self._prev.text if self._match_texts(self.JOIN_HINTS) else None
+-        join = self._match(TokenType.JOIN) or (kind and kind.token_type == TokenType.STRAIGHT_JOIN)
+-        join_comments = self._prev_comments
+-
+-        if not skip_join_token and not join:
+-            self._retreat(index)
+-            kind = None
+-            method = None
+-            side = None
+-
+-        outer_apply = self._match_pair(TokenType.OUTER, TokenType.APPLY, False)
+-        cross_apply = self._match_pair(TokenType.CROSS, TokenType.APPLY, False)
+-
+-        if not skip_join_token and not join and not outer_apply and not cross_apply:
+-            return None
+-
+-        kwargs: dict[str, t.Any] = {
+-            "this": self._parse_table(parse_bracket=parse_bracket, alias_tokens=alias_tokens)
+-        }
+-        if kind and kind.token_type == TokenType.ARRAY and self._match(TokenType.COMMA):
+-            kwargs["expressions"] = self._parse_csv(
+-                lambda: self._parse_table(parse_bracket=parse_bracket, alias_tokens=alias_tokens)
+-            )
+-
+-        if method:
+-            kwargs["method"] = method.text.upper()
+-        if side:
+-            kwargs["side"] = side.text.upper()
+-        if kind:
+-            kwargs["kind"] = kind.text.upper()
+-        if hint:
+-            kwargs["hint"] = hint
+-
+-        if self._match(TokenType.MATCH_CONDITION):
+-            kwargs["match_condition"] = self._parse_wrapped(self._parse_comparison)
+-
+-        if self._match(TokenType.ON):
+-            kwargs["on"] = self._parse_disjunction()
+-        elif self._match(TokenType.USING):
+-            kwargs["using"] = self._parse_using_identifiers()
+-        elif (
+-            not method
+-            and not (outer_apply or cross_apply)
+-            and not isinstance(kwargs["this"], exp.Unnest)
+-            and not (kind and kind.token_type in (TokenType.CROSS, TokenType.ARRAY))
+-        ):
++        with perfmark.region("lt-058"):
++            if self._match(TokenType.COMMA):
++                table = self._try_parse(lambda: self._parse_table(alias_tokens=alias_tokens))
++                cross_join = self.expression(exp.Join(this=table)) if table else None
++
++                if cross_join and self.JOINS_HAVE_EQUAL_PRECEDENCE:
++                    cross_join.set("kind", "CROSS")
++
++                return cross_join
++
+             index = self._index
+-            joins: list | None = list(self._parse_joins(alias_tokens=alias_tokens))
+-
+-            if joins and self._match(TokenType.ON):
++            method, side, kind = self._parse_join_parts()
++            directed = self._match_text_seq("DIRECTED")
++            hint = self._prev.text if self._match_texts(self.JOIN_HINTS) else None
++            join = self._match(TokenType.JOIN) or (kind and kind.token_type == TokenType.STRAIGHT_JOIN)
++            join_comments = self._prev_comments
++
++            if not skip_join_token and not join:
++                self._retreat(index)
++                kind = None
++                method = None
++                side = None
++
++            outer_apply = self._match_pair(TokenType.OUTER, TokenType.APPLY, False)
++            cross_apply = self._match_pair(TokenType.CROSS, TokenType.APPLY, False)
++
++            if not skip_join_token and not join and not outer_apply and not cross_apply:
++                return None
++
++            kwargs: dict[str, t.Any] = {
++                "this": self._parse_table(parse_bracket=parse_bracket, alias_tokens=alias_tokens)
++            }
++            if kind and kind.token_type == TokenType.ARRAY and self._match(TokenType.COMMA):
++                kwargs["expressions"] = self._parse_csv(
++                    lambda: self._parse_table(parse_bracket=parse_bracket, alias_tokens=alias_tokens)
++                )
++
++            if method:
++                kwargs["method"] = method.text.upper()
++            if side:
++                kwargs["side"] = side.text.upper()
++            if kind:
++                kwargs["kind"] = kind.text.upper()
++            if hint:
++                kwargs["hint"] = hint
++
++            if self._match(TokenType.MATCH_CONDITION):
++                kwargs["match_condition"] = self._parse_wrapped(self._parse_comparison)
++
++            if self._match(TokenType.ON):
+                 kwargs["on"] = self._parse_disjunction()
+-            elif joins and self._match(TokenType.USING):
++            elif self._match(TokenType.USING):
+                 kwargs["using"] = self._parse_using_identifiers()
+-            else:
+-                joins = None
+-                self._retreat(index)
+-
+-            kwargs["this"].set("joins", joins if joins else None)
+-
+-        kwargs["pivots"] = self._parse_pivots()
+-
+-        comments = [c for token in (method, side, kind) if token for c in token.comments]
+-        comments = (join_comments or []) + comments
+-
+-        if (
+-            self.ADD_JOIN_ON_TRUE
+-            and not kwargs.get("on")
+-            and not kwargs.get("using")
+-            and not kwargs.get("method")
+-            and kwargs.get("kind") in (None, "INNER", "OUTER")
+-        ):
+-            kwargs["on"] = exp.true()
+-
+-        if directed:
+-            kwargs["directed"] = directed
+-
+-        return self.expression(exp.Join(**kwargs), comments=comments)
++            elif (
++                not method
++                and not (outer_apply or cross_apply)
++                and not isinstance(kwargs["this"], exp.Unnest)
++                and not (kind and kind.token_type in (TokenType.CROSS, TokenType.ARRAY))
++            ):
++                index = self._index
++                joins: list | None = list(self._parse_joins(alias_tokens=alias_tokens))
++
++                if joins and self._match(TokenType.ON):
++                    kwargs["on"] = self._parse_disjunction()
++                elif joins and self._match(TokenType.USING):
++                    kwargs["using"] = self._parse_using_identifiers()
++                else:
++                    joins = None
++                    self._retreat(index)
++
++                kwargs["this"].set("joins", joins if joins else None)
++
++            kwargs["pivots"] = self._parse_pivots()
++
++            comments = [c for token in (method, side, kind) if token for c in token.comments]
++            comments = (join_comments or []) + comments
++
++            if (
++                self.ADD_JOIN_ON_TRUE
++                and not kwargs.get("on")
++                and not kwargs.get("using")
++                and not kwargs.get("method")
++                and kwargs.get("kind") in (None, "INNER", "OUTER")
++            ):
++                kwargs["on"] = exp.true()
++
++            if directed:
++                kwargs["directed"] = directed
++
++            return self.expression(exp.Join(**kwargs), comments=comments)
+ 
+     def _parse_opclass(self) -> exp.Expr | None:
+         this = self._parse_disjunction()

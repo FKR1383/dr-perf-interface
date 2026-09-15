@@ -1,0 +1,137 @@
+{
+  "case": "vllm-024",
+  "validity_warnings": [],
+  "pcv_names": [
+    "incoming_count",
+    "incoming_log_work"
+  ],
+  "distinct_states": 10,
+  "required_states": 4,
+  "calls": 10,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "incoming_count": 0,
+        "incoming_log_work": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 3505.0,
+      "unexplained_instructions_per_call": 223.0,
+      "unexplained_share": 0.06362339514978602
+    },
+    {
+      "state": {
+        "incoming_count": 9,
+        "incoming_log_work": 36
+      },
+      "calls": 1,
+      "instructions_per_call": 93877.0,
+      "unexplained_instructions_per_call": 21241.0,
+      "unexplained_share": 0.2262641541591657
+    },
+    {
+      "state": {
+        "incoming_count": 12,
+        "incoming_log_work": 48
+      },
+      "calls": 1,
+      "instructions_per_call": 129948.0,
+      "unexplained_instructions_per_call": 33861.0,
+      "unexplained_share": 0.2605734601532921
+    },
+    {
+      "state": {
+        "incoming_count": 16,
+        "incoming_log_work": 80
+      },
+      "calls": 1,
+      "instructions_per_call": 193996.0,
+      "unexplained_instructions_per_call": 44653.0,
+      "unexplained_share": 0.23017484896595805
+    },
+    {
+      "state": {
+        "incoming_count": 32,
+        "incoming_log_work": 192
+      },
+      "calls": 1,
+      "instructions_per_call": 463903.0,
+      "unexplained_instructions_per_call": 109261.0,
+      "unexplained_share": 0.2355255301215987
+    },
+    {
+      "state": {
+        "incoming_count": 64,
+        "incoming_log_work": 448
+      },
+      "calls": 1,
+      "instructions_per_call": 1086416.0,
+      "unexplained_instructions_per_call": 259421.0,
+      "unexplained_share": 0.23878606353367401
+    },
+    {
+      "state": {
+        "incoming_count": 128,
+        "incoming_log_work": 1024
+      },
+      "calls": 1,
+      "instructions_per_call": 2497425.0,
+      "unexplained_instructions_per_call": 601156.0,
+      "unexplained_share": 0.24071033164159084
+    },
+    {
+      "state": {
+        "incoming_count": 256,
+        "incoming_log_work": 2304
+      },
+      "calls": 1,
+      "instructions_per_call": 5650624.0,
+      "unexplained_instructions_per_call": 1368921.0,
+      "unexplained_share": 0.2422601468439592
+    },
+    {
+      "state": {
+        "incoming_count": 512,
+        "incoming_log_work": 5120
+      },
+      "calls": 1,
+      "instructions_per_call": 12626070.0,
+      "unexplained_instructions_per_call": 3090180.0,
+      "unexplained_share": 0.24474598984482107
+    },
+    {
+      "state": {
+        "incoming_count": 1024,
+        "incoming_log_work": 11264
+      },
+      "calls": 1,
+      "instructions_per_call": 27893956.0,
+      "unexplained_instructions_per_call": 6864792.0,
+      "unexplained_share": 0.24610320601351776
+    }
+  ],
+  "max_unexplained_share": 0.2605734601532921,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "incoming_count": -506.4383664021732,
+      "incoming_log_work": 1917.083389800287
+    },
+    "constant": -4515.385891905997,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 1.0275256279855967,
+  "raw_files": [
+    "run.3422824.json"
+  ]
+}

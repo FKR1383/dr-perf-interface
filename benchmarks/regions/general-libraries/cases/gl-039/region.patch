@@ -1,0 +1,28 @@
+--- a/networkx/algorithms/connectivity/cuts.py
++++ b/networkx/algorithms/connectivity/cuts.py
+@@ -1,6 +1,7 @@
+ """
+ Flow based cut algorithms
+ """
++import perfmark
+ 
+ import itertools
+ 
+@@ -479,11 +480,12 @@
+     # this deduplicates the nodes that are both predecessors and successors.
+     v_nbrs = set(neighbors(v)) - {v}
+     # Compute st node cuts between v and all its non-neighbors nodes in G.
+-    for w in set(G) - v_nbrs - {v}:
+-        for s, t in ordered_pairs(v, w):
+-            this_cut = minimum_st_node_cut(G, s, t, **kwargs)
+-            if len(min_cut) >= len(this_cut):
+-                min_cut = this_cut
++    with perfmark.region("gl-039"):
++        for w in set(G) - v_nbrs - {v}:
++            for s, t in ordered_pairs(v, w):
++                this_cut = minimum_st_node_cut(G, s, t, **kwargs)
++                if len(min_cut) >= len(this_cut):
++                    min_cut = this_cut
+     # Also for non adjacent pairs of neighbors of v.
+     for x, y in iter_func(v_nbrs, 2):
+         # `minimum_st_node_cut` returns an empty set when x and y cannot be

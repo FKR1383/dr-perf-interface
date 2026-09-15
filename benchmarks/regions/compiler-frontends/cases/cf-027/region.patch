@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExprScalar.cpp
++++ b/clang/lib/CodeGen/CGExprScalar.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+ #include "CGDebugInfo.h"
+@@ -5268,6 +5269,7 @@
+ 
+ Value *ScalarExprEmitter::
+ VisitAbstractConditionalOperator(const AbstractConditionalOperator *E) {
++  DRPERF_BENCH_REGION("cf-027");
+   TestAndClearIgnoreResultAssign();
+ 
+   // Bind the common expression if necessary.

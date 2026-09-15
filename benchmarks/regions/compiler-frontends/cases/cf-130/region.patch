@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ASTContext.cpp
++++ b/clang/lib/AST/ASTContext.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "ByteCode/Context.h"
+ #include "CXXABI.h"
+@@ -14509,6 +14510,7 @@
+ // passed in function.
+ void ASTContext::getFunctionFeatureMap(llvm::StringMap<bool> &FeatureMap,
+                                        GlobalDecl GD) const {
++                                         DRPERF_BENCH_REGION("cf-130");
+   StringRef TargetCPU = Target->getTargetOpts().CPU;
+   const FunctionDecl *FD = GD.getDecl()->getAsFunction();
+   if (const auto *TD = FD->getAttr<TargetAttr>()) {

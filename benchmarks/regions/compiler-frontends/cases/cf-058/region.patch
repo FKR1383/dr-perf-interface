@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseOpenMP.cpp
++++ b/clang/lib/Parse/ParseOpenMP.cpp
+@@ -10,6 +10,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/OpenMPClause.h"
+ #include "clang/AST/StmtOpenMP.h"
+@@ -2683,6 +2684,7 @@
+ ///
+ StmtResult Parser::ParseOpenMPDeclarativeOrExecutableDirective(
+     ParsedStmtContext StmtCtx, bool ReadDirectiveWithinMetadirective) {
++      DRPERF_BENCH_REGION("cf-058");
+   if (!ReadDirectiveWithinMetadirective)
+     assert(Tok.isOneOf(tok::annot_pragma_openmp, tok::annot_attr_openmp) &&
+            "Not an OpenMP directive!");

@@ -1,0 +1,41 @@
+--- a/astroid/brain/brain_attrs.py
++++ b/astroid/brain/brain_attrs.py
+@@ -8,6 +8,7 @@
+ Without this hook pylint reports unsupported-assignment-operation
+ for attrs classes
+ """
++import perfmark
+ 
+ from astroid import nodes
+ from astroid.brain.helpers import is_class_var
+@@ -48,18 +49,19 @@
+ 
+ def is_decorated_with_attrs(node, decorator_names=ATTRS_NAMES) -> bool:
+     """Return whether a decorated node has an attr decorator applied."""
+-    if not node.decorators:
++    with perfmark.region("lt-136"):
++        if not node.decorators:
++            return False
++        for decorator_attribute in node.decorators.nodes:
++            if isinstance(decorator_attribute, nodes.Call):  # decorator with arguments
++                decorator_attribute = decorator_attribute.func
++            if decorator_attribute.as_string() in decorator_names:
++                return True
++
++            inferred = safe_infer(decorator_attribute)
++            if inferred and inferred.root().name == "attr._next_gen":
++                return True
+         return False
+-    for decorator_attribute in node.decorators.nodes:
+-        if isinstance(decorator_attribute, nodes.Call):  # decorator with arguments
+-            decorator_attribute = decorator_attribute.func
+-        if decorator_attribute.as_string() in decorator_names:
+-            return True
+-
+-        inferred = safe_infer(decorator_attribute)
+-        if inferred and inferred.root().name == "attr._next_gen":
+-            return True
+-    return False
+ 
+ 
+ def attr_attributes_transform(node: nodes.ClassDef) -> None:

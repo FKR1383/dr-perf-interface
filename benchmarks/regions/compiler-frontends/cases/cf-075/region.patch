@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseObjc.cpp
++++ b/clang/lib/Parse/ParseObjc.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ExprObjC.h"
+ #include "clang/AST/ODRDiagsEmitter.h"
+@@ -236,6 +237,7 @@
+ ///
+ Decl *Parser::ParseObjCAtInterfaceDeclaration(SourceLocation AtLoc,
+                                               ParsedAttributes &attrs) {
++                                                DRPERF_BENCH_REGION("cf-075");
+   assert(Tok.isObjCAtKeyword(tok::objc_interface) &&
+          "ParseObjCAtInterfaceDeclaration(): Expected @interface");
+   CheckNestedObjCContexts(AtLoc);

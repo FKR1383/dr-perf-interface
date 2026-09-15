@@ -1,0 +1,48 @@
+--- a/Cython/Compiler/TypeSlots.py
++++ b/Cython/Compiler/TypeSlots.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Tables describing slots in the CPython type object
+ #   and associated know-how.
+@@ -155,23 +156,24 @@
+ 
+     def function_type(self, self_arg_override=None):
+         #  Construct a C function type descriptor for this signature
+-        args = []
+-        for i in range(self.max_num_fixed_args()):
+-            if self_arg_override is not None and self.is_self_arg(i):
+-                assert isinstance(self_arg_override, PyrexTypes.CFuncTypeArg)
+-                args.append(self_arg_override)
++        with perfmark.region("lt-240"):
++            args = []
++            for i in range(self.max_num_fixed_args()):
++                if self_arg_override is not None and self.is_self_arg(i):
++                    assert isinstance(self_arg_override, PyrexTypes.CFuncTypeArg)
++                    args.append(self_arg_override)
++                else:
++                    arg_type = self.fixed_arg_type(i)
++                    args.append(PyrexTypes.CFuncTypeArg("", arg_type, None))
++            if self_arg_override is not None and self.returns_self_type():
++                ret_type = self_arg_override.type
+             else:
+-                arg_type = self.fixed_arg_type(i)
+-                args.append(PyrexTypes.CFuncTypeArg("", arg_type, None))
+-        if self_arg_override is not None and self.returns_self_type():
+-            ret_type = self_arg_override.type
+-        else:
+-            ret_type = self.return_type()
+-        exc_value = self.exception_value()
+-        return PyrexTypes.CFuncType(
+-            ret_type, args, exception_value=exc_value,
+-            exception_check=self.exception_check,
+-            nogil=self.nogil)
++                ret_type = self.return_type()
++            exc_value = self.exception_value()
++            return PyrexTypes.CFuncType(
++                ret_type, args, exception_value=exc_value,
++                exception_check=self.exception_check,
++                nogil=self.nogil)
+ 
+     def method_flags(self):
+         if self.ret_format == "O":

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGCall.cpp
++++ b/clang/lib/CodeGen/CGCall.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCall.h"
+ #include "ABIInfo.h"
+ #include "ABIInfoImpl.h"
+@@ -3820,6 +3821,7 @@
+ void CodeGenFunction::EmitFunctionEpilog(const CGFunctionInfo &FI,
+                                          bool EmitRetDbgLoc,
+                                          SourceLocation EndLoc) {
++                                           DRPERF_BENCH_REGION("cf-087");
+   if (FI.isNoReturn()) {
+     // Noreturn functions don't return.
+     EmitUnreachable(EndLoc);

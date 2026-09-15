@@ -1,0 +1,68 @@
+--- a/sympy/core/sorting.py
++++ b/sympy/core/sorting.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ from collections import defaultdict
+ 
+ from .sympify import sympify, SympifyError
+@@ -283,31 +284,32 @@
+ 
+     """
+ 
+-    d = defaultdict(list)
+-    if keys:
+-        if isinstance(keys, (list, tuple)):
+-            keys = list(keys)
+-            f = keys.pop(0)
++    with perfmark.region("lt-021"):
++        d = defaultdict(list)
++        if keys:
++            if isinstance(keys, (list, tuple)):
++                keys = list(keys)
++                f = keys.pop(0)
++            else:
++                f = keys
++                keys = []
++            for a in seq:
++                d[f(a)].append(a)
+         else:
+-            f = keys
+-            keys = []
+-        for a in seq:
+-            d[f(a)].append(a)
+-    else:
+-        if not default:
+-            raise ValueError('if default=False then keys must be provided')
+-        d[None].extend(seq)
+-
+-    for k, value in sorted(d.items()):
+-        if len(value) > 1:
+-            if keys:
+-                value = ordered(value, keys, default, warn)
+-            elif default:
+-                value = ordered(value, (_nodes, default_sort_key,),
+-                               default=False, warn=warn)
+-            elif warn:
+-                u = list(uniq(value))
+-                if len(u) > 1:
+-                    raise ValueError(
+-                        'not enough keys to break ties: %s' % u)
+-        yield from value
++            if not default:
++                raise ValueError('if default=False then keys must be provided')
++            d[None].extend(seq)
++
++        for k, value in sorted(d.items()):
++            if len(value) > 1:
++                if keys:
++                    value = ordered(value, keys, default, warn)
++                elif default:
++                    value = ordered(value, (_nodes, default_sort_key,),
++                                   default=False, warn=warn)
++                elif warn:
++                    u = list(uniq(value))
++                    if len(u) > 1:
++                        raise ValueError(
++                            'not enough keys to break ties: %s' % u)
++            yield from value

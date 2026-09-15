@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/ItaniumCXXABI.cpp
++++ b/clang/lib/CodeGen/ItaniumCXXABI.cpp
+@@ -17,6 +17,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+ #include "CGRecordLayout.h"
+@@ -624,6 +625,7 @@
+     CodeGenFunction &CGF, const Expr *E, Address ThisAddr,
+     llvm::Value *&ThisPtrForCall,
+     llvm::Value *MemFnPtr, const MemberPointerType *MPT) {
++      DRPERF_BENCH_REGION("cf-010");
+   CGBuilderTy &Builder = CGF.Builder;
+ 
+   const FunctionProtoType *FPT =

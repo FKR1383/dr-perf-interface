@@ -1,0 +1,35 @@
+{
+  "case": "cf-046",
+  "phase": "ir-generation",
+  "scenario": "scalar-compare-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_46{int n; X_46(int v):n(v){}}; int main(){X_46 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int x){int y=0;\ny += x == 0;\ny += x == 1;\ny += x == 2;\ny += x == 3;\nreturn y;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int x){int y=0;\ny += x == 0;\ny += x == 1;\ny += x == 2;\ny += x == 3;\ny += x == 4;\ny += x == 5;\ny += x == 6;\ny += x == 7;\ny += x == 8;\ny += x == 9;\ny += x == 10;\ny += x == 11;\ny += x == 12;\ny += x == 13;\ny += x == 14;\ny += x == 15;\nreturn y;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int x){int y=0;\ny += x == 0;\ny += x == 1;\ny += x == 2;\ny += x == 3;\ny += x == 4;\ny += x == 5;\ny += x == 6;\ny += x == 7;\ny += x == 8;\ny += x == 9;\ny += x == 10;\ny += x == 11;\ny += x == 12;\ny += x == 13;\ny += x == 14;\ny += x == 15;\ny += x == 16;\ny += x == 17;\ny += x == 18;\ny += x == 19;\ny += x == 20;\ny += x == 21;\ny += x == 22;\ny += x == 23;\ny += x == 24;\ny += x == 25;\ny += x == 26;\ny += x == 27;\ny += x == 28;\ny += x == 29;\ny += x == 30;\ny += x == 31;\ny += x == 32;\ny += x == 33;\ny += x == 34;\ny += x == 35;\ny += x == 36;\ny += x == 37;\ny += x == 38;\ny += x == 39;\ny += x == 40;\ny += x == 41;\ny += x == 42;\ny += x == 43;\ny += x == 44;\ny += x == 45;\ny += x == 46;\ny += x == 47;\ny += x == 48;\ny += x == 49;\ny += x == 50;\ny += x == 51;\ny += x == 52;\ny += x == 53;\ny += x == 54;\ny += x == 55;\ny += x == 56;\ny += x == 57;\ny += x == 58;\ny += x == 59;\ny += x == 60;\ny += x == 61;\ny += x == 62;\ny += x == 63;\nreturn y;}\n"
+    }
+  ],
+  "target_symbol": "ScalarExprEmitter::EmitCompare",
+  "target_source": "clang/lib/CodeGen/CGExprScalar.cpp",
+  "mapping_note": "The scalar-compare-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,50 @@
+--- a/networkx/algorithms/bipartite/matching.py
++++ b/networkx/algorithms/bipartite/matching.py
+@@ -36,6 +36,7 @@
+ edges included in the matching is minimal.
+ 
+ """
++import perfmark
+ 
+ import collections
+ import itertools
+@@ -124,22 +125,23 @@
+     # variables `leftmatches`, `rightmatches`, `distances`, etc. are defined
+     # below the functions, so that they are initialized close to the initial
+     # invocation of the search functions.
+-    def breadth_first_search():
+-        for v in left:
+-            if leftmatches[v] is None:
+-                distances[v] = 0
+-                queue.append(v)
+-            else:
+-                distances[v] = INFINITY
+-        distances[None] = INFINITY
+-        while queue:
+-            v = queue.popleft()
+-            if distances[v] < distances[None]:
+-                for u in G[v]:
+-                    if distances[rightmatches[u]] is INFINITY:
+-                        distances[rightmatches[u]] = distances[v] + 1
+-                        queue.append(rightmatches[u])
+-        return distances[None] is not INFINITY
++    with perfmark.region("gl-024"):
++        def breadth_first_search():
++            for v in left:
++                if leftmatches[v] is None:
++                    distances[v] = 0
++                    queue.append(v)
++                else:
++                    distances[v] = INFINITY
++            distances[None] = INFINITY
++            while queue:
++                v = queue.popleft()
++                if distances[v] < distances[None]:
++                    for u in G[v]:
++                        if distances[rightmatches[u]] is INFINITY:
++                            distances[rightmatches[u]] = distances[v] + 1
++                            queue.append(rightmatches[u])
++            return distances[None] is not INFINITY
+ 
+     def depth_first_search(v):
+         if v is not None:

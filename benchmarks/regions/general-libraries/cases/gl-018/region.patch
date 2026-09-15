@@ -1,0 +1,126 @@
+--- a/networkx/readwrite/multiline_adjlist.py
++++ b/networkx/readwrite/multiline_adjlist.py
+@@ -24,6 +24,7 @@
+      d 1
+      e
+ """
++import perfmark
+ 
+ __all__ = [
+     "generate_multiline_adjlist",
+@@ -78,60 +79,61 @@
+     --------
+     write_multiline_adjlist, read_multiline_adjlist
+     """
+-    if G.is_directed():
+-        if G.is_multigraph():
+-            for s, nbrs in G.adjacency():
+-                nbr_edges = [
+-                    (u, data)
+-                    for u, datadict in nbrs.items()
+-                    for key, data in datadict.items()
+-                ]
+-                deg = len(nbr_edges)
+-                yield str(s) + delimiter + str(deg)
+-                for u, d in nbr_edges:
+-                    if d is None:
+-                        yield str(u)
+-                    else:
+-                        yield str(u) + delimiter + str(d)
+-        else:  # directed single edges
+-            for s, nbrs in G.adjacency():
+-                deg = len(nbrs)
+-                yield str(s) + delimiter + str(deg)
+-                for u, d in nbrs.items():
+-                    if d is None:
+-                        yield str(u)
+-                    else:
+-                        yield str(u) + delimiter + str(d)
+-    else:  # undirected
+-        if G.is_multigraph():
+-            seen = set()  # helper dict used to avoid duplicate edges
+-            for s, nbrs in G.adjacency():
+-                nbr_edges = [
+-                    (u, data)
+-                    for u, datadict in nbrs.items()
+-                    if u not in seen
+-                    for key, data in datadict.items()
+-                ]
+-                deg = len(nbr_edges)
+-                yield str(s) + delimiter + str(deg)
+-                for u, d in nbr_edges:
+-                    if d is None:
+-                        yield str(u)
+-                    else:
+-                        yield str(u) + delimiter + str(d)
+-                seen.add(s)
+-        else:  # undirected single edges
+-            seen = set()  # helper dict used to avoid duplicate edges
+-            for s, nbrs in G.adjacency():
+-                nbr_edges = [(u, d) for u, d in nbrs.items() if u not in seen]
+-                deg = len(nbr_edges)
+-                yield str(s) + delimiter + str(deg)
+-                for u, d in nbr_edges:
+-                    if d is None:
+-                        yield str(u)
+-                    else:
+-                        yield str(u) + delimiter + str(d)
+-                seen.add(s)
++    with perfmark.region("gl-018"):
++        if G.is_directed():
++            if G.is_multigraph():
++                for s, nbrs in G.adjacency():
++                    nbr_edges = [
++                        (u, data)
++                        for u, datadict in nbrs.items()
++                        for key, data in datadict.items()
++                    ]
++                    deg = len(nbr_edges)
++                    yield str(s) + delimiter + str(deg)
++                    for u, d in nbr_edges:
++                        if d is None:
++                            yield str(u)
++                        else:
++                            yield str(u) + delimiter + str(d)
++            else:  # directed single edges
++                for s, nbrs in G.adjacency():
++                    deg = len(nbrs)
++                    yield str(s) + delimiter + str(deg)
++                    for u, d in nbrs.items():
++                        if d is None:
++                            yield str(u)
++                        else:
++                            yield str(u) + delimiter + str(d)
++        else:  # undirected
++            if G.is_multigraph():
++                seen = set()  # helper dict used to avoid duplicate edges
++                for s, nbrs in G.adjacency():
++                    nbr_edges = [
++                        (u, data)
++                        for u, datadict in nbrs.items()
++                        if u not in seen
++                        for key, data in datadict.items()
++                    ]
++                    deg = len(nbr_edges)
++                    yield str(s) + delimiter + str(deg)
++                    for u, d in nbr_edges:
++                        if d is None:
++                            yield str(u)
++                        else:
++                            yield str(u) + delimiter + str(d)
++                    seen.add(s)
++            else:  # undirected single edges
++                seen = set()  # helper dict used to avoid duplicate edges
++                for s, nbrs in G.adjacency():
++                    nbr_edges = [(u, d) for u, d in nbrs.items() if u not in seen]
++                    deg = len(nbr_edges)
++                    yield str(s) + delimiter + str(deg)
++                    for u, d in nbr_edges:
++                        if d is None:
++                            yield str(u)
++                        else:
++                            yield str(u) + delimiter + str(d)
++                    seen.add(s)
+ 
+ 
+ @open_file(1, mode="wb")

@@ -1,0 +1,18 @@
+--- a/include/rapidjson/stringbuffer.h
++++ b/include/rapidjson/stringbuffer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_STRINGBUFFER_H_
+ #define RAPIDJSON_STRINGBUFFER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/stack.h"
+ 
+@@ -59,6 +60,7 @@
+ 
+     void Clear() { stack_.Clear(); }
+     void ShrinkToFit() {
++        DRPERF_BENCH_REGION("nl-039");
+         // Push and pop a null terminator. This is safe.
+         *stack_.template Push<Ch>() = '\0';
+         stack_.ShrinkToFit();

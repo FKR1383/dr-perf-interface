@@ -1,0 +1,101 @@
+--- a/Cython/Compiler/Builtin.py
++++ b/Cython/Compiler/Builtin.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Builtin Definitions
+ #
+@@ -814,49 +815,50 @@
+ builtin_types = {}
+ 
+ def init_builtin_types():
+-    global builtin_types
+-
+-    # Some builtin types are not available by name,
+-    # so we declare them in a throw-away scope.
+-    hidden_builtins_scope = BuiltinScope()
+-
+-    for name, cname, methods in builtin_types_table:
+-        if name == 'frozenset':
+-            objstruct_cname = 'PySetObject'
+-        elif name == 'bytearray':
+-            objstruct_cname = 'PyByteArrayObject'
+-        elif name == 'int':
+-            objstruct_cname = 'PyLongObject'
+-        elif name == 'str':
+-            objstruct_cname = 'PyUnicodeObject'
+-        elif name == 'bool':
+-            objstruct_cname = 'PyLongObject'
+-        else:
+-            objstruct_cname = 'Py%sObject' % name.capitalize()
+-
+-        utility_code = None
+-        type_class = PyrexTypes.BuiltinObjectType
+-        scope = builtin_scope
+-        if name in ['dict', 'list', 'set', 'frozenset', 'frozendict']:
+-            type_class = PyrexTypes.BuiltinTypeConstructorObjectType
+-            if name == 'frozendict':
+-                utility_code = frozendict_utility_code
+-        elif name == 'tuple':
+-            type_class = PyrexTypes.PythonTupleTypeConstructor
+-        elif name == 'range':
+-            utility_code = range_utility_code
+-        elif name in hidden_builtin_types:
+-            type_class = PyrexTypes.BuiltinTypeConstructorObjectType
+-            scope = hidden_builtins_scope
+-            # Make sure the 'type' base type is declared in the hidden scope.
+-            if 'type' not in hidden_builtins_scope.entries:
+-                hidden_builtins_scope.entries['type'] = builtin_scope.lookup('type')
+-
+-        the_type = scope.declare_builtin_type(
+-            name, cname, objstruct_cname=objstruct_cname, type_class=type_class, utility_code=utility_code)
+-        builtin_types[name] = the_type
+-        for method in methods:
+-            method.declare_in_type(the_type)
++    with perfmark.region("lt-235"):
++        global builtin_types
++
++        # Some builtin types are not available by name,
++        # so we declare them in a throw-away scope.
++        hidden_builtins_scope = BuiltinScope()
++
++        for name, cname, methods in builtin_types_table:
++            if name == 'frozenset':
++                objstruct_cname = 'PySetObject'
++            elif name == 'bytearray':
++                objstruct_cname = 'PyByteArrayObject'
++            elif name == 'int':
++                objstruct_cname = 'PyLongObject'
++            elif name == 'str':
++                objstruct_cname = 'PyUnicodeObject'
++            elif name == 'bool':
++                objstruct_cname = 'PyLongObject'
++            else:
++                objstruct_cname = 'Py%sObject' % name.capitalize()
++
++            utility_code = None
++            type_class = PyrexTypes.BuiltinObjectType
++            scope = builtin_scope
++            if name in ['dict', 'list', 'set', 'frozenset', 'frozendict']:
++                type_class = PyrexTypes.BuiltinTypeConstructorObjectType
++                if name == 'frozendict':
++                    utility_code = frozendict_utility_code
++            elif name == 'tuple':
++                type_class = PyrexTypes.PythonTupleTypeConstructor
++            elif name == 'range':
++                utility_code = range_utility_code
++            elif name in hidden_builtin_types:
++                type_class = PyrexTypes.BuiltinTypeConstructorObjectType
++                scope = hidden_builtins_scope
++                # Make sure the 'type' base type is declared in the hidden scope.
++                if 'type' not in hidden_builtins_scope.entries:
++                    hidden_builtins_scope.entries['type'] = builtin_scope.lookup('type')
++
++            the_type = scope.declare_builtin_type(
++                name, cname, objstruct_cname=objstruct_cname, type_class=type_class, utility_code=utility_code)
++            builtin_types[name] = the_type
++            for method in methods:
++                method.declare_in_type(the_type)
+ 
+ 
+ def init_builtin_exceptions():

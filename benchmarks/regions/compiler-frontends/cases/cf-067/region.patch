@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -64,6 +65,7 @@
+ Parser::DeclGroupPtrTy Parser::ParseNamespace(DeclaratorContext Context,
+                                               SourceLocation &DeclEnd,
+                                               SourceLocation InlineLoc) {
++                                                DRPERF_BENCH_REGION("cf-067");
+   assert(Tok.is(tok::kw_namespace) && "Not a namespace!");
+   SourceLocation NamespaceLoc = ConsumeToken(); // eat the 'namespace'.
+   ObjCDeclContextSwitch ObjCDC(*this);

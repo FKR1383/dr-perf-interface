@@ -1,0 +1,33 @@
+{
+  "case": "cf-110",
+  "phase": "compiler-support",
+  "scenario": "module-context-hash",
+  "compiler": "clang",
+  "flags": [
+    "-fmodules",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "// Clang modules request a CompilerInvocation context hash.\n#define MODULE_VALUE_0 0\nint module_value = MODULE_VALUE_0;\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "// 4 command-context macros are incorporated into the module hash.\\n#define MODULE_VALUE_0 0\\n#define MODULE_VALUE_1 1\\n#define MODULE_VALUE_2 2\\n#define MODULE_VALUE_3 3\\nconstexpr int module_value = MODULE_VALUE_0 + MODULE_VALUE_1 + MODULE_VALUE_2 + MODULE_VALUE_3;\\nstatic_assert(module_value == 6);\\n"
+    },
+    {
+      "size": 16,
+      "source": "// 16 command-context macros are incorporated into the module hash.\\n#define MODULE_VALUE_0 0\\n#define MODULE_VALUE_1 1\\n#define MODULE_VALUE_2 2\\n#define MODULE_VALUE_3 3\\n#define MODULE_VALUE_4 4\\n#define MODULE_VALUE_5 5\\n#define MODULE_VALUE_6 6\\n#define MODULE_VALUE_7 7\\n#define MODULE_VALUE_8 8\\n#define MODULE_VALUE_9 9\\n#define MODULE_VALUE_10 10\\n#define MODULE_VALUE_11 11\\n#define MODULE_VALUE_12 12\\n#define MODULE_VALUE_13 13\\n#define MODULE_VALUE_14 14\\n#define MODULE_VALUE_15 15\\nconstexpr int module_value = MODULE_VALUE_0 + MODULE_VALUE_1 + MODULE_VALUE_2 + MODULE_VALUE_3 + MODULE_VALUE_4 + MODULE_VALUE_5 + MODULE_VALUE_6 + MODULE_VALUE_7 + MODULE_VALUE_8 + MODULE_VALUE_9 + MODULE_VALUE_10 + MODULE_VALUE_11 + MODULE_VALUE_12 + MODULE_VALUE_13 + MODULE_VALUE_14 + MODULE_VALUE_15;\\nstatic_assert(module_value == 120);\\n"
+    },
+    {
+      "size": 64,
+      "source": "// 64 command-context macros are incorporated into the module hash.\\n#define MODULE_VALUE_0 0\\n#define MODULE_VALUE_1 1\\n#define MODULE_VALUE_2 2\\n#define MODULE_VALUE_3 3\\n#define MODULE_VALUE_4 4\\n#define MODULE_VALUE_5 5\\n#define MODULE_VALUE_6 6\\n#define MODULE_VALUE_7 7\\n#define MODULE_VALUE_8 8\\n#define MODULE_VALUE_9 9\\n#define MODULE_VALUE_10 10\\n#define MODULE_VALUE_11 11\\n#define MODULE_VALUE_12 12\\n#define MODULE_VALUE_13 13\\n#define MODULE_VALUE_14 14\\n#define MODULE_VALUE_15 15\\n#define MODULE_VALUE_16 16\\n#define MODULE_VALUE_17 17\\n#define MODULE_VALUE_18 18\\n#define MODULE_VALUE_19 19\\n#define MODULE_VALUE_20 20\\n#define MODULE_VALUE_21 21\\n#define MODULE_VALUE_22 22\\n#define MODULE_VALUE_23 23\\n#define MODULE_VALUE_24 24\\n#define MODULE_VALUE_25 25\\n#define MODULE_VALUE_26 26\\n#define MODULE_VALUE_27 27\\n#define MODULE_VALUE_28 28\\n#define MODULE_VALUE_29 29\\n#define MODULE_VALUE_30 30\\n#define MODULE_VALUE_31 31\\n#define MODULE_VALUE_32 32\\n#define MODULE_VALUE_33 33\\n#define MODULE_VALUE_34 34\\n#define MODULE_VALUE_35 35\\n#define MODULE_VALUE_36 36\\n#define MODULE_VALUE_37 37\\n#define MODULE_VALUE_38 38\\n#define MODULE_VALUE_39 39\\n#define MODULE_VALUE_40 40\\n#define MODULE_VALUE_41 41\\n#define MODULE_VALUE_42 42\\n#define MODULE_VALUE_43 43\\n#define MODULE_VALUE_44 44\\n#define MODULE_VALUE_45 45\\n#define MODULE_VALUE_46 46\\n#define MODULE_VALUE_47 47\\n#define MODULE_VALUE_48 48\\n#define MODULE_VALUE_49 49\\n#define MODULE_VALUE_50 50\\n#define MODULE_VALUE_51 51\\n#define MODULE_VALUE_52 52\\n#define MODULE_VALUE_53 53\\n#define MODULE_VALUE_54 54\\n#define MODULE_VALUE_55 55\\n#define MODULE_VALUE_56 56\\n#define MODULE_VALUE_57 57\\n#define MODULE_VALUE_58 58\\n#define MODULE_VALUE_59 59\\n#define MODULE_VALUE_60 60\\n#define MODULE_VALUE_61 61\\n#define MODULE_VALUE_62 62\\n#define MODULE_VALUE_63 63\\nconstexpr int module_value = MODULE_VALUE_0 + MODULE_VALUE_1 + MODULE_VALUE_2 + MODULE_VALUE_3 + MODULE_VALUE_4 + MODULE_VALUE_5 + MODULE_VALUE_6 + MODULE_VALUE_7 + MODULE_VALUE_8 + MODULE_VALUE_9 + MODULE_VALUE_10 + MODULE_VALUE_11 + MODULE_VALUE_12 + MODULE_VALUE_13 + MODULE_VALUE_14 + MODULE_VALUE_15 + MODULE_VALUE_16 + MODULE_VALUE_17 + MODULE_VALUE_18 + MODULE_VALUE_19 + MODULE_VALUE_20 + MODULE_VALUE_21 + MODULE_VALUE_22 + MODULE_VALUE_23 + MODULE_VALUE_24 + MODULE_VALUE_25 + MODULE_VALUE_26 + MODULE_VALUE_27 + MODULE_VALUE_28 + MODULE_VALUE_29 + MODULE_VALUE_30 + MODULE_VALUE_31 + MODULE_VALUE_32 + MODULE_VALUE_33 + MODULE_VALUE_34 + MODULE_VALUE_35 + MODULE_VALUE_36 + MODULE_VALUE_37 + MODULE_VALUE_38 + MODULE_VALUE_39 + MODULE_VALUE_40 + MODULE_VALUE_41 + MODULE_VALUE_42 + MODULE_VALUE_43 + MODULE_VALUE_44 + MODULE_VALUE_45 + MODULE_VALUE_46 + MODULE_VALUE_47 + MODULE_VALUE_48 + MODULE_VALUE_49 + MODULE_VALUE_50 + MODULE_VALUE_51 + MODULE_VALUE_52 + MODULE_VALUE_53 + MODULE_VALUE_54 + MODULE_VALUE_55 + MODULE_VALUE_56 + MODULE_VALUE_57 + MODULE_VALUE_58 + MODULE_VALUE_59 + MODULE_VALUE_60 + MODULE_VALUE_61 + MODULE_VALUE_62 + MODULE_VALUE_63;\\nstatic_assert(module_value == 2016);\\n"
+    }
+  ],
+  "target_symbol": "CompilerInvocation::getModuleHash",
+  "target_source": "clang/lib/Frontend/CompilerInvocation.cpp",
+  "mapping_note": "The explicit -fmodules invocation requests the module-cache context hash. Macro counts of 4, 16, and 64 scale the getModuleHash macro loop; exact native entry is checked separately.",
+  "workload_phase": "serialization"
+}

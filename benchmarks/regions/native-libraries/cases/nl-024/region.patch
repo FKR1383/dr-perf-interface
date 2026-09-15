@@ -1,0 +1,18 @@
+--- a/include/rapidjson/writer.h
++++ b/include/rapidjson/writer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_WRITER_H_
+ #define RAPIDJSON_WRITER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/clzll.h"
+ #include "internal/meta.h"
+@@ -348,6 +349,7 @@
+     }
+ 
+     bool WriteDouble(double d) {
++        DRPERF_BENCH_REGION("nl-024");
+         if (internal::Double(d).IsNanOrInf()) {
+             if (!(writeFlags & kWriteNanAndInfFlag) && !(writeFlags & kWriteNanAndInfNullFlag))
+                 return false;

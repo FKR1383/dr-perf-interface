@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/CFG.cpp
++++ b/clang/lib/Analysis/CFG.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/CFG.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Attr.h"
+@@ -2190,6 +2191,7 @@
+ ///   DeclStmts (which may contain nested control-flow).
+ CFGBlock *CFGBuilder::Visit(Stmt * S, AddStmtChoice asc,
+                             bool ExternallyDestructed) {
++                              DRPERF_BENCH_REGION("cf-008");
+   if (!S) {
+     badCFG = true;
+     return nullptr;

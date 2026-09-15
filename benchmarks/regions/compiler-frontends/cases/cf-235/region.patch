@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/Attributes.cpp
++++ b/llvm/lib/IR/Attributes.cpp
+@@ -12,6 +12,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/Attributes.h"
+ #include "AttributeImpl.h"
+ #include "LLVMContextImpl.h"
+@@ -526,6 +527,7 @@
+ }
+ 
+ std::string Attribute::getAsString(bool InAttrGrp) const {
++  DRPERF_BENCH_REGION("cf-235");
+   if (!pImpl) return {};
+ 
+   if (isEnumAttribute())

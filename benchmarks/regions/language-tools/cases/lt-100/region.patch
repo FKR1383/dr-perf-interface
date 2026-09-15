@@ -1,0 +1,53 @@
+--- a/libcst/_nodes/expression.py
++++ b/libcst/_nodes/expression.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -2487,25 +2488,26 @@
+         )
+ 
+     def _codegen_impl(self, state: CodegenState, default_comma: bool = False) -> None:
+-        with state.record_syntactic_position(self):
+-            state.add_token(self.star)
+-            self.whitespace_after_star._codegen(state)
+-            keyword = self.keyword
+-            if keyword is not None:
+-                keyword._codegen(state)
+-            equal = self.equal
+-            if equal is MaybeSentinel.DEFAULT and self.keyword is not None:
+-                state.add_token(" = ")
+-            elif isinstance(equal, AssignEqual):
+-                equal._codegen(state)
+-            self.value._codegen(state)
+-
+-        comma = self.comma
+-        if comma is MaybeSentinel.DEFAULT and default_comma:
+-            state.add_token(", ")
+-        elif isinstance(comma, Comma):
+-            comma._codegen(state)
+-        self.whitespace_after_arg._codegen(state)
++        with perfmark.region("lt-100"):
++            with state.record_syntactic_position(self):
++                state.add_token(self.star)
++                self.whitespace_after_star._codegen(state)
++                keyword = self.keyword
++                if keyword is not None:
++                    keyword._codegen(state)
++                equal = self.equal
++                if equal is MaybeSentinel.DEFAULT and self.keyword is not None:
++                    state.add_token(" = ")
++                elif isinstance(equal, AssignEqual):
++                    equal._codegen(state)
++                self.value._codegen(state)
++
++            comma = self.comma
++            if comma is MaybeSentinel.DEFAULT and default_comma:
++                state.add_token(", ")
++            elif isinstance(comma, Comma):
++                comma._codegen(state)
++            self.whitespace_after_arg._codegen(state)
+ 
+ 
+ class _BaseExpressionWithArgs(BaseExpression, ABC):

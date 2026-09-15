@@ -1,0 +1,82 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1000,38 +1001,39 @@
+         return meta.get(key, default) if meta is not None else default
+ 
+     def __deepcopy__(self, memo: t.Any) -> Expr:
+-        root = self.__class__()
+-        stack: list[tuple[Expr, Expr]] = [(self, root)]
+-
+-        while stack:
+-            node, copy = stack.pop()
+-
+-            if node.comments is not None:
+-                copy.comments = deepcopy(node.comments)
+-            if node._type is not None:
+-                copy._type = deepcopy(node._type)
+-            if node._meta is not None:
+-                copy._meta = deepcopy(node._meta)
+-            if node._hash is not None:
+-                copy._hash = node._hash
+-
+-            for k, vs in node.args.items():
+-                if isinstance(vs, Expr):
+-                    stack.append((vs, vs.__class__()))
+-                    copy.set(k, stack[-1][-1])
+-                elif type(vs) is list:
+-                    copy.args[k] = []
+-
+-                    for v in vs:
+-                        if isinstance(v, Expr):
+-                            stack.append((v, v.__class__()))
+-                            copy.append(k, stack[-1][-1])
+-                        else:
+-                            copy.append(k, v)
+-                else:
+-                    copy.args[k] = vs
+-
+-        return root
++        with perfmark.region("lt-056"):
++            root = self.__class__()
++            stack: list[tuple[Expr, Expr]] = [(self, root)]
++
++            while stack:
++                node, copy = stack.pop()
++
++                if node.comments is not None:
++                    copy.comments = deepcopy(node.comments)
++                if node._type is not None:
++                    copy._type = deepcopy(node._type)
++                if node._meta is not None:
++                    copy._meta = deepcopy(node._meta)
++                if node._hash is not None:
++                    copy._hash = node._hash
++
++                for k, vs in node.args.items():
++                    if isinstance(vs, Expr):
++                        stack.append((vs, vs.__class__()))
++                        copy.set(k, stack[-1][-1])
++                    elif type(vs) is list:
++                        copy.args[k] = []
++
++                        for v in vs:
++                            if isinstance(v, Expr):
++                                stack.append((v, v.__class__()))
++                                copy.append(k, stack[-1][-1])
++                            else:
++                                copy.append(k, v)
++                    else:
++                        copy.args[k] = vs
++
++            return root
+ 
+     def copy(self: E) -> E:
+         return deepcopy(self)

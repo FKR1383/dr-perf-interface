@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-202",
+  "title": "InitListChecker::CheckStructUnionTypes compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Sema/SemaInit.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Sema/SemaInit.cpp",
+    "sha256": "b90002eaec47eacf97ff6d3836555a017eb87b51d89f274b50fc66a833d75668"
+  },
+  "region": {
+    "symbol": "InitListChecker::CheckStructUnionTypes",
+    "start_line": 2268,
+    "end_line": 2603,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-202",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "semantic-analysis",
+  "workload": {
+    "description": "Run the bounded new-array-init-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Sema/SemaInit.cpp:InitListChecker::CheckStructUnionTypes",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Sema/SemaInit.cpp#L2268-L2603"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "0f070e1ca5c8a3167a16e5fff6e1bd8194864bc7a6ce37fe07c607dc6b3d485c",
+      "patch_sha256": "e495f257679da0e9411e8e38d6b9e3bee4cce14264abea7408dc0ca6f27601cc"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

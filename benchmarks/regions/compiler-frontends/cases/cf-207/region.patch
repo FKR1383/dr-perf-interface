@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/DeclBase.cpp
++++ b/clang/lib/AST/DeclBase.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/DeclBase.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTLambda.h"
+@@ -1803,6 +1804,7 @@
+ /// external source. If it does, those entries will be marked with
+ /// the 'hasExternalDecls' flag.
+ StoredDeclsMap *DeclContext::buildLookup() {
++  DRPERF_BENCH_REGION("cf-207");
+   assert(this == getPrimaryContext() && "buildLookup called on non-primary DC");
+ 
+   if (!hasLazyLocalLexicalLookups() &&

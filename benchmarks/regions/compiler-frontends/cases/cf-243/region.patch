@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/WhitespaceManager.cpp
++++ b/clang/lib/Format/WhitespaceManager.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "WhitespaceManager.h"
+ #include "llvm/ADT/STLExtras.h"
+ #include "llvm/ADT/SmallVector.h"
+@@ -1087,6 +1088,7 @@
+ }
+ 
+ void WhitespaceManager::alignTrailingComments() {
++  DRPERF_BENCH_REGION("cf-243");
+   if (Style.AlignTrailingComments.Kind == FormatStyle::TCAS_Never)
+     return;
+ 

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-089",
+  "title": "Parser::ParseFunctionDefinition compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Parse/Parser.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Parse/Parser.cpp",
+    "sha256": "fb68b96904b94cca11f734eb89d1e0af133f2c2f14d01f3b29d176cd5062ac3c"
+  },
+  "region": {
+    "symbol": "Parser::ParseFunctionDefinition",
+    "start_line": 1284,
+    "end_line": 1521,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-089",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "parsing",
+  "workload": {
+    "description": "Run the bounded function-definition-parsing fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Parse/Parser.cpp:Parser::ParseFunctionDefinition",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Parse/Parser.cpp#L1284-L1521"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "073e01d039258a24db904de89001f55f9a70ea8aa3f5b733071c511ebc01eca8",
+      "patch_sha256": "cdedbc4d0185175f30260ae6f87b13f5bd84afba19982eb487c8aa1c3eb2ea1c"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

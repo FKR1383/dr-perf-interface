@@ -1,0 +1,20 @@
+--- a/networkx/generators/trees.py
++++ b/networkx/generators/trees.py
+@@ -27,6 +27,7 @@
+ with a designated root node. A rooted forest is a disjoint union
+ of rooted trees.
+ """
++import perfmark
+ 
+ from collections import Counter, defaultdict
+ from math import comb, factorial
+@@ -472,7 +473,8 @@
+     # Nonroots
+     p = set(range(n)).difference(roots)
+     # Coding sequence
+-    N = [seed.randint(0, n - 1) for i in range(n - k - 1)]
++    with perfmark.region("gl-061"):
++        N = [seed.randint(0, n - 1) for i in range(n - k - 1)]
+     # Multiset of elements in N also in p
+     degree = Counter([x for x in N if x in p])
+     # Iterator over the elements of p with degree zero

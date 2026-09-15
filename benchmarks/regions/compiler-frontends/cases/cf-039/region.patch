@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/Sema.cpp
++++ b/clang/lib/Sema/Sema.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "UsedDeclVisitor.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTDiagnostic.h"
+@@ -1593,6 +1594,7 @@
+ }
+ 
+ void Sema::EmitDiagnostic(unsigned DiagID, const DiagnosticBuilder &DB) {
++  DRPERF_BENCH_REGION("cf-039");
+   // FIXME: It doesn't make sense to me that DiagID is an incoming argument here
+   // and yet we also use the current diag ID on the DiagnosticsEngine. This has
+   // been made more painfully obvious by the refactor that introduced this

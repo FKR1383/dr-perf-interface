@@ -1,0 +1,24 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -630,9 +631,10 @@
+     if not python_version:
+         python_version = sys.version_info[:2]
+     platforms = list(platform_tags() if platforms is None else platforms)
+-    for version in _py_interpreter_range(python_version):
+-        for platform_ in platforms:
+-            yield Tag(version, "none", platform_)
++    with perfmark.region("gl-206"):
++        for version in _py_interpreter_range(python_version):
++            for platform_ in platforms:
++                yield Tag(version, "none", platform_)
+     if interpreter:
+         yield Tag(interpreter, "none", "any")
+     yield from pure_python_tags(python_version)

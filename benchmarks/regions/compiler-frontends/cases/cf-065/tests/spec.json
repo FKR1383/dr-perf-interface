@@ -1,0 +1,36 @@
+{
+  "case": "cf-065",
+  "phase": "ir-generation",
+  "scenario": "block-literal-ir",
+  "compiler": "clang",
+  "flags": [
+    "-fblocks",
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_65{int n; X_65(int v):n(v){}}; int main(){X_65 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int x){int (^b)(int)=^(int y){return y+x;}; int z=0;\nz += b(0);\nz += b(1);\nz += b(2);\nz += b(3);\nreturn z;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int x){int (^b)(int)=^(int y){return y+x;}; int z=0;\nz += b(0);\nz += b(1);\nz += b(2);\nz += b(3);\nz += b(4);\nz += b(5);\nz += b(6);\nz += b(7);\nz += b(8);\nz += b(9);\nz += b(10);\nz += b(11);\nz += b(12);\nz += b(13);\nz += b(14);\nz += b(15);\nreturn z;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int x){int (^b)(int)=^(int y){return y+x;}; int z=0;\nz += b(0);\nz += b(1);\nz += b(2);\nz += b(3);\nz += b(4);\nz += b(5);\nz += b(6);\nz += b(7);\nz += b(8);\nz += b(9);\nz += b(10);\nz += b(11);\nz += b(12);\nz += b(13);\nz += b(14);\nz += b(15);\nz += b(16);\nz += b(17);\nz += b(18);\nz += b(19);\nz += b(20);\nz += b(21);\nz += b(22);\nz += b(23);\nz += b(24);\nz += b(25);\nz += b(26);\nz += b(27);\nz += b(28);\nz += b(29);\nz += b(30);\nz += b(31);\nz += b(32);\nz += b(33);\nz += b(34);\nz += b(35);\nz += b(36);\nz += b(37);\nz += b(38);\nz += b(39);\nz += b(40);\nz += b(41);\nz += b(42);\nz += b(43);\nz += b(44);\nz += b(45);\nz += b(46);\nz += b(47);\nz += b(48);\nz += b(49);\nz += b(50);\nz += b(51);\nz += b(52);\nz += b(53);\nz += b(54);\nz += b(55);\nz += b(56);\nz += b(57);\nz += b(58);\nz += b(59);\nz += b(60);\nz += b(61);\nz += b(62);\nz += b(63);\nreturn z;}\n"
+    }
+  ],
+  "target_symbol": "CodeGenFunction::EmitBlockLiteral",
+  "target_source": "clang/lib/CodeGen/CGBlocks.cpp",
+  "mapping_note": "The block-literal-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

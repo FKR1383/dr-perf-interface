@@ -1,0 +1,177 @@
+--- a/numpy/lib/_utils_impl.py
++++ b/numpy/lib/_utils_impl.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import os
+ import platform
+ import sys
+@@ -320,88 +321,89 @@
+     if output is None:
+         output = sys.stdout
+ 
+-    if object is None:
+-        info(info)
+-    elif isinstance(object, ndarray):
+-        _info(object, output=output)
+-    elif isinstance(object, str):
+-        if _namedict is None:
+-            _namedict, _dictlist = _makenamedict(toplevel)
+-        numfound = 0
+-        objlist = []
+-        for namestr in _dictlist:
++    with perfmark.region("gl-113"):
++        if object is None:
++            info(info)
++        elif isinstance(object, ndarray):
++            _info(object, output=output)
++        elif isinstance(object, str):
++            if _namedict is None:
++                _namedict, _dictlist = _makenamedict(toplevel)
++            numfound = 0
++            objlist = []
++            for namestr in _dictlist:
++                try:
++                    obj = _namedict[namestr][object]
++                    if id(obj) in objlist:
++                        print(f"\n     *** Repeat reference found in {namestr} *** ",
++                              file=output
++                              )
++                    else:
++                        objlist.append(id(obj))
++                        print(f"     *** Found in {namestr} ***", file=output)
++                        info(obj)
++                        print("-" * maxwidth, file=output)
++                    numfound += 1
++                except KeyError:
++                    pass
++            if numfound == 0:
++                print(f"Help for {object} not found.", file=output)
++            else:
++                print("\n     "
++                      f"*** Total of {numfound} references found. ***",
++                      file=output
++                      )
++    
++        elif inspect.isfunction(object) or inspect.ismethod(object):
++            name = object.__name__
+             try:
+-                obj = _namedict[namestr][object]
+-                if id(obj) in objlist:
+-                    print(f"\n     *** Repeat reference found in {namestr} *** ",
+-                          file=output
+-                          )
+-                else:
+-                    objlist.append(id(obj))
+-                    print(f"     *** Found in {namestr} ***", file=output)
+-                    info(obj)
+-                    print("-" * maxwidth, file=output)
+-                numfound += 1
+-            except KeyError:
+-                pass
+-        if numfound == 0:
+-            print(f"Help for {object} not found.", file=output)
+-        else:
+-            print("\n     "
+-                  f"*** Total of {numfound} references found. ***",
+-                  file=output
+-                  )
+-
+-    elif inspect.isfunction(object) or inspect.ismethod(object):
+-        name = object.__name__
+-        try:
+-            arguments = str(inspect.signature(object))
+-        except Exception:
+-            arguments = "()"
+-
+-        if len(name + arguments) > maxwidth:
+-            argstr = _split_line(name, arguments, maxwidth)
+-        else:
+-            argstr = name + arguments
+-
+-        print(" " + argstr + "\n", file=output)
+-        print(inspect.getdoc(object), file=output)
+-
+-    elif inspect.isclass(object):
+-        name = object.__name__
+-        try:
+-            arguments = str(inspect.signature(object))
+-        except Exception:
+-            arguments = "()"
+-
+-        if len(name + arguments) > maxwidth:
+-            argstr = _split_line(name, arguments, maxwidth)
+-        else:
+-            argstr = name + arguments
+-
+-        print(" " + argstr + "\n", file=output)
+-        doc1 = inspect.getdoc(object)
+-        if doc1 is None:
+-            if hasattr(object, '__init__'):
+-                print(inspect.getdoc(object.__init__), file=output)
+-        else:
++                arguments = str(inspect.signature(object))
++            except Exception:
++                arguments = "()"
++    
++            if len(name + arguments) > maxwidth:
++                argstr = _split_line(name, arguments, maxwidth)
++            else:
++                argstr = name + arguments
++    
++            print(" " + argstr + "\n", file=output)
+             print(inspect.getdoc(object), file=output)
+-
+-        methods = pydoc.allmethods(object)
+-
+-        public_methods = [meth for meth in methods if meth[0] != '_']
+-        if public_methods:
+-            print("\n\nMethods:\n", file=output)
+-            for meth in public_methods:
+-                thisobj = getattr(object, meth, None)
+-                if thisobj is not None:
+-                    methstr, other = pydoc.splitdoc(
+-                            inspect.getdoc(thisobj) or "None"
+-                            )
+-                print(f"  {meth}  --  {methstr}", file=output)
+-
+-    elif hasattr(object, '__doc__'):
+-        print(inspect.getdoc(object), file=output)
++    
++        elif inspect.isclass(object):
++            name = object.__name__
++            try:
++                arguments = str(inspect.signature(object))
++            except Exception:
++                arguments = "()"
++    
++            if len(name + arguments) > maxwidth:
++                argstr = _split_line(name, arguments, maxwidth)
++            else:
++                argstr = name + arguments
++    
++            print(" " + argstr + "\n", file=output)
++            doc1 = inspect.getdoc(object)
++            if doc1 is None:
++                if hasattr(object, '__init__'):
++                    print(inspect.getdoc(object.__init__), file=output)
++            else:
++                print(inspect.getdoc(object), file=output)
++    
++            methods = pydoc.allmethods(object)
++    
++            public_methods = [meth for meth in methods if meth[0] != '_']
++            if public_methods:
++                print("\n\nMethods:\n", file=output)
++                for meth in public_methods:
++                    thisobj = getattr(object, meth, None)
++                    if thisobj is not None:
++                        methstr, other = pydoc.splitdoc(
++                                inspect.getdoc(thisobj) or "None"
++                                )
++                    print(f"  {meth}  --  {methstr}", file=output)
++    
++        elif hasattr(object, '__doc__'):
++            print(inspect.getdoc(object), file=output)
+ 
+ 
+ def _median_nancheck(data, result, axis):

@@ -1,0 +1,31 @@
+{
+  "case": "cf-022",
+  "phase": "semantic-analysis",
+  "scenario": "using-declaration-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_22(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_22 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_22(2)==14);\nint main() { Item_22 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "namespace N{int v0;int v1;int v2;int v3;}\nusing N::v0;\nusing N::v1;\nusing N::v2;\nusing N::v3;\n"
+    },
+    {
+      "size": 16,
+      "source": "namespace N{int v0;int v1;int v2;int v3;int v4;int v5;int v6;int v7;int v8;int v9;int v10;int v11;int v12;int v13;int v14;int v15;}\nusing N::v0;\nusing N::v1;\nusing N::v2;\nusing N::v3;\nusing N::v4;\nusing N::v5;\nusing N::v6;\nusing N::v7;\nusing N::v8;\nusing N::v9;\nusing N::v10;\nusing N::v11;\nusing N::v12;\nusing N::v13;\nusing N::v14;\nusing N::v15;\n"
+    },
+    {
+      "size": 64,
+      "source": "namespace N{int v0;int v1;int v2;int v3;int v4;int v5;int v6;int v7;int v8;int v9;int v10;int v11;int v12;int v13;int v14;int v15;int v16;int v17;int v18;int v19;int v20;int v21;int v22;int v23;int v24;int v25;int v26;int v27;int v28;int v29;int v30;int v31;int v32;int v33;int v34;int v35;int v36;int v37;int v38;int v39;int v40;int v41;int v42;int v43;int v44;int v45;int v46;int v47;int v48;int v49;int v50;int v51;int v52;int v53;int v54;int v55;int v56;int v57;int v58;int v59;int v60;int v61;int v62;int v63;}\nusing N::v0;\nusing N::v1;\nusing N::v2;\nusing N::v3;\nusing N::v4;\nusing N::v5;\nusing N::v6;\nusing N::v7;\nusing N::v8;\nusing N::v9;\nusing N::v10;\nusing N::v11;\nusing N::v12;\nusing N::v13;\nusing N::v14;\nusing N::v15;\nusing N::v16;\nusing N::v17;\nusing N::v18;\nusing N::v19;\nusing N::v20;\nusing N::v21;\nusing N::v22;\nusing N::v23;\nusing N::v24;\nusing N::v25;\nusing N::v26;\nusing N::v27;\nusing N::v28;\nusing N::v29;\nusing N::v30;\nusing N::v31;\nusing N::v32;\nusing N::v33;\nusing N::v34;\nusing N::v35;\nusing N::v36;\nusing N::v37;\nusing N::v38;\nusing N::v39;\nusing N::v40;\nusing N::v41;\nusing N::v42;\nusing N::v43;\nusing N::v44;\nusing N::v45;\nusing N::v46;\nusing N::v47;\nusing N::v48;\nusing N::v49;\nusing N::v50;\nusing N::v51;\nusing N::v52;\nusing N::v53;\nusing N::v54;\nusing N::v55;\nusing N::v56;\nusing N::v57;\nusing N::v58;\nusing N::v59;\nusing N::v60;\nusing N::v61;\nusing N::v62;\nusing N::v63;\n"
+    }
+  ],
+  "target_symbol": "Sema::BuildUsingDeclaration",
+  "target_source": "clang/lib/Sema/SemaDeclCXX.cpp",
+  "mapping_note": "The using-declaration-semantics construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

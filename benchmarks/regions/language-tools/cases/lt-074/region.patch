@@ -1,0 +1,142 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -6863,71 +6864,72 @@
+         that nothing complex follows. If it does, retreats and returns None so
+         the slow path can handle it. For >4 parts, wraps in exp.Dot nodes.
+         """
+-        index = self._index
+-        parts: list[exp.Identifier] | None = None
+-        all_comments: list[str] | None = None
+-
+-        while self._match_set(self.IDENTIFIER_TOKENS):
+-            token = self._prev
+-            comments = self._prev_comments
+-
+-            if parts is None and token.text.upper() in self.NO_PAREN_FUNCTION_PARSERS:
+-                self._retreat(index)
+-                return None
+-
+-            has_dot = self._match(TokenType.DOT)
+-            curr_tt = self._curr.token_type
+-
+-            if not has_dot:
+-                if curr_tt in self.COLUMN_OPERATORS or curr_tt in self.COLUMN_POSTFIX_TOKENS:
++        with perfmark.region("lt-074"):
++            index = self._index
++            parts: list[exp.Identifier] | None = None
++            all_comments: list[str] | None = None
++
++            while self._match_set(self.IDENTIFIER_TOKENS):
++                token = self._prev
++                comments = self._prev_comments
++
++                if parts is None and token.text.upper() in self.NO_PAREN_FUNCTION_PARSERS:
+                     self._retreat(index)
+                     return None
+-            elif curr_tt not in self.IDENTIFIER_TOKENS:
+-                self._retreat(index)
++
++                has_dot = self._match(TokenType.DOT)
++                curr_tt = self._curr.token_type
++
++                if not has_dot:
++                    if curr_tt in self.COLUMN_OPERATORS or curr_tt in self.COLUMN_POSTFIX_TOKENS:
++                        self._retreat(index)
++                        return None
++                elif curr_tt not in self.IDENTIFIER_TOKENS:
++                    self._retreat(index)
++                    return None
++
++                if parts is None:
++                    parts = []
++
++                if comments:
++                    if all_comments is None:
++                        all_comments = []
++                    all_comments.extend(comments)
++                    self._prev_comments = []
++
++                parts.append(
++                    self.expression(
++                        exp.Identifier(
++                            this=token.text, quoted=token.token_type == TokenType.IDENTIFIER
++                        ),
++                        token,
++                    )
++                )
++
++                if not has_dot:
++                    break
++
++            if parts is None:
+                 return None
+ 
+-            if parts is None:
+-                parts = []
+-
+-            if comments:
+-                if all_comments is None:
+-                    all_comments = []
+-                all_comments.extend(comments)
+-                self._prev_comments = []
+-
+-            parts.append(
+-                self.expression(
+-                    exp.Identifier(
+-                        this=token.text, quoted=token.token_type == TokenType.IDENTIFIER
+-                    ),
+-                    token,
+-                )
+-            )
+-
+-            if not has_dot:
+-                break
+-
+-        if parts is None:
+-            return None
+-
+-        n = len(parts)
+-
+-        if n == 1:
+-            column: exp.Column | exp.Dot = exp.Column(this=parts[0])
+-        elif n == 2:
+-            column = exp.Column(this=parts[1], table=parts[0])
+-        elif n == 3:
+-            column = exp.Column(this=parts[2], table=parts[1], db=parts[0])
+-        else:
+-            column = exp.Column(this=parts[3], table=parts[2], db=parts[1], catalog=parts[0])
+-
+-            for i in range(4, n):
+-                column = exp.Dot(this=column, expression=parts[i])
+-
+-        if all_comments:
+-            column.add_comments(all_comments)
+-
+-        return column
++            n = len(parts)
++
++            if n == 1:
++                column: exp.Column | exp.Dot = exp.Column(this=parts[0])
++            elif n == 2:
++                column = exp.Column(this=parts[1], table=parts[0])
++            elif n == 3:
++                column = exp.Column(this=parts[2], table=parts[1], db=parts[0])
++            else:
++                column = exp.Column(this=parts[3], table=parts[2], db=parts[1], catalog=parts[0])
++
++                for i in range(4, n):
++                    column = exp.Dot(this=column, expression=parts[i])
++
++            if all_comments:
++                column.add_comments(all_comments)
++
++            return column
+ 
+     def _parse_column_reference(self) -> exp.Expr | None:
+         this = self._parse_field()

@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -712,6 +713,7 @@
+     DeclaratorContext Context, const ParsedTemplateInfo &TemplateInfo,
+     SourceLocation UsingLoc, SourceLocation &DeclEnd,
+     ParsedAttributes &PrefixAttrs, AccessSpecifier AS) {
++      DRPERF_BENCH_REGION("cf-074");
+   SourceLocation UELoc;
+   bool InInitStatement = Context == DeclaratorContext::SelectionInit ||
+                          Context == DeclaratorContext::ForInit;

@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -3235,6 +3236,7 @@
+ 
+ static void GenerateHeaderSearchArgs(const HeaderSearchOptions &Opts,
+                                      ArgumentConsumer Consumer) {
++                                       DRPERF_BENCH_REGION("cf-164");
+   const HeaderSearchOptions *HeaderSearchOpts = &Opts;
+ #define HEADER_SEARCH_OPTION_WITH_MARSHALLING(...)                             \
+   GENERATE_OPTION_WITH_MARSHALLING(Consumer, __VA_ARGS__)

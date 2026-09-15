@@ -1,0 +1,69 @@
+--- a/src/requests/utils.py
++++ b/src/requests/utils.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import codecs
+ import contextlib
+@@ -831,32 +832,33 @@
+         # URLs don't always have hostnames, e.g. file:/// urls.
+         return True
+ 
+-    if no_proxy:
+-        # We need to check whether we match here. We need to see if we match
+-        # the end of the hostname, both with and without the port.
+-        no_proxy_hosts = (host for host in no_proxy.replace(" ", "").split(",") if host)
+-
+-        if is_ipv4_address(hostname):
+-            for proxy_ip in no_proxy_hosts:
+-                if is_valid_cidr(proxy_ip):
+-                    if address_in_network(hostname, proxy_ip):
++    with perfmark.region("gl-183"):
++        if no_proxy:
++            # We need to check whether we match here. We need to see if we match
++            # the end of the hostname, both with and without the port.
++            no_proxy_hosts = (host for host in no_proxy.replace(" ", "").split(",") if host)
++    
++            if is_ipv4_address(hostname):
++                for proxy_ip in no_proxy_hosts:
++                    if is_valid_cidr(proxy_ip):
++                        if address_in_network(hostname, proxy_ip):
++                            return True
++                    elif hostname == proxy_ip:
++                        # If no_proxy ip was defined in plain IP notation instead of cidr notation &
++                        # matches the IP of the index
+                         return True
+-                elif hostname == proxy_ip:
+-                    # If no_proxy ip was defined in plain IP notation instead of cidr notation &
+-                    # matches the IP of the index
+-                    return True
+-        else:
+-            host_with_port = hostname
+-            if parsed.port:
+-                host_with_port += f":{parsed.port}"
+-
+-            for host in no_proxy_hosts:
+-                host = host.lstrip(".")
+-                if hostname == host or host_with_port == host:
+-                    return True
+-                host = "." + host
+-                if hostname.endswith(host) or host_with_port.endswith(host):
+-                    return True
++            else:
++                host_with_port = hostname
++                if parsed.port:
++                    host_with_port += f":{parsed.port}"
++    
++                for host in no_proxy_hosts:
++                    host = host.lstrip(".")
++                    if hostname == host or host_with_port == host:
++                        return True
++                    host = "." + host
++                    if hostname.endswith(host) or host_with_port.endswith(host):
++                        return True
+ 
+     with set_environ("no_proxy", no_proxy_arg):
+         try:

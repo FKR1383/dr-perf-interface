@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -11576,6 +11577,7 @@
+                                    SourceLocation LBrace,
+                                    const ParsedAttributesView &AttrList,
+                                    UsingDirectiveDecl *&UD, bool IsNested) {
++                                     DRPERF_BENCH_REGION("cf-193");
+   SourceLocation StartLoc = InlineLoc.isValid() ? InlineLoc : NamespaceLoc;
+   // For anonymous namespace, take the location of the left brace.
+   SourceLocation Loc = II ? IdentLoc : LBrace;

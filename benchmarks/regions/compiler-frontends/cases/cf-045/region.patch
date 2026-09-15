@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/AnalysisBasedWarnings.cpp
++++ b/clang/lib/Sema/AnalysisBasedWarnings.cpp
+@@ -12,6 +12,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Sema/AnalysisBasedWarnings.h"
+ #include "clang/AST/Decl.h"
+ #include "clang/AST/DeclCXX.h"
+@@ -2640,6 +2641,7 @@
+ void clang::sema::AnalysisBasedWarnings::IssueWarnings(
+     sema::AnalysisBasedWarnings::Policy P, sema::FunctionScopeInfo *fscope,
+     const Decl *D, QualType BlockType) {
++      DRPERF_BENCH_REGION("cf-045");
+ 
+   // We avoid doing analysis-based warnings when there are errors for
+   // two reasons:

@@ -1,0 +1,32 @@
+{
+  "case": "cf-243",
+  "phase": "formatting",
+  "scenario": "whitespace-layout",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_243(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_243 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_243(2)==14);\nint main() { Item_243 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_243_0 { int value[1]; };\nstruct Scale_243_1 { int value[2]; };\nstruct Scale_243_2 { int value[3]; };\nstruct Scale_243_3 { int value[4]; };\ntemplate<class T> constexpr T fold_243(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_243 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_243(2)==14);\nint main() { Item_243 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_243_0 { int value[1]; };\nstruct Scale_243_1 { int value[2]; };\nstruct Scale_243_2 { int value[3]; };\nstruct Scale_243_3 { int value[4]; };\nstruct Scale_243_4 { int value[1]; };\nstruct Scale_243_5 { int value[2]; };\nstruct Scale_243_6 { int value[3]; };\nstruct Scale_243_7 { int value[4]; };\nstruct Scale_243_8 { int value[1]; };\nstruct Scale_243_9 { int value[2]; };\nstruct Scale_243_10 { int value[3]; };\nstruct Scale_243_11 { int value[4]; };\nstruct Scale_243_12 { int value[1]; };\nstruct Scale_243_13 { int value[2]; };\nstruct Scale_243_14 { int value[3]; };\nstruct Scale_243_15 { int value[4]; };\ntemplate<class T> constexpr T fold_243(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_243 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_243(2)==14);\nint main() { Item_243 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_243_0 { int value[1]; };\nstruct Scale_243_1 { int value[2]; };\nstruct Scale_243_2 { int value[3]; };\nstruct Scale_243_3 { int value[4]; };\nstruct Scale_243_4 { int value[1]; };\nstruct Scale_243_5 { int value[2]; };\nstruct Scale_243_6 { int value[3]; };\nstruct Scale_243_7 { int value[4]; };\nstruct Scale_243_8 { int value[1]; };\nstruct Scale_243_9 { int value[2]; };\nstruct Scale_243_10 { int value[3]; };\nstruct Scale_243_11 { int value[4]; };\nstruct Scale_243_12 { int value[1]; };\nstruct Scale_243_13 { int value[2]; };\nstruct Scale_243_14 { int value[3]; };\nstruct Scale_243_15 { int value[4]; };\nstruct Scale_243_16 { int value[1]; };\nstruct Scale_243_17 { int value[2]; };\nstruct Scale_243_18 { int value[3]; };\nstruct Scale_243_19 { int value[4]; };\nstruct Scale_243_20 { int value[1]; };\nstruct Scale_243_21 { int value[2]; };\nstruct Scale_243_22 { int value[3]; };\nstruct Scale_243_23 { int value[4]; };\nstruct Scale_243_24 { int value[1]; };\nstruct Scale_243_25 { int value[2]; };\nstruct Scale_243_26 { int value[3]; };\nstruct Scale_243_27 { int value[4]; };\nstruct Scale_243_28 { int value[1]; };\nstruct Scale_243_29 { int value[2]; };\nstruct Scale_243_30 { int value[3]; };\nstruct Scale_243_31 { int value[4]; };\nstruct Scale_243_32 { int value[1]; };\nstruct Scale_243_33 { int value[2]; };\nstruct Scale_243_34 { int value[3]; };\nstruct Scale_243_35 { int value[4]; };\nstruct Scale_243_36 { int value[1]; };\nstruct Scale_243_37 { int value[2]; };\nstruct Scale_243_38 { int value[3]; };\nstruct Scale_243_39 { int value[4]; };\nstruct Scale_243_40 { int value[1]; };\nstruct Scale_243_41 { int value[2]; };\nstruct Scale_243_42 { int value[3]; };\nstruct Scale_243_43 { int value[4]; };\nstruct Scale_243_44 { int value[1]; };\nstruct Scale_243_45 { int value[2]; };\nstruct Scale_243_46 { int value[3]; };\nstruct Scale_243_47 { int value[4]; };\nstruct Scale_243_48 { int value[1]; };\nstruct Scale_243_49 { int value[2]; };\nstruct Scale_243_50 { int value[3]; };\nstruct Scale_243_51 { int value[4]; };\nstruct Scale_243_52 { int value[1]; };\nstruct Scale_243_53 { int value[2]; };\nstruct Scale_243_54 { int value[3]; };\nstruct Scale_243_55 { int value[4]; };\nstruct Scale_243_56 { int value[1]; };\nstruct Scale_243_57 { int value[2]; };\nstruct Scale_243_58 { int value[3]; };\nstruct Scale_243_59 { int value[4]; };\nstruct Scale_243_60 { int value[1]; };\nstruct Scale_243_61 { int value[2]; };\nstruct Scale_243_62 { int value[3]; };\nstruct Scale_243_63 { int value[4]; };\ntemplate<class T> constexpr T fold_243(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_243 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_243(2)==14);\nint main() { Item_243 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "WhitespaceManager::alignTrailingComments",
+  "target_source": "clang/lib/Format/WhitespaceManager.cpp",
+  "mapping_note": "The whitespace-layout construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-141",
+  "title": "ASTNodeImporter::VisitRecordDecl compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/AST/ASTImporter.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/AST/ASTImporter.cpp",
+    "sha256": "5ba9ea4250eaa0c188fc8db1a8e23d75d0cac6ded029d55971eee2f132ae80fb"
+  },
+  "region": {
+    "symbol": "ASTNodeImporter::VisitRecordDecl",
+    "start_line": 3079,
+    "end_line": 3332,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-141",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ast-processing",
+  "workload": {
+    "description": "Run the bounded ast-import-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/AST/ASTImporter.cpp:ASTNodeImporter::VisitRecordDecl",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/AST/ASTImporter.cpp#L3079-L3332"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "bd952814f2812382cf11bcf4518ef683508d9f7620a9055a1fb206b8788fd722",
+      "spec_sha256": "d87bd425c9432f33ac255856662160738f204fa867660bfab69de839a0e136fa",
+      "patch_sha256": "5d53b2077042c628f10031eb89a6b8e7ce318ee6c006232b6b54ce3d5ac6b678"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

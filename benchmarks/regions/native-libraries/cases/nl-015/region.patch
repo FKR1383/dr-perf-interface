@@ -1,0 +1,18 @@
+--- a/include/rapidjson/document.h
++++ b/include/rapidjson/document.h
+@@ -17,6 +17,7 @@
+ 
+ /*! \file document.h */
+ 
++#include "drperf_bench_region.h"
+ #include "reader.h"
+ #include "internal/meta.h"
+ #include "internal/strfunc.h"
+@@ -2440,6 +2441,7 @@
+ 
+     //! Initialize this value as copy string with initial data, without calling destructor.
+     void SetStringRaw(StringRefType s, Allocator& allocator) {
++        DRPERF_BENCH_REGION("nl-015");
+         Ch* str = 0;
+         if (ShortString::Usable(s.length)) {
+             data_.f.flags = kShortStringFlag;

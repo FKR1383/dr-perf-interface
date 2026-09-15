@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReaderDecl.cpp
++++ b/clang/lib/Serialization/ASTReaderDecl.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "clang/AST/ASTConcept.h"
+@@ -3870,6 +3871,7 @@
+ 
+ /// Read the declaration at the given offset from the AST file.
+ Decl *ASTReader::ReadDeclRecord(GlobalDeclID ID) {
++  DRPERF_BENCH_REGION("cf-006");
+   SourceLocation DeclLoc;
+   RecordLocation Loc = DeclCursorForID(ID, DeclLoc);
+   llvm::BitstreamCursor &DeclsCursor = Loc.F->DeclsCursor;

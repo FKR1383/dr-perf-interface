@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/CFG.cpp
++++ b/clang/lib/Analysis/CFG.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/CFG.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Attr.h"
+@@ -1574,6 +1575,7 @@
+ ///  transferred to the caller.  If CFG construction fails, this method returns
+ ///  NULL.
+ std::unique_ptr<CFG> CFGBuilder::buildCFG(const Decl *D, Stmt *Statement) {
++  DRPERF_BENCH_REGION("cf-154");
+   assert(cfg.get());
+   if (!Statement)
+     return nullptr;

@@ -1,0 +1,70 @@
+--- a/lark/parsers/lalr_analysis.py
++++ b/lark/parsers/lalr_analysis.py
+@@ -2,6 +2,7 @@
+ 
+ For now, shift/reduce conflicts are automatically resolved as shifts.
+ """
++import perfmark
+ 
+ # Author: Erez Shinan (2017)
+ # Email : erezshin@gmail.com
+@@ -164,32 +165,33 @@
+ 
+ 
+     def compute_lr0_states(self) -> None:
+-        self.lr0_itemsets = set()
+-        # map of kernels to LR0ItemSets
+-        cache: Dict['State', LR0ItemSet] = {}
+-
+-        def step(state: LR0ItemSet) -> Iterator[LR0ItemSet]:
+-            _, unsat = classify_bool(state.closure, lambda rp: rp.is_satisfied)
+-
+-            d = classify(unsat, lambda rp: rp.next)
+-            for sym, rps in d.items():
+-                kernel = fzset({rp.advance(sym) for rp in rps})
+-                new_state = cache.get(kernel, None)
+-                if new_state is None:
+-                    closure = set(kernel)
+-                    for rp in kernel:
+-                        if not rp.is_satisfied and not rp.next.is_term:
+-                            closure |= self.expand_rule(rp.next, self.lr0_rules_by_origin)
+-                    new_state = LR0ItemSet(kernel, closure)
+-                    cache[kernel] = new_state
+-
+-                state.transitions[sym] = new_state
+-                yield new_state
+-
+-            self.lr0_itemsets.add(state)
+-
+-        for _ in bfs(self.lr0_start_states.values(), step):
+-            pass
++        with perfmark.region("lt-216"):
++            self.lr0_itemsets = set()
++            # map of kernels to LR0ItemSets
++            cache: Dict['State', LR0ItemSet] = {}
++
++            def step(state: LR0ItemSet) -> Iterator[LR0ItemSet]:
++                _, unsat = classify_bool(state.closure, lambda rp: rp.is_satisfied)
++
++                d = classify(unsat, lambda rp: rp.next)
++                for sym, rps in d.items():
++                    kernel = fzset({rp.advance(sym) for rp in rps})
++                    new_state = cache.get(kernel, None)
++                    if new_state is None:
++                        closure = set(kernel)
++                        for rp in kernel:
++                            if not rp.is_satisfied and not rp.next.is_term:
++                                closure |= self.expand_rule(rp.next, self.lr0_rules_by_origin)
++                        new_state = LR0ItemSet(kernel, closure)
++                        cache[kernel] = new_state
++
++                    state.transitions[sym] = new_state
++                    yield new_state
++
++                self.lr0_itemsets.add(state)
++
++            for _ in bfs(self.lr0_start_states.values(), step):
++                pass
+ 
+     def compute_reads_relations(self):
+         # handle start state

@@ -1,0 +1,32 @@
+--- a/pyparsing/results.py
++++ b/pyparsing/results.py
+@@ -1,6 +1,7 @@
+ # results.py
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ from collections.abc import (
+@@ -641,13 +642,14 @@
+            New ``flatten`` argument.
+         """
+ 
+-        if flatten:
+-            return [*_flatten(self)]
+-        else:
+-            return [
+-                res.as_list() if isinstance(res, ParseResults) else res
+-                for res in self._toklist
+-            ]
++        with perfmark.region("lt-185"):
++            if flatten:
++                return [*_flatten(self)]
++            else:
++                return [
++                    res.as_list() if isinstance(res, ParseResults) else res
++                    for res in self._toklist
++                ]
+ 
+     def as_dict(self) -> dict:
+         """

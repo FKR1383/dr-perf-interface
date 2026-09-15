@@ -1,0 +1,85 @@
+--- a/numpy/ma/extras.py
++++ b/numpy/ma/extras.py
+@@ -7,6 +7,7 @@
+ :contact: pierregm_at_uga_dot_edu
+ 
+ """
++import perfmark
+ __all__ = [
+     'apply_along_axis', 'apply_over_axes', 'atleast_1d', 'atleast_2d',
+     'atleast_3d', 'average', 'clump_masked', 'clump_unmasked', 'column_stack',
+@@ -659,40 +660,41 @@
+     else:
+         keepdims_kw = {'keepdims': keepdims}
+ 
+-    if weights is None:
+-        avg = a.mean(axis, **keepdims_kw)
+-        scl = avg.dtype.type(a.count(axis))
+-    else:
+-        wgt = asarray(weights)
+-
+-        if issubclass(a.dtype.type, (np.integer, np.bool)):
+-            result_dtype = np.result_type(a.dtype, wgt.dtype, 'f8')
++    with perfmark.region("gl-120"):
++        if weights is None:
++            avg = a.mean(axis, **keepdims_kw)
++            scl = avg.dtype.type(a.count(axis))
+         else:
+-            result_dtype = np.result_type(a.dtype, wgt.dtype)
+-
+-        # Sanity checks
+-        if a.shape != wgt.shape:
+-            if axis is None:
+-                raise TypeError(
+-                    "Axis must be specified when shapes of a and weights "
+-                    "differ.")
+-            if wgt.shape != tuple(a.shape[ax] for ax in axis):
+-                raise ValueError(
+-                    "Shape of weights must be consistent with "
+-                    "shape of a along specified axis.")
+-
+-            # setup wgt to broadcast along axis
+-            wgt = wgt.transpose(np.argsort(axis))
+-            wgt = wgt.reshape(tuple((s if ax in axis else 1)
+-                                    for ax, s in enumerate(a.shape)))
+-
+-        if m is not nomask:
+-            wgt = wgt * (~a.mask)
+-            wgt.mask |= a.mask
+-
+-        scl = wgt.sum(axis=axis, dtype=result_dtype, **keepdims_kw)
+-        avg = np.multiply(a, wgt,
+-                          dtype=result_dtype).sum(axis, **keepdims_kw) / scl
++            wgt = asarray(weights)
++    
++            if issubclass(a.dtype.type, (np.integer, np.bool)):
++                result_dtype = np.result_type(a.dtype, wgt.dtype, 'f8')
++            else:
++                result_dtype = np.result_type(a.dtype, wgt.dtype)
++    
++            # Sanity checks
++            if a.shape != wgt.shape:
++                if axis is None:
++                    raise TypeError(
++                        "Axis must be specified when shapes of a and weights "
++                        "differ.")
++                if wgt.shape != tuple(a.shape[ax] for ax in axis):
++                    raise ValueError(
++                        "Shape of weights must be consistent with "
++                        "shape of a along specified axis.")
++    
++                # setup wgt to broadcast along axis
++                wgt = wgt.transpose(np.argsort(axis))
++                wgt = wgt.reshape(tuple((s if ax in axis else 1)
++                                        for ax, s in enumerate(a.shape)))
++    
++            if m is not nomask:
++                wgt = wgt * (~a.mask)
++                wgt.mask |= a.mask
++    
++            scl = wgt.sum(axis=axis, dtype=result_dtype, **keepdims_kw)
++            avg = np.multiply(a, wgt,
++                              dtype=result_dtype).sum(axis, **keepdims_kw) / scl
+ 
+     if returned:
+         if scl.shape != avg.shape:

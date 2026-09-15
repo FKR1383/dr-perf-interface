@@ -1,0 +1,32 @@
+{
+  "case": "cf-206",
+  "phase": "formatting",
+  "scenario": "unwrapped-line-parsing",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_206(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_206 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_206(2)==14);\nint main() { Item_206 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_206_0 { int value[1]; };\nstruct Scale_206_1 { int value[2]; };\nstruct Scale_206_2 { int value[3]; };\nstruct Scale_206_3 { int value[4]; };\ntemplate<class T> constexpr T fold_206(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_206 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_206(2)==14);\nint main() { Item_206 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_206_0 { int value[1]; };\nstruct Scale_206_1 { int value[2]; };\nstruct Scale_206_2 { int value[3]; };\nstruct Scale_206_3 { int value[4]; };\nstruct Scale_206_4 { int value[1]; };\nstruct Scale_206_5 { int value[2]; };\nstruct Scale_206_6 { int value[3]; };\nstruct Scale_206_7 { int value[4]; };\nstruct Scale_206_8 { int value[1]; };\nstruct Scale_206_9 { int value[2]; };\nstruct Scale_206_10 { int value[3]; };\nstruct Scale_206_11 { int value[4]; };\nstruct Scale_206_12 { int value[1]; };\nstruct Scale_206_13 { int value[2]; };\nstruct Scale_206_14 { int value[3]; };\nstruct Scale_206_15 { int value[4]; };\ntemplate<class T> constexpr T fold_206(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_206 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_206(2)==14);\nint main() { Item_206 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_206_0 { int value[1]; };\nstruct Scale_206_1 { int value[2]; };\nstruct Scale_206_2 { int value[3]; };\nstruct Scale_206_3 { int value[4]; };\nstruct Scale_206_4 { int value[1]; };\nstruct Scale_206_5 { int value[2]; };\nstruct Scale_206_6 { int value[3]; };\nstruct Scale_206_7 { int value[4]; };\nstruct Scale_206_8 { int value[1]; };\nstruct Scale_206_9 { int value[2]; };\nstruct Scale_206_10 { int value[3]; };\nstruct Scale_206_11 { int value[4]; };\nstruct Scale_206_12 { int value[1]; };\nstruct Scale_206_13 { int value[2]; };\nstruct Scale_206_14 { int value[3]; };\nstruct Scale_206_15 { int value[4]; };\nstruct Scale_206_16 { int value[1]; };\nstruct Scale_206_17 { int value[2]; };\nstruct Scale_206_18 { int value[3]; };\nstruct Scale_206_19 { int value[4]; };\nstruct Scale_206_20 { int value[1]; };\nstruct Scale_206_21 { int value[2]; };\nstruct Scale_206_22 { int value[3]; };\nstruct Scale_206_23 { int value[4]; };\nstruct Scale_206_24 { int value[1]; };\nstruct Scale_206_25 { int value[2]; };\nstruct Scale_206_26 { int value[3]; };\nstruct Scale_206_27 { int value[4]; };\nstruct Scale_206_28 { int value[1]; };\nstruct Scale_206_29 { int value[2]; };\nstruct Scale_206_30 { int value[3]; };\nstruct Scale_206_31 { int value[4]; };\nstruct Scale_206_32 { int value[1]; };\nstruct Scale_206_33 { int value[2]; };\nstruct Scale_206_34 { int value[3]; };\nstruct Scale_206_35 { int value[4]; };\nstruct Scale_206_36 { int value[1]; };\nstruct Scale_206_37 { int value[2]; };\nstruct Scale_206_38 { int value[3]; };\nstruct Scale_206_39 { int value[4]; };\nstruct Scale_206_40 { int value[1]; };\nstruct Scale_206_41 { int value[2]; };\nstruct Scale_206_42 { int value[3]; };\nstruct Scale_206_43 { int value[4]; };\nstruct Scale_206_44 { int value[1]; };\nstruct Scale_206_45 { int value[2]; };\nstruct Scale_206_46 { int value[3]; };\nstruct Scale_206_47 { int value[4]; };\nstruct Scale_206_48 { int value[1]; };\nstruct Scale_206_49 { int value[2]; };\nstruct Scale_206_50 { int value[3]; };\nstruct Scale_206_51 { int value[4]; };\nstruct Scale_206_52 { int value[1]; };\nstruct Scale_206_53 { int value[2]; };\nstruct Scale_206_54 { int value[3]; };\nstruct Scale_206_55 { int value[4]; };\nstruct Scale_206_56 { int value[1]; };\nstruct Scale_206_57 { int value[2]; };\nstruct Scale_206_58 { int value[3]; };\nstruct Scale_206_59 { int value[4]; };\nstruct Scale_206_60 { int value[1]; };\nstruct Scale_206_61 { int value[2]; };\nstruct Scale_206_62 { int value[3]; };\nstruct Scale_206_63 { int value[4]; };\ntemplate<class T> constexpr T fold_206(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_206 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_206(2)==14);\nint main() { Item_206 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "UnwrappedLineParser::parseParens",
+  "target_source": "clang/lib/Format/UnwrappedLineParser.cpp",
+  "mapping_note": "The unwrapped-line-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

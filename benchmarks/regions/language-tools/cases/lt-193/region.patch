@@ -1,0 +1,65 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -4299,30 +4300,31 @@
+     def __init__(
+         self, exprs: typing.Iterable[ParserElement], savelist: bool = False
+     ) -> None:
+-        super().__init__(savelist)
+-        self.exprs: list[ParserElement]
+-        if isinstance(exprs, _generatorType):
+-            exprs = list(exprs)
+-
+-        if isinstance(exprs, str_type):
+-            self.exprs = [self._literalStringClass(exprs)]
+-        elif isinstance(exprs, ParserElement):
+-            self.exprs = [exprs]
+-        elif isinstance(exprs, Iterable):
+-            exprs = list(exprs)
+-            # if sequence of strings provided, wrap with Literal
+-            if any(isinstance(expr, str_type) for expr in exprs):
+-                exprs = (
+-                    self._literalStringClass(e) if isinstance(e, str_type) else e
+-                    for e in exprs
+-                )
+-            self.exprs = list(exprs)
+-        else:
+-            try:
++        with perfmark.region("lt-193"):
++            super().__init__(savelist)
++            self.exprs: list[ParserElement]
++            if isinstance(exprs, _generatorType):
++                exprs = list(exprs)
++
++            if isinstance(exprs, str_type):
++                self.exprs = [self._literalStringClass(exprs)]
++            elif isinstance(exprs, ParserElement):
++                self.exprs = [exprs]
++            elif isinstance(exprs, Iterable):
++                exprs = list(exprs)
++                # if sequence of strings provided, wrap with Literal
++                if any(isinstance(expr, str_type) for expr in exprs):
++                    exprs = (
++                        self._literalStringClass(e) if isinstance(e, str_type) else e
++                        for e in exprs
++                    )
+                 self.exprs = list(exprs)
+-            except TypeError:
+-                self.exprs = [exprs]
+-        self.callPreparse = False
++            else:
++                try:
++                    self.exprs = list(exprs)
++                except TypeError:
++                    self.exprs = [exprs]
++            self.callPreparse = False
+ 
+     def recurse(self) -> list[ParserElement]:
+         return self.exprs[:]

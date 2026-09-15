@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaLookup.cpp
++++ b/clang/lib/Sema/SemaLookup.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/CXXInheritance.h"
+ #include "clang/AST/Decl.h"
+@@ -2402,6 +2403,7 @@
+ 
+ bool Sema::LookupQualifiedName(LookupResult &R, DeclContext *LookupCtx,
+                                bool InUnqualifiedLookup) {
++                                 DRPERF_BENCH_REGION("cf-013");
+   assert(LookupCtx && "Sema::LookupQualifiedName requires a lookup context");
+ 
+   if (!R.getLookupName())

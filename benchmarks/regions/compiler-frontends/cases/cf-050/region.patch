@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -2686,6 +2687,7 @@
+ 
+ Decl *Parser::ParseDeclarationAfterDeclaratorAndAttributes(
+     Declarator &D, const ParsedTemplateInfo &TemplateInfo, ForRangeInit *FRI) {
++      DRPERF_BENCH_REGION("cf-050");
+   // RAII type used to track whether we're inside an initializer.
+   struct InitializerScopeRAII {
+     Parser &P;

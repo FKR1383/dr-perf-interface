@@ -1,0 +1,82 @@
+--- a/networkx/convert_matrix.py
++++ b/networkx/convert_matrix.py
+@@ -24,6 +24,7 @@
+ --------
+ nx_agraph, nx_pydot
+ """
++import perfmark
+ 
+ import itertools
+ from collections import defaultdict
+@@ -1086,39 +1087,40 @@
+         G = G.subgraph(nodelist).copy()
+ 
+     # Collect all edge weights and reduce with `multigraph_weights`
+-    if G.is_multigraph():
+-        if edge_attrs:
+-            raise nx.NetworkXError(
+-                "Structured arrays are not supported for MultiGraphs"
+-            )
+-        d = defaultdict(list)
+-        for u, v, wt in G.edges(data=weight, default=1.0):
+-            d[(idx[u], idx[v])].append(wt)
+-        i, j = np.array(list(d.keys())).T  # indices
+-        wts = [multigraph_weight(ws) for ws in d.values()]  # reduced weights
+-    else:
+-        i, j, wts = [], [], []
+-
+-        # Special branch: multi-attr adjacency from structured dtypes
+-        if edge_attrs:
+-            # Extract edges with all data
+-            for u, v, data in G.edges(data=True):
++    with perfmark.region("gl-031"):
++        if G.is_multigraph():
++            if edge_attrs:
++                raise nx.NetworkXError(
++                    "Structured arrays are not supported for MultiGraphs"
++                )
++            d = defaultdict(list)
++            for u, v, wt in G.edges(data=weight, default=1.0):
++                d[(idx[u], idx[v])].append(wt)
++            i, j = np.array(list(d.keys())).T  # indices
++            wts = [multigraph_weight(ws) for ws in d.values()]  # reduced weights
++        else:
++            i, j, wts = [], [], []
++    
++            # Special branch: multi-attr adjacency from structured dtypes
++            if edge_attrs:
++                # Extract edges with all data
++                for u, v, data in G.edges(data=True):
++                    i.append(idx[u])
++                    j.append(idx[v])
++                    wts.append(data)
++                # Map each attribute to the appropriate named field in the
++                # structured dtype
++                for attr in edge_attrs:
++                    attr_data = [wt.get(attr, 1.0) for wt in wts]
++                    A[attr][i, j] = attr_data
++                    if not G.is_directed():
++                        A[attr][j, i] = attr_data
++                return A
++    
++            for u, v, wt in G.edges(data=weight, default=1.0):
+                 i.append(idx[u])
+                 j.append(idx[v])
+-                wts.append(data)
+-            # Map each attribute to the appropriate named field in the
+-            # structured dtype
+-            for attr in edge_attrs:
+-                attr_data = [wt.get(attr, 1.0) for wt in wts]
+-                A[attr][i, j] = attr_data
+-                if not G.is_directed():
+-                    A[attr][j, i] = attr_data
+-            return A
+-
+-        for u, v, wt in G.edges(data=weight, default=1.0):
+-            i.append(idx[u])
+-            j.append(idx[v])
+-            wts.append(wt)
++                wts.append(wt)
+ 
+     # Set array values with advanced indexing
+     A[i, j] = wts

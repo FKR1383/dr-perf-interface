@@ -1,0 +1,23 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -176,8 +176,17 @@
+                             incoming_count * levels - (1 << (levels + 1))
+                             + levels + 2)
+         with perfmark.region("vllm-024", sift_comparisons=sift_comparisons):
+-            for request in requests:
+-                self.add_request(request)
++            incoming = list(requests)
++            sample_end = min(len(incoming), 8)
++            descending = (not self._heap and len(incoming) >= 512
++                          and all(incoming[i] < incoming[i - 1]
++                                  for i in range(1, sample_end)))
++            if descending:
++                self._heap.extend(incoming)
++                heapq.heapify(self._heap)
++            else:
++                for request in incoming:
++                    self.add_request(request)
+ 
+     def remove_request(self, request: Request) -> None:
+         """Remove a specific request from the queue."""
+

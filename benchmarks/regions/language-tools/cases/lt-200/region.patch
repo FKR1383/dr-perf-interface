@@ -1,0 +1,97 @@
+--- a/lark/lexer.py
++++ b/lark/lexer.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Lexer Implementation
+ 
+ from abc import abstractmethod, ABC
+@@ -595,47 +596,48 @@
+     re: ModuleType
+ 
+     def __init__(self, conf: 'LexerConf', comparator=None) -> None:
+-        terminals = list(conf.terminals)
+-        assert all(isinstance(t, TerminalDef) for t in terminals), terminals
+-
+-        self.re = conf.re_module
+-
+-        if not conf.skip_validation:
+-            # Sanitization
+-            terminal_to_regexp = {}
+-            for t in terminals:
+-                regexp = t.pattern.to_regexp()
+-                try:
+-                    self.re.compile(regexp, conf.g_regex_flags)
+-                except self.re.error:
+-                    raise LexError("Cannot compile token %s: %s" % (t.name, t.pattern))
+-
+-                if t.pattern.min_width == 0:
+-                    raise LexError("Lexer does not allow zero-width terminals. (%s: %s)" % (t.name, t.pattern))
+-                if t.pattern.type == "re":
+-                    terminal_to_regexp[t] = regexp
+-
+-            if not (set(conf.ignore) <= {t.name for t in terminals}):
+-                raise LexError("Ignore terminals are not defined: %s" % (set(conf.ignore) - {t.name for t in terminals}))
+-
+-            if has_interegular:
+-                _check_regex_collisions(terminal_to_regexp, comparator, conf.strict)
+-            elif conf.strict:
+-                raise LexError("interegular must be installed for strict mode. Use `pip install 'lark[interegular]'`.")
+-
+-        # Init
+-        self.newline_types = frozenset(t.name for t in terminals if _regexp_has_newline(t.pattern.to_regexp()))
+-        self.ignore_types = frozenset(conf.ignore)
+-
+-        terminals.sort(key=lambda x: (-x.priority, -x.pattern.max_width, -len(x.pattern.value), x.name))
+-        self.terminals = terminals
+-        self.user_callbacks = conf.callbacks
+-        self.g_regex_flags = conf.g_regex_flags
+-        self.use_bytes = conf.use_bytes
+-        self.terminals_by_name = conf.terminals_by_name
+-
+-        self._scanner: Optional[Scanner] = None
+-        self._search_scanner: Optional[Scanner] = None
++        with perfmark.region("lt-200"):
++            terminals = list(conf.terminals)
++            assert all(isinstance(t, TerminalDef) for t in terminals), terminals
++
++            self.re = conf.re_module
++
++            if not conf.skip_validation:
++                # Sanitization
++                terminal_to_regexp = {}
++                for t in terminals:
++                    regexp = t.pattern.to_regexp()
++                    try:
++                        self.re.compile(regexp, conf.g_regex_flags)
++                    except self.re.error:
++                        raise LexError("Cannot compile token %s: %s" % (t.name, t.pattern))
++
++                    if t.pattern.min_width == 0:
++                        raise LexError("Lexer does not allow zero-width terminals. (%s: %s)" % (t.name, t.pattern))
++                    if t.pattern.type == "re":
++                        terminal_to_regexp[t] = regexp
++
++                if not (set(conf.ignore) <= {t.name for t in terminals}):
++                    raise LexError("Ignore terminals are not defined: %s" % (set(conf.ignore) - {t.name for t in terminals}))
++
++                if has_interegular:
++                    _check_regex_collisions(terminal_to_regexp, comparator, conf.strict)
++                elif conf.strict:
++                    raise LexError("interegular must be installed for strict mode. Use `pip install 'lark[interegular]'`.")
++
++            # Init
++            self.newline_types = frozenset(t.name for t in terminals if _regexp_has_newline(t.pattern.to_regexp()))
++            self.ignore_types = frozenset(conf.ignore)
++
++            terminals.sort(key=lambda x: (-x.priority, -x.pattern.max_width, -len(x.pattern.value), x.name))
++            self.terminals = terminals
++            self.user_callbacks = conf.callbacks
++            self.g_regex_flags = conf.g_regex_flags
++            self.use_bytes = conf.use_bytes
++            self.terminals_by_name = conf.terminals_by_name
++
++            self._scanner: Optional[Scanner] = None
++            self._search_scanner: Optional[Scanner] = None
+ 
+     def _build_scanner(self) -> Scanner:
+         terminals, self.callback = _create_unless(self.terminals, self.g_regex_flags, self.re, self.use_bytes)

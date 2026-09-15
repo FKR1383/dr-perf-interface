@@ -1,0 +1,28 @@
+--- a/src/requests/cookies.py
++++ b/src/requests/cookies.py
+@@ -8,6 +8,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import calendar
+ import copy
+@@ -592,11 +593,12 @@
+     if cookiejar is None:
+         cookiejar = RequestsCookieJar()
+ 
+-    if cookie_dict is not None:
+-        names_from_jar = [cookie.name for cookie in cookiejar]
+-        for name in cookie_dict:
+-            if overwrite or (name not in names_from_jar):
+-                cookiejar.set_cookie(create_cookie(name, cookie_dict[name]))
++    with perfmark.region("gl-187"):
++        if cookie_dict is not None:
++            names_from_jar = [cookie.name for cookie in cookiejar]
++            for name in cookie_dict:
++                if overwrite or (name not in names_from_jar):
++                    cookiejar.set_cookie(create_cookie(name, cookie_dict[name]))
+ 
+     return cookiejar
+ 

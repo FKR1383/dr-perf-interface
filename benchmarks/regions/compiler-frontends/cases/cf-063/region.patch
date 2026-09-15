@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/MicrosoftCXXABI.cpp
++++ b/clang/lib/CodeGen/MicrosoftCXXABI.cpp
+@@ -13,6 +13,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ABIInfo.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+@@ -2608,6 +2609,7 @@
+ void MicrosoftCXXABI::EmitGuardedInit(CodeGenFunction &CGF, const VarDecl &D,
+                                       llvm::GlobalVariable *GV,
+                                       bool PerformInit) {
++                                        DRPERF_BENCH_REGION("cf-063");
+   // MSVC only uses guards for static locals.
+   if (!D.isStaticLocal()) {
+     assert(GV->hasWeakLinkage() || GV->hasLinkOnceLinkage());

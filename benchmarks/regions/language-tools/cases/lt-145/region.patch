@@ -1,0 +1,247 @@
+--- a/src/jinja2/lexer.py
++++ b/src/jinja2/lexer.py
+@@ -3,6 +3,7 @@
+ the bitshift operators we don't allow in templates. It separates
+ template code and python code in expressions.
+ """
++import perfmark
+ 
+ import re
+ import typing as t
+@@ -478,122 +479,123 @@
+ 
+     def __init__(self, environment: "Environment") -> None:
+         # shortcuts
+-        e = re.escape
+-
+-        def c(x: str) -> t.Pattern[str]:
+-            return re.compile(x, re.M | re.S)
+-
+-        # lexing rules for tags
+-        tag_rules: list[_Rule] = [
+-            _Rule(whitespace_re, TOKEN_WHITESPACE, None),
+-            _Rule(float_re, TOKEN_FLOAT, None),
+-            _Rule(integer_re, TOKEN_INTEGER, None),
+-            _Rule(name_re, TOKEN_NAME, None),
+-            _Rule(string_re, TOKEN_STRING, None),
+-            _Rule(operator_re, TOKEN_OPERATOR, None),
+-        ]
+-
+-        # assemble the root lexing rule. because "|" is ungreedy
+-        # we have to sort by length so that the lexer continues working
+-        # as expected when we have parsing rules like <% for block and
+-        # <%= for variables. (if someone wants asp like syntax)
+-        # variables are just part of the rules if variable processing
+-        # is required.
+-        root_tag_rules = compile_rules(environment)
+-
+-        block_start_re = e(environment.block_start_string)
+-        block_end_re = e(environment.block_end_string)
+-        comment_end_re = e(environment.comment_end_string)
+-        variable_end_re = e(environment.variable_end_string)
+-
+-        # block suffix if trimming is enabled
+-        block_suffix_re = "\\n?" if environment.trim_blocks else ""
+-
+-        self.lstrip_blocks = environment.lstrip_blocks
+-
+-        self.newline_sequence = environment.newline_sequence
+-        self.keep_trailing_newline = environment.keep_trailing_newline
+-
+-        root_raw_re = (
+-            rf"(?P<raw_begin>{block_start_re}(\-|\+|)\s*raw\s*"
+-            rf"(?:\-{block_end_re}\s*|{block_end_re}))"
+-        )
+-        root_parts_re = "|".join(
+-            [root_raw_re] + [rf"(?P<{n}>{r}(\-|\+|))" for n, r in root_tag_rules]
+-        )
+-
+-        # global lexing rules
+-        self.rules: dict[str, list[_Rule]] = {
+-            "root": [
+-                # directives
+-                _Rule(
+-                    c(rf"(.*?)(?:{root_parts_re})"),
+-                    OptionalLStrip(TOKEN_DATA, "#bygroup"),  # type: ignore
+-                    "#bygroup",
+-                ),
+-                # data
+-                _Rule(c(".+"), TOKEN_DATA, None),
+-            ],
+-            # comments
+-            TOKEN_COMMENT_BEGIN: [
+-                _Rule(
+-                    c(
+-                        rf"(.*?)((?:\+{comment_end_re}|\-{comment_end_re}\s*"
+-                        rf"|{comment_end_re}{block_suffix_re}))"
++        with perfmark.region("lt-145"):
++            e = re.escape
++
++            def c(x: str) -> t.Pattern[str]:
++                return re.compile(x, re.M | re.S)
++
++            # lexing rules for tags
++            tag_rules: list[_Rule] = [
++                _Rule(whitespace_re, TOKEN_WHITESPACE, None),
++                _Rule(float_re, TOKEN_FLOAT, None),
++                _Rule(integer_re, TOKEN_INTEGER, None),
++                _Rule(name_re, TOKEN_NAME, None),
++                _Rule(string_re, TOKEN_STRING, None),
++                _Rule(operator_re, TOKEN_OPERATOR, None),
++            ]
++
++            # assemble the root lexing rule. because "|" is ungreedy
++            # we have to sort by length so that the lexer continues working
++            # as expected when we have parsing rules like <% for block and
++            # <%= for variables. (if someone wants asp like syntax)
++            # variables are just part of the rules if variable processing
++            # is required.
++            root_tag_rules = compile_rules(environment)
++
++            block_start_re = e(environment.block_start_string)
++            block_end_re = e(environment.block_end_string)
++            comment_end_re = e(environment.comment_end_string)
++            variable_end_re = e(environment.variable_end_string)
++
++            # block suffix if trimming is enabled
++            block_suffix_re = "\\n?" if environment.trim_blocks else ""
++
++            self.lstrip_blocks = environment.lstrip_blocks
++
++            self.newline_sequence = environment.newline_sequence
++            self.keep_trailing_newline = environment.keep_trailing_newline
++
++            root_raw_re = (
++                rf"(?P<raw_begin>{block_start_re}(\-|\+|)\s*raw\s*"
++                rf"(?:\-{block_end_re}\s*|{block_end_re}))"
++            )
++            root_parts_re = "|".join(
++                [root_raw_re] + [rf"(?P<{n}>{r}(\-|\+|))" for n, r in root_tag_rules]
++            )
++
++            # global lexing rules
++            self.rules: dict[str, list[_Rule]] = {
++                "root": [
++                    # directives
++                    _Rule(
++                        c(rf"(.*?)(?:{root_parts_re})"),
++                        OptionalLStrip(TOKEN_DATA, "#bygroup"),  # type: ignore
++                        "#bygroup",
+                     ),
+-                    (TOKEN_COMMENT, TOKEN_COMMENT_END),
+-                    "#pop",
+-                ),
+-                _Rule(c(r"(.)"), (Failure("Missing end of comment tag"),), None),
+-            ],
+-            # blocks
+-            TOKEN_BLOCK_BEGIN: [
+-                _Rule(
+-                    c(
+-                        rf"(?:\+{block_end_re}|\-{block_end_re}\s*"
+-                        rf"|{block_end_re}{block_suffix_re})"
++                    # data
++                    _Rule(c(".+"), TOKEN_DATA, None),
++                ],
++                # comments
++                TOKEN_COMMENT_BEGIN: [
++                    _Rule(
++                        c(
++                            rf"(.*?)((?:\+{comment_end_re}|\-{comment_end_re}\s*"
++                            rf"|{comment_end_re}{block_suffix_re}))"
++                        ),
++                        (TOKEN_COMMENT, TOKEN_COMMENT_END),
++                        "#pop",
+                     ),
+-                    TOKEN_BLOCK_END,
+-                    "#pop",
+-                ),
+-            ]
+-            + tag_rules,
+-            # variables
+-            TOKEN_VARIABLE_BEGIN: [
+-                _Rule(
+-                    c(rf"\-{variable_end_re}\s*|{variable_end_re}"),
+-                    TOKEN_VARIABLE_END,
+-                    "#pop",
+-                )
+-            ]
+-            + tag_rules,
+-            # raw block
+-            TOKEN_RAW_BEGIN: [
+-                _Rule(
+-                    c(
+-                        rf"(.*?)((?:{block_start_re}(\-|\+|))\s*endraw\s*"
+-                        rf"(?:\+{block_end_re}|\-{block_end_re}\s*"
+-                        rf"|{block_end_re}{block_suffix_re}))"
++                    _Rule(c(r"(.)"), (Failure("Missing end of comment tag"),), None),
++                ],
++                # blocks
++                TOKEN_BLOCK_BEGIN: [
++                    _Rule(
++                        c(
++                            rf"(?:\+{block_end_re}|\-{block_end_re}\s*"
++                            rf"|{block_end_re}{block_suffix_re})"
++                        ),
++                        TOKEN_BLOCK_END,
++                        "#pop",
+                     ),
+-                    OptionalLStrip(TOKEN_DATA, TOKEN_RAW_END),  # type: ignore
+-                    "#pop",
+-                ),
+-                _Rule(c(r"(.)"), (Failure("Missing end of raw directive"),), None),
+-            ],
+-            # line statements
+-            TOKEN_LINESTATEMENT_BEGIN: [
+-                _Rule(c(r"\s*(\n|$)"), TOKEN_LINESTATEMENT_END, "#pop")
+-            ]
+-            + tag_rules,
+-            # line comments
+-            TOKEN_LINECOMMENT_BEGIN: [
+-                _Rule(
+-                    c(r"(.*?)()(?=\n|$)"),
+-                    (TOKEN_LINECOMMENT, TOKEN_LINECOMMENT_END),
+-                    "#pop",
+-                )
+-            ],
+-        }
++                ]
++                + tag_rules,
++                # variables
++                TOKEN_VARIABLE_BEGIN: [
++                    _Rule(
++                        c(rf"\-{variable_end_re}\s*|{variable_end_re}"),
++                        TOKEN_VARIABLE_END,
++                        "#pop",
++                    )
++                ]
++                + tag_rules,
++                # raw block
++                TOKEN_RAW_BEGIN: [
++                    _Rule(
++                        c(
++                            rf"(.*?)((?:{block_start_re}(\-|\+|))\s*endraw\s*"
++                            rf"(?:\+{block_end_re}|\-{block_end_re}\s*"
++                            rf"|{block_end_re}{block_suffix_re}))"
++                        ),
++                        OptionalLStrip(TOKEN_DATA, TOKEN_RAW_END),  # type: ignore
++                        "#pop",
++                    ),
++                    _Rule(c(r"(.)"), (Failure("Missing end of raw directive"),), None),
++                ],
++                # line statements
++                TOKEN_LINESTATEMENT_BEGIN: [
++                    _Rule(c(r"\s*(\n|$)"), TOKEN_LINESTATEMENT_END, "#pop")
++                ]
++                + tag_rules,
++                # line comments
++                TOKEN_LINECOMMENT_BEGIN: [
++                    _Rule(
++                        c(r"(.*?)()(?=\n|$)"),
++                        (TOKEN_LINECOMMENT, TOKEN_LINECOMMENT_END),
++                        "#pop",
++                    )
++                ],
++            }
+ 
+     def _normalize_newlines(self, value: str) -> str:
+         """Replace all newlines with the configured sequence in strings

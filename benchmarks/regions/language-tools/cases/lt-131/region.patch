@@ -1,0 +1,78 @@
+--- a/astroid/helpers.py
++++ b/astroid/helpers.py
+@@ -5,6 +5,7 @@
+ """Various helper utilities."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections.abc import Generator
+ 
+@@ -46,36 +47,37 @@
+ def _object_type(
+     node: InferenceResult, context: InferenceContext | None = None
+ ) -> Generator[InferenceResult | None]:
+-    astroid_manager = manager.AstroidManager()
+-    builtins = astroid_manager.builtins_module
+-    context = context or InferenceContext()
+-
+-    for inferred in node.infer(context=context):
+-        if isinstance(inferred, scoped_nodes.ClassDef):
+-            metaclass = inferred.metaclass(context=context)
+-            if metaclass:
+-                yield metaclass
+-                continue
+-            yield builtins.getattr("type")[0]
+-        elif isinstance(
+-            inferred,
+-            (scoped_nodes.Lambda, bases.UnboundMethod, scoped_nodes.FunctionDef),
+-        ):
+-            yield _function_type(inferred, builtins)
+-        elif isinstance(inferred, scoped_nodes.Module):
+-            yield _build_proxy_class("module", builtins)
+-        elif isinstance(inferred, nodes.Unknown):
+-            raise InferenceError
+-        elif isinstance(inferred, (nodes.TypeVar, nodes.TypeVarTuple, nodes.ParamSpec)):
+-            # PEP 695 generic type parameters have no concrete type at
+-            # static-analysis time, so the type cannot be determined.
+-            yield util.Uninferable
+-        elif isinstance(inferred, util.UninferableBase):
+-            yield inferred
+-        elif isinstance(inferred, (bases.Proxy, nodes.Slice, objects.Super)):
+-            yield inferred._proxied
+-        else:  # pragma: no cover
+-            raise AssertionError(f"We don't handle {type(inferred)} currently")
++    with perfmark.region("lt-131"):
++        astroid_manager = manager.AstroidManager()
++        builtins = astroid_manager.builtins_module
++        context = context or InferenceContext()
++
++        for inferred in node.infer(context=context):
++            if isinstance(inferred, scoped_nodes.ClassDef):
++                metaclass = inferred.metaclass(context=context)
++                if metaclass:
++                    yield metaclass
++                    continue
++                yield builtins.getattr("type")[0]
++            elif isinstance(
++                inferred,
++                (scoped_nodes.Lambda, bases.UnboundMethod, scoped_nodes.FunctionDef),
++            ):
++                yield _function_type(inferred, builtins)
++            elif isinstance(inferred, scoped_nodes.Module):
++                yield _build_proxy_class("module", builtins)
++            elif isinstance(inferred, nodes.Unknown):
++                raise InferenceError
++            elif isinstance(inferred, (nodes.TypeVar, nodes.TypeVarTuple, nodes.ParamSpec)):
++                # PEP 695 generic type parameters have no concrete type at
++                # static-analysis time, so the type cannot be determined.
++                yield util.Uninferable
++            elif isinstance(inferred, util.UninferableBase):
++                yield inferred
++            elif isinstance(inferred, (bases.Proxy, nodes.Slice, objects.Super)):
++                yield inferred._proxied
++            else:  # pragma: no cover
++                raise AssertionError(f"We don't handle {type(inferred)} currently")
+ 
+ 
+ def object_type(

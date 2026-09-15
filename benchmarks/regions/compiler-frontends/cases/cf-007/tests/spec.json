@@ -1,0 +1,35 @@
+{
+  "case": "cf-007",
+  "phase": "ir-generation",
+  "scenario": "scalar-cast-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_7{int n; X_7(int v):n(v){}}; int main(){X_7 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "double f(long x){double y=0;\ny += (double)(x + 0);\ny += (double)(x + 1);\ny += (double)(x + 2);\ny += (double)(x + 3);\nreturn y;}\n"
+    },
+    {
+      "size": 16,
+      "source": "double f(long x){double y=0;\ny += (double)(x + 0);\ny += (double)(x + 1);\ny += (double)(x + 2);\ny += (double)(x + 3);\ny += (double)(x + 4);\ny += (double)(x + 5);\ny += (double)(x + 6);\ny += (double)(x + 7);\ny += (double)(x + 8);\ny += (double)(x + 9);\ny += (double)(x + 10);\ny += (double)(x + 11);\ny += (double)(x + 12);\ny += (double)(x + 13);\ny += (double)(x + 14);\ny += (double)(x + 15);\nreturn y;}\n"
+    },
+    {
+      "size": 64,
+      "source": "double f(long x){double y=0;\ny += (double)(x + 0);\ny += (double)(x + 1);\ny += (double)(x + 2);\ny += (double)(x + 3);\ny += (double)(x + 4);\ny += (double)(x + 5);\ny += (double)(x + 6);\ny += (double)(x + 7);\ny += (double)(x + 8);\ny += (double)(x + 9);\ny += (double)(x + 10);\ny += (double)(x + 11);\ny += (double)(x + 12);\ny += (double)(x + 13);\ny += (double)(x + 14);\ny += (double)(x + 15);\ny += (double)(x + 16);\ny += (double)(x + 17);\ny += (double)(x + 18);\ny += (double)(x + 19);\ny += (double)(x + 20);\ny += (double)(x + 21);\ny += (double)(x + 22);\ny += (double)(x + 23);\ny += (double)(x + 24);\ny += (double)(x + 25);\ny += (double)(x + 26);\ny += (double)(x + 27);\ny += (double)(x + 28);\ny += (double)(x + 29);\ny += (double)(x + 30);\ny += (double)(x + 31);\ny += (double)(x + 32);\ny += (double)(x + 33);\ny += (double)(x + 34);\ny += (double)(x + 35);\ny += (double)(x + 36);\ny += (double)(x + 37);\ny += (double)(x + 38);\ny += (double)(x + 39);\ny += (double)(x + 40);\ny += (double)(x + 41);\ny += (double)(x + 42);\ny += (double)(x + 43);\ny += (double)(x + 44);\ny += (double)(x + 45);\ny += (double)(x + 46);\ny += (double)(x + 47);\ny += (double)(x + 48);\ny += (double)(x + 49);\ny += (double)(x + 50);\ny += (double)(x + 51);\ny += (double)(x + 52);\ny += (double)(x + 53);\ny += (double)(x + 54);\ny += (double)(x + 55);\ny += (double)(x + 56);\ny += (double)(x + 57);\ny += (double)(x + 58);\ny += (double)(x + 59);\ny += (double)(x + 60);\ny += (double)(x + 61);\ny += (double)(x + 62);\ny += (double)(x + 63);\nreturn y;}\n"
+    }
+  ],
+  "target_symbol": "ScalarExprEmitter::VisitCastExpr",
+  "target_source": "clang/lib/CodeGen/CGExprScalar.cpp",
+  "mapping_note": "The scalar-cast-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

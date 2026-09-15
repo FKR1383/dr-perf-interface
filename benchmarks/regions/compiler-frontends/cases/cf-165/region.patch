@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/Verifier.cpp
++++ b/llvm/lib/IR/Verifier.cpp
+@@ -47,6 +47,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/Verifier.h"
+ #include "llvm/ADT/APFloat.h"
+ #include "llvm/ADT/APInt.h"
+@@ -3523,6 +3524,7 @@
+ }
+ 
+ void Verifier::visitCallBase(CallBase &Call) {
++  DRPERF_BENCH_REGION("cf-165");
+   Check(Call.getCalledOperand()->getType()->isPointerTy(),
+         "Called function must be a pointer!", Call);
+   FunctionType *FTy = Call.getFunctionType();

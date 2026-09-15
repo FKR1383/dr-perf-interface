@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-223",
+  "title": "Selected block in jsonschema.oneOf",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/python-jsonschema/jsonschema",
+    "revision": "865c27fc3df08a082740d7743583795235fdfe81",
+    "path": "jsonschema/_keywords.py",
+    "snapshot": "../../upstream/jsonschema/jsonschema/_keywords.py",
+    "sha256": "afcfc3aea01f9fa40bc109e65c4820bde89253e51a20bda9da7b8f20d7a57c57"
+  },
+  "region": {
+    "symbol": "oneOf",
+    "start_line": 370,
+    "end_line": 373,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-223",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise oneOf with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "jsonschema:jsonschema/_keywords.py:oneOf",
+  "citations": [
+    "https://github.com/python-jsonschema/jsonschema/blob/865c27fc3df08a082740d7743583795235fdfe81/jsonschema/_keywords.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/jsonschema/jsonschema/_keywords.py",
+        "destination": "tests/original.py",
+        "sha256": "afcfc3aea01f9fa40bc109e65c4820bde89253e51a20bda9da7b8f20d7a57c57"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls jsonschema._keywords.oneOf on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

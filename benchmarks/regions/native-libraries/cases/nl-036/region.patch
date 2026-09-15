@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -879,6 +880,7 @@
+         \return Start of non-occupied name buffer, for storing extra names.
+     */
+     Ch* CopyFromRaw(const GenericPointer& rhs, size_t extraToken = 0, size_t extraNameBufferSize = 0) {
++        DRPERF_BENCH_REGION("nl-036");
+         if (!allocator_) // allocator is independently owned.
+             ownAllocator_ = allocator_ = RAPIDJSON_NEW(Allocator)();
+ 

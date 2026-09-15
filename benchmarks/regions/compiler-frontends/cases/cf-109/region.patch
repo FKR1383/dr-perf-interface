@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGDeclCXX.cpp
++++ b/clang/lib/CodeGen/CGDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGHLSLRuntime.h"
+ #include "CGObjCRuntime.h"
+@@ -862,6 +863,7 @@
+ 
+ void
+ CodeGenModule::EmitCXXGlobalInitFunc() {
++  DRPERF_BENCH_REGION("cf-109");
+   while (!CXXGlobalInits.empty() && !CXXGlobalInits.back())
+     CXXGlobalInits.pop_back();
+ 

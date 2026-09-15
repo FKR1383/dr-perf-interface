@@ -1,0 +1,24 @@
+--- a/pandas/core/reshape/melt.py
++++ b/pandas/core/reshape/melt.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from typing import TYPE_CHECKING
+@@ -666,10 +667,11 @@
+ 
+     _melted = []
+     value_vars_flattened = []
+-    for stub in stubnames:
+-        value_var = get_var_names(df, stub, sep, suffix)
+-        value_vars_flattened.extend(value_var)
+-        _melted.append(melt_stub(df, stub, i, j, value_var, sep))
++    with perfmark.region("gl-166"):
++        for stub in stubnames:
++            value_var = get_var_names(df, stub, sep, suffix)
++            value_vars_flattened.extend(value_var)
++            _melted.append(melt_stub(df, stub, i, j, value_var, sep))
+ 
+     melted = concat(_melted, axis=1)
+     id_vars = df.columns.difference(value_vars_flattened)

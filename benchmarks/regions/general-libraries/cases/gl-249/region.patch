@@ -1,0 +1,20 @@
+--- a/pathspec/util.py
++++ b/pathspec/util.py
+@@ -2,6 +2,7 @@
+ This module provides utility methods for dealing with path-specs.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import os.path
+@@ -283,7 +284,8 @@
+ 	else:
+ 		dir_rel = ''
+ 
+-	yield from _iter_tree_entries_next(root_abs, dir_rel, {}, on_error, follow_links)
++	with perfmark.region("gl-249"):
++		yield from _iter_tree_entries_next(root_abs, dir_rel, {}, on_error, follow_links)
+ 
+ 
+ def _iter_tree_entries_next(

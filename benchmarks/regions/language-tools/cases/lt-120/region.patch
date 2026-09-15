@@ -1,0 +1,60 @@
+--- a/astroid/decorators.py
++++ b/astroid/decorators.py
+@@ -5,6 +5,7 @@
+ """A few useful function/method decorators."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import functools
+ import inspect
+@@ -29,27 +30,28 @@
+     at for a given `InferenceContext` to prevent infinite recursion
+     """
+ 
+-    @functools.wraps(func)
+-    def wrapped(node, context: InferenceContext | None = None, _func=func) -> Generator:
+-        """Wrapper function handling context."""
+-        if context is None:
+-            context = InferenceContext()
+-        if context.push(node):
+-            return
+-
+-        yielded = set()
+-
+-        for res in _func(node, context):
+-            # unproxy only true instance, not const, tuple, dict...
+-            if res.__class__.__name__ == "Instance":
+-                ares = res._proxied
+-            else:
+-                ares = res
+-            if ares not in yielded:
+-                yield res
+-                yielded.add(ares)
+-
+-    return wrapped
++    with perfmark.region("lt-120"):
++        @functools.wraps(func)
++        def wrapped(node, context: InferenceContext | None = None, _func=func) -> Generator:
++            """Wrapper function handling context."""
++            if context is None:
++                context = InferenceContext()
++            if context.push(node):
++                return
++
++            yielded = set()
++
++            for res in _func(node, context):
++                # unproxy only true instance, not const, tuple, dict...
++                if res.__class__.__name__ == "Instance":
++                    ares = res._proxied
++                else:
++                    ares = res
++                if ares not in yielded:
++                    yield res
++                    yielded.add(ares)
++
++        return wrapped
+ 
+ 
+ def yes_if_nothing_inferred(

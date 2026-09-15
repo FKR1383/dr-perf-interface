@@ -1,0 +1,41 @@
+--- a/libcst/_nodes/module.py
++++ b/libcst/_nodes/module.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -93,19 +94,20 @@
+             return cast(_ModuleSelfT, result)
+ 
+     def _codegen_impl(self, state: CodegenState) -> None:
+-        for h in self.header:
+-            h._codegen(state)
+-        for stmt in self.body:
+-            stmt._codegen(state)
+-        for f in self.footer:
+-            f._codegen(state)
+-        if self.has_trailing_newline:
+-            if len(state.tokens) == 0:
+-                # There was nothing in the header, footer, or body. Just add a newline
+-                # to preserve the trailing newline.
+-                state.add_token(state.default_newline)
+-        else:  # has_trailing_newline is false
+-            state.pop_trailing_newline()
++        with perfmark.region("lt-087"):
++            for h in self.header:
++                h._codegen(state)
++            for stmt in self.body:
++                stmt._codegen(state)
++            for f in self.footer:
++                f._codegen(state)
++            if self.has_trailing_newline:
++                if len(state.tokens) == 0:
++                    # There was nothing in the header, footer, or body. Just add a newline
++                    # to preserve the trailing newline.
++                    state.add_token(state.default_newline)
++            else:  # has_trailing_newline is false
++                state.pop_trailing_newline()
+ 
+     @property
+     def code(self) -> str:

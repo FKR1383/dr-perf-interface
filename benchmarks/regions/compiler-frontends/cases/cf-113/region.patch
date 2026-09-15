@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseStmt.cpp
++++ b/clang/lib/Parse/ParseStmt.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/PrettyStackTrace.h"
+@@ -1526,6 +1527,7 @@
+ /// [C++23] 'if' '!' [opt] consteval compound-statement 'else' statement
+ ///
+ StmtResult Parser::ParseIfStatement(SourceLocation *TrailingElseLoc) {
++  DRPERF_BENCH_REGION("cf-113");
+   assert(Tok.is(tok::kw_if) && "Not an if stmt!");
+   SourceLocation IfLoc = ConsumeToken();  // eat the 'if'.
+ 

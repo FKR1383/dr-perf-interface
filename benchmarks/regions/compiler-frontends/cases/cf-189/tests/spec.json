@@ -1,0 +1,37 @@
+{
+  "case": "cf-189",
+  "phase": "ir-construction",
+  "scenario": "windows-exception-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-target",
+    "x86_64-pc-windows-msvc",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "int fold_189(int x) { int s=0; for(int i=0;i<4;i++) s += x+i; return s; }\nint main(void) { return fold_189(2)!=14; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct X{~X();}; int f(int x){X values[4]; if(x) throw x; return 0;}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct X{~X();}; int f(int x){X values[16]; if(x) throw x; return 0;}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct X{~X();}; int f(int x){X values[64]; if(x) throw x; return 0;}\n"
+    }
+  ],
+  "target_symbol": "llvm::colorEHFunclets",
+  "target_source": "llvm/lib/IR/EHPersonalities.cpp",
+  "mapping_note": "The windows-exception-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

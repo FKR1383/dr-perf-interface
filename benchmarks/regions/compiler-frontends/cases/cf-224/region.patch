@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/AsmWriter.cpp
++++ b/llvm/lib/IR/AsmWriter.cpp
+@@ -15,6 +15,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/ADT/APFloat.h"
+ #include "llvm/ADT/APInt.h"
+ #include "llvm/ADT/ArrayRef.h"
+@@ -999,6 +1000,7 @@
+ // Iterate through all the global variables, functions, and global
+ // variable initializers and create slots for them.
+ void SlotTracker::processModule() {
++  DRPERF_BENCH_REGION("cf-224");
+   ST_DEBUG("begin processModule!\n");
+ 
+   // Add all of the unnamed global variables to the value table.

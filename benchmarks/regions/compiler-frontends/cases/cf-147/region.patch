@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -6845,6 +6846,7 @@
+ }
+ 
+ void Sema::CheckCompletedCXXClass(Scope *S, CXXRecordDecl *Record) {
++  DRPERF_BENCH_REGION("cf-147");
+   if (!Record)
+     return;
+ 

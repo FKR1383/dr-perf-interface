@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-160",
+  "title": "AssemblyWriter::printInstruction compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "llvm/lib/IR/AsmWriter.cpp",
+    "snapshot": "../../upstream/llvm-project/llvm/lib/IR/AsmWriter.cpp",
+    "sha256": "e89984f9d9718bb6a24c3a0408fcc46812ecf8d59133a2600d24f1d17fd5a89c"
+  },
+  "region": {
+    "symbol": "AssemblyWriter::printInstruction",
+    "start_line": 4258,
+    "end_line": 4691,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-160",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-construction",
+  "workload": {
+    "description": "Run the bounded ir-assembly-writing fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:llvm/lib/IR/AsmWriter.cpp:AssemblyWriter::printInstruction",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/llvm/lib/IR/AsmWriter.cpp#L4258-L4691"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "7c3c261c306778032a6966f066faaaa025a4bdf35e2159af1062a68e6b946c83",
+      "patch_sha256": "d6291428874ab556a206d59ac85db2751423a00c6453562bb1f005023eb43445"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

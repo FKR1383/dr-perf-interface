@@ -1,0 +1,138 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -1717,68 +1718,69 @@
+         occurrences.  If this behavior is desired, then write
+         ``expr*(None, n) + ~expr``
+         """
+-        if other is Ellipsis:
+-            other = (0, None)
+-        elif isinstance(other, tuple) and other[:1] == (Ellipsis,):
+-            other = (0, *other[1:2], None)[:2]
+-
+-        if not isinstance(other, (int, tuple)):
+-            return NotImplemented
+-
+-        if isinstance(other, int):
+-            minElements, optElements = other, 0
+-        else:
+-            other = tuple(o if o is not Ellipsis else None for o in other)
+-            other = (*other, None, None)[:2]
+-            if other[0] is None:
+-                other = (0, other[1])
+-            if isinstance(other[0], int) and other[1] is None:
+-                if other[0] == 0:
+-                    return ZeroOrMore(self)
+-                if other[0] == 1:
+-                    return OneOrMore(self)
++        with perfmark.region("lt-183"):
++            if other is Ellipsis:
++                other = (0, None)
++            elif isinstance(other, tuple) and other[:1] == (Ellipsis,):
++                other = (0, *other[1:2], None)[:2]
++
++            if not isinstance(other, (int, tuple)):
++                return NotImplemented
++
++            if isinstance(other, int):
++                minElements, optElements = other, 0
++            else:
++                other = tuple(o if o is not Ellipsis else None for o in other)
++                other = (*other, None, None)[:2]
++                if other[0] is None:
++                    other = (0, other[1])
++                if isinstance(other[0], int) and other[1] is None:
++                    if other[0] == 0:
++                        return ZeroOrMore(self)
++                    if other[0] == 1:
++                        return OneOrMore(self)
++                    else:
++                        return self * other[0] + ZeroOrMore(self)
++                elif isinstance(other[0], int) and isinstance(other[1], int):
++                    minElements, optElements = other
++                    optElements -= minElements
+                 else:
+-                    return self * other[0] + ZeroOrMore(self)
+-            elif isinstance(other[0], int) and isinstance(other[1], int):
+-                minElements, optElements = other
+-                optElements -= minElements
++                    return NotImplemented
++
++            if minElements < 0:
++                raise ValueError("cannot multiply ParserElement by negative value")
++            if optElements < 0:
++                raise ValueError(
++                    "second tuple value must be greater or equal to first tuple value"
++                )
++            if minElements == optElements == 0:
++                return And([])
++
++            if optElements:
++                # Build the optional tail as a bounded ``ZeroOrMore`` instead of a
++                # deeply nested ``Opt(self + Opt(self + ...))`` chain. The nested
++                # form recursed ``optElements`` levels deep, which raised
++                # RecursionError for large upper bounds (e.g. ``expr[..., 1000]``)
++                # -- see issue #332. ``ZeroOrMore(..., max=optElements)`` is a flat
++                # loop that still *exits early* (it stops at the first non-match,
++                # just like the recursive form), so it preserves the original
++                # early-exit behavior while no longer scaling the call stack with
++                # the upper bound.
++                optionalTail = ZeroOrMore(self, max=optElements)
++
++                if minElements:
++                    if minElements == 1:
++                        ret = self + optionalTail
++                    else:
++                        ret = And([self] * minElements) + optionalTail
++                else:
++                    ret = optionalTail
+             else:
+-                return NotImplemented
+-
+-        if minElements < 0:
+-            raise ValueError("cannot multiply ParserElement by negative value")
+-        if optElements < 0:
+-            raise ValueError(
+-                "second tuple value must be greater or equal to first tuple value"
+-            )
+-        if minElements == optElements == 0:
+-            return And([])
+-
+-        if optElements:
+-            # Build the optional tail as a bounded ``ZeroOrMore`` instead of a
+-            # deeply nested ``Opt(self + Opt(self + ...))`` chain. The nested
+-            # form recursed ``optElements`` levels deep, which raised
+-            # RecursionError for large upper bounds (e.g. ``expr[..., 1000]``)
+-            # -- see issue #332. ``ZeroOrMore(..., max=optElements)`` is a flat
+-            # loop that still *exits early* (it stops at the first non-match,
+-            # just like the recursive form), so it preserves the original
+-            # early-exit behavior while no longer scaling the call stack with
+-            # the upper bound.
+-            optionalTail = ZeroOrMore(self, max=optElements)
+-
+-            if minElements:
+                 if minElements == 1:
+-                    ret = self + optionalTail
++                    ret = self
+                 else:
+-                    ret = And([self] * minElements) + optionalTail
+-            else:
+-                ret = optionalTail
+-        else:
+-            if minElements == 1:
+-                ret = self
+-            else:
+-                ret = And([self] * minElements)
+-        return ret
++                    ret = And([self] * minElements)
++            return ret
+ 
+     def __rmul__(self, other) -> ParserElement:
+         return self.__mul__(other)

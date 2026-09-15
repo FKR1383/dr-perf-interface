@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -456,6 +457,7 @@
+         \return The resolved newly created (a JSON Null value), or already exists value.
+     */
+     ValueType& Create(ValueType& root, typename ValueType::AllocatorType& allocator, bool* alreadyExist = 0) const {
++        DRPERF_BENCH_REGION("nl-033");
+         RAPIDJSON_ASSERT(IsValid());
+         ValueType* v = &root;
+         bool exist = true;

@@ -1,0 +1,35 @@
+--- a/networkx/algorithms/flow/networksimplex.py
++++ b/networkx/algorithms/flow/networksimplex.py
+@@ -1,6 +1,7 @@
+ """
+ Minimum cost flow algorithms on directed connected graphs.
+ """
++import perfmark
+ 
+ __all__ = ["network_simplex"]
+ 
+@@ -559,15 +560,16 @@
+         else:
+             DEAF.edge_sources.append(i)
+             DEAF.edge_targets.append(-1)
+-    faux_inf = (
+-        3
+-        * max(
+-            sum(c for c in DEAF.edge_capacities if c < inf),
+-            sum(abs(w) for w in DEAF.edge_weights),
+-            sum(abs(d) for d in DEAF.node_demands),
++    with perfmark.region("gl-006"):
++        faux_inf = (
++            3
++            * max(
++                sum(c for c in DEAF.edge_capacities if c < inf),
++                sum(abs(w) for w in DEAF.edge_weights),
++                sum(abs(d) for d in DEAF.node_demands),
++            )
++            or 1
+         )
+-        or 1
+-    )
+ 
+     n = len(DEAF.node_list)  # number of nodes
+     DEAF.edge_weights.extend(repeat(faux_inf, n))

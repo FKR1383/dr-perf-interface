@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CodeGenAction.cpp
++++ b/clang/lib/CodeGen/CodeGenAction.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/CodeGen/CodeGenAction.h"
+ #include "BackendConsumer.h"
+ #include "CGCall.h"
+@@ -231,6 +232,7 @@
+ }
+ 
+ void BackendConsumer::HandleTranslationUnit(ASTContext &C) {
++  DRPERF_BENCH_REGION("cf-236");
+   {
+     llvm::TimeTraceScope TimeScope("Frontend");
+     PrettyStackTraceString CrashInfo("Per-file LLVM IR generation");

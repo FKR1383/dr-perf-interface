@@ -1,0 +1,18 @@
+--- a/pandas/core/reshape/pivot.py
++++ b/pandas/core/reshape/pivot.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ from typing import (
+@@ -1153,7 +1154,8 @@
+         columns = [columns]
+ 
+     common_idx = None
+-    pass_objs = [x for x in index + columns if isinstance(x, (ABCSeries, ABCDataFrame))]
++    with perfmark.region("gl-165"):
++        pass_objs = [x for x in index + columns if isinstance(x, (ABCSeries, ABCDataFrame))]
+     if pass_objs:
+         common_idx, _ = get_objs_combined_axis(pass_objs, intersect=True, sort=False)
+ 

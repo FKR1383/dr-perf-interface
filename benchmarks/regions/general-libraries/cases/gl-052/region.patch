@@ -1,0 +1,20 @@
+--- a/networkx/algorithms/tournament.py
++++ b/networkx/algorithms/tournament.py
+@@ -20,6 +20,7 @@
+ .. _tournament graph: https://en.wikipedia.org/wiki/Tournament_%28graph_theory%29
+ 
+ """
++import perfmark
+ 
+ from itertools import combinations
+ 
+@@ -345,7 +346,8 @@
+         return all(u in S or all(v in unbrs for v in S) for u, unbrs in G._adj.items())
+ 
+     neighborhoods = (two_neighborhood(G, v) for v in G)
+-    return not any(s in S and t not in S and is_closed(G, S) for S in neighborhoods)
++    with perfmark.region("gl-052"):
++        return not any(s in S and t not in S and is_closed(G, S) for S in neighborhoods)
+ 
+ 
+ @not_implemented_for("undirected")

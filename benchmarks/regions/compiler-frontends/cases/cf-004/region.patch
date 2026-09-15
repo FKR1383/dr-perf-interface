@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/InitPreprocessor.cpp
++++ b/clang/lib/Frontend/InitPreprocessor.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/FileManager.h"
+ #include "clang/Basic/HLSLRuntime.h"
+ #include "clang/Basic/MacroBuilder.h"
+@@ -649,6 +650,7 @@
+ /// ISO/IEC JTC1/SC22/WG21 (C++) SD-6: "SG10 Feature Test Recommendations".
+ static void InitializeCPlusPlusFeatureTestMacros(const LangOptions &LangOpts,
+                                                  MacroBuilder &Builder) {
++                                                   DRPERF_BENCH_REGION("cf-004");
+   // C++98 features.
+   if (LangOpts.RTTI)
+     Builder.defineMacro("__cpp_rtti", "199711L");

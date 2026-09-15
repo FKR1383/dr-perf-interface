@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -5851,6 +5852,7 @@
+ 
+ ASTFileSignature ASTWriter::WriteASTCore(Sema *SemaPtr, StringRef isysroot,
+                                          Module *WritingModule) {
++                                           DRPERF_BENCH_REGION("cf-144");
+   using namespace llvm;
+ 
+   bool isModule = WritingModule != nullptr;

@@ -1,0 +1,147 @@
+--- a/networkx/readwrite/gml.py
++++ b/networkx/readwrite/gml.py
+@@ -27,6 +27,7 @@
+ Several example graphs in GML format may be found on Mark Newman's
+ `Network data page <http://www-personal.umich.edu/~mejn/netdata/>`_.
+ """
++import perfmark
+ 
+ import html.entities as htmlentitydefs
+ import re
+@@ -716,71 +717,72 @@
+     """
+     valid_keys = re.compile("^[A-Za-z][0-9A-Za-z_]*$")
+ 
+-    def stringize(key, value, ignored_keys, indent, in_list=False):
+-        if not isinstance(key, str):
+-            raise nx.NetworkXError(f"{key!r} is not a string")
+-        if not valid_keys.match(key):
+-            raise nx.NetworkXError(f"{key!r} is not a valid key")
+-        if not isinstance(key, str):
+-            key = str(key)
+-        if key not in ignored_keys:
+-            if isinstance(value, int | bool):
+-                if key == "label":
+-                    yield indent + key + ' "' + str(value) + '"'
+-                elif value is True:
+-                    # python bool is an instance of int
+-                    yield indent + key + " 1"
+-                elif value is False:
+-                    yield indent + key + " 0"
+-                # GML only supports signed 32-bit integers
+-                elif value < -(2**31) or value >= 2**31:
+-                    yield indent + key + ' "' + str(value) + '"'
++    with perfmark.region("gl-021"):
++        def stringize(key, value, ignored_keys, indent, in_list=False):
++            if not isinstance(key, str):
++                raise nx.NetworkXError(f"{key!r} is not a string")
++            if not valid_keys.match(key):
++                raise nx.NetworkXError(f"{key!r} is not a valid key")
++            if not isinstance(key, str):
++                key = str(key)
++            if key not in ignored_keys:
++                if isinstance(value, int | bool):
++                    if key == "label":
++                        yield indent + key + ' "' + str(value) + '"'
++                    elif value is True:
++                        # python bool is an instance of int
++                        yield indent + key + " 1"
++                    elif value is False:
++                        yield indent + key + " 0"
++                    # GML only supports signed 32-bit integers
++                    elif value < -(2**31) or value >= 2**31:
++                        yield indent + key + ' "' + str(value) + '"'
++                    else:
++                        yield indent + key + " " + str(value)
++                elif isinstance(value, float):
++                    text = repr(value).upper()
++                    # GML matches INF to keys, so prepend + to INF. Use repr(float(*))
++                    # instead of string literal to future proof against changes to repr.
++                    if text == repr(float("inf")).upper():
++                        text = "+" + text
++                    else:
++                        # GML requires that a real literal contain a decimal point, but
++                        # repr may not output a decimal point when the mantissa is
++                        # integral and hence needs fixing.
++                        epos = text.rfind("E")
++                        if epos != -1 and text.find(".", 0, epos) == -1:
++                            text = text[:epos] + "." + text[epos:]
++                    if key == "label":
++                        yield indent + key + ' "' + text + '"'
++                    else:
++                        yield indent + key + " " + text
++                elif isinstance(value, dict):
++                    yield indent + key + " ["
++                    next_indent = indent + "  "
++                    for key, value in value.items():
++                        yield from stringize(key, value, (), next_indent)
++                    yield indent + "]"
++                elif isinstance(value, tuple) and key == "label":
++                    label = f"({','.join(repr(v) for v in value)})"
++                    yield f'{indent}{key} "{escape(label)}"'
++                elif isinstance(value, list | tuple) and key != "label" and not in_list:
++                    if len(value) == 0:
++                        yield indent + key + " " + f'"{value!r}"'
++                    if len(value) == 1:
++                        yield indent + key + " " + f'"{LIST_START_VALUE}"'
++                    for val in value:
++                        yield from stringize(key, val, (), indent, True)
+                 else:
+-                    yield indent + key + " " + str(value)
+-            elif isinstance(value, float):
+-                text = repr(value).upper()
+-                # GML matches INF to keys, so prepend + to INF. Use repr(float(*))
+-                # instead of string literal to future proof against changes to repr.
+-                if text == repr(float("inf")).upper():
+-                    text = "+" + text
+-                else:
+-                    # GML requires that a real literal contain a decimal point, but
+-                    # repr may not output a decimal point when the mantissa is
+-                    # integral and hence needs fixing.
+-                    epos = text.rfind("E")
+-                    if epos != -1 and text.find(".", 0, epos) == -1:
+-                        text = text[:epos] + "." + text[epos:]
+-                if key == "label":
+-                    yield indent + key + ' "' + text + '"'
+-                else:
+-                    yield indent + key + " " + text
+-            elif isinstance(value, dict):
+-                yield indent + key + " ["
+-                next_indent = indent + "  "
+-                for key, value in value.items():
+-                    yield from stringize(key, value, (), next_indent)
+-                yield indent + "]"
+-            elif isinstance(value, tuple) and key == "label":
+-                label = f"({','.join(repr(v) for v in value)})"
+-                yield f'{indent}{key} "{escape(label)}"'
+-            elif isinstance(value, list | tuple) and key != "label" and not in_list:
+-                if len(value) == 0:
+-                    yield indent + key + " " + f'"{value!r}"'
+-                if len(value) == 1:
+-                    yield indent + key + " " + f'"{LIST_START_VALUE}"'
+-                for val in value:
+-                    yield from stringize(key, val, (), indent, True)
+-            else:
+-                if stringizer:
+-                    try:
+-                        value = stringizer(value)
+-                    except ValueError as err:
+-                        raise nx.NetworkXError(
+-                            f"{value!r} cannot be converted into a string"
+-                        ) from err
+-                if not isinstance(value, str):
+-                    raise nx.NetworkXError(f"{value!r} is not a string")
+-                yield indent + key + ' "' + escape(value) + '"'
++                    if stringizer:
++                        try:
++                            value = stringizer(value)
++                        except ValueError as err:
++                            raise nx.NetworkXError(
++                                f"{value!r} cannot be converted into a string"
++                            ) from err
++                    if not isinstance(value, str):
++                        raise nx.NetworkXError(f"{value!r} is not a string")
++                    yield indent + key + ' "' + escape(value) + '"'
+ 
+     multigraph = G.is_multigraph()
+     yield "graph ["

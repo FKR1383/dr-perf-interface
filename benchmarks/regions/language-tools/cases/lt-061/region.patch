@@ -1,0 +1,145 @@
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import re
+@@ -2430,71 +2431,72 @@
+         )
+ 
+     def table_sql(self, expression: exp.Table, sep: str = " AS ") -> str:
+-        table = self.table_parts(expression)
+-        only = "ONLY " if expression.args.get("only") else ""
+-        partition = self.sql(expression, "partition")
+-        partition = f" {partition}" if partition else ""
+-        version = self.sql(expression, "version")
+-        version = f" {version}" if version else ""
+-        alias = self.sql(expression, "alias")
+-        alias = f"{sep}{alias}" if alias else ""
+-
+-        sample = self.sql(expression, "sample")
+-        post_alias = ""
+-        pre_alias = ""
+-
+-        if self.dialect.ALIAS_POST_TABLESAMPLE:
+-            pre_alias = sample
+-        else:
+-            post_alias = sample
+-
+-        if self.dialect.ALIAS_POST_VERSION:
+-            pre_alias = f"{pre_alias}{version}"
+-        else:
+-            post_alias = f"{post_alias}{version}"
+-
+-        hints = self.expressions(expression, key="hints", sep=" ")
+-        hints = f" {hints}" if hints and self.TABLE_HINTS else ""
+-        pivots = self.expressions(expression, key="pivots", sep="", flat=True)
+-        joins = self.indent(
+-            self.expressions(expression, key="joins", sep="", flat=True), skip_first=True
+-        )
+-        laterals = self.expressions(expression, key="laterals", sep="")
+-
+-        file_format = self.sql(expression, "format")
+-        pattern = self.sql(expression, "pattern")
+-        if file_format:
+-            pattern = f", PATTERN => {pattern}" if pattern else ""
+-            file_format = f" (FILE_FORMAT => {file_format}{pattern})"
+-        elif pattern:
+-            file_format = f" (PATTERN => {pattern})"
+-
+-        ordinality = expression.args.get("ordinality") or ""
+-        if ordinality:
+-            ordinality = f" WITH ORDINALITY{alias}"
+-            alias = ""
+-
+-        when = self.sql(expression, "when")
+-        if when:
+-            if self.HISTORICAL_DATA_POST_ALIAS:
+-                alias = f"{alias} {when}"
++        with perfmark.region("lt-061"):
++            table = self.table_parts(expression)
++            only = "ONLY " if expression.args.get("only") else ""
++            partition = self.sql(expression, "partition")
++            partition = f" {partition}" if partition else ""
++            version = self.sql(expression, "version")
++            version = f" {version}" if version else ""
++            alias = self.sql(expression, "alias")
++            alias = f"{sep}{alias}" if alias else ""
++
++            sample = self.sql(expression, "sample")
++            post_alias = ""
++            pre_alias = ""
++
++            if self.dialect.ALIAS_POST_TABLESAMPLE:
++                pre_alias = sample
+             else:
+-                table = f"{table} {when}"
+-
+-        changes = self.sql(expression, "changes")
+-        changes = f" {changes}" if changes else ""
+-
+-        rows_from = self.expressions(expression, key="rows_from")
+-        if rows_from:
+-            table = f"ROWS FROM {self.wrap(rows_from)}"
+-
+-        indexed = expression.args.get("indexed")
+-        if indexed is not None:
+-            indexed = f" INDEXED BY {self.sql(indexed)}" if indexed else " NOT INDEXED"
+-        else:
+-            indexed = ""
+-
+-        return f"{only}{table}{changes}{partition}{file_format}{pre_alias}{alias}{indexed}{hints}{pivots}{post_alias}{joins}{laterals}{ordinality}"
++                post_alias = sample
++
++            if self.dialect.ALIAS_POST_VERSION:
++                pre_alias = f"{pre_alias}{version}"
++            else:
++                post_alias = f"{post_alias}{version}"
++
++            hints = self.expressions(expression, key="hints", sep=" ")
++            hints = f" {hints}" if hints and self.TABLE_HINTS else ""
++            pivots = self.expressions(expression, key="pivots", sep="", flat=True)
++            joins = self.indent(
++                self.expressions(expression, key="joins", sep="", flat=True), skip_first=True
++            )
++            laterals = self.expressions(expression, key="laterals", sep="")
++
++            file_format = self.sql(expression, "format")
++            pattern = self.sql(expression, "pattern")
++            if file_format:
++                pattern = f", PATTERN => {pattern}" if pattern else ""
++                file_format = f" (FILE_FORMAT => {file_format}{pattern})"
++            elif pattern:
++                file_format = f" (PATTERN => {pattern})"
++
++            ordinality = expression.args.get("ordinality") or ""
++            if ordinality:
++                ordinality = f" WITH ORDINALITY{alias}"
++                alias = ""
++
++            when = self.sql(expression, "when")
++            if when:
++                if self.HISTORICAL_DATA_POST_ALIAS:
++                    alias = f"{alias} {when}"
++                else:
++                    table = f"{table} {when}"
++
++            changes = self.sql(expression, "changes")
++            changes = f" {changes}" if changes else ""
++
++            rows_from = self.expressions(expression, key="rows_from")
++            if rows_from:
++                table = f"ROWS FROM {self.wrap(rows_from)}"
++
++            indexed = expression.args.get("indexed")
++            if indexed is not None:
++                indexed = f" INDEXED BY {self.sql(indexed)}" if indexed else " NOT INDEXED"
++            else:
++                indexed = ""
++
++            return f"{only}{table}{changes}{partition}{file_format}{pre_alias}{alias}{indexed}{hints}{pivots}{post_alias}{joins}{laterals}{ordinality}"
+ 
+     def tablefromrows_sql(self, expression: exp.TableFromRows) -> str:
+         table = self.func("TABLE", expression.this)

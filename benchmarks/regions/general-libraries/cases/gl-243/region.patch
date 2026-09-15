@@ -1,0 +1,20 @@
+--- a/pathspec/util.py
++++ b/pathspec/util.py
+@@ -2,6 +2,7 @@
+ This module provides utility methods for dealing with path-specs.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import os.path
+@@ -531,7 +532,8 @@
+ 
+ 	Returns the matched files (:class:`set` of :class:`str`).
+ 	"""
+-	use_patterns = [__pat for __pat in patterns if __pat.include is not None]
++	with perfmark.region("gl-243"):
++		use_patterns = [__pat for __pat in patterns if __pat.include is not None]
+ 
+ 	return_files = set()
+ 	for file in files:

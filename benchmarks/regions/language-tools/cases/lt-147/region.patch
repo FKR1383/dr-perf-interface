@@ -1,0 +1,58 @@
+--- a/src/jinja2/visitor.py
++++ b/src/jinja2/visitor.py
+@@ -1,6 +1,7 @@
+ """API for traversing the AST nodes. Implemented by the compiler and
+ meta introspection.
+ """
++import perfmark
+ 
+ import typing as t
+ 
+@@ -59,26 +60,27 @@
+     """
+ 
+     def generic_visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> Node:
+-        for field, old_value in node.iter_fields():
+-            if isinstance(old_value, list):
+-                new_values = []
+-                for value in old_value:
+-                    if isinstance(value, Node):
+-                        value = self.visit(value, *args, **kwargs)
+-                        if value is None:
+-                            continue
+-                        elif not isinstance(value, Node):
+-                            new_values.extend(value)
+-                            continue
+-                    new_values.append(value)
+-                old_value[:] = new_values
+-            elif isinstance(old_value, Node):
+-                new_node = self.visit(old_value, *args, **kwargs)
+-                if new_node is None:
+-                    delattr(node, field)
+-                else:
+-                    setattr(node, field, new_node)
+-        return node
++        with perfmark.region("lt-147"):
++            for field, old_value in node.iter_fields():
++                if isinstance(old_value, list):
++                    new_values = []
++                    for value in old_value:
++                        if isinstance(value, Node):
++                            value = self.visit(value, *args, **kwargs)
++                            if value is None:
++                                continue
++                            elif not isinstance(value, Node):
++                                new_values.extend(value)
++                                continue
++                        new_values.append(value)
++                    old_value[:] = new_values
++                elif isinstance(old_value, Node):
++                    new_node = self.visit(old_value, *args, **kwargs)
++                    if new_node is None:
++                        delattr(node, field)
++                    else:
++                        setattr(node, field, new_node)
++            return node
+ 
+     def visit_list(self, node: Node, *args: t.Any, **kwargs: t.Any) -> list[Node]:
+         """As transformers may return lists in some places this method

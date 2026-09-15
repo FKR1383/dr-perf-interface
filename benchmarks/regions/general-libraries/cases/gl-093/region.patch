@@ -1,0 +1,75 @@
+--- a/networkx/algorithms/cycles.py
++++ b/networkx/algorithms/cycles.py
+@@ -3,6 +3,7 @@
+ Cycle finding algorithms
+ ========================
+ """
++import perfmark
+ 
+ from collections import defaultdict
+ from itertools import combinations, product
+@@ -70,35 +71,36 @@
+     """
+     gnodes = dict.fromkeys(G)  # set-like object that maintains node order
+     cycles = []
+-    while gnodes:  # loop over connected components
+-        if root is None:
+-            root = gnodes.popitem()[0]
+-        stack = [root]
+-        pred = {root: root}
+-        used = {root: set()}
+-        while stack:  # walk the spanning tree finding cycles
+-            z = stack.pop()  # use last-in so cycles easier to find
+-            zused = used[z]
+-            for nbr in G[z]:
+-                if nbr not in used:  # new node
+-                    pred[nbr] = z
+-                    stack.append(nbr)
+-                    used[nbr] = {z}
+-                elif nbr == z:  # self loops
+-                    cycles.append([z])
+-                elif nbr not in zused:  # found a cycle
+-                    pn = used[nbr]
+-                    cycle = [nbr, z]
+-                    p = pred[z]
+-                    while p not in pn:
++    with perfmark.region("gl-093"):
++        while gnodes:  # loop over connected components
++            if root is None:
++                root = gnodes.popitem()[0]
++            stack = [root]
++            pred = {root: root}
++            used = {root: set()}
++            while stack:  # walk the spanning tree finding cycles
++                z = stack.pop()  # use last-in so cycles easier to find
++                zused = used[z]
++                for nbr in G[z]:
++                    if nbr not in used:  # new node
++                        pred[nbr] = z
++                        stack.append(nbr)
++                        used[nbr] = {z}
++                    elif nbr == z:  # self loops
++                        cycles.append([z])
++                    elif nbr not in zused:  # found a cycle
++                        pn = used[nbr]
++                        cycle = [nbr, z]
++                        p = pred[z]
++                        while p not in pn:
++                            cycle.append(p)
++                            p = pred[p]
+                         cycle.append(p)
+-                        p = pred[p]
+-                    cycle.append(p)
+-                    cycles.append(cycle)
+-                    used[nbr].add(z)
+-        for node in pred:
+-            gnodes.pop(node, None)
+-        root = None
++                        cycles.append(cycle)
++                        used[nbr].add(z)
++            for node in pred:
++                gnodes.pop(node, None)
++            root = None
+     return cycles
+ 
+ 

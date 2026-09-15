@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-126",
+  "title": "Parser::isCXX11AttributeSpecifier compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Parse/ParseTentative.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Parse/ParseTentative.cpp",
+    "sha256": "8874c182ef2cf3f5b110430f8dad864e3ca6c6461d217d9d9898f0ce8ee64915"
+  },
+  "region": {
+    "symbol": "Parser::isCXX11AttributeSpecifier",
+    "start_line": 737,
+    "end_line": 882,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-126",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "parsing",
+  "workload": {
+    "description": "Run the bounded record-layout fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Parse/ParseTentative.cpp:Parser::isCXX11AttributeSpecifier",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Parse/ParseTentative.cpp#L737-L882"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "3d619d3fd24df6358715e7b4add7a48b2a661328465c5666744dfe2745b38eb3",
+      "patch_sha256": "ae67b76273c23230366263b6fdcd4fb4f580defda1e9c4446302e4d7f79cd80a"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

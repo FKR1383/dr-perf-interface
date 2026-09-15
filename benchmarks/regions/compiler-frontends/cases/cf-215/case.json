@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-215",
+  "title": "Preprocessor::ReadOptionalMacroParameterListAndBody compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Lex/PPDirectives.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Lex/PPDirectives.cpp",
+    "sha256": "24c954b28f1d3a380a30a263aea6471de276e6c58f31aafbcd7be1445b0be5ed"
+  },
+  "region": {
+    "symbol": "Preprocessor::ReadOptionalMacroParameterListAndBody",
+    "start_line": 2929,
+    "end_line": 3158,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-215",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "preprocessing",
+  "workload": {
+    "description": "Run the bounded macro-argument-expansion fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Lex/PPDirectives.cpp:Preprocessor::ReadOptionalMacroParameterListAndBody",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Lex/PPDirectives.cpp#L2929-L3158"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "18760d837068b26b83869ad33e58a22e4e338e85b696e52ac2a1df0736292827",
+      "patch_sha256": "06c24412959f40a0284e4ffbdd592a338cfab7f1e61ef18c123c3d727ae3b427"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

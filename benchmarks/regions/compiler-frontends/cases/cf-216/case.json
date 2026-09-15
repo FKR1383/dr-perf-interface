@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-216",
+  "title": "RuntimeLibcallsInfo::initLibcalls compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "llvm/lib/IR/RuntimeLibcalls.cpp",
+    "snapshot": "../../upstream/llvm-project/llvm/lib/IR/RuntimeLibcalls.cpp",
+    "sha256": "f3a2d0b63a8a997c9d0e76429d798ba754f9dbc335eb71e3c749a349cba9f3e1"
+  },
+  "region": {
+    "symbol": "RuntimeLibcallsInfo::initLibcalls",
+    "start_line": 16,
+    "end_line": 259,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-216",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-construction",
+  "workload": {
+    "description": "Run the bounded optimize-generated-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:llvm/lib/IR/RuntimeLibcalls.cpp:RuntimeLibcallsInfo::initLibcalls",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/llvm/lib/IR/RuntimeLibcalls.cpp#L16-L259"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "ccfeea6d9eda1a96b04a23300078961c88c00568a707b66b20be0bc6ca85aa4b",
+      "patch_sha256": "7ce3bb4b44aebca4e091a2c351e2d9abc3b6a64b512b2c7bbfb4d6ff2f487d70"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

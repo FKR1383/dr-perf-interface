@@ -1,0 +1,32 @@
+--- a/networkx/algorithms/approximation/traveling_salesman.py
++++ b/networkx/algorithms/approximation/traveling_salesman.py
+@@ -33,6 +33,7 @@
+ 
+ http://en.wikipedia.org/wiki/Travelling_salesman_problem
+ """
++import perfmark
+ 
+ import math
+ 
+@@ -784,13 +785,14 @@
+     for u, v, d in G.edges(data=True):
+         original_edge_weights[(u, v)] = d[weight]
+     dir_ascent, k_d = direction_of_ascent()
+-    while dir_ascent is not None:
+-        max_distance = find_epsilon(k_d, dir_ascent)
+-        for n, v in dir_ascent.items():
+-            pi_dict[n] += max_distance * v
+-        for u, v, d in G.edges(data=True):
+-            d[weight] = original_edge_weights[(u, v)] + pi_dict[u]
+-        dir_ascent, k_d = direction_of_ascent()
++    with perfmark.region("gl-005"):
++        while dir_ascent is not None:
++            max_distance = find_epsilon(k_d, dir_ascent)
++            for n, v in dir_ascent.items():
++                pi_dict[n] += max_distance * v
++            for u, v, d in G.edges(data=True):
++                d[weight] = original_edge_weights[(u, v)] + pi_dict[u]
++            dir_ascent, k_d = direction_of_ascent()
+     nx._clear_cache(G)
+     # k_d is no longer an individual 1-arborescence but rather a set of
+     # minimal 1-arborescences at the maximum point of the polytope and should

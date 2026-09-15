@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExprComplex.cpp
++++ b/clang/lib/CodeGen/CGExprComplex.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGOpenMPRuntime.h"
+ #include "CodeGenFunction.h"
+ #include "CodeGenModule.h"
+@@ -1014,6 +1015,7 @@
+ // See C11 Annex G.5.1 for the semantics of multiplicative operators on complex
+ // typed values.
+ ComplexPairTy ComplexExprEmitter::EmitBinDiv(const BinOpInfo &Op) {
++  DRPERF_BENCH_REGION("cf-093");
+   llvm::Value *LHSr = Op.LHS.first, *LHSi = Op.LHS.second;
+   llvm::Value *RHSr = Op.RHS.first, *RHSi = Op.RHS.second;
+   llvm::Value *DSTr, *DSTi;

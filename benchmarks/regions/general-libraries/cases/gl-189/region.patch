@@ -1,0 +1,34 @@
+--- a/src/requests/cookies.py
++++ b/src/requests/cookies.py
+@@ -8,6 +8,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import calendar
+ import copy
+@@ -169,14 +170,15 @@
+     Wraps CookieJar.clear(), is O(n).
+     """
+     clearables: list[tuple[str, str, str]] = []
+-    for cookie in cookiejar:
+-        if cookie.name != name:
+-            continue
+-        if domain is not None and domain != cookie.domain:
+-            continue
+-        if path is not None and path != cookie.path:
+-            continue
+-        clearables.append((cookie.domain, cookie.path, cookie.name))
++    with perfmark.region("gl-189"):
++        for cookie in cookiejar:
++            if cookie.name != name:
++                continue
++            if domain is not None and domain != cookie.domain:
++                continue
++            if path is not None and path != cookie.path:
++                continue
++            clearables.append((cookie.domain, cookie.path, cookie.name))
+ 
+     for domain, path, name in clearables:
+         cookiejar.clear(domain, path, name)

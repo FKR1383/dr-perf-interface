@@ -1,0 +1,18 @@
+--- a/llvm/lib/AsmParser/LLParser.cpp
++++ b/llvm/lib/AsmParser/LLParser.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/AsmParser/LLParser.h"
+ #include "llvm/ADT/APSInt.h"
+ #include "llvm/ADT/DenseMap.h"
+@@ -204,6 +205,7 @@
+ /// validateEndOfModule - Do final validity and basic correctness checks at the
+ /// end of the module.
+ bool LLParser::validateEndOfModule(bool UpgradeDebugInfo) {
++  DRPERF_BENCH_REGION("cf-077");
+   if (!M)
+     return false;
+ 

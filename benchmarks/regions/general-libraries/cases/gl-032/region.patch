@@ -1,0 +1,86 @@
+--- a/networkx/algorithms/distance_measures.py
++++ b/networkx/algorithms/distance_measures.py
+@@ -1,4 +1,5 @@
+ """Graph diameter, radius, eccentricity and other properties."""
++import perfmark
+ 
+ import math
+ 
+@@ -912,41 +913,42 @@
+     Linv = np.linalg.pinv(L, hermitian=True)
+ 
+     # Return relevant distances
+-    if nodeA is not None and nodeB is not None:
+-        i = node_list.index(nodeA)
+-        j = node_list.index(nodeB)
+-        return Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
+-
+-    elif nodeA is not None:
+-        i = node_list.index(nodeA)
+-        d = {}
+-        for n in G:
+-            j = node_list.index(n)
+-            d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
+-        return d
+-
+-    elif nodeB is not None:
+-        j = node_list.index(nodeB)
+-        d = {}
+-        for n in G:
+-            i = node_list.index(n)
+-            d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
+-        return d
+-
+-    else:
+-        d = {}
+-        for n in G:
+-            i = node_list.index(n)
+-            d[n] = {}
+-            for n2 in G:
+-                j = node_list.index(n2)
+-                d[n][n2] = (
+-                    Linv.item(i, i)
+-                    + Linv.item(j, j)
+-                    - Linv.item(i, j)
+-                    - Linv.item(j, i)
+-                )
+-        return d
++    with perfmark.region("gl-032"):
++        if nodeA is not None and nodeB is not None:
++            i = node_list.index(nodeA)
++            j = node_list.index(nodeB)
++            return Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
++    
++        elif nodeA is not None:
++            i = node_list.index(nodeA)
++            d = {}
++            for n in G:
++                j = node_list.index(n)
++                d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
++            return d
++    
++        elif nodeB is not None:
++            j = node_list.index(nodeB)
++            d = {}
++            for n in G:
++                i = node_list.index(n)
++                d[n] = Linv.item(i, i) + Linv.item(j, j) - Linv.item(i, j) - Linv.item(j, i)
++            return d
++    
++        else:
++            d = {}
++            for n in G:
++                i = node_list.index(n)
++                d[n] = {}
++                for n2 in G:
++                    j = node_list.index(n2)
++                    d[n][n2] = (
++                        Linv.item(i, i)
++                        + Linv.item(j, j)
++                        - Linv.item(i, j)
++                        - Linv.item(j, i)
++                    )
++            return d
+ 
+ 
+ @not_implemented_for("directed")

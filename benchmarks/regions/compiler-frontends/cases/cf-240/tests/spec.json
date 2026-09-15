@@ -1,0 +1,31 @@
+{
+  "case": "cf-240",
+  "phase": "preprocessing",
+  "scenario": "preprocess-macros",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "#define MUL_240(x) ((x)*(x))\n#if MUL_240(2) > 3\nint value = MUL_240(3);\n#endif\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "#define MUL(x) ((x)*(x))\nint value_0=MUL(0);\nint value_1=MUL(1);\nint value_2=MUL(2);\nint value_3=MUL(3);\n"
+    },
+    {
+      "size": 16,
+      "source": "#define MUL(x) ((x)*(x))\nint value_0=MUL(0);\nint value_1=MUL(1);\nint value_2=MUL(2);\nint value_3=MUL(3);\nint value_4=MUL(4);\nint value_5=MUL(5);\nint value_6=MUL(6);\nint value_7=MUL(7);\nint value_8=MUL(8);\nint value_9=MUL(9);\nint value_10=MUL(10);\nint value_11=MUL(11);\nint value_12=MUL(12);\nint value_13=MUL(13);\nint value_14=MUL(14);\nint value_15=MUL(15);\n"
+    },
+    {
+      "size": 64,
+      "source": "#define MUL(x) ((x)*(x))\nint value_0=MUL(0);\nint value_1=MUL(1);\nint value_2=MUL(2);\nint value_3=MUL(3);\nint value_4=MUL(4);\nint value_5=MUL(5);\nint value_6=MUL(6);\nint value_7=MUL(7);\nint value_8=MUL(8);\nint value_9=MUL(9);\nint value_10=MUL(10);\nint value_11=MUL(11);\nint value_12=MUL(12);\nint value_13=MUL(13);\nint value_14=MUL(14);\nint value_15=MUL(15);\nint value_16=MUL(16);\nint value_17=MUL(17);\nint value_18=MUL(18);\nint value_19=MUL(19);\nint value_20=MUL(20);\nint value_21=MUL(21);\nint value_22=MUL(22);\nint value_23=MUL(23);\nint value_24=MUL(24);\nint value_25=MUL(25);\nint value_26=MUL(26);\nint value_27=MUL(27);\nint value_28=MUL(28);\nint value_29=MUL(29);\nint value_30=MUL(30);\nint value_31=MUL(31);\nint value_32=MUL(32);\nint value_33=MUL(33);\nint value_34=MUL(34);\nint value_35=MUL(35);\nint value_36=MUL(36);\nint value_37=MUL(37);\nint value_38=MUL(38);\nint value_39=MUL(39);\nint value_40=MUL(40);\nint value_41=MUL(41);\nint value_42=MUL(42);\nint value_43=MUL(43);\nint value_44=MUL(44);\nint value_45=MUL(45);\nint value_46=MUL(46);\nint value_47=MUL(47);\nint value_48=MUL(48);\nint value_49=MUL(49);\nint value_50=MUL(50);\nint value_51=MUL(51);\nint value_52=MUL(52);\nint value_53=MUL(53);\nint value_54=MUL(54);\nint value_55=MUL(55);\nint value_56=MUL(56);\nint value_57=MUL(57);\nint value_58=MUL(58);\nint value_59=MUL(59);\nint value_60=MUL(60);\nint value_61=MUL(61);\nint value_62=MUL(62);\nint value_63=MUL(63);\n"
+    }
+  ],
+  "target_symbol": "RemoveDuplicates",
+  "target_source": "clang/lib/Lex/InitHeaderSearch.cpp",
+  "mapping_note": "The preprocess-macros construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

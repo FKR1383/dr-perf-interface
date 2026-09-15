@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclObjC.cpp
++++ b/clang/lib/Sema/SemaDeclObjC.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -3976,6 +3977,7 @@
+ Decl *SemaObjC::ActOnAtEnd(Scope *S, SourceRange AtEnd,
+                            ArrayRef<Decl *> allMethods,
+                            ArrayRef<DeclGroupPtrTy> allTUVars) {
++                             DRPERF_BENCH_REGION("cf-085");
+   ASTContext &Context = getASTContext();
+   if (getObjCContainerKind() == SemaObjC::OCK_None)
+     return nullptr;

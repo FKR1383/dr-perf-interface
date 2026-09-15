@@ -1,0 +1,279 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -4028,140 +4029,141 @@
+         parse_subquery_alias: bool = True,
+         parse_set_operation: bool = True,
+     ) -> exp.Expr | None:
+-        cte = self._parse_with()
+-
+-        if cte:
+-            this = self._parse_statement()
+-
+-            if not this:
+-                self.raise_error("Failed to parse any statement following CTE")
+-                return cte
+-
+-            while isinstance(this, exp.Subquery) and this.is_wrapper:
+-                this = this.this
+-
+-            assert this is not None
+-            if "with_" in this.arg_types:
+-                if inner_cte := this.args.get("with_"):
+-                    cte.set("expressions", cte.expressions + inner_cte.expressions)
+-                    if inner_cte.args.get("recursive"):
+-                        cte.set("recursive", True)
+-                this.set("with_", cte)
+-            else:
+-                self.raise_error(f"{this.key} does not support CTE")
+-                this = cte
+-
+-            return this
+-
+-        # duckdb supports leading with FROM x
+-        from_ = (
+-            self._parse_from(joins=True, consume_pipe=True)
+-            if self._match(TokenType.FROM, advance=False)
+-            else None
+-        )
+-
+-        if self._match(TokenType.SELECT):
+-            comments = self._prev_comments
+-
+-            hint = self._parse_hint()
+-
+-            if self._next and not self._next.token_type == TokenType.DOT:
+-                all_ = self._match(TokenType.ALL)
+-                matched_distinct = self._match_set(self.DISTINCT_TOKENS)
+-            else:
+-                all_, matched_distinct = None, False
+-
+-            kind = (
+-                self._prev.text.upper()
+-                if self._match(TokenType.ALIAS) and self._match_texts(("STRUCT", "VALUE"))
++        with perfmark.region("lt-054"):
++            cte = self._parse_with()
++
++            if cte:
++                this = self._parse_statement()
++
++                if not this:
++                    self.raise_error("Failed to parse any statement following CTE")
++                    return cte
++
++                while isinstance(this, exp.Subquery) and this.is_wrapper:
++                    this = this.this
++
++                assert this is not None
++                if "with_" in this.arg_types:
++                    if inner_cte := this.args.get("with_"):
++                        cte.set("expressions", cte.expressions + inner_cte.expressions)
++                        if inner_cte.args.get("recursive"):
++                            cte.set("recursive", True)
++                    this.set("with_", cte)
++                else:
++                    self.raise_error(f"{this.key} does not support CTE")
++                    this = cte
++
++                return this
++
++            # duckdb supports leading with FROM x
++            from_ = (
++                self._parse_from(joins=True, consume_pipe=True)
++                if self._match(TokenType.FROM, advance=False)
+                 else None
+             )
+ 
+-            distinct: exp.Expr | None = (
+-                self.expression(
+-                    exp.Distinct(
+-                        on=self._parse_value(values=False) if self._match(TokenType.ON) else None
++            if self._match(TokenType.SELECT):
++                comments = self._prev_comments
++
++                hint = self._parse_hint()
++
++                if self._next and not self._next.token_type == TokenType.DOT:
++                    all_ = self._match(TokenType.ALL)
++                    matched_distinct = self._match_set(self.DISTINCT_TOKENS)
++                else:
++                    all_, matched_distinct = None, False
++
++                kind = (
++                    self._prev.text.upper()
++                    if self._match(TokenType.ALIAS) and self._match_texts(("STRUCT", "VALUE"))
++                    else None
++                )
++
++                distinct: exp.Expr | None = (
++                    self.expression(
++                        exp.Distinct(
++                            on=self._parse_value(values=False) if self._match(TokenType.ON) else None
++                        )
++                    )
++                    if matched_distinct
++                    else None
++                )
++
++                operation_modifiers = []
++                while self._curr and self._match_texts(self.OPERATION_MODIFIERS):
++                    operation_modifiers.append(exp.var(self._prev.text.upper()))
++
++                limit = self._parse_limit(top=True)
++
++                # Some dialects (e.g. Redshift, T-SQL) allow SELECT TOP N DISTINCT ...
++                if limit and not matched_distinct and not all_:
++                    matched_distinct = self._match_set(self.DISTINCT_TOKENS)
++                    if matched_distinct:
++                        distinct = self.expression(
++                            exp.Distinct(
++                                on=self._parse_value(values=False)
++                                if self._match(TokenType.ON)
++                                else None
++                            )
++                        )
++                    else:
++                        all_ = self._match(TokenType.ALL)
++
++                if all_ and distinct:
++                    self.raise_error("Cannot specify both ALL and DISTINCT after SELECT")
++
++                projections, exclude = self._parse_projections()
++
++                this = self.expression(
++                    exp.Select(
++                        kind=kind,
++                        hint=hint,
++                        distinct=distinct,
++                        expressions=projections,
++                        limit=limit,
++                        exclude=exclude,
++                        operation_modifiers=operation_modifiers or None,
+                     )
+                 )
+-                if matched_distinct
+-                else None
+-            )
+-
+-            operation_modifiers = []
+-            while self._curr and self._match_texts(self.OPERATION_MODIFIERS):
+-                operation_modifiers.append(exp.var(self._prev.text.upper()))
+-
+-            limit = self._parse_limit(top=True)
+-
+-            # Some dialects (e.g. Redshift, T-SQL) allow SELECT TOP N DISTINCT ...
+-            if limit and not matched_distinct and not all_:
+-                matched_distinct = self._match_set(self.DISTINCT_TOKENS)
+-                if matched_distinct:
+-                    distinct = self.expression(
+-                        exp.Distinct(
+-                            on=self._parse_value(values=False)
+-                            if self._match(TokenType.ON)
+-                            else None
+-                        )
+-                    )
+-                else:
+-                    all_ = self._match(TokenType.ALL)
+-
+-            if all_ and distinct:
+-                self.raise_error("Cannot specify both ALL and DISTINCT after SELECT")
+-
+-            projections, exclude = self._parse_projections()
+-
+-            this = self.expression(
+-                exp.Select(
+-                    kind=kind,
+-                    hint=hint,
+-                    distinct=distinct,
+-                    expressions=projections,
+-                    limit=limit,
+-                    exclude=exclude,
+-                    operation_modifiers=operation_modifiers or None,
+-                )
+-            )
+-            this.comments = comments
+-
+-            into = self._parse_into()
+-            if into:
+-                this.set("into", into)
+-
+-            if not from_:
+-                from_ = self._parse_from()
+-
+-            if from_:
+-                this.set("from_", from_)
+-
+-            this = self._parse_query_modifiers(this)
+-        elif (table or nested) and self._match(TokenType.L_PAREN):
+-            comments = self._prev_comments
+-            this = self._parse_wrapped_select(table=table)
+-
+-            if this:
+-                this.add_comments(comments, prepend=True)
+-
+-            # We return early here so that the UNION isn't attached to the subquery by the
+-            # following call to _parse_set_operations, but instead becomes the parent node
+-            self._match_r_paren()
+-            return self._parse_subquery(this, parse_alias=parse_subquery_alias)
+-        elif self._match(TokenType.VALUES, advance=False):
+-            this = self._parse_derived_table_values()
+-        elif from_:
+-            this = exp.select("*").from_(from_.this, copy=False)
+-            this = self._parse_query_modifiers(this)
+-        elif self._match(TokenType.SUMMARIZE):
+-            table = self._match(TokenType.TABLE)
+-            this = self._parse_select() or self._parse_string() or self._parse_table()
+-            return self.expression(exp.Summarize(this=this, table=table))
+-        elif self._match(TokenType.DESCRIBE):
+-            this = self._parse_describe()
+-        else:
+-            this = None
+-
+-        return self._parse_set_operations(this) if parse_set_operation else this
++                this.comments = comments
++
++                into = self._parse_into()
++                if into:
++                    this.set("into", into)
++
++                if not from_:
++                    from_ = self._parse_from()
++
++                if from_:
++                    this.set("from_", from_)
++
++                this = self._parse_query_modifiers(this)
++            elif (table or nested) and self._match(TokenType.L_PAREN):
++                comments = self._prev_comments
++                this = self._parse_wrapped_select(table=table)
++
++                if this:
++                    this.add_comments(comments, prepend=True)
++
++                # We return early here so that the UNION isn't attached to the subquery by the
++                # following call to _parse_set_operations, but instead becomes the parent node
++                self._match_r_paren()
++                return self._parse_subquery(this, parse_alias=parse_subquery_alias)
++            elif self._match(TokenType.VALUES, advance=False):
++                this = self._parse_derived_table_values()
++            elif from_:
++                this = exp.select("*").from_(from_.this, copy=False)
++                this = self._parse_query_modifiers(this)
++            elif self._match(TokenType.SUMMARIZE):
++                table = self._match(TokenType.TABLE)
++                this = self._parse_select() or self._parse_string() or self._parse_table()
++                return self.expression(exp.Summarize(this=this, table=table))
++            elif self._match(TokenType.DESCRIBE):
++                this = self._parse_describe()
++            else:
++                this = None
++
++            return self._parse_set_operations(this) if parse_set_operation else this
+ 
+     def _parse_recursive_with_search(self) -> exp.RecursiveWithSearch | None:
+         self._match_text_seq("SEARCH")

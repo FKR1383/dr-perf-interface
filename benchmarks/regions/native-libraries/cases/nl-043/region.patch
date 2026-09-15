@@ -1,0 +1,18 @@
+--- a/include/rapidjson/allocators.h
++++ b/include/rapidjson/allocators.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_ALLOCATORS_H_
+ #define RAPIDJSON_ALLOCATORS_H_
+ 
++#include "drperf_bench_region.h"
+ #include "rapidjson.h"
+ #include "internal/meta.h"
+ 
+@@ -275,6 +276,7 @@
+ 
+     //! Deallocates all memory chunks, excluding the first/user one.
+     void Clear() RAPIDJSON_NOEXCEPT {
++        DRPERF_BENCH_REGION("nl-043");
+         RAPIDJSON_NOEXCEPT_ASSERT(shared_->refcount > 0);
+         for (;;) {
+             ChunkHeader* c = shared_->chunkHead;

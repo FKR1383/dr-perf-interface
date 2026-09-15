@@ -1,0 +1,20 @@
+--- a/networkx/generators/small.py
++++ b/networkx/generators/small.py
+@@ -2,6 +2,7 @@
+ Various small and named graphs, together with some compact generators.
+ 
+ """
++import perfmark
+ 
+ __all__ = [
+     "LCF_graph",
+@@ -917,7 +918,8 @@
+     plus_one = [1, 2, 3, 0]
+     G = nx.empty_graph(0, create_using=create_using)
+     G.name = "Shrikhande Graph"
+-    G.add_edges_from(((x, y), (plus_one[x], y)) for x in rows for y in cols)
++    with perfmark.region("gl-088"):
++        G.add_edges_from(((x, y), (plus_one[x], y)) for x in rows for y in cols)
+     G.add_edges_from(((x, y), (x, plus_one[y])) for x in rows for y in cols)
+     G.add_edges_from(((x, y), (plus_one[x], plus_one[y])) for x in rows for y in cols)
+     return G

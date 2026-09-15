@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -18949,6 +18950,7 @@
+     ValueDecl *Var, SourceLocation ExprLoc, TryCaptureKind Kind,
+     SourceLocation EllipsisLoc, bool BuildAndDiagnose, QualType &CaptureType,
+     QualType &DeclRefType, const unsigned *const FunctionScopeIndexToStopAt) {
++      DRPERF_BENCH_REGION("cf-062");
+   // An init-capture is notionally from the context surrounding its
+   // declaration, but its parent DC is the lambda class.
+   DeclContext *VarDC = Var->getDeclContext();

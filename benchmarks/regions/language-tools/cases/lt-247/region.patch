@@ -1,0 +1,55 @@
+--- a/Cython/Compiler/Main.py
++++ b/Cython/Compiler/Main.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Cython Top Level
+ #
+@@ -68,26 +69,27 @@
+         # an infinite loop.
+         # Better code organization would fix it.
+ 
+-        from . import Builtin, CythonScope
+-        self.modules = {"__builtin__" : Builtin.builtin_scope}
+-        self.cython_scope = CythonScope.create_cython_scope(self)
+-        self.modules["cython"] = self.cython_scope
+-        self.include_directories = include_directories
+-        self.future_directives = set()
+-        self.compiler_directives = compiler_directives
+-        self.cpp = cpp
+-        self.options = options
+-
+-        self.pxds = {}  # full name -> node tree
+-        self.utility_pxds = {}  # pxd name -> node tree
+-        self._interned = {}  # (type(value), value, *key_args) -> interned_value
+-
+-        if language_level is not None:
+-            self.set_language_level(language_level)
+-
+-        self.legacy_implicit_noexcept = self.compiler_directives.get('legacy_implicit_noexcept', False)
+-
+-        self.gdb_debug_outputwriter = None
++        with perfmark.region("lt-247"):
++            from . import Builtin, CythonScope
++            self.modules = {"__builtin__" : Builtin.builtin_scope}
++            self.cython_scope = CythonScope.create_cython_scope(self)
++            self.modules["cython"] = self.cython_scope
++            self.include_directories = include_directories
++            self.future_directives = set()
++            self.compiler_directives = compiler_directives
++            self.cpp = cpp
++            self.options = options
++
++            self.pxds = {}  # full name -> node tree
++            self.utility_pxds = {}  # pxd name -> node tree
++            self._interned = {}  # (type(value), value, *key_args) -> interned_value
++
++            if language_level is not None:
++                self.set_language_level(language_level)
++
++            self.legacy_implicit_noexcept = self.compiler_directives.get('legacy_implicit_noexcept', False)
++
++            self.gdb_debug_outputwriter = None
+ 
+     @classmethod
+     def from_options(cls, options):

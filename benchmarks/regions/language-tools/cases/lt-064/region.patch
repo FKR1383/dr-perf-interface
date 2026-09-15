@@ -1,0 +1,231 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -7236,115 +7237,116 @@
+         optional_parens: bool = True,
+         any_token: bool = False,
+     ) -> exp.Expr | None:
+-        if not self._curr:
+-            return None
+-
+-        comments = self._curr.comments
+-        prev = self._prev
+-        token = self._curr
+-        token_type = self._curr.token_type
+-        this: str | exp.Expr = self._curr.text
+-        upper = self._curr.text.upper()
+-
+-        after_dot = prev.token_type == TokenType.DOT
+-        parser = self.NO_PAREN_FUNCTION_PARSERS.get(upper)
+-        if (
+-            optional_parens
+-            and parser
+-            and token_type not in self.INVALID_FUNC_NAME_TOKENS
+-            and not after_dot
+-        ):
+-            self._advance()
+-            return self._parse_window(parser(self))
+-
+-        if self._next.token_type != TokenType.L_PAREN:
+-            if optional_parens and token_type in self.NO_PAREN_FUNCTIONS and not after_dot:
++        with perfmark.region("lt-064"):
++            if not self._curr:
++                return None
++
++            comments = self._curr.comments
++            prev = self._prev
++            token = self._curr
++            token_type = self._curr.token_type
++            this: str | exp.Expr = self._curr.text
++            upper = self._curr.text.upper()
++
++            after_dot = prev.token_type == TokenType.DOT
++            parser = self.NO_PAREN_FUNCTION_PARSERS.get(upper)
++            if (
++                optional_parens
++                and parser
++                and token_type not in self.INVALID_FUNC_NAME_TOKENS
++                and not after_dot
++            ):
+                 self._advance()
+-                return self.expression(self.NO_PAREN_FUNCTIONS[token_type]())
+-
+-            return None
+-
+-        if any_token:
+-            if token_type in self.RESERVED_TOKENS:
++                return self._parse_window(parser(self))
++
++            if self._next.token_type != TokenType.L_PAREN:
++                if optional_parens and token_type in self.NO_PAREN_FUNCTIONS and not after_dot:
++                    self._advance()
++                    return self.expression(self.NO_PAREN_FUNCTIONS[token_type]())
++
+                 return None
+-        elif token_type not in self.FUNC_TOKENS:
+-            return None
+-
+-        self._advance(2)
+-
+-        parser = self.FUNCTION_PARSERS.get(upper)
+-        if parser and not anonymous:
+-            result = parser(self)
+-        else:
+-            subquery_predicate = self.SUBQUERY_PREDICATES.get(token_type)
+-
+-            if subquery_predicate:
+-                expr = None
+-                if self._curr.token_type in self.SUBQUERY_TOKENS:
+-                    expr = self._parse_select()
+-                    self._match_r_paren()
+-                elif prev and prev.token_type in (TokenType.LIKE, TokenType.ILIKE):
+-                    # Backtrack one token since we've consumed the L_PAREN here. Instead, we'd like
+-                    # to parse "LIKE [ANY | ALL] (...)" as a whole into an exp.Tuple or exp.Paren
+-                    self._advance(-1)
+-                    expr = self._parse_bitwise()
+-
+-                if expr:
+-                    return self.expression(subquery_predicate(this=expr), comments=comments)
+-
+-            if functions is None:
+-                functions = self.FUNCTIONS
+-
+-            function = functions.get(upper)
+-            known_function = function and not anonymous
+-
+-            alias = not known_function or upper in self.FUNCTIONS_WITH_ALIASED_ARGS
+-            args = self._parse_function_args(alias)
+-
+-            post_func_comments = self._curr.comments if self._curr else None
+-            if known_function and post_func_comments:
+-                # If the user-inputted comment "/* sqlglot.anonymous */" is following the function
+-                # call we'll construct it as exp.Anonymous, even if it's "known"
+-                if any(
+-                    comment.lstrip().startswith(exp.SQLGLOT_ANONYMOUS)
+-                    for comment in post_func_comments
+-                ):
+-                    known_function = False
+-
+-            if alias and known_function:
+-                args = self._kv_to_prop_eq(args)
+-
+-            if known_function:
+-                func_builder = t.cast(t.Callable, function)
+-
+-                # mypyc compiled functions don't have __code__, so we use
+-                # try/except to check if func_builder accepts 'dialect'.
+-                try:
+-                    func = func_builder(args)
+-                except TypeError:
+-                    func = func_builder(args, dialect=self.dialect)
+-
+-                func = self.validate_expression(func, args)
+-                if self.dialect.PRESERVE_ORIGINAL_NAMES:
+-                    func.meta["name"] = this
+-
+-                result = func
++
++            if any_token:
++                if token_type in self.RESERVED_TOKENS:
++                    return None
++            elif token_type not in self.FUNC_TOKENS:
++                return None
++
++            self._advance(2)
++
++            parser = self.FUNCTION_PARSERS.get(upper)
++            if parser and not anonymous:
++                result = parser(self)
+             else:
+-                if token_type == TokenType.IDENTIFIER:
+-                    this = exp.Identifier(this=this, quoted=True).update_positions(token)
+-
+-                result = self.expression(exp.Anonymous(this=this, expressions=args))
+-
+-            result = result.update_positions(token)
+-
+-        if isinstance(result, exp.Expr):
+-            result.add_comments(comments)
+-
+-        if parser:
+-            self._match(TokenType.R_PAREN, expression=result)
+-        else:
+-            self._match_r_paren(result)
+-        return self._parse_window(result)
++                subquery_predicate = self.SUBQUERY_PREDICATES.get(token_type)
++
++                if subquery_predicate:
++                    expr = None
++                    if self._curr.token_type in self.SUBQUERY_TOKENS:
++                        expr = self._parse_select()
++                        self._match_r_paren()
++                    elif prev and prev.token_type in (TokenType.LIKE, TokenType.ILIKE):
++                        # Backtrack one token since we've consumed the L_PAREN here. Instead, we'd like
++                        # to parse "LIKE [ANY | ALL] (...)" as a whole into an exp.Tuple or exp.Paren
++                        self._advance(-1)
++                        expr = self._parse_bitwise()
++
++                    if expr:
++                        return self.expression(subquery_predicate(this=expr), comments=comments)
++
++                if functions is None:
++                    functions = self.FUNCTIONS
++
++                function = functions.get(upper)
++                known_function = function and not anonymous
++
++                alias = not known_function or upper in self.FUNCTIONS_WITH_ALIASED_ARGS
++                args = self._parse_function_args(alias)
++
++                post_func_comments = self._curr.comments if self._curr else None
++                if known_function and post_func_comments:
++                    # If the user-inputted comment "/* sqlglot.anonymous */" is following the function
++                    # call we'll construct it as exp.Anonymous, even if it's "known"
++                    if any(
++                        comment.lstrip().startswith(exp.SQLGLOT_ANONYMOUS)
++                        for comment in post_func_comments
++                    ):
++                        known_function = False
++
++                if alias and known_function:
++                    args = self._kv_to_prop_eq(args)
++
++                if known_function:
++                    func_builder = t.cast(t.Callable, function)
++
++                    # mypyc compiled functions don't have __code__, so we use
++                    # try/except to check if func_builder accepts 'dialect'.
++                    try:
++                        func = func_builder(args)
++                    except TypeError:
++                        func = func_builder(args, dialect=self.dialect)
++
++                    func = self.validate_expression(func, args)
++                    if self.dialect.PRESERVE_ORIGINAL_NAMES:
++                        func.meta["name"] = this
++
++                    result = func
++                else:
++                    if token_type == TokenType.IDENTIFIER:
++                        this = exp.Identifier(this=this, quoted=True).update_positions(token)
++
++                    result = self.expression(exp.Anonymous(this=this, expressions=args))
++
++                result = result.update_positions(token)
++
++            if isinstance(result, exp.Expr):
++                result.add_comments(comments)
++
++            if parser:
++                self._match(TokenType.R_PAREN, expression=result)
++            else:
++                self._match_r_paren(result)
++            return self._parse_window(result)
+ 
+     def _to_prop_eq(self, expression: exp.Expr, index: int) -> exp.Expr:
+         return expression

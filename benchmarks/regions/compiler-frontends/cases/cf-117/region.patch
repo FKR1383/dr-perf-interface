@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseCXXInlineMethods.cpp
++++ b/clang/lib/Parse/ParseCXXInlineMethods.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/Basic/DiagnosticParse.h"
+ #include "clang/Parse/Parser.h"
+@@ -70,6 +71,7 @@
+     AccessSpecifier AS, const ParsedAttributesView &AccessAttrs,
+     ParsingDeclarator &D, const ParsedTemplateInfo &TemplateInfo,
+     const VirtSpecifiers &VS, SourceLocation PureSpecLoc) {
++      DRPERF_BENCH_REGION("cf-117");
+   assert(D.isFunctionDeclarator() && "This isn't a function declarator!");
+   assert(Tok.isOneOf(tok::l_brace, tok::colon, tok::kw_try, tok::equal) &&
+          "Current token not a '{', ':', '=', or 'try'!");

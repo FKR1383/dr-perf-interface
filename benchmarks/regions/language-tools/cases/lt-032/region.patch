@@ -1,0 +1,29 @@
+--- a/sympy/multipledispatch/conflict.py
++++ b/sympy/multipledispatch/conflict.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ from .utils import _toposort, groupby
+ 
+ class AmbiguityWarning(Warning):
+@@ -59,11 +60,12 @@
+ 
+     Topoological sort of edges as given by ``edge`` and ``supercedes``
+     """
+-    signatures = list(map(tuple, signatures))
+-    edges = [(a, b) for a in signatures for b in signatures if edge(a, b)]
+-    edges = groupby(lambda x: x[0], edges)
+-    for s in signatures:
+-        if s not in edges:
+-            edges[s] = []
+-    edges = {k: [b for a, b in v] for k, v in edges.items()}
+-    return _toposort(edges)
++    with perfmark.region("lt-032"):
++        signatures = list(map(tuple, signatures))
++        edges = [(a, b) for a in signatures for b in signatures if edge(a, b)]
++        edges = groupby(lambda x: x[0], edges)
++        for s in signatures:
++            if s not in edges:
++                edges[s] = []
++        edges = {k: [b for a, b in v] for k, v in edges.items()}
++        return _toposort(edges)

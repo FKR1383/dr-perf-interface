@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-210",
+  "title": "clang::ParseDiagnosticArgs compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Frontend/CompilerInvocation.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Frontend/CompilerInvocation.cpp",
+    "sha256": "a76ce3f7ebdeaafd8eabc6e4d2a31e97bccaadea3c646d310b181c30aadecb5b"
+  },
+  "region": {
+    "symbol": "clang::ParseDiagnosticArgs",
+    "start_line": 2624,
+    "end_line": 2682,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-210",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Frontend/CompilerInvocation.cpp:clang::ParseDiagnosticArgs",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Frontend/CompilerInvocation.cpp#L2624-L2682"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "18998cc36750f94220ca59ae2ad3b0807614c156fdc47e6861eeba43d6eb5ec2",
+      "patch_sha256": "9c7b07720ba47e413fb3180cbd0fa547d2c6b4a0d2d83aa45e26d3ec84e48b7b"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

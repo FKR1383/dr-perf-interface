@@ -1,0 +1,74 @@
+--- a/sqlglot/tokens.py
++++ b/sqlglot/tokens.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ 
+@@ -542,35 +543,36 @@
+         self._core = self._init_core()
+ 
+     def _init_core(self) -> TokenizerCore:
+-        return TokenizerCore(
+-            single_tokens=self.SINGLE_TOKENS,
+-            keywords=self.KEYWORDS,
+-            quotes=self._QUOTES,
+-            format_strings=self._FORMAT_STRINGS,
+-            identifiers=self._IDENTIFIERS,
+-            comments=self._COMMENTS,
+-            string_escapes=self._STRING_ESCAPES,
+-            byte_string_escapes=self._BYTE_STRING_ESCAPES,
+-            identifier_escapes=self._IDENTIFIER_ESCAPES,
+-            escape_follow_chars=self._ESCAPE_FOLLOW_CHARS,
+-            commands=self.COMMANDS,
+-            command_prefix_tokens=self.COMMAND_PREFIX_TOKENS,
+-            nested_comments=self.NESTED_COMMENTS,
+-            hint_start=self.HINT_START,
+-            tokens_preceding_hint=self.TOKENS_PRECEDING_HINT,
+-            has_bit_strings=bool(self.BIT_STRINGS),
+-            has_hex_strings=bool(self.HEX_STRINGS),
+-            numeric_literals=self.NUMERIC_LITERALS,
+-            var_single_tokens=self.VAR_SINGLE_TOKENS,
+-            string_escapes_allowed_in_raw_strings=self.STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS,
+-            heredoc_tag_is_identifier=self.HEREDOC_TAG_IS_IDENTIFIER,
+-            heredoc_string_alternative=self.HEREDOC_STRING_ALTERNATIVE,
+-            keyword_trie=self._KEYWORD_TRIE,
+-            numbers_can_be_underscore_separated=self.dialect.NUMBERS_CAN_BE_UNDERSCORE_SEPARATED,
+-            numbers_can_have_decimals=self.NUMBERS_CAN_HAVE_DECIMALS,
+-            identifiers_can_start_with_digit=self.dialect.IDENTIFIERS_CAN_START_WITH_DIGIT,
+-            unescaped_sequences=self.dialect.UNESCAPED_SEQUENCES,
+-        )
++        with perfmark.region("lt-053"):
++            return TokenizerCore(
++                single_tokens=self.SINGLE_TOKENS,
++                keywords=self.KEYWORDS,
++                quotes=self._QUOTES,
++                format_strings=self._FORMAT_STRINGS,
++                identifiers=self._IDENTIFIERS,
++                comments=self._COMMENTS,
++                string_escapes=self._STRING_ESCAPES,
++                byte_string_escapes=self._BYTE_STRING_ESCAPES,
++                identifier_escapes=self._IDENTIFIER_ESCAPES,
++                escape_follow_chars=self._ESCAPE_FOLLOW_CHARS,
++                commands=self.COMMANDS,
++                command_prefix_tokens=self.COMMAND_PREFIX_TOKENS,
++                nested_comments=self.NESTED_COMMENTS,
++                hint_start=self.HINT_START,
++                tokens_preceding_hint=self.TOKENS_PRECEDING_HINT,
++                has_bit_strings=bool(self.BIT_STRINGS),
++                has_hex_strings=bool(self.HEX_STRINGS),
++                numeric_literals=self.NUMERIC_LITERALS,
++                var_single_tokens=self.VAR_SINGLE_TOKENS,
++                string_escapes_allowed_in_raw_strings=self.STRING_ESCAPES_ALLOWED_IN_RAW_STRINGS,
++                heredoc_tag_is_identifier=self.HEREDOC_TAG_IS_IDENTIFIER,
++                heredoc_string_alternative=self.HEREDOC_STRING_ALTERNATIVE,
++                keyword_trie=self._KEYWORD_TRIE,
++                numbers_can_be_underscore_separated=self.dialect.NUMBERS_CAN_BE_UNDERSCORE_SEPARATED,
++                numbers_can_have_decimals=self.NUMBERS_CAN_HAVE_DECIMALS,
++                identifiers_can_start_with_digit=self.dialect.IDENTIFIERS_CAN_START_WITH_DIGIT,
++                unescaped_sequences=self.dialect.UNESCAPED_SEQUENCES,
++            )
+ 
+     def tokenize(self, sql: str) -> list[Token]:
+         """Returns a list of tokens corresponding to the SQL string `sql`."""

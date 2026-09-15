@@ -1,0 +1,47 @@
+--- a/networkx/relabel.py
++++ b/networkx/relabel.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import networkx as nx
+ 
+ __all__ = ["convert_node_labels_to_integers", "relabel_nodes"]
+@@ -267,22 +268,23 @@
+     relabel_nodes
+     """
+     N = G.number_of_nodes() + first_label
+-    if ordering == "default":
+-        mapping = dict(zip(G.nodes(), range(first_label, N)))
+-    elif ordering == "sorted":
+-        nlist = sorted(G.nodes())
+-        mapping = dict(zip(nlist, range(first_label, N)))
+-    elif ordering == "increasing degree":
+-        dv_pairs = [(d, n) for (n, d) in G.degree()]
+-        dv_pairs.sort()  # in-place sort from lowest to highest degree
+-        mapping = dict(zip([n for d, n in dv_pairs], range(first_label, N)))
+-    elif ordering == "decreasing degree":
+-        dv_pairs = [(d, n) for (n, d) in G.degree()]
+-        dv_pairs.sort()  # in-place sort from lowest to highest degree
+-        dv_pairs.reverse()
+-        mapping = dict(zip([n for d, n in dv_pairs], range(first_label, N)))
+-    else:
+-        raise nx.NetworkXError(f"Unknown node ordering: {ordering}")
++    with perfmark.region("gl-058"):
++        if ordering == "default":
++            mapping = dict(zip(G.nodes(), range(first_label, N)))
++        elif ordering == "sorted":
++            nlist = sorted(G.nodes())
++            mapping = dict(zip(nlist, range(first_label, N)))
++        elif ordering == "increasing degree":
++            dv_pairs = [(d, n) for (n, d) in G.degree()]
++            dv_pairs.sort()  # in-place sort from lowest to highest degree
++            mapping = dict(zip([n for d, n in dv_pairs], range(first_label, N)))
++        elif ordering == "decreasing degree":
++            dv_pairs = [(d, n) for (n, d) in G.degree()]
++            dv_pairs.sort()  # in-place sort from lowest to highest degree
++            dv_pairs.reverse()
++            mapping = dict(zip([n for d, n in dv_pairs], range(first_label, N)))
++        else:
++            raise nx.NetworkXError(f"Unknown node ordering: {ordering}")
+     H = relabel_nodes(G, mapping)
+     # create node attribute with the old label
+     if label_attribute is not None:

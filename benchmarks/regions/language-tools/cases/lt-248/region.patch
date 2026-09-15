@@ -1,0 +1,77 @@
+--- a/Cython/Compiler/Symtab.py
++++ b/Cython/Compiler/Symtab.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Symbol Table
+ #
+@@ -600,37 +601,38 @@
+         # Create new entry, and add to dictionary if
+         # name is not None. Reports a warning if already
+         # declared.
+-        if type.is_buffer and not isinstance(self, LocalScope):  # and not is_type:
+-            error(pos, 'Buffer types only allowed as function local variables')
+-        if not self.in_cinclude and cname and re.match("^_[_A-Z]+$", cname):
+-            # See https://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html#Reserved-Names
+-            warning(pos, "'%s' is a reserved name in C." % cname, -1)
+-
+-        entries = self.entries
+-        entry = None
+-        if name and name in entries and not shadow:
+-            entry = self.handle_already_declared_name(name, cname, type, pos, visibility)
+-
+-        if not entry:
+-            entry = Entry(name, cname, type, pos = pos)
+-            entry.in_cinclude = self.in_cinclude
+-            entry.create_wrapper = create_wrapper
+-
+-            if name:
+-                entry.qualified_name = self.qualify_name(name)
+-                if not shadow:
+-                    if name in entries and self.is_cpp() and type.is_cfunction and not entries[name].is_cmethod:
+-                        # Which means: function or cppclass method is already present
+-                        entries[name].overloaded_alternatives.append(entry)
+-                    else:
+-                        entries[name] = entry
+-
+-        if type.is_memoryviewslice:
+-            entry.init = type.default_value
+-
+-        entry.scope = self
+-        entry.visibility = visibility
+-        return entry
++        with perfmark.region("lt-248"):
++            if type.is_buffer and not isinstance(self, LocalScope):  # and not is_type:
++                error(pos, 'Buffer types only allowed as function local variables')
++            if not self.in_cinclude and cname and re.match("^_[_A-Z]+$", cname):
++                # See https://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html#Reserved-Names
++                warning(pos, "'%s' is a reserved name in C." % cname, -1)
++
++            entries = self.entries
++            entry = None
++            if name and name in entries and not shadow:
++                entry = self.handle_already_declared_name(name, cname, type, pos, visibility)
++
++            if not entry:
++                entry = Entry(name, cname, type, pos = pos)
++                entry.in_cinclude = self.in_cinclude
++                entry.create_wrapper = create_wrapper
++
++                if name:
++                    entry.qualified_name = self.qualify_name(name)
++                    if not shadow:
++                        if name in entries and self.is_cpp() and type.is_cfunction and not entries[name].is_cmethod:
++                            # Which means: function or cppclass method is already present
++                            entries[name].overloaded_alternatives.append(entry)
++                        else:
++                            entries[name] = entry
++
++            if type.is_memoryviewslice:
++                entry.init = type.default_value
++
++            entry.scope = self
++            entry.visibility = visibility
++            return entry
+ 
+     def qualify_name(self, name):
+         return EncodedString("%s.%s" % (self.qualified_name, name))

@@ -1,0 +1,92 @@
+--- a/pandas/plotting/_matplotlib/misc.py
++++ b/pandas/plotting/_matplotlib/misc.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import random
+ from typing import TYPE_CHECKING
+@@ -68,44 +69,45 @@
+         rdelta_ext = (rmax_ - rmin_) * range_padding / 2
+         boundaries_list.append((rmin_ - rdelta_ext, rmax_ + rdelta_ext))
+ 
+-    for i, a in enumerate(df.columns):
+-        for j, b in enumerate(df.columns):
+-            ax = axes[i, j]
+-
+-            if i == j:
+-                values = df[a].values[mask[a].values]
+-
+-                # Deal with the diagonal by drawing a histogram there.
+-                if diagonal == "hist":
+-                    ax.hist(values, **hist_kwds)
+-
+-                elif diagonal in ("kde", "density"):
+-                    from scipy.stats import gaussian_kde
+-
+-                    y = values
+-                    gkde = gaussian_kde(y)
+-                    ind = np.linspace(y.min(), y.max(), 1000)
+-                    ax.plot(ind, gkde.evaluate(ind), **density_kwds)
+-
+-                ax.set_xlim(boundaries_list[i])
+-
+-            else:
+-                common = (mask[a] & mask[b]).values
+-
+-                ax.scatter(
+-                    df[b][common], df[a][common], marker=marker, alpha=alpha, **kwds
+-                )
+-
+-                ax.set_xlim(boundaries_list[j])
+-                ax.set_ylim(boundaries_list[i])
+-
+-            ax.set_xlabel(b)
+-            ax.set_ylabel(a)
+-
+-            if j != 0:
+-                ax.yaxis.set_visible(False)
+-            if i != n - 1:
+-                ax.xaxis.set_visible(False)
++    with perfmark.region("gl-160"):
++        for i, a in enumerate(df.columns):
++            for j, b in enumerate(df.columns):
++                ax = axes[i, j]
++    
++                if i == j:
++                    values = df[a].values[mask[a].values]
++    
++                    # Deal with the diagonal by drawing a histogram there.
++                    if diagonal == "hist":
++                        ax.hist(values, **hist_kwds)
++    
++                    elif diagonal in ("kde", "density"):
++                        from scipy.stats import gaussian_kde
++    
++                        y = values
++                        gkde = gaussian_kde(y)
++                        ind = np.linspace(y.min(), y.max(), 1000)
++                        ax.plot(ind, gkde.evaluate(ind), **density_kwds)
++    
++                    ax.set_xlim(boundaries_list[i])
++    
++                else:
++                    common = (mask[a] & mask[b]).values
++    
++                    ax.scatter(
++                        df[b][common], df[a][common], marker=marker, alpha=alpha, **kwds
++                    )
++    
++                    ax.set_xlim(boundaries_list[j])
++                    ax.set_ylim(boundaries_list[i])
++    
++                ax.set_xlabel(b)
++                ax.set_ylabel(a)
++    
++                if j != 0:
++                    ax.yaxis.set_visible(False)
++                if i != n - 1:
++                    ax.xaxis.set_visible(False)
+ 
+     if len(df.columns) > 1:
+         lim1 = boundaries_list[0]

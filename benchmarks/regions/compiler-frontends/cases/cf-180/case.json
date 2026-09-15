@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-180",
+  "title": "UnwrappedLineParser::calculateBraceTypes compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/UnwrappedLineParser.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/UnwrappedLineParser.cpp",
+    "sha256": "c9c54ed17153858c0ff4dce35a4bcd8826096e4880fd6c4d30fccf0460b76676"
+  },
+  "region": {
+    "symbol": "UnwrappedLineParser::calculateBraceTypes",
+    "start_line": 482,
+    "end_line": 655,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-180",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "formatting",
+  "workload": {
+    "description": "Run the bounded unwrapped-line-parsing fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Format/UnwrappedLineParser.cpp:UnwrappedLineParser::calculateBraceTypes",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Format/UnwrappedLineParser.cpp#L482-L655"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+      "spec_sha256": "ce04fde525fd3858d824d81df6593a3f78fa79b2ca8ee68f19b6c5152727a91a",
+      "patch_sha256": "cb449adee1b9ffa355a41eb242a274077c983afe5d13d7e6a76f71c7b3f96e4e"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "case": "cf-098",
+  "phase": "semantic-analysis",
+  "scenario": "function-template-instantiation",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_98(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_98 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_98(2)==14);\nint main() { Item_98 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "template<int N> int tf(){return N;} int f(){return tf<0>()+tf<1>()+tf<2>()+tf<3>();}\n"
+    },
+    {
+      "size": 16,
+      "source": "template<int N> int tf(){return N;} int f(){return tf<0>()+tf<1>()+tf<2>()+tf<3>()+tf<4>()+tf<5>()+tf<6>()+tf<7>()+tf<8>()+tf<9>()+tf<10>()+tf<11>()+tf<12>()+tf<13>()+tf<14>()+tf<15>();}\n"
+    },
+    {
+      "size": 64,
+      "source": "template<int N> int tf(){return N;} int f(){return tf<0>()+tf<1>()+tf<2>()+tf<3>()+tf<4>()+tf<5>()+tf<6>()+tf<7>()+tf<8>()+tf<9>()+tf<10>()+tf<11>()+tf<12>()+tf<13>()+tf<14>()+tf<15>()+tf<16>()+tf<17>()+tf<18>()+tf<19>()+tf<20>()+tf<21>()+tf<22>()+tf<23>()+tf<24>()+tf<25>()+tf<26>()+tf<27>()+tf<28>()+tf<29>()+tf<30>()+tf<31>()+tf<32>()+tf<33>()+tf<34>()+tf<35>()+tf<36>()+tf<37>()+tf<38>()+tf<39>()+tf<40>()+tf<41>()+tf<42>()+tf<43>()+tf<44>()+tf<45>()+tf<46>()+tf<47>()+tf<48>()+tf<49>()+tf<50>()+tf<51>()+tf<52>()+tf<53>()+tf<54>()+tf<55>()+tf<56>()+tf<57>()+tf<58>()+tf<59>()+tf<60>()+tf<61>()+tf<62>()+tf<63>();}\n"
+    }
+  ],
+  "target_symbol": "Sema::InstantiateFunctionDefinition",
+  "target_source": "clang/lib/Sema/SemaTemplateInstantiateDecl.cpp",
+  "mapping_note": "The function-template-instantiation construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

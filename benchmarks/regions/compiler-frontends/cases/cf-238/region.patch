@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -3636,6 +3637,7 @@
+                                               ArgumentConsumer Consumer,
+                                               const llvm::Triple &T,
+                                               InputKind IK) {
++                                                DRPERF_BENCH_REGION("cf-238");
+   if (IK.getFormat() == InputKind::Precompiled ||
+       IK.getLanguage() == Language::LLVM_IR ||
+       IK.getLanguage() == Language::CIR) {

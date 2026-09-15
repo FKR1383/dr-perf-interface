@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-152",
+  "title": "SemaOpenMP::ActOnOpenMPRegionEnd compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Sema/SemaOpenMP.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Sema/SemaOpenMP.cpp",
+    "sha256": "4e2f1217dde1f742528515f1f601a6c77b6be5753dabea7d8c98bdac2d249926"
+  },
+  "region": {
+    "symbol": "SemaOpenMP::ActOnOpenMPRegionEnd",
+    "start_line": 4578,
+    "end_line": 4745,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-152",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "semantic-analysis",
+  "workload": {
+    "description": "Run the bounded openmp-task-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Sema/SemaOpenMP.cpp:SemaOpenMP::ActOnOpenMPRegionEnd",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Sema/SemaOpenMP.cpp#L4578-L4745"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "dc267f4510a3b9d9b80bdc3867b61321a551263789f3a95c9f475db1bd7eaff4",
+      "patch_sha256": "1f76d53310f4ec011e79b26b0646d19155f91b533b8c0589a5ca2e5fffcc74ed"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

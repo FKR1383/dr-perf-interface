@@ -1,0 +1,60 @@
+--- a/sympy/external/gmpy.py
++++ b/sympy/external/gmpy.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ import os
+ from ctypes import c_long, sizeof
+ from functools import reduce
+@@ -114,28 +115,29 @@
+ 
+ 
+ def _get_flint(sympy_ground_types):
+-    if sympy_ground_types not in ('auto', 'flint'):
+-        return None
+-
+-    try:
+-        import flint
+-        # Earlier versions of python-flint may not have __version__.
+-        from flint import __version__ as _flint_version
+-    except ImportError:
+-        if sympy_ground_types == 'flint':
+-            warn("SYMPY_GROUND_TYPES was set to flint but python-flint is not "
+-                 "installed. Falling back to other ground types.")
+-        return None
+-
+-    if _flint_version_okay(_flint_version):
+-        return flint
+-    elif sympy_ground_types == 'auto':
+-        return None
+-    else:
+-        warn(f"Using python-flint {_flint_version} because SYMPY_GROUND_TYPES "
+-             f"is set to flint but this version of SymPy is only tested "
+-             f"with python-flint versions {_PYTHON_FLINT_VERSION_NEEDED}.")
+-        return flint
++    with perfmark.region("lt-042"):
++        if sympy_ground_types not in ('auto', 'flint'):
++            return None
++
++        try:
++            import flint
++            # Earlier versions of python-flint may not have __version__.
++            from flint import __version__ as _flint_version
++        except ImportError:
++            if sympy_ground_types == 'flint':
++                warn("SYMPY_GROUND_TYPES was set to flint but python-flint is not "
++                     "installed. Falling back to other ground types.")
++            return None
++
++        if _flint_version_okay(_flint_version):
++            return flint
++        elif sympy_ground_types == 'auto':
++            return None
++        else:
++            warn(f"Using python-flint {_flint_version} because SYMPY_GROUND_TYPES "
++                 f"is set to flint but this version of SymPy is only tested "
++                 f"with python-flint versions {_PYTHON_FLINT_VERSION_NEEDED}.")
++            return flint
+ 
+ 
+ def _get_gmpy2(sympy_ground_types):

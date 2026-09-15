@@ -1,0 +1,32 @@
+--- a/src/urllib3/fields.py
++++ b/src/urllib3/fields.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import email.utils
+ import mimetypes
+@@ -61,14 +62,15 @@
+     if isinstance(value, bytes):
+         value = value.decode("utf-8")
+ 
+-    if not any(ch in value for ch in '"\\\r\n'):
+-        result = f'{name}="{value}"'
+-        try:
+-            result.encode("ascii")
+-        except (UnicodeEncodeError, UnicodeDecodeError):
+-            pass
+-        else:
+-            return result
++    with perfmark.region("gl-173"):
++        if not any(ch in value for ch in '"\\\r\n'):
++            result = f'{name}="{value}"'
++            try:
++                result.encode("ascii")
++            except (UnicodeEncodeError, UnicodeDecodeError):
++                pass
++            else:
++                return result
+ 
+     value = email.utils.encode_rfc2231(value, "utf-8")
+     value = f"{name}*={value}"

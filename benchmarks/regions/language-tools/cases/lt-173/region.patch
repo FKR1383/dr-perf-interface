@@ -1,0 +1,202 @@
+--- a/pyparsing/helpers.py
++++ b/pyparsing/helpers.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # helpers.py
+ import html.entities
+ import operator
+@@ -249,102 +250,103 @@
+ 
+        [['B', '=', '12'], ['AA', '=', '23'], ['B', '<=', 'AA'], ['AA', '>', '12']]
+     """
+-    useRegex: bool = deprecate_argument(kwargs, "useRegex", True)
+-    asKeyword: bool = deprecate_argument(kwargs, "asKeyword", False)
+-
+-    asKeyword = asKeyword or as_keyword
+-    useRegex = useRegex and use_regex
+-
+-    if (
+-        isinstance(caseless, str_type)
+-        and __diag__.warn_on_multiple_string_args_to_oneof
+-    ):
+-        warnings.warn(
+-            "warn_on_multiple_string_args_to_oneof:"
+-            " More than one string argument passed to one_of, pass"
+-            " choices as a list or space-delimited string",
+-            PyparsingDiagnosticWarning,
+-            stacklevel=2,
+-        )
+-
+-    if caseless:
+-        is_equal = lambda a, b: a.upper() == b.upper()
+-        masks = lambda a, b: b.upper().startswith(a.upper())
+-    else:
+-        is_equal = operator.eq
+-        masks = lambda a, b: b.startswith(a)
+-
+-    symbols: list[str]
+-    if isinstance(strs, str_type):
+-        strs = typing.cast(str, strs)
+-        symbols = strs.split()
+-    elif isinstance(strs, Iterable):
+-        symbols = list(strs)
+-    else:
+-        raise TypeError("Invalid argument to one_of, expected string or iterable")
+-    if not symbols:
+-        return NoMatch()
+-
+-    # reorder given symbols to take care to avoid masking longer choices with shorter ones
+-    # (but only if the given symbols are not just single characters)
+-    i = 0
+-    while i < len(symbols) - 1:
+-        cur = symbols[i]
+-        for j, other in enumerate(symbols[i + 1 :]):
+-            if is_equal(other, cur):
+-                del symbols[i + j + 1]
+-                break
+-            if len(other) > len(cur) and masks(cur, other):
+-                del symbols[i + j + 1]
+-                symbols.insert(i, other)
+-                break
+-        else:
+-            i += 1
+-
+-    if useRegex:
+-        re_flags: int = re.IGNORECASE if caseless else 0
+-
+-        try:
+-            if all(len(sym) == 1 for sym in symbols):
+-                # symbols are just single characters, create range regex pattern
+-                patt = f"[{''.join(_escape_regex_range_chars(sym) for sym in symbols)}]"
+-            else:
+-                patt = "|".join(re.escape(sym) for sym in symbols)
+-
+-            # wrap with \b word break markers if defining as keywords
+-            if asKeyword:
+-                patt = rf"\b(?:{patt})\b"
+-
+-            ret = Regex(patt, flags=re_flags)
+-            ret.set_name(" | ".join(repr(s) for s in symbols))
+-
+-            if caseless:
+-                # add parse action to return symbols as specified, not in random
+-                # casing as found in input string
+-                symbol_map = {sym.lower(): sym for sym in symbols}
+-                ret.add_parse_action(lambda s, l, t: symbol_map[t[0].lower()])
+-
+-            return ret
+-
+-        except re.error:
++    with perfmark.region("lt-173"):
++        useRegex: bool = deprecate_argument(kwargs, "useRegex", True)
++        asKeyword: bool = deprecate_argument(kwargs, "asKeyword", False)
++
++        asKeyword = asKeyword or as_keyword
++        useRegex = useRegex and use_regex
++
++        if (
++            isinstance(caseless, str_type)
++            and __diag__.warn_on_multiple_string_args_to_oneof
++        ):
+             warnings.warn(
+-                "Exception creating Regex for one_of, building MatchFirst",
++                "warn_on_multiple_string_args_to_oneof:"
++                " More than one string argument passed to one_of, pass"
++                " choices as a list or space-delimited string",
+                 PyparsingDiagnosticWarning,
+                 stacklevel=2,
+             )
+ 
+-    # last resort, just use MatchFirst of Token class corresponding to caseless
+-    # and asKeyword settings
+-    CASELESS = KEYWORD = True
+-    parse_element_class = {
+-        (CASELESS, KEYWORD): CaselessKeyword,
+-        (CASELESS, not KEYWORD): CaselessLiteral,
+-        (not CASELESS, KEYWORD): Keyword,
+-        (not CASELESS, not KEYWORD): Literal,
+-    }[(caseless, asKeyword)]
+-    return MatchFirst(parse_element_class(sym) for sym in symbols).set_name(
+-        " | ".join(symbols)
+-    )
++        if caseless:
++            is_equal = lambda a, b: a.upper() == b.upper()
++            masks = lambda a, b: b.upper().startswith(a.upper())
++        else:
++            is_equal = operator.eq
++            masks = lambda a, b: b.startswith(a)
++
++        symbols: list[str]
++        if isinstance(strs, str_type):
++            strs = typing.cast(str, strs)
++            symbols = strs.split()
++        elif isinstance(strs, Iterable):
++            symbols = list(strs)
++        else:
++            raise TypeError("Invalid argument to one_of, expected string or iterable")
++        if not symbols:
++            return NoMatch()
++
++        # reorder given symbols to take care to avoid masking longer choices with shorter ones
++        # (but only if the given symbols are not just single characters)
++        i = 0
++        while i < len(symbols) - 1:
++            cur = symbols[i]
++            for j, other in enumerate(symbols[i + 1 :]):
++                if is_equal(other, cur):
++                    del symbols[i + j + 1]
++                    break
++                if len(other) > len(cur) and masks(cur, other):
++                    del symbols[i + j + 1]
++                    symbols.insert(i, other)
++                    break
++            else:
++                i += 1
++
++        if useRegex:
++            re_flags: int = re.IGNORECASE if caseless else 0
++
++            try:
++                if all(len(sym) == 1 for sym in symbols):
++                    # symbols are just single characters, create range regex pattern
++                    patt = f"[{''.join(_escape_regex_range_chars(sym) for sym in symbols)}]"
++                else:
++                    patt = "|".join(re.escape(sym) for sym in symbols)
++
++                # wrap with \b word break markers if defining as keywords
++                if asKeyword:
++                    patt = rf"\b(?:{patt})\b"
++
++                ret = Regex(patt, flags=re_flags)
++                ret.set_name(" | ".join(repr(s) for s in symbols))
++
++                if caseless:
++                    # add parse action to return symbols as specified, not in random
++                    # casing as found in input string
++                    symbol_map = {sym.lower(): sym for sym in symbols}
++                    ret.add_parse_action(lambda s, l, t: symbol_map[t[0].lower()])
++
++                return ret
++
++            except re.error:
++                warnings.warn(
++                    "Exception creating Regex for one_of, building MatchFirst",
++                    PyparsingDiagnosticWarning,
++                    stacklevel=2,
++                )
++
++        # last resort, just use MatchFirst of Token class corresponding to caseless
++        # and asKeyword settings
++        CASELESS = KEYWORD = True
++        parse_element_class = {
++            (CASELESS, KEYWORD): CaselessKeyword,
++            (CASELESS, not KEYWORD): CaselessLiteral,
++            (not CASELESS, KEYWORD): Keyword,
++            (not CASELESS, not KEYWORD): Literal,
++        }[(caseless, asKeyword)]
++        return MatchFirst(parse_element_class(sym) for sym in symbols).set_name(
++            " | ".join(symbols)
++        )
+ 
+ 
+ def dict_of(key: ParserElement, value: ParserElement) -> Dict:

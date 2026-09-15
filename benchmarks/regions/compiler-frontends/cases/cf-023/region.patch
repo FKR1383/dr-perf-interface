@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGDecl.cpp
++++ b/clang/lib/CodeGen/CGDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGBlocks.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+@@ -1459,6 +1460,7 @@
+ /// local variable.  Does not emit initialization or destruction.
+ CodeGenFunction::AutoVarEmission
+ CodeGenFunction::EmitAutoVarAlloca(const VarDecl &D) {
++  DRPERF_BENCH_REGION("cf-023");
+   QualType Ty = D.getType();
+   assert(
+       Ty.getAddressSpace() == LangAS::Default ||

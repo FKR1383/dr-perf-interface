@@ -1,0 +1,31 @@
+{
+  "case": "cf-082",
+  "phase": "parsing",
+  "scenario": "parse-templates",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_82(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_82 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_82(2)==14);\nint main() { Item_82 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "template<int N> struct Box{static constexpr int value=N;};\nstatic_assert(Box<0>::value==0);\nstatic_assert(Box<1>::value==1);\nstatic_assert(Box<2>::value==2);\nstatic_assert(Box<3>::value==3);\n"
+    },
+    {
+      "size": 16,
+      "source": "template<int N> struct Box{static constexpr int value=N;};\nstatic_assert(Box<0>::value==0);\nstatic_assert(Box<1>::value==1);\nstatic_assert(Box<2>::value==2);\nstatic_assert(Box<3>::value==3);\nstatic_assert(Box<4>::value==4);\nstatic_assert(Box<5>::value==5);\nstatic_assert(Box<6>::value==6);\nstatic_assert(Box<7>::value==7);\nstatic_assert(Box<8>::value==8);\nstatic_assert(Box<9>::value==9);\nstatic_assert(Box<10>::value==10);\nstatic_assert(Box<11>::value==11);\nstatic_assert(Box<12>::value==12);\nstatic_assert(Box<13>::value==13);\nstatic_assert(Box<14>::value==14);\nstatic_assert(Box<15>::value==15);\n"
+    },
+    {
+      "size": 64,
+      "source": "template<int N> struct Box{static constexpr int value=N;};\nstatic_assert(Box<0>::value==0);\nstatic_assert(Box<1>::value==1);\nstatic_assert(Box<2>::value==2);\nstatic_assert(Box<3>::value==3);\nstatic_assert(Box<4>::value==4);\nstatic_assert(Box<5>::value==5);\nstatic_assert(Box<6>::value==6);\nstatic_assert(Box<7>::value==7);\nstatic_assert(Box<8>::value==8);\nstatic_assert(Box<9>::value==9);\nstatic_assert(Box<10>::value==10);\nstatic_assert(Box<11>::value==11);\nstatic_assert(Box<12>::value==12);\nstatic_assert(Box<13>::value==13);\nstatic_assert(Box<14>::value==14);\nstatic_assert(Box<15>::value==15);\nstatic_assert(Box<16>::value==16);\nstatic_assert(Box<17>::value==17);\nstatic_assert(Box<18>::value==18);\nstatic_assert(Box<19>::value==19);\nstatic_assert(Box<20>::value==20);\nstatic_assert(Box<21>::value==21);\nstatic_assert(Box<22>::value==22);\nstatic_assert(Box<23>::value==23);\nstatic_assert(Box<24>::value==24);\nstatic_assert(Box<25>::value==25);\nstatic_assert(Box<26>::value==26);\nstatic_assert(Box<27>::value==27);\nstatic_assert(Box<28>::value==28);\nstatic_assert(Box<29>::value==29);\nstatic_assert(Box<30>::value==30);\nstatic_assert(Box<31>::value==31);\nstatic_assert(Box<32>::value==32);\nstatic_assert(Box<33>::value==33);\nstatic_assert(Box<34>::value==34);\nstatic_assert(Box<35>::value==35);\nstatic_assert(Box<36>::value==36);\nstatic_assert(Box<37>::value==37);\nstatic_assert(Box<38>::value==38);\nstatic_assert(Box<39>::value==39);\nstatic_assert(Box<40>::value==40);\nstatic_assert(Box<41>::value==41);\nstatic_assert(Box<42>::value==42);\nstatic_assert(Box<43>::value==43);\nstatic_assert(Box<44>::value==44);\nstatic_assert(Box<45>::value==45);\nstatic_assert(Box<46>::value==46);\nstatic_assert(Box<47>::value==47);\nstatic_assert(Box<48>::value==48);\nstatic_assert(Box<49>::value==49);\nstatic_assert(Box<50>::value==50);\nstatic_assert(Box<51>::value==51);\nstatic_assert(Box<52>::value==52);\nstatic_assert(Box<53>::value==53);\nstatic_assert(Box<54>::value==54);\nstatic_assert(Box<55>::value==55);\nstatic_assert(Box<56>::value==56);\nstatic_assert(Box<57>::value==57);\nstatic_assert(Box<58>::value==58);\nstatic_assert(Box<59>::value==59);\nstatic_assert(Box<60>::value==60);\nstatic_assert(Box<61>::value==61);\nstatic_assert(Box<62>::value==62);\nstatic_assert(Box<63>::value==63);\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseUnqualifiedId",
+  "target_source": "clang/lib/Parse/ParseExprCXX.cpp",
+  "mapping_note": "The parse-templates construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,71 @@
+--- a/lark/parsers/lalr_analysis.py
++++ b/lark/parsers/lalr_analysis.py
+@@ -2,6 +2,7 @@
+ 
+ For now, shift/reduce conflicts are automatically resolved as shifts.
+ """
++import perfmark
+ 
+ # Author: Erez Shinan (2017)
+ # Email : erezshin@gmail.com
+@@ -227,33 +228,34 @@
+                         r.add((next_state, s2))
+ 
+     def compute_includes_lookback(self):
+-        for nt in self.nonterminal_transitions:
+-            state, nonterminal = nt
+-            includes = []
+-            lookback = self.lookback[nt]
+-            for rp in state.closure:
+-                if rp.rule.origin != nonterminal:
+-                    continue
+-                # traverse the states for rp(.rule)
+-                state2 = state
+-                for i in range(rp.index, len(rp.rule.expansion)):
+-                    s = rp.rule.expansion[i]
+-                    nt2 = (state2, s)
+-                    state2 = state2.transitions[s]
+-                    if nt2 not in self.reads:
++        with perfmark.region("lt-209"):
++            for nt in self.nonterminal_transitions:
++                state, nonterminal = nt
++                includes = []
++                lookback = self.lookback[nt]
++                for rp in state.closure:
++                    if rp.rule.origin != nonterminal:
+                         continue
+-                    for j in range(i + 1, len(rp.rule.expansion)):
+-                        if rp.rule.expansion[j] not in self.NULLABLE:
+-                            break
+-                    else:
+-                        includes.append(nt2)
+-                # state2 is at the final state for rp.rule
+-                if rp.index == 0:
+-                    for rp2 in state2.closure:
+-                        if (rp2.rule == rp.rule) and rp2.is_satisfied:
+-                            lookback.add((state2, rp2.rule))
+-            for nt2 in includes:
+-                self.includes[nt2].add(nt)
++                    # traverse the states for rp(.rule)
++                    state2 = state
++                    for i in range(rp.index, len(rp.rule.expansion)):
++                        s = rp.rule.expansion[i]
++                        nt2 = (state2, s)
++                        state2 = state2.transitions[s]
++                        if nt2 not in self.reads:
++                            continue
++                        for j in range(i + 1, len(rp.rule.expansion)):
++                            if rp.rule.expansion[j] not in self.NULLABLE:
++                                break
++                        else:
++                            includes.append(nt2)
++                    # state2 is at the final state for rp.rule
++                    if rp.index == 0:
++                        for rp2 in state2.closure:
++                            if (rp2.rule == rp.rule) and rp2.is_satisfied:
++                                lookback.add((state2, rp2.rule))
++                for nt2 in includes:
++                    self.includes[nt2].add(nt)
+ 
+     def compute_lookaheads(self):
+         read_sets = digraph(self.nonterminal_transitions, self.reads, self.directly_reads)

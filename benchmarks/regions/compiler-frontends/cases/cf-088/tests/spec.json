@@ -1,0 +1,34 @@
+{
+  "case": "cf-088",
+  "phase": "parsing",
+  "scenario": "record-layout",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "struct B15 { virtual ~B15()=default; int x; }; struct D15: B15 { char c; double d; }; int main(){return sizeof(D15)<sizeof(double);}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct R0{char a[1]; long b; virtual ~R0()=default;};\nstruct R1{char a[2]; long b; virtual ~R1()=default;};\nstruct R2{char a[3]; long b; virtual ~R2()=default;};\nstruct R3{char a[4]; long b; virtual ~R3()=default;};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct R0{char a[1]; long b; virtual ~R0()=default;};\nstruct R1{char a[2]; long b; virtual ~R1()=default;};\nstruct R2{char a[3]; long b; virtual ~R2()=default;};\nstruct R3{char a[4]; long b; virtual ~R3()=default;};\nstruct R4{char a[5]; long b; virtual ~R4()=default;};\nstruct R5{char a[6]; long b; virtual ~R5()=default;};\nstruct R6{char a[7]; long b; virtual ~R6()=default;};\nstruct R7{char a[1]; long b; virtual ~R7()=default;};\nstruct R8{char a[2]; long b; virtual ~R8()=default;};\nstruct R9{char a[3]; long b; virtual ~R9()=default;};\nstruct R10{char a[4]; long b; virtual ~R10()=default;};\nstruct R11{char a[5]; long b; virtual ~R11()=default;};\nstruct R12{char a[6]; long b; virtual ~R12()=default;};\nstruct R13{char a[7]; long b; virtual ~R13()=default;};\nstruct R14{char a[1]; long b; virtual ~R14()=default;};\nstruct R15{char a[2]; long b; virtual ~R15()=default;};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct R0{char a[1]; long b; virtual ~R0()=default;};\nstruct R1{char a[2]; long b; virtual ~R1()=default;};\nstruct R2{char a[3]; long b; virtual ~R2()=default;};\nstruct R3{char a[4]; long b; virtual ~R3()=default;};\nstruct R4{char a[5]; long b; virtual ~R4()=default;};\nstruct R5{char a[6]; long b; virtual ~R5()=default;};\nstruct R6{char a[7]; long b; virtual ~R6()=default;};\nstruct R7{char a[1]; long b; virtual ~R7()=default;};\nstruct R8{char a[2]; long b; virtual ~R8()=default;};\nstruct R9{char a[3]; long b; virtual ~R9()=default;};\nstruct R10{char a[4]; long b; virtual ~R10()=default;};\nstruct R11{char a[5]; long b; virtual ~R11()=default;};\nstruct R12{char a[6]; long b; virtual ~R12()=default;};\nstruct R13{char a[7]; long b; virtual ~R13()=default;};\nstruct R14{char a[1]; long b; virtual ~R14()=default;};\nstruct R15{char a[2]; long b; virtual ~R15()=default;};\nstruct R16{char a[3]; long b; virtual ~R16()=default;};\nstruct R17{char a[4]; long b; virtual ~R17()=default;};\nstruct R18{char a[5]; long b; virtual ~R18()=default;};\nstruct R19{char a[6]; long b; virtual ~R19()=default;};\nstruct R20{char a[7]; long b; virtual ~R20()=default;};\nstruct R21{char a[1]; long b; virtual ~R21()=default;};\nstruct R22{char a[2]; long b; virtual ~R22()=default;};\nstruct R23{char a[3]; long b; virtual ~R23()=default;};\nstruct R24{char a[4]; long b; virtual ~R24()=default;};\nstruct R25{char a[5]; long b; virtual ~R25()=default;};\nstruct R26{char a[6]; long b; virtual ~R26()=default;};\nstruct R27{char a[7]; long b; virtual ~R27()=default;};\nstruct R28{char a[1]; long b; virtual ~R28()=default;};\nstruct R29{char a[2]; long b; virtual ~R29()=default;};\nstruct R30{char a[3]; long b; virtual ~R30()=default;};\nstruct R31{char a[4]; long b; virtual ~R31()=default;};\nstruct R32{char a[5]; long b; virtual ~R32()=default;};\nstruct R33{char a[6]; long b; virtual ~R33()=default;};\nstruct R34{char a[7]; long b; virtual ~R34()=default;};\nstruct R35{char a[1]; long b; virtual ~R35()=default;};\nstruct R36{char a[2]; long b; virtual ~R36()=default;};\nstruct R37{char a[3]; long b; virtual ~R37()=default;};\nstruct R38{char a[4]; long b; virtual ~R38()=default;};\nstruct R39{char a[5]; long b; virtual ~R39()=default;};\nstruct R40{char a[6]; long b; virtual ~R40()=default;};\nstruct R41{char a[7]; long b; virtual ~R41()=default;};\nstruct R42{char a[1]; long b; virtual ~R42()=default;};\nstruct R43{char a[2]; long b; virtual ~R43()=default;};\nstruct R44{char a[3]; long b; virtual ~R44()=default;};\nstruct R45{char a[4]; long b; virtual ~R45()=default;};\nstruct R46{char a[5]; long b; virtual ~R46()=default;};\nstruct R47{char a[6]; long b; virtual ~R47()=default;};\nstruct R48{char a[7]; long b; virtual ~R48()=default;};\nstruct R49{char a[1]; long b; virtual ~R49()=default;};\nstruct R50{char a[2]; long b; virtual ~R50()=default;};\nstruct R51{char a[3]; long b; virtual ~R51()=default;};\nstruct R52{char a[4]; long b; virtual ~R52()=default;};\nstruct R53{char a[5]; long b; virtual ~R53()=default;};\nstruct R54{char a[6]; long b; virtual ~R54()=default;};\nstruct R55{char a[7]; long b; virtual ~R55()=default;};\nstruct R56{char a[1]; long b; virtual ~R56()=default;};\nstruct R57{char a[2]; long b; virtual ~R57()=default;};\nstruct R58{char a[3]; long b; virtual ~R58()=default;};\nstruct R59{char a[4]; long b; virtual ~R59()=default;};\nstruct R60{char a[5]; long b; virtual ~R60()=default;};\nstruct R61{char a[6]; long b; virtual ~R61()=default;};\nstruct R62{char a[7]; long b; virtual ~R62()=default;};\nstruct R63{char a[1]; long b; virtual ~R63()=default;};\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseCXXMemberDeclaratorBeforeInitializer",
+  "target_source": "clang/lib/Parse/ParseDeclCXX.cpp",
+  "mapping_note": "Pinned source coverage observed Parser::ParseCXXMemberDeclaratorBeforeInitializer in the combined run of witness cf-015; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "ast-processing"
+}

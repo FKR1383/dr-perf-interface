@@ -52,8 +52,8 @@ patches do not configure V8's GN build or install project dependencies.
 
 Use `collect.py export ID DESTINATION` to get the marked source, neutral task,
 and declared tests and shared fixtures. Reference notes stay behind. The export
-is not a complete upstream checkout. The isolated standard-library cases can
-run directly; package-dependent cases need a full checkout at the recorded
+is not a complete upstream checkout. The isolated standard-library cases and native-library header workloads can
+run directly with their stated interpreter or compiler; package-dependent cases need a full checkout at the recorded
 revision with the case patch already applied and matching dependencies.
 
 ## Run a collected test
@@ -99,8 +99,10 @@ The checker verifies byte hashes, full revision pins, line bounds, independently
 applicable patches, one touched source file, one empty marker, and unique exact
 source targets. Python patches must restore the pristine AST when the marker
 and added import are removed. C++ patches may only add the helper include and
-one macro invocation; full C++ projects have not been compiled. A standalone
-helper test checks zero PCVs and balanced entry/exit on an early return.
+one macro invocation. The native-library slice compiles pinned RapidJSON headers
+and checks the target observer. Full V8/LLVM instrumented builds remain separate
+from those checks. A standalone helper test checks zero PCVs and balanced
+entry/exit on an early return.
 
 These checks are collection integrity checks, not performance validation.
 Declared test assets, shared-resource hashes, and commands are checked too.

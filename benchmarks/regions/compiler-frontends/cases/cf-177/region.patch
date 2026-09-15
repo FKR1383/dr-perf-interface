@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/PPDirectives.cpp
++++ b/clang/lib/Lex/PPDirectives.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/AttributeCommonInfo.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/CharInfo.h"
+@@ -978,6 +979,7 @@
+     SmallVectorImpl<char> *RelativePath,
+     ModuleMap::KnownHeader *SuggestedModule, bool *IsMapped,
+     bool *IsFrameworkFound, bool SkipCache, bool OpenFile, bool CacheFailures) {
++      DRPERF_BENCH_REGION("cf-177");
+   ConstSearchDirIterator CurDirLocal = nullptr;
+   ConstSearchDirIterator &CurDir = CurDirArg ? *CurDirArg : CurDirLocal;
+ 

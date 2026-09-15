@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/InitHeaderSearch.cpp
++++ b/clang/lib/Lex/InitHeaderSearch.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/FileManager.h"
+ #include "clang/Basic/LangOptions.h"
+ #include "clang/Config/config.h" // C_INCLUDE_DIRS
+@@ -368,6 +369,7 @@
+ /// removed, which is used to update NumAngled.
+ static unsigned RemoveDuplicates(std::vector<DirectoryLookupInfo> &SearchList,
+                                  unsigned First, bool Verbose) {
++                                   DRPERF_BENCH_REGION("cf-240");
+   llvm::SmallPtrSet<const DirectoryEntry *, 8> SeenDirs;
+   llvm::SmallPtrSet<const DirectoryEntry *, 8> SeenFrameworkDirs;
+   llvm::SmallPtrSet<const HeaderMap *, 8> SeenHeaderMaps;

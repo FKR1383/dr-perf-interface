@@ -1,0 +1,31 @@
+{
+  "case": "cf-041",
+  "phase": "semantic-analysis",
+  "scenario": "semantic-overloads",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "int pick(int){return 1;} long pick(long){return 2;} template<class T> auto call(T x)->decltype(pick(x)){return pick(x);}\nint main(){return call(3)!=1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct T0{}; int pick(T0){return 0;}\nstruct T1{}; int pick(T1){return 1;}\nstruct T2{}; int pick(T2){return 2;}\nstruct T3{}; int pick(T3){return 3;}\nint f(){return pick(T3{});}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct T0{}; int pick(T0){return 0;}\nstruct T1{}; int pick(T1){return 1;}\nstruct T2{}; int pick(T2){return 2;}\nstruct T3{}; int pick(T3){return 3;}\nstruct T4{}; int pick(T4){return 4;}\nstruct T5{}; int pick(T5){return 5;}\nstruct T6{}; int pick(T6){return 6;}\nstruct T7{}; int pick(T7){return 7;}\nstruct T8{}; int pick(T8){return 8;}\nstruct T9{}; int pick(T9){return 9;}\nstruct T10{}; int pick(T10){return 10;}\nstruct T11{}; int pick(T11){return 11;}\nstruct T12{}; int pick(T12){return 12;}\nstruct T13{}; int pick(T13){return 13;}\nstruct T14{}; int pick(T14){return 14;}\nstruct T15{}; int pick(T15){return 15;}\nint f(){return pick(T15{});}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct T0{}; int pick(T0){return 0;}\nstruct T1{}; int pick(T1){return 1;}\nstruct T2{}; int pick(T2){return 2;}\nstruct T3{}; int pick(T3){return 3;}\nstruct T4{}; int pick(T4){return 4;}\nstruct T5{}; int pick(T5){return 5;}\nstruct T6{}; int pick(T6){return 6;}\nstruct T7{}; int pick(T7){return 7;}\nstruct T8{}; int pick(T8){return 8;}\nstruct T9{}; int pick(T9){return 9;}\nstruct T10{}; int pick(T10){return 10;}\nstruct T11{}; int pick(T11){return 11;}\nstruct T12{}; int pick(T12){return 12;}\nstruct T13{}; int pick(T13){return 13;}\nstruct T14{}; int pick(T14){return 14;}\nstruct T15{}; int pick(T15){return 15;}\nstruct T16{}; int pick(T16){return 16;}\nstruct T17{}; int pick(T17){return 17;}\nstruct T18{}; int pick(T18){return 18;}\nstruct T19{}; int pick(T19){return 19;}\nstruct T20{}; int pick(T20){return 20;}\nstruct T21{}; int pick(T21){return 21;}\nstruct T22{}; int pick(T22){return 22;}\nstruct T23{}; int pick(T23){return 23;}\nstruct T24{}; int pick(T24){return 24;}\nstruct T25{}; int pick(T25){return 25;}\nstruct T26{}; int pick(T26){return 26;}\nstruct T27{}; int pick(T27){return 27;}\nstruct T28{}; int pick(T28){return 28;}\nstruct T29{}; int pick(T29){return 29;}\nstruct T30{}; int pick(T30){return 30;}\nstruct T31{}; int pick(T31){return 31;}\nstruct T32{}; int pick(T32){return 32;}\nstruct T33{}; int pick(T33){return 33;}\nstruct T34{}; int pick(T34){return 34;}\nstruct T35{}; int pick(T35){return 35;}\nstruct T36{}; int pick(T36){return 36;}\nstruct T37{}; int pick(T37){return 37;}\nstruct T38{}; int pick(T38){return 38;}\nstruct T39{}; int pick(T39){return 39;}\nstruct T40{}; int pick(T40){return 40;}\nstruct T41{}; int pick(T41){return 41;}\nstruct T42{}; int pick(T42){return 42;}\nstruct T43{}; int pick(T43){return 43;}\nstruct T44{}; int pick(T44){return 44;}\nstruct T45{}; int pick(T45){return 45;}\nstruct T46{}; int pick(T46){return 46;}\nstruct T47{}; int pick(T47){return 47;}\nstruct T48{}; int pick(T48){return 48;}\nstruct T49{}; int pick(T49){return 49;}\nstruct T50{}; int pick(T50){return 50;}\nstruct T51{}; int pick(T51){return 51;}\nstruct T52{}; int pick(T52){return 52;}\nstruct T53{}; int pick(T53){return 53;}\nstruct T54{}; int pick(T54){return 54;}\nstruct T55{}; int pick(T55){return 55;}\nstruct T56{}; int pick(T56){return 56;}\nstruct T57{}; int pick(T57){return 57;}\nstruct T58{}; int pick(T58){return 58;}\nstruct T59{}; int pick(T59){return 59;}\nstruct T60{}; int pick(T60){return 60;}\nstruct T61{}; int pick(T61){return 61;}\nstruct T62{}; int pick(T62){return 62;}\nstruct T63{}; int pick(T63){return 63;}\nint f(){return pick(T63{});}\n"
+    }
+  ],
+  "target_symbol": "Sema::ClassifyName",
+  "target_source": "clang/lib/Sema/SemaDecl.cpp",
+  "mapping_note": "The semantic-overloads construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

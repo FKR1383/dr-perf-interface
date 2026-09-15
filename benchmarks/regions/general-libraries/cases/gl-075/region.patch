@@ -1,0 +1,30 @@
+--- a/networkx/algorithms/euler.py
++++ b/networkx/algorithms/euler.py
+@@ -1,6 +1,7 @@
+ """
+ Eulerian circuits and graphs.
+ """
++import perfmark
+ 
+ from itertools import combinations
+ 
+@@ -453,12 +454,13 @@
+     # as edge-weights in a new graph
+     # store the paths in the graph for easy indexing later
+     Gp = nx.Graph()
+-    for n, Ps in odd_deg_pairs_paths:
+-        for m, P in Ps.items():
+-            if n != m:
+-                Gp.add_edge(
+-                    m, n, weight=upper_bound_on_max_path_length - len(P), path=P
+-                )
++    with perfmark.region("gl-075"):
++        for n, Ps in odd_deg_pairs_paths:
++            for m, P in Ps.items():
++                if n != m:
++                    Gp.add_edge(
++                        m, n, weight=upper_bound_on_max_path_length - len(P), path=P
++                    )
+ 
+     # find the minimum weight matching of edges in the weighted graph
+     best_matching = nx.Graph(list(nx.max_weight_matching(Gp)))

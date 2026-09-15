@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -2708,6 +2709,7 @@
+ bool Parser::ParseCXXMemberDeclaratorBeforeInitializer(
+     Declarator &DeclaratorInfo, VirtSpecifiers &VS, ExprResult &BitfieldSize,
+     LateParsedAttrList &LateParsedAttrs) {
++      DRPERF_BENCH_REGION("cf-088");
+   // member-declarator:
+   //   declarator virt-specifier-seq[opt] pure-specifier[opt]
+   //   declarator requires-clause

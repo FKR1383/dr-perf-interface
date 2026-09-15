@@ -1,0 +1,32 @@
+{
+  "case": "cf-222",
+  "phase": "compiler-support",
+  "scenario": "pch-reading-shape",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_6(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_6 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_6(2)==14);\nint main() { Item_6 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "template<int N> struct Serialized{int data[N%7+1];};\nSerialized<1> s0;\nSerialized<2> s1;\nSerialized<3> s2;\nSerialized<4> s3;\n"
+    },
+    {
+      "size": 16,
+      "source": "template<int N> struct Serialized{int data[N%7+1];};\nSerialized<1> s0;\nSerialized<2> s1;\nSerialized<3> s2;\nSerialized<4> s3;\nSerialized<5> s4;\nSerialized<6> s5;\nSerialized<7> s6;\nSerialized<8> s7;\nSerialized<9> s8;\nSerialized<10> s9;\nSerialized<11> s10;\nSerialized<12> s11;\nSerialized<13> s12;\nSerialized<14> s13;\nSerialized<15> s14;\nSerialized<16> s15;\n"
+    },
+    {
+      "size": 64,
+      "source": "template<int N> struct Serialized{int data[N%7+1];};\nSerialized<1> s0;\nSerialized<2> s1;\nSerialized<3> s2;\nSerialized<4> s3;\nSerialized<5> s4;\nSerialized<6> s5;\nSerialized<7> s6;\nSerialized<8> s7;\nSerialized<9> s8;\nSerialized<10> s9;\nSerialized<11> s10;\nSerialized<12> s11;\nSerialized<13> s12;\nSerialized<14> s13;\nSerialized<15> s14;\nSerialized<16> s15;\nSerialized<17> s16;\nSerialized<18> s17;\nSerialized<19> s18;\nSerialized<20> s19;\nSerialized<21> s20;\nSerialized<22> s21;\nSerialized<23> s22;\nSerialized<24> s23;\nSerialized<25> s24;\nSerialized<26> s25;\nSerialized<27> s26;\nSerialized<28> s27;\nSerialized<29> s28;\nSerialized<30> s29;\nSerialized<31> s30;\nSerialized<32> s31;\nSerialized<33> s32;\nSerialized<34> s33;\nSerialized<35> s34;\nSerialized<36> s35;\nSerialized<37> s36;\nSerialized<38> s37;\nSerialized<39> s38;\nSerialized<40> s39;\nSerialized<41> s40;\nSerialized<42> s41;\nSerialized<43> s42;\nSerialized<44> s43;\nSerialized<45> s44;\nSerialized<46> s45;\nSerialized<47> s46;\nSerialized<48> s47;\nSerialized<49> s48;\nSerialized<50> s49;\nSerialized<51> s50;\nSerialized<52> s51;\nSerialized<53> s52;\nSerialized<54> s53;\nSerialized<55> s54;\nSerialized<56> s55;\nSerialized<57> s56;\nSerialized<58> s57;\nSerialized<59> s58;\nSerialized<60> s59;\nSerialized<61> s60;\nSerialized<62> s61;\nSerialized<63> s62;\nSerialized<64> s63;\n"
+    }
+  ],
+  "target_symbol": "Driver::CreateOffloadingDeviceToolChains",
+  "target_source": "clang/lib/Driver/Driver.cpp",
+  "mapping_note": "Pinned source coverage observed Driver::CreateOffloadingDeviceToolChains in the combined run of witness cf-006; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "serialization"
+}

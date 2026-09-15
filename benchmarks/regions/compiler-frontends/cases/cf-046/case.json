@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-046",
+  "title": "ScalarExprEmitter::EmitCompare compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/CodeGen/CGExprScalar.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/CodeGen/CGExprScalar.cpp",
+    "sha256": "82d32c399608e0ebc805e930e72a4f4cb007a873327313646cc1cde1a80a9760"
+  },
+  "region": {
+    "symbol": "ScalarExprEmitter::EmitCompare",
+    "start_line": 4685,
+    "end_line": 4867,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-046",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-generation",
+  "workload": {
+    "description": "Run the bounded scalar-compare-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/CodeGen/CGExprScalar.cpp:ScalarExprEmitter::EmitCompare",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/CodeGen/CGExprScalar.cpp#L4685-L4867"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "e40913942b862914bff646016737aec3a91c49c3f28ba1b8f8a375bee819f927",
+      "patch_sha256": "92afae04786f0fd5ac9c2f1b7fe0317fe753fe6defa71c3645246d2429df637f"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

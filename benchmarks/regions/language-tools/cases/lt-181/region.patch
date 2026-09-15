@@ -1,0 +1,227 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -3191,115 +3192,116 @@
+         exclude_chars: typing.Optional[str] = None,
+         **kwargs,
+     ) -> None:
+-        initChars: typing.Optional[str] = deprecate_argument(kwargs, "initChars", None)
+-        bodyChars: typing.Optional[str] = deprecate_argument(kwargs, "bodyChars", None)
+-        asKeyword: bool = deprecate_argument(kwargs, "asKeyword", False)
+-        excludeChars: typing.Optional[str] = deprecate_argument(
+-            kwargs, "excludeChars", None
+-        )
+-
+-        initChars = initChars or init_chars
+-        bodyChars = bodyChars or body_chars
+-        asKeyword = asKeyword or as_keyword
+-        excludeChars = excludeChars or exclude_chars
+-        super().__init__()
+-        if not initChars:
+-            raise ValueError(
+-                f"invalid {type(self).__name__}, initChars cannot be empty string"
++        with perfmark.region("lt-181"):
++            initChars: typing.Optional[str] = deprecate_argument(kwargs, "initChars", None)
++            bodyChars: typing.Optional[str] = deprecate_argument(kwargs, "bodyChars", None)
++            asKeyword: bool = deprecate_argument(kwargs, "asKeyword", False)
++            excludeChars: typing.Optional[str] = deprecate_argument(
++                kwargs, "excludeChars", None
+             )
+ 
+-        initChars_set = set(initChars)
+-        if excludeChars:
+-            excludeChars_set = set(excludeChars)
+-            initChars_set -= excludeChars_set
++            initChars = initChars or init_chars
++            bodyChars = bodyChars or body_chars
++            asKeyword = asKeyword or as_keyword
++            excludeChars = excludeChars or exclude_chars
++            super().__init__()
++            if not initChars:
++                raise ValueError(
++                    f"invalid {type(self).__name__}, initChars cannot be empty string"
++                )
++
++            initChars_set = set(initChars)
++            if excludeChars:
++                excludeChars_set = set(excludeChars)
++                initChars_set -= excludeChars_set
++                if bodyChars:
++                    bodyChars = "".join(set(bodyChars) - excludeChars_set)
++            self.init_chars = initChars_set
++            self.initCharsOrig = "".join(sorted(initChars_set))
++
+             if bodyChars:
+-                bodyChars = "".join(set(bodyChars) - excludeChars_set)
+-        self.init_chars = initChars_set
+-        self.initCharsOrig = "".join(sorted(initChars_set))
+-
+-        if bodyChars:
+-            self.bodyChars = set(bodyChars)
+-            self.bodyCharsOrig = "".join(sorted(bodyChars))
+-        else:
+-            self.bodyChars = initChars_set
+-            self.bodyCharsOrig = self.initCharsOrig
+-
+-        self.maxSpecified = max > 0
+-
+-        if min < 1:
+-            raise ValueError(
+-                "cannot specify a minimum length < 1; use Opt(Word()) if zero-length word is permitted"
+-            )
+-
+-        if self.maxSpecified and min > max:
+-            raise ValueError(
+-                f"invalid args, if min and max both specified min must be <= max (min={min}, max={max})"
+-            )
+-
+-        self.minLen = min
+-
+-        if max > 0:
+-            self.maxLen = max
+-        else:
+-            self.maxLen = _MAX_INT
+-
+-        if exact > 0:
+-            min = max = exact
+-            self.maxLen = exact
+-            self.minLen = exact
+-
+-        self.errmsg = f"Expected {self.name}"
+-        self.mayIndexError = False
+-        self.asKeyword = asKeyword
+-        if self.asKeyword:
+-            self.errmsg += " as a keyword"
+-
+-        # see if we can make a regex for this Word
+-        if " " not in (self.initChars | self.bodyChars):
+-            if len(self.initChars) == 1:
+-                re_leading_fragment = re.escape(self.initCharsOrig)
++                self.bodyChars = set(bodyChars)
++                self.bodyCharsOrig = "".join(sorted(bodyChars))
+             else:
+-                re_leading_fragment = f"[{_collapse_string_to_ranges(self.initChars)}]"
+-
+-            if self.bodyChars == self.initChars:
+-                if max == 0 and self.minLen == 1:
+-                    repeat = "+"
+-                elif max == 1:
+-                    repeat = ""
++                self.bodyChars = initChars_set
++                self.bodyCharsOrig = self.initCharsOrig
++
++            self.maxSpecified = max > 0
++
++            if min < 1:
++                raise ValueError(
++                    "cannot specify a minimum length < 1; use Opt(Word()) if zero-length word is permitted"
++                )
++
++            if self.maxSpecified and min > max:
++                raise ValueError(
++                    f"invalid args, if min and max both specified min must be <= max (min={min}, max={max})"
++                )
++
++            self.minLen = min
++
++            if max > 0:
++                self.maxLen = max
++            else:
++                self.maxLen = _MAX_INT
++
++            if exact > 0:
++                min = max = exact
++                self.maxLen = exact
++                self.minLen = exact
++
++            self.errmsg = f"Expected {self.name}"
++            self.mayIndexError = False
++            self.asKeyword = asKeyword
++            if self.asKeyword:
++                self.errmsg += " as a keyword"
++
++            # see if we can make a regex for this Word
++            if " " not in (self.initChars | self.bodyChars):
++                if len(self.initChars) == 1:
++                    re_leading_fragment = re.escape(self.initCharsOrig)
+                 else:
+-                    if self.minLen != self.maxLen:
+-                        repeat = f"{{{self.minLen},{'' if self.maxLen == _MAX_INT else self.maxLen}}}"
++                    re_leading_fragment = f"[{_collapse_string_to_ranges(self.initChars)}]"
++
++                if self.bodyChars == self.initChars:
++                    if max == 0 and self.minLen == 1:
++                        repeat = "+"
++                    elif max == 1:
++                        repeat = ""
+                     else:
+-                        repeat = f"{{{self.minLen}}}"
+-                self.reString = f"{re_leading_fragment}{repeat}"
+-            else:
+-                if max == 1:
+-                    re_body_fragment = ""
+-                    repeat = ""
++                        if self.minLen != self.maxLen:
++                            repeat = f"{{{self.minLen},{'' if self.maxLen == _MAX_INT else self.maxLen}}}"
++                        else:
++                            repeat = f"{{{self.minLen}}}"
++                    self.reString = f"{re_leading_fragment}{repeat}"
+                 else:
+-                    re_body_fragment = f"[{_collapse_string_to_ranges(self.bodyChars)}]"
+-                    if max == 0 and self.minLen == 1:
+-                        repeat = "*"
+-                    elif max == 2:
+-                        repeat = "?" if min <= 1 else ""
++                    if max == 1:
++                        re_body_fragment = ""
++                        repeat = ""
+                     else:
+-                        if min != max:
+-                            repeat = f"{{{min - 1 if min > 0 else ''},{max - 1 if max > 0 else ''}}}"
++                        re_body_fragment = f"[{_collapse_string_to_ranges(self.bodyChars)}]"
++                        if max == 0 and self.minLen == 1:
++                            repeat = "*"
++                        elif max == 2:
++                            repeat = "?" if min <= 1 else ""
+                         else:
+-                            repeat = f"{{{min - 1 if min > 0 else ''}}}"
+-
+-                self.reString = f"{re_leading_fragment}{re_body_fragment}{repeat}"
+-
+-            if self.asKeyword:
+-                self.reString = rf"\b{self.reString}\b"
+-
+-            try:
+-                self.re = re.compile(self.reString)
+-            except re.error:
+-                self.re = None  # type: ignore[assignment]
+-            else:
+-                self.re_match = self.re.match
+-                self.parseImpl = self.parseImpl_regex  # type: ignore[method-assign]
++                            if min != max:
++                                repeat = f"{{{min - 1 if min > 0 else ''},{max - 1 if max > 0 else ''}}}"
++                            else:
++                                repeat = f"{{{min - 1 if min > 0 else ''}}}"
++
++                    self.reString = f"{re_leading_fragment}{re_body_fragment}{repeat}"
++
++                if self.asKeyword:
++                    self.reString = rf"\b{self.reString}\b"
++
++                try:
++                    self.re = re.compile(self.reString)
++                except re.error:
++                    self.re = None  # type: ignore[assignment]
++                else:
++                    self.re_match = self.re.match
++                    self.parseImpl = self.parseImpl_regex  # type: ignore[method-assign]
+ 
+     @property
+     def initChars(self) -> set[str]:

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CodeGenModule.cpp
++++ b/clang/lib/CodeGen/CodeGenModule.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CodeGenModule.h"
+ #include "ABIInfo.h"
+ #include "CGBlocks.h"
+@@ -4643,6 +4644,7 @@
+     StringRef MangledName, llvm::Type *Ty, GlobalDecl GD, bool ForVTable,
+     bool DontDefer, bool IsThunk, llvm::AttributeList ExtraAttrs,
+     ForDefinition_t IsForDefinition) {
++      DRPERF_BENCH_REGION("cf-103");
+   const Decl *D = GD.getDecl();
+ 
+   std::string NameWithoutMultiVersionMangling;

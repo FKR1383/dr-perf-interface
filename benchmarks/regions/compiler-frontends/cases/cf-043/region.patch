@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -6477,6 +6478,7 @@
+                                MultiExprArg ArgExprs, SourceLocation RParenLoc,
+                                Expr *ExecConfig, bool IsExecConfig,
+                                bool AllowRecovery) {
++                                 DRPERF_BENCH_REGION("cf-043");
+   // Since this might be a postfix expression, get rid of ParenListExprs.
+   ExprResult Result = MaybeConvertParenListExprToParenExpr(Scope, Fn);
+   if (Result.isInvalid()) return ExprError();

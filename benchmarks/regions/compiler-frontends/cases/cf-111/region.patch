@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseStmt.cpp
++++ b/clang/lib/Parse/ParseStmt.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/PrettyStackTrace.h"
+@@ -1196,6 +1197,7 @@
+ /// the '{' to be the current token, and consume the '}' at the end of the
+ /// block.  It does not manipulate the scope stack.
+ StmtResult Parser::ParseCompoundStatementBody(bool isStmtExpr) {
++  DRPERF_BENCH_REGION("cf-111");
+   PrettyStackTraceLoc CrashInfo(PP.getSourceManager(),
+                                 Tok.getLocation(),
+                                 "in compound statement ('{}')");

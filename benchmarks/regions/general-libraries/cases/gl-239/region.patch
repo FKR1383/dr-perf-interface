@@ -1,0 +1,31 @@
+--- a/src/attr/validators.py
++++ b/src/attr/validators.py
+@@ -3,6 +3,7 @@
+ """
+ Commonly useful validators.
+ """
++import perfmark
+ 
+ import operator
+ import re
+@@ -172,13 +173,14 @@
+     .. versionchanged:: 21.3.0 *regex* can be a pre-compiled pattern.
+     """
+     valid_funcs = (re.fullmatch, None, re.search, re.match)
+-    if func not in valid_funcs:
+-        msg = "'func' must be one of {}.".format(
+-            ", ".join(
+-                sorted((e and e.__name__) or "None" for e in set(valid_funcs))
++    with perfmark.region("gl-239"):
++        if func not in valid_funcs:
++            msg = "'func' must be one of {}.".format(
++                ", ".join(
++                    sorted((e and e.__name__) or "None" for e in set(valid_funcs))
++                )
+             )
+-        )
+-        raise ValueError(msg)
++            raise ValueError(msg)
+ 
+     if isinstance(regex, Pattern):
+         if flags:

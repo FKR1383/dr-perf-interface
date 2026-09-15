@@ -1,0 +1,65 @@
+--- a/networkx/algorithms/approximation/kcomponents.py
++++ b/networkx/algorithms/approximation/kcomponents.py
+@@ -1,4 +1,5 @@
+ """Fast approximation for k-component structure"""
++import perfmark
+ 
+ import itertools
+ from collections import defaultdict
+@@ -127,31 +128,32 @@
+     # \kappa(G) <= \lambda(G) <= \delta(G)
+     g_cnumber = core_number(G)
+     max_core = max(g_cnumber.values())
+-    for k in range(3, max_core + 1):
+-        C = k_core(G, k, core_number=g_cnumber)
+-        for nodes in biconnected_components(C):
+-            # Build a subgraph SG induced by the nodes that are part of
+-            # each biconnected component of the k-core subgraph C.
+-            if len(nodes) < k:
+-                continue
+-            SG = G.subgraph(nodes)
+-            # Build auxiliary graph
+-            H = _AntiGraph()
+-            H.add_nodes_from(SG.nodes())
+-            for u, v in combinations(SG, 2):
+-                K = node_connectivity(SG, u, v, cutoff=k)
+-                if k > K:
+-                    H.add_edge(u, v)
+-            for h_nodes in biconnected_components(H):
+-                if len(h_nodes) <= k:
++    with perfmark.region("gl-034"):
++        for k in range(3, max_core + 1):
++            C = k_core(G, k, core_number=g_cnumber)
++            for nodes in biconnected_components(C):
++                # Build a subgraph SG induced by the nodes that are part of
++                # each biconnected component of the k-core subgraph C.
++                if len(nodes) < k:
+                     continue
+-                SH = H.subgraph(h_nodes)
+-                for Gc in _cliques_heuristic(SG, SH, k, min_density):
+-                    for k_nodes in biconnected_components(Gc):
+-                        Gk = nx.k_core(SG.subgraph(k_nodes), k)
+-                        if len(Gk) <= k:
+-                            continue
+-                        k_components[k].append(set(Gk))
++                SG = G.subgraph(nodes)
++                # Build auxiliary graph
++                H = _AntiGraph()
++                H.add_nodes_from(SG.nodes())
++                for u, v in combinations(SG, 2):
++                    K = node_connectivity(SG, u, v, cutoff=k)
++                    if k > K:
++                        H.add_edge(u, v)
++                for h_nodes in biconnected_components(H):
++                    if len(h_nodes) <= k:
++                        continue
++                    SH = H.subgraph(h_nodes)
++                    for Gc in _cliques_heuristic(SG, SH, k, min_density):
++                        for k_nodes in biconnected_components(Gc):
++                            Gk = nx.k_core(SG.subgraph(k_nodes), k)
++                            if len(Gk) <= k:
++                                continue
++                            k_components[k].append(set(Gk))
+     return k_components
+ 
+ 

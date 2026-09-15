@@ -1,0 +1,52 @@
+--- a/Cython/Plex/Regexps.py
++++ b/Cython/Plex/Regexps.py
+@@ -3,6 +3,7 @@
+ 
+ Regular Expressions
+ """
++import perfmark
+ 
+ import types
+ 
+@@ -263,23 +264,24 @@
+     |re2| followed by |re3|..."""
+ 
+     def __init__(self, *re_list):
+-        nullable = 1
+-        for i, re in enumerate(re_list):
+-            self.check_re(i, re)
+-            nullable = nullable and re.nullable
+-        self.re_list = re_list
+-        self.nullable = nullable
+-        i = len(re_list)
+-        match_nl = 0
+-        while i:
+-            i -= 1
+-            re = re_list[i]
+-            if re.match_nl:
+-                match_nl = 1
+-                break
+-            if not re.nullable:
+-                break
+-        self.match_nl = match_nl
++        with perfmark.region("lt-232"):
++            nullable = 1
++            for i, re in enumerate(re_list):
++                self.check_re(i, re)
++                nullable = nullable and re.nullable
++            self.re_list = re_list
++            self.nullable = nullable
++            i = len(re_list)
++            match_nl = 0
++            while i:
++                i -= 1
++                re = re_list[i]
++                if re.match_nl:
++                    match_nl = 1
++                    break
++                if not re.nullable:
++                    break
++            self.match_nl = match_nl
+ 
+     def build_machine(self, m, initial_state, final_state, match_bol, nocase):
+         re_list = self.re_list

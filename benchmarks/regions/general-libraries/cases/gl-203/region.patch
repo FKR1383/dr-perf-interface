@@ -1,0 +1,41 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -1050,17 +1051,18 @@
+         tag_ranks.setdefault(tag, rank)  # ignore duplicate tags, keep first
+     supported_tags = tag_ranks.keys()
+ 
+-    def selector(
+-        tagged_things: Iterable[tuple[_T, AbstractSet[Tag]]],
+-    ) -> Iterator[_T]:
+-        ranked_things: list[tuple[_T, int]] = []
+-        for thing, thing_tags in tagged_things:
+-            supported_thing_tags = thing_tags & supported_tags
+-            if supported_thing_tags:
+-                thing_rank = min(tag_ranks[t] for t in supported_thing_tags)
+-                ranked_things.append((thing, thing_rank))
+-        return iter(
+-            thing for thing, _ in sorted(ranked_things, key=operator.itemgetter(1))
+-        )
++    with perfmark.region("gl-203"):
++        def selector(
++            tagged_things: Iterable[tuple[_T, AbstractSet[Tag]]],
++        ) -> Iterator[_T]:
++            ranked_things: list[tuple[_T, int]] = []
++            for thing, thing_tags in tagged_things:
++                supported_thing_tags = thing_tags & supported_tags
++                if supported_thing_tags:
++                    thing_rank = min(tag_ranks[t] for t in supported_thing_tags)
++                    ranked_things.append((thing, thing_rank))
++            return iter(
++                thing for thing, _ in sorted(ranked_things, key=operator.itemgetter(1))
++            )
+ 
+     return selector

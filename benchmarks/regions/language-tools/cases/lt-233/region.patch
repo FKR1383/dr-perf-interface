@@ -1,0 +1,142 @@
+--- a/Cython/Compiler/Symtab.py
++++ b/Cython/Compiler/Symtab.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Symbol Table
+ #
+@@ -2654,70 +2655,71 @@
+     def declare_cfunction(self, name, type, pos,
+                           cname=None, visibility='private', api=0, in_pxd=0,
+                           defining=0, modifiers=(), utility_code=None, overridable=False):
+-        name = self.mangle_class_private_name(name)
+-        if (get_slot_table(self.directives).get_special_method_signature(name)
+-                and not self.parent_type.is_builtin_type):
+-            error(pos, "Special methods must be declared with 'def', not 'cdef'")
+-        args = type.args
+-        if not type.is_static_method:
+-            if not args:
+-                error(pos, "C method has no self argument")
+-            elif not self.parent_type.assignable_from(args[0].type):
+-                error(pos, "Self argument (%s) of C method '%s' does not match parent type (%s)" %
+-                      (args[0].type, name, self.parent_type))
+-        entry = self.lookup_here(name)
+-        if cname is None:
+-            cname = punycodify_name(c_safe_identifier(name), Naming.unicode_vtabentry_prefix)
+-        if entry:
+-            if not entry.is_cfunction:
+-                error(pos, "'%s' redeclared " % name)
+-                entry.already_declared_here()
++        with perfmark.region("lt-233"):
++            name = self.mangle_class_private_name(name)
++            if (get_slot_table(self.directives).get_special_method_signature(name)
++                    and not self.parent_type.is_builtin_type):
++                error(pos, "Special methods must be declared with 'def', not 'cdef'")
++            args = type.args
++            if not type.is_static_method:
++                if not args:
++                    error(pos, "C method has no self argument")
++                elif not self.parent_type.assignable_from(args[0].type):
++                    error(pos, "Self argument (%s) of C method '%s' does not match parent type (%s)" %
++                          (args[0].type, name, self.parent_type))
++            entry = self.lookup_here(name)
++            if cname is None:
++                cname = punycodify_name(c_safe_identifier(name), Naming.unicode_vtabentry_prefix)
++            if entry:
++                if not entry.is_cfunction:
++                    error(pos, "'%s' redeclared " % name)
++                    entry.already_declared_here()
++                else:
++                    if defining and entry.func_cname:
++                        error(pos, "'%s' already defined" % name)
++                    #print "CClassScope.declare_cfunction: checking signature" ###
++                    if entry.is_final_cmethod and entry.is_inherited:
++                        error(pos, "Overriding final methods is not allowed")
++                    elif type.same_c_signature_as(entry.type, as_cmethod = 1) and type.nogil == entry.type.nogil:
++                        # Fix with_gil vs nogil.
++                        entry.type = entry.type.with_with_gil(type.with_gil)
++                    elif type.compatible_signature_with(entry.type, as_cmethod = 1) and type.nogil == entry.type.nogil:
++                        if (self.defined and not in_pxd
++                                and not type.same_c_signature_as_resolved_type(
++                                    entry.type, as_cmethod=1, as_pxd_definition=1)):
++                            # TODO(robertwb): Make this an error.
++                            warning(pos,
++                                "Compatible but non-identical C method '%s' not redeclared "
++                                "in definition part of extension type '%s'.  "
++                                "This may cause incorrect vtables to be generated." % (
++                                    name, self.class_name), 2)
++                            warning(entry.pos, "Previous declaration is here", 2)
++                        entry = self.add_cfunction(name, type, pos, cname, visibility='ignore', modifiers=modifiers)
++                    else:
++                        error(pos, "Signature not compatible with previous declaration")
++                        error(entry.pos, "Previous declaration is here")
+             else:
+-                if defining and entry.func_cname:
+-                    error(pos, "'%s' already defined" % name)
+-                #print "CClassScope.declare_cfunction: checking signature" ###
+-                if entry.is_final_cmethod and entry.is_inherited:
+-                    error(pos, "Overriding final methods is not allowed")
+-                elif type.same_c_signature_as(entry.type, as_cmethod = 1) and type.nogil == entry.type.nogil:
+-                    # Fix with_gil vs nogil.
+-                    entry.type = entry.type.with_with_gil(type.with_gil)
+-                elif type.compatible_signature_with(entry.type, as_cmethod = 1) and type.nogil == entry.type.nogil:
+-                    if (self.defined and not in_pxd
+-                            and not type.same_c_signature_as_resolved_type(
+-                                entry.type, as_cmethod=1, as_pxd_definition=1)):
+-                        # TODO(robertwb): Make this an error.
+-                        warning(pos,
+-                            "Compatible but non-identical C method '%s' not redeclared "
+-                            "in definition part of extension type '%s'.  "
+-                            "This may cause incorrect vtables to be generated." % (
+-                                name, self.class_name), 2)
+-                        warning(entry.pos, "Previous declaration is here", 2)
+-                    entry = self.add_cfunction(name, type, pos, cname, visibility='ignore', modifiers=modifiers)
+-                else:
+-                    error(pos, "Signature not compatible with previous declaration")
+-                    error(entry.pos, "Previous declaration is here")
+-        else:
+-            if self.defined:
+-                error(pos,
+-                    "C method '%s' not previously declared in definition part of"
+-                    " extension type '%s'" % (name, self.class_name))
+-            entry = self.add_cfunction(name, type, pos, cname, visibility, modifiers)
+-        if defining:
+-            entry.func_cname = self.mangle(Naming.func_prefix, name)
+-        entry.utility_code = utility_code
+-        type.entry = entry
+-
+-        if 'inline' in modifiers:
+-            entry.is_inline_cmethod = True
+-
+-        if self.parent_type.is_final_type or entry.is_inline_cmethod or self.directives.get('final'):
+-            entry.is_final_cmethod = True
+-            entry.final_func_cname = entry.func_cname
+-            if not type.is_fused:
+-                entry.vtable_type = entry.type
+-                entry.type = type
+-
+-        return entry
++                if self.defined:
++                    error(pos,
++                        "C method '%s' not previously declared in definition part of"
++                        " extension type '%s'" % (name, self.class_name))
++                entry = self.add_cfunction(name, type, pos, cname, visibility, modifiers)
++            if defining:
++                entry.func_cname = self.mangle(Naming.func_prefix, name)
++            entry.utility_code = utility_code
++            type.entry = entry
++
++            if 'inline' in modifiers:
++                entry.is_inline_cmethod = True
++
++            if self.parent_type.is_final_type or entry.is_inline_cmethod or self.directives.get('final'):
++                entry.is_final_cmethod = True
++                entry.final_func_cname = entry.func_cname
++                if not type.is_fused:
++                    entry.vtable_type = entry.type
++                    entry.type = type
++
++            return entry
+ 
+     def add_cfunction(self, name, type, pos, cname, visibility, modifiers, inherited=False):
+         # Add a cfunction entry without giving it a func_cname.

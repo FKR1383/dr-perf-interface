@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExprCXX.cpp
++++ b/clang/lib/Parse/ParseExprCXX.cpp
+@@ -9,6 +9,7 @@
+ // This file implements the Expression parsing implementation for C++.
+ //
+ //===----------------------------------------------------------------------===//
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Decl.h"
+ #include "clang/AST/DeclTemplate.h"
+@@ -910,6 +911,7 @@
+ ///         the caller should bail out / recover.
+ bool Parser::ParseLambdaIntroducer(LambdaIntroducer &Intro,
+                                    LambdaIntroducerTentativeParse *Tentative) {
++                                     DRPERF_BENCH_REGION("cf-104");
+   if (Tentative)
+     *Tentative = LambdaIntroducerTentativeParse::Success;
+ 

@@ -1,0 +1,31 @@
+--- a/jsonschema/_legacy_keywords.py
++++ b/jsonschema/_legacy_keywords.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import re
+ 
+ from referencing.jsonschema import lookup_recursive_ref
+@@ -196,14 +197,15 @@
+     types = _utils.ensure_list(types)
+ 
+     all_errors = []
+-    for index, type in enumerate(types):
+-        if validator.is_type(type, "object"):
+-            errors = list(validator.descend(instance, type, schema_path=index))
+-            if not errors:
+-                return
+-            all_errors.extend(errors)
+-        elif validator.is_type(instance, type):
+-                return
++    with perfmark.region("gl-225"):
++        for index, type in enumerate(types):
++            if validator.is_type(type, "object"):
++                errors = list(validator.descend(instance, type, schema_path=index))
++                if not errors:
++                    return
++                all_errors.extend(errors)
++            elif validator.is_type(instance, type):
++                    return
+ 
+     reprs = []
+     for type in types:

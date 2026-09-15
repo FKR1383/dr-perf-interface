@@ -1,0 +1,77 @@
+--- a/pandas/core/reshape/concat.py
++++ b/pandas/core/reshape/concat.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import abc
+ from itertools import pairwise
+@@ -425,36 +426,37 @@
+ 
+     objs, keys, ndims = _clean_keys_and_objs(objs, keys)
+ 
+-    if sort is lib.no_default:
+-        if axis == 0:
+-            non_concat_axis = [
+-                obj.columns if isinstance(obj, ABCDataFrame) else Index([obj.name])
+-                for obj in objs
+-            ]
+-        else:
+-            non_concat_axis = [obj.index for obj in objs]
+-
+-        if (
+-            intersect
+-            or any(not isinstance(index, DatetimeIndex) for index in non_concat_axis)
+-            or all(prev is curr for prev, curr in pairwise(non_concat_axis))
+-            or (
+-                all(
+-                    prev[-1] <= curr[0] and prev.is_monotonic_increasing
+-                    for prev, curr in pairwise(non_concat_axis)
+-                    if not prev.empty and not curr.empty
++    with perfmark.region("gl-136"):
++        if sort is lib.no_default:
++            if axis == 0:
++                non_concat_axis = [
++                    obj.columns if isinstance(obj, ABCDataFrame) else Index([obj.name])
++                    for obj in objs
++                ]
++            else:
++                non_concat_axis = [obj.index for obj in objs]
++    
++            if (
++                intersect
++                or any(not isinstance(index, DatetimeIndex) for index in non_concat_axis)
++                or all(prev is curr for prev, curr in pairwise(non_concat_axis))
++                or (
++                    all(
++                        prev[-1] <= curr[0] and prev.is_monotonic_increasing
++                        for prev, curr in pairwise(non_concat_axis)
++                        if not prev.empty and not curr.empty
++                    )
++                    and non_concat_axis[-1].is_monotonic_increasing
+                 )
+-                and non_concat_axis[-1].is_monotonic_increasing
+-            )
+-        ):
+-            # Sorting or not will not impact the result.
+-            sort = False
+-    elif not is_bool(sort):
+-        raise ValueError(
+-            f"The 'sort' keyword only accepts boolean values; {sort} was passed."
+-        )
+-    else:
+-        sort = bool(sort)
++            ):
++                # Sorting or not will not impact the result.
++                sort = False
++        elif not is_bool(sort):
++            raise ValueError(
++                f"The 'sort' keyword only accepts boolean values; {sort} was passed."
++            )
++        else:
++            sort = bool(sort)
+ 
+     # select an object to be our result reference
+     sample, objs = _get_sample_object(objs, ndims, keys, names, levels, intersect)

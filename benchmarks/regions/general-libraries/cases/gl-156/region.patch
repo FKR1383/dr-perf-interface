@@ -1,0 +1,131 @@
+--- a/pandas/core/construction.py
++++ b/pandas/core/construction.py
+@@ -6,6 +6,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import (
+     TYPE_CHECKING,
+@@ -372,63 +373,64 @@
+         cls = dtype.construct_array_type()
+         return cls._from_sequence(data, dtype=dtype, copy=copy)
+ 
+-    if dtype is None:
+-        was_ndarray = isinstance(data, np.ndarray)
+-        # error: Item "Sequence[object]" of "Sequence[object] | ExtensionArray |
+-        # ndarray[Any, Any]" has no attribute "dtype"
+-        if not was_ndarray or data.dtype == object:  # type: ignore[union-attr]
+-            result = lib.maybe_convert_objects(
+-                ensure_object(data),
+-                convert_non_numeric=True,
+-                convert_to_nullable_dtype=True,
+-                dtype_if_all_nat=np.dtype("M8[s]"),
+-            )
+-            result = ensure_wrapped_if_datetimelike(result)
+-            if isinstance(result, np.ndarray):
+-                if len(result) == 0 and not was_ndarray:
+-                    # e.g. empty list
+-                    return FloatingArray._from_sequence(data, dtype="Float64")
+-                return NumpyExtensionArray._from_sequence(
+-                    data, dtype=result.dtype, copy=copy
++    with perfmark.region("gl-156"):
++        if dtype is None:
++            was_ndarray = isinstance(data, np.ndarray)
++            # error: Item "Sequence[object]" of "Sequence[object] | ExtensionArray |
++            # ndarray[Any, Any]" has no attribute "dtype"
++            if not was_ndarray or data.dtype == object:  # type: ignore[union-attr]
++                result = lib.maybe_convert_objects(
++                    ensure_object(data),
++                    convert_non_numeric=True,
++                    convert_to_nullable_dtype=True,
++                    dtype_if_all_nat=np.dtype("M8[s]"),
+                 )
+-            # We know result is an ExtensionArray here, but mypy doesn't
+-            assert isinstance(result, ExtensionArray)
+-            if result is data and copy:
+-                return result.copy()
+-            return result
+-
+-        data = cast("np.ndarray", data)
+-        result = ensure_wrapped_if_datetimelike(data)
+-        if result is not data:
+-            result = cast("DatetimeArray | TimedeltaArray", result)
+-            if copy and result.dtype == data.dtype:
+-                return result.copy()
+-            return result
+-
+-        if data.dtype.kind in "SU":
+-            # StringArray/ArrowStringArray depending on pd.options.mode.string_storage
+-            dtype = StringDtype()
+-            cls = dtype.construct_array_type()
+-            return cls._from_sequence(data, dtype=dtype, copy=copy)
+-
+-        elif data.dtype.kind in "iu":
+-            dtype = IntegerArray._dtype_cls._get_dtype_mapping()[data.dtype]
+-            return IntegerArray._from_sequence(data, dtype=dtype, copy=copy)
+-        elif data.dtype.kind == "f":
+-            # GH#44715 Exclude np.float16 bc FloatingArray does not support it;
+-            #  we will fall back to NumpyExtensionArray.
+-            if data.dtype == np.float16:
+-                return NumpyExtensionArray._from_sequence(
+-                    data, dtype=data.dtype, copy=copy
+-                )
+-            dtype = FloatingArray._dtype_cls._get_dtype_mapping()[data.dtype]
+-            return FloatingArray._from_sequence(data, dtype=dtype, copy=copy)
+-
+-        elif data.dtype.kind == "b":
+-            return BooleanArray._from_sequence(data, dtype="boolean", copy=copy)
+-        else:
+-            # e.g. complex
+-            return NumpyExtensionArray._from_sequence(data, dtype=data.dtype, copy=copy)
++                result = ensure_wrapped_if_datetimelike(result)
++                if isinstance(result, np.ndarray):
++                    if len(result) == 0 and not was_ndarray:
++                        # e.g. empty list
++                        return FloatingArray._from_sequence(data, dtype="Float64")
++                    return NumpyExtensionArray._from_sequence(
++                        data, dtype=result.dtype, copy=copy
++                    )
++                # We know result is an ExtensionArray here, but mypy doesn't
++                assert isinstance(result, ExtensionArray)
++                if result is data and copy:
++                    return result.copy()
++                return result
++    
++            data = cast("np.ndarray", data)
++            result = ensure_wrapped_if_datetimelike(data)
++            if result is not data:
++                result = cast("DatetimeArray | TimedeltaArray", result)
++                if copy and result.dtype == data.dtype:
++                    return result.copy()
++                return result
++    
++            if data.dtype.kind in "SU":
++                # StringArray/ArrowStringArray depending on pd.options.mode.string_storage
++                dtype = StringDtype()
++                cls = dtype.construct_array_type()
++                return cls._from_sequence(data, dtype=dtype, copy=copy)
++    
++            elif data.dtype.kind in "iu":
++                dtype = IntegerArray._dtype_cls._get_dtype_mapping()[data.dtype]
++                return IntegerArray._from_sequence(data, dtype=dtype, copy=copy)
++            elif data.dtype.kind == "f":
++                # GH#44715 Exclude np.float16 bc FloatingArray does not support it;
++                #  we will fall back to NumpyExtensionArray.
++                if data.dtype == np.float16:
++                    return NumpyExtensionArray._from_sequence(
++                        data, dtype=data.dtype, copy=copy
++                    )
++                dtype = FloatingArray._dtype_cls._get_dtype_mapping()[data.dtype]
++                return FloatingArray._from_sequence(data, dtype=dtype, copy=copy)
++    
++            elif data.dtype.kind == "b":
++                return BooleanArray._from_sequence(data, dtype="boolean", copy=copy)
++            else:
++                # e.g. complex
++                return NumpyExtensionArray._from_sequence(data, dtype=data.dtype, copy=copy)
+ 
+     # Pandas overrides NumPy for
+     #   1. datetime64[ns,us,ms,s]

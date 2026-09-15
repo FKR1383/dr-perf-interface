@@ -1,0 +1,57 @@
+--- a/sympy/core/cache.py
++++ b/sympy/core/cache.py
+@@ -1,5 +1,6 @@
+ """ Caching facility for SymPy """
+ from __future__ import annotations
++import perfmark
+ from importlib import import_module
+ from typing import Callable
+ 
+@@ -64,26 +65,27 @@
+         to force cacheit to check returned results mutability and consistency,
+         set environment variable SYMPY_USE_CACHE to 'debug'
+     """
+-    def func_wrapper(func):
+-        cfunc = lru_cache(maxsize, typed=True)(func)
+-
+-        @wraps(func)
+-        def wrapper(*args, **kwargs):
+-            try:
+-                retval = cfunc(*args, **kwargs)
+-            except TypeError as e:
+-                if not e.args or not e.args[0].startswith('unhashable type:'):
+-                    raise
+-                retval = func(*args, **kwargs)
+-            return retval
+-
+-        wrapper.cache_info = cfunc.cache_info
+-        wrapper.cache_clear = cfunc.cache_clear
+-
+-        CACHE.append(wrapper)
+-        return wrapper
+-
+-    return func_wrapper
++    with perfmark.region("lt-038"):
++        def func_wrapper(func):
++            cfunc = lru_cache(maxsize, typed=True)(func)
++
++            @wraps(func)
++            def wrapper(*args, **kwargs):
++                try:
++                    retval = cfunc(*args, **kwargs)
++                except TypeError as e:
++                    if not e.args or not e.args[0].startswith('unhashable type:'):
++                        raise
++                    retval = func(*args, **kwargs)
++                return retval
++
++            wrapper.cache_info = cfunc.cache_info
++            wrapper.cache_clear = cfunc.cache_clear
++
++            CACHE.append(wrapper)
++            return wrapper
++
++        return func_wrapper
+ ########################################
+ 
+ 

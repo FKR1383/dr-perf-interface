@@ -1,0 +1,80 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -5863,37 +5864,38 @@
+         *,
+         allow_trailing_delim: bool = False,
+     ) -> None:
+-        if isinstance(expr, str_type):
+-            expr = ParserElement._literalStringClass(expr)
+-        expr = typing.cast(ParserElement, expr)
+-
+-        if min is not None and min < 1:
+-            raise ValueError("min must be greater than 0")
+-
+-        if max is not None and min is not None and max < min:
+-            raise ValueError("max must be greater than, or equal to min")
+-
+-        self.content = expr
+-        self.raw_delim = str(delim)
+-        self.delim = delim
+-        self.combine = combine
+-        if not combine:
+-            self.delim = Suppress(delim) if not isinstance(delim, Suppress) else delim
+-        self.min = min or 1
+-        self.max = max
+-        self.allow_trailing_delim = allow_trailing_delim
+-
+-        delim_list_expr = self.content + (self.delim + self.content) * (
+-            self.min - 1,
+-            None if self.max is None else self.max - 1,
+-        )
+-        if self.allow_trailing_delim:
+-            delim_list_expr += Opt(self.delim)
+-
+-        if self.combine:
+-            delim_list_expr = Combine(delim_list_expr)
+-
+-        super().__init__(delim_list_expr, savelist=True)
++        with perfmark.region("lt-197"):
++            if isinstance(expr, str_type):
++                expr = ParserElement._literalStringClass(expr)
++            expr = typing.cast(ParserElement, expr)
++
++            if min is not None and min < 1:
++                raise ValueError("min must be greater than 0")
++
++            if max is not None and min is not None and max < min:
++                raise ValueError("max must be greater than, or equal to min")
++
++            self.content = expr
++            self.raw_delim = str(delim)
++            self.delim = delim
++            self.combine = combine
++            if not combine:
++                self.delim = Suppress(delim) if not isinstance(delim, Suppress) else delim
++            self.min = min or 1
++            self.max = max
++            self.allow_trailing_delim = allow_trailing_delim
++
++            delim_list_expr = self.content + (self.delim + self.content) * (
++                self.min - 1,
++                None if self.max is None else self.max - 1,
++            )
++            if self.allow_trailing_delim:
++                delim_list_expr += Opt(self.delim)
++
++            if self.combine:
++                delim_list_expr = Combine(delim_list_expr)
++
++            super().__init__(delim_list_expr, savelist=True)
+ 
+     def _generateDefaultName(self) -> str:
+         content_expr = self.content.streamline()

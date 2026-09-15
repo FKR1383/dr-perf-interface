@@ -1,0 +1,18 @@
+--- a/include/rapidjson/writer.h
++++ b/include/rapidjson/writer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_WRITER_H_
+ #define RAPIDJSON_WRITER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/clzll.h"
+ #include "internal/meta.h"
+@@ -464,6 +465,7 @@
+     bool WriteEndArray()    { os_->Put(']'); return true; }
+ 
+     bool WriteRawValue(const Ch* json, size_t length) {
++        DRPERF_BENCH_REGION("nl-026");
+         PutReserve(*os_, length);
+         GenericStringStream<SourceEncoding> is(json);
+         while (RAPIDJSON_LIKELY(is.Tell() < length)) {

@@ -1,0 +1,60 @@
+--- a/networkx/linalg/laplacianmatrix.py
++++ b/networkx/linalg/laplacianmatrix.py
+@@ -7,6 +7,7 @@
+ while `normalized_laplacian_matrix`, `directed_laplacian_matrix`,
+ and `directed_combinatorial_laplacian_matrix` are all normalized.
+ """
++import perfmark
+ 
+ import networkx as nx
+ from networkx.utils import not_implemented_for
+@@ -359,27 +360,28 @@
+         matrix_weights[(vi, ui)] += 0.5 * wt
+ 
+     rows, cols, data = [], [], []
+-    for u, v in G.edges():
+-        if u not in node_index or v not in node_index:
+-            continue
+-
+-        ui, vi = node_index[u], node_index[v]
+-        if ui != vi:
+-            if delta_phase_edge[(ui, vi)] == 0:
+-                rows.append(ui)
+-                cols.append(vi)
+-                data.append(matrix_weights[(ui, vi)])
+-            else:
+-                rows.append(ui)
+-                cols.append(vi)
+-                data.append(
+-                    matrix_weights[(ui, vi)] * phases[delta_phase_edge[(ui, vi)]]
+-                )
+-                rows.append(vi)
+-                cols.append(ui)
+-                data.append(
+-                    matrix_weights[(vi, ui)] * phases[delta_phase_edge[(vi, ui)]]
+-                )
++    with perfmark.region("gl-090"):
++        for u, v in G.edges():
++            if u not in node_index or v not in node_index:
++                continue
++    
++            ui, vi = node_index[u], node_index[v]
++            if ui != vi:
++                if delta_phase_edge[(ui, vi)] == 0:
++                    rows.append(ui)
++                    cols.append(vi)
++                    data.append(matrix_weights[(ui, vi)])
++                else:
++                    rows.append(ui)
++                    cols.append(vi)
++                    data.append(
++                        matrix_weights[(ui, vi)] * phases[delta_phase_edge[(ui, vi)]]
++                    )
++                    rows.append(vi)
++                    cols.append(ui)
++                    data.append(
++                        matrix_weights[(vi, ui)] * phases[delta_phase_edge[(vi, ui)]]
++                    )
+ 
+     H = sp.sparse.csr_array((data, (rows, cols)), shape=(n, n), dtype=complex)
+ 

@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -6940,6 +6941,7 @@
+ /// Note, any additional constructs added here may need corresponding changes
+ /// in isConstructorDeclarator.
+ void Parser::ParseDirectDeclarator(Declarator &D) {
++  DRPERF_BENCH_REGION("cf-066");
+   DeclaratorScopeObj DeclScopeObj(*this, D.getCXXScopeSpec());
+ 
+   if (getLangOpts().CPlusPlus && D.mayHaveIdentifier()) {

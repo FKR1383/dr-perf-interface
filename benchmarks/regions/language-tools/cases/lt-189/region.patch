@@ -1,0 +1,58 @@
+--- a/pyparsing/results.py
++++ b/pyparsing/results.py
+@@ -1,6 +1,7 @@
+ # results.py
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ from collections.abc import (
+@@ -168,26 +169,27 @@
+             return list.__new__(cls)
+ 
+     def __new__(cls, toklist=None, name=None, **kwargs):
+-        if isinstance(toklist, ParseResults):
+-            return toklist
+-        self = object.__new__(cls)
+-        self._name = None
+-        self._parent = None
+-        self._all_names = set()
+-        self._is_dict_context = False
+-
+-        if toklist is None:
+-            self._toklist = []
+-        elif isinstance(toklist, (list, _generator_type)):
+-            self._toklist = (
+-                [toklist[:]]
+-                if isinstance(toklist, ParseResults.List)
+-                else list(toklist)
+-            )
+-        else:
+-            self._toklist = [toklist]
+-        self._tokdict = {}
+-        return self
++        with perfmark.region("lt-189"):
++            if isinstance(toklist, ParseResults):
++                return toklist
++            self = object.__new__(cls)
++            self._name = None
++            self._parent = None
++            self._all_names = set()
++            self._is_dict_context = False
++
++            if toklist is None:
++                self._toklist = []
++            elif isinstance(toklist, (list, _generator_type)):
++                self._toklist = (
++                    [toklist[:]]
++                    if isinstance(toklist, ParseResults.List)
++                    else list(toklist)
++                )
++            else:
++                self._toklist = [toklist]
++            self._tokdict = {}
++            return self
+ 
+     # Performance tuning: we construct a *lot* of these, so keep this
+     # constructor as small and fast as possible

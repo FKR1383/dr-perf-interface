@@ -1,0 +1,22 @@
+--- a/pandas/core/reshape/reshape.py
++++ b/pandas/core/reshape/reshape.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ from typing import (
+@@ -1009,9 +1010,10 @@
+     if not len(level):
+         return frame
+     set_levels = set(level)
+-    stack_cols = frame.columns._drop_level_numbers(
+-        [k for k in range(frame.columns.nlevels - 1, -1, -1) if k not in set_levels]
+-    )
++    with perfmark.region("gl-161"):
++        stack_cols = frame.columns._drop_level_numbers(
++            [k for k in range(frame.columns.nlevels - 1, -1, -1) if k not in set_levels]
++        )
+ 
+     result: Series | DataFrame
+     if not isinstance(frame.columns, MultiIndex):

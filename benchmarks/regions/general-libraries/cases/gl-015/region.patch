@@ -1,0 +1,36 @@
+--- a/networkx/algorithms/shortest_paths/weighted.py
++++ b/networkx/algorithms/shortest_paths/weighted.py
+@@ -1,6 +1,7 @@
+ """
+ Shortest path algorithms for weighted graphs.
+ """
++import perfmark
+ 
+ from collections import deque
+ from heapq import heappop, heappush
+@@ -2041,15 +2042,16 @@
+     if source not in G:
+         raise nx.NodeNotFound(f"Node {source} is not found in the graph")
+     weight = _weight_function(G, weight)
+-    if G.is_multigraph():
+-        if any(
+-            weight(u, v, {k: d}) < 0
+-            for u, v, k, d in nx.selfloop_edges(G, keys=True, data=True)
+-        ):
+-            raise nx.NetworkXUnbounded("Negative cycle detected.")
+-    else:
+-        if any(weight(u, v, d) < 0 for u, v, d in nx.selfloop_edges(G, data=True)):
+-            raise nx.NetworkXUnbounded("Negative cycle detected.")
++    with perfmark.region("gl-015"):
++        if G.is_multigraph():
++            if any(
++                weight(u, v, {k: d}) < 0
++                for u, v, k, d in nx.selfloop_edges(G, keys=True, data=True)
++            ):
++                raise nx.NetworkXUnbounded("Negative cycle detected.")
++        else:
++            if any(weight(u, v, d) < 0 for u, v, d in nx.selfloop_edges(G, data=True)):
++                raise nx.NetworkXUnbounded("Negative cycle detected.")
+ 
+     if len(G) == 1:
+         return {source: None}, {source: 0}

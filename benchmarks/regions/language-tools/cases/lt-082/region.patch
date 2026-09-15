@@ -1,0 +1,132 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -6411,65 +6412,66 @@
+     def _parse_type(
+         self, parse_interval: bool = True, fallback_to_identifier: bool = False
+     ) -> exp.Expr | None:
+-        if not fallback_to_identifier and (atom := self._parse_atom()) is not None:
+-            return atom
+-
+-        if interval := parse_interval and self._parse_interval():
+-            return self._parse_column_ops(interval)
+-
+-        index = self._index
+-        data_type = self._parse_types(check_func=True, allow_identifiers=False)
+-
+-        # parse_types() returns a Cast if we parsed BQ's inline constructor <type>(<values>) e.g.
+-        # STRUCT<a INT, b STRING>(1, 'foo'), which is canonicalized to CAST(<values> AS <type>)
+-        if isinstance(data_type, exp.Cast):
+-            # This constructor can contain ops directly after it, for instance struct unnesting:
+-            # STRUCT<a INT, b STRING>(1, 'foo').* --> CAST(STRUCT(1, 'foo') AS STRUCT<a iNT, b STRING).*
+-            return self._parse_column_ops(data_type)
+-
+-        if data_type:
+-            index2 = self._index
+-            this = self._parse_primary()
+-
+-            if isinstance(this, exp.Literal):
+-                literal = this.name
+-                this = self._parse_column_ops(this)
+-
+-                parser = self.TYPE_LITERAL_PARSERS.get(data_type.this)
+-                if parser:
+-                    return parser(self, this, data_type)
+-
+-                if self.ZONE_AWARE_TIMESTAMP_CONSTRUCTOR and TIME_ZONE_RE.search(literal):
+-                    if data_type.is_type(exp.DType.TIMESTAMP):
+-                        data_type = exp.DType.TIMESTAMPTZ.into_expr()
+-                    elif data_type.is_type(exp.DType.TIME):
+-                        data_type = exp.DType.TIMETZ.into_expr()
+-
+-                return self.expression(exp.Cast(this=this, to=data_type))
+-
+-            # The expressions arg gets set by the parser when we have something like DECIMAL(38, 0)
+-            # in the input SQL. In that case, we'll produce these tokens: DECIMAL ( 38 , 0 )
+-            #
+-            # If the index difference here is greater than 1, that means the parser itself must have
+-            # consumed additional tokens such as the DECIMAL scale and precision in the above example.
+-            #
+-            # If it's not greater than 1, then it must be 1, because we've consumed at least the type
+-            # keyword, meaning that the expressions arg of the DataType must have gotten set by a
+-            # callable in the TYPE_CONVERTERS mapping. For example, Snowflake converts DECIMAL to
+-            # DECIMAL(38, 0)) in order to facilitate the data type's transpilation.
+-            #
+-            # In these cases, we don't really want to return the converted type, but instead retreat
+-            # and try to parse a Column or Identifier in the section below.
+-            if data_type.expressions and index2 - index > 1:
+-                self._retreat(index2)
++        with perfmark.region("lt-082"):
++            if not fallback_to_identifier and (atom := self._parse_atom()) is not None:
++                return atom
++
++            if interval := parse_interval and self._parse_interval():
++                return self._parse_column_ops(interval)
++
++            index = self._index
++            data_type = self._parse_types(check_func=True, allow_identifiers=False)
++
++            # parse_types() returns a Cast if we parsed BQ's inline constructor <type>(<values>) e.g.
++            # STRUCT<a INT, b STRING>(1, 'foo'), which is canonicalized to CAST(<values> AS <type>)
++            if isinstance(data_type, exp.Cast):
++                # This constructor can contain ops directly after it, for instance struct unnesting:
++                # STRUCT<a INT, b STRING>(1, 'foo').* --> CAST(STRUCT(1, 'foo') AS STRUCT<a iNT, b STRING).*
+                 return self._parse_column_ops(data_type)
+ 
+-            self._retreat(index)
+-
+-        if fallback_to_identifier:
+-            return self._parse_id_var()
+-
+-        return self._parse_column()
++            if data_type:
++                index2 = self._index
++                this = self._parse_primary()
++
++                if isinstance(this, exp.Literal):
++                    literal = this.name
++                    this = self._parse_column_ops(this)
++
++                    parser = self.TYPE_LITERAL_PARSERS.get(data_type.this)
++                    if parser:
++                        return parser(self, this, data_type)
++
++                    if self.ZONE_AWARE_TIMESTAMP_CONSTRUCTOR and TIME_ZONE_RE.search(literal):
++                        if data_type.is_type(exp.DType.TIMESTAMP):
++                            data_type = exp.DType.TIMESTAMPTZ.into_expr()
++                        elif data_type.is_type(exp.DType.TIME):
++                            data_type = exp.DType.TIMETZ.into_expr()
++
++                    return self.expression(exp.Cast(this=this, to=data_type))
++
++                # The expressions arg gets set by the parser when we have something like DECIMAL(38, 0)
++                # in the input SQL. In that case, we'll produce these tokens: DECIMAL ( 38 , 0 )
++                #
++                # If the index difference here is greater than 1, that means the parser itself must have
++                # consumed additional tokens such as the DECIMAL scale and precision in the above example.
++                #
++                # If it's not greater than 1, then it must be 1, because we've consumed at least the type
++                # keyword, meaning that the expressions arg of the DataType must have gotten set by a
++                # callable in the TYPE_CONVERTERS mapping. For example, Snowflake converts DECIMAL to
++                # DECIMAL(38, 0)) in order to facilitate the data type's transpilation.
++                #
++                # In these cases, we don't really want to return the converted type, but instead retreat
++                # and try to parse a Column or Identifier in the section below.
++                if data_type.expressions and index2 - index > 1:
++                    self._retreat(index2)
++                    return self._parse_column_ops(data_type)
++
++                self._retreat(index)
++
++            if fallback_to_identifier:
++                return self._parse_id_var()
++
++            return self._parse_column()
+ 
+     def _parse_type_size(self) -> exp.DataTypeParam | None:
+         this = self._parse_type()

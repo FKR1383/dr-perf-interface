@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/TokenAnnotator.cpp
++++ b/clang/lib/Format/TokenAnnotator.cpp
+@@ -12,6 +12,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TokenAnnotator.h"
+ #include "FormatToken.h"
+ #include "clang/Basic/SourceManager.h"
+@@ -3939,6 +3940,7 @@
+ }
+ 
+ void TokenAnnotator::calculateFormattingInformation(AnnotatedLine &Line) const {
++  DRPERF_BENCH_REGION("cf-143");
+   if (Line.Computed)
+     return;
+ 

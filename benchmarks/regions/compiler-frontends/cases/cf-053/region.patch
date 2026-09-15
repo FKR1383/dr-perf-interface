@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGCleanup.cpp
++++ b/clang/lib/CodeGen/CGCleanup.cpp
+@@ -16,6 +16,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCleanup.h"
+ #include "CodeGenFunction.h"
+ #include "llvm/Support/SaveAndRestore.h"
+@@ -651,6 +652,7 @@
+ /// any branch fixups on the cleanup.
+ void CodeGenFunction::PopCleanupBlock(bool FallthroughIsBranchThrough,
+                                       bool ForDeactivation) {
++                                        DRPERF_BENCH_REGION("cf-053");
+   assert(!EHStack.empty() && "cleanup stack is empty!");
+   assert(isa<EHCleanupScope>(*EHStack.begin()) && "top not a cleanup!");
+   EHCleanupScope &Scope = cast<EHCleanupScope>(*EHStack.begin());

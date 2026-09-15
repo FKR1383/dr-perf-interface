@@ -1,0 +1,36 @@
+--- a/src/jinja2/nodes.py
++++ b/src/jinja2/nodes.py
+@@ -2,6 +2,7 @@
+ some node tree helper functions used by the parser and compiler in order
+ to normalize nodes.
+ """
++import perfmark
+ 
+ import inspect
+ import operator
+@@ -57,15 +58,16 @@
+     automatically forwarded to the child."""
+ 
+     def __new__(mcs, name, bases, d):  # type: ignore
+-        for attr in "fields", "attributes":
+-            storage: list[tuple[str, ...]] = []
+-            storage.extend(getattr(bases[0] if bases else object, attr, ()))
+-            storage.extend(d.get(attr, ()))
+-            assert len(bases) <= 1, "multiple inheritance not allowed"
+-            assert len(storage) == len(set(storage)), "layout conflict"
+-            d[attr] = tuple(storage)
+-        d.setdefault("abstract", False)
+-        return type.__new__(mcs, name, bases, d)
++        with perfmark.region("lt-170"):
++            for attr in "fields", "attributes":
++                storage: list[tuple[str, ...]] = []
++                storage.extend(getattr(bases[0] if bases else object, attr, ()))
++                storage.extend(d.get(attr, ()))
++                assert len(bases) <= 1, "multiple inheritance not allowed"
++                assert len(storage) == len(set(storage)), "layout conflict"
++                d[attr] = tuple(storage)
++            d.setdefault("abstract", False)
++            return type.__new__(mcs, name, bases, d)
+ 
+ 
+ class EvalContext:

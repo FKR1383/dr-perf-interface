@@ -1,0 +1,31 @@
+{
+  "case": "cf-145",
+  "phase": "preprocessing",
+  "scenario": "include-lookup",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "#include <stddef.h>\nsize_t value = sizeof(int);\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\nsize_t value=sizeof(int);\n"
+    },
+    {
+      "size": 16,
+      "source": "#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\nsize_t value=sizeof(int);\n"
+    },
+    {
+      "size": 64,
+      "source": "#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\n#include <stddef.h>\nsize_t value=sizeof(int);\n"
+    }
+  ],
+  "target_symbol": "Lexer::SkipLineComment",
+  "target_source": "clang/lib/Lex/Lexer.cpp",
+  "mapping_note": "The include-lookup construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

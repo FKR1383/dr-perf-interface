@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-112",
+  "title": "CodeGenFunction::EmitAtomicExpr compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/CodeGen/CGAtomic.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/CodeGen/CGAtomic.cpp",
+    "sha256": "7e5ca36f1f05be9cbadccbb3f541777bbd5b471670edd39d8280bdb05c8cbdaa"
+  },
+  "region": {
+    "symbol": "CodeGenFunction::EmitAtomicExpr",
+    "start_line": 846,
+    "end_line": 1384,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-112",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-generation",
+  "workload": {
+    "description": "Run the bounded atomic-expression-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/CodeGen/CGAtomic.cpp:CodeGenFunction::EmitAtomicExpr",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/CodeGen/CGAtomic.cpp#L846-L1384"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "2062c533e92a7fa31d7b6d643b84108bb9e6b200c3cfe73ca5eec80b27b92369",
+      "patch_sha256": "b715615953bf1870e9958911a1ecf11b6aa5e1fe0980dab446bec04e35d95bdf"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

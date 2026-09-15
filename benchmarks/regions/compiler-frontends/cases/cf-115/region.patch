@@ -1,0 +1,18 @@
+--- a/clang/lib/Basic/Warnings.cpp
++++ b/clang/lib/Basic/Warnings.cpp
+@@ -21,6 +21,7 @@
+ //
+ // Remark options are also handled here, analogously, except that they are much
+ // simpler because a remark can't be promoted to an error.
++#include "drperf_bench_region.h"
+ #include "clang/Basic/AllDiagnostics.h"
+ #include "clang/Basic/Diagnostic.h"
+ #include "clang/Basic/DiagnosticDriver.h"
+@@ -47,6 +48,7 @@
+                                   const DiagnosticOptions &Opts,
+                                   llvm::vfs::FileSystem &VFS,
+                                   bool ReportDiags) {
++                                    DRPERF_BENCH_REGION("cf-115");
+   Diags.setSuppressSystemWarnings(true);  // Default to -Wno-system-headers
+   Diags.setIgnoreAllWarnings(Opts.IgnoreWarnings);
+   Diags.setShowOverloads(Opts.getShowOverloads());

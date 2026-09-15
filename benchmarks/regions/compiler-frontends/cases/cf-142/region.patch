@@ -1,0 +1,18 @@
+--- a/clang/lib/Basic/DiagnosticIDs.cpp
++++ b/clang/lib/Basic/DiagnosticIDs.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/DiagnosticIDs.h"
+ #include "clang/Basic/AllDiagnostics.h"
+ #include "clang/Basic/DiagnosticCategories.h"
+@@ -773,6 +774,7 @@
+ /// finally fully formed.
+ bool DiagnosticIDs::ProcessDiag(DiagnosticsEngine &Diag,
+                                 const DiagnosticBuilder &DiagBuilder) const {
++                                  DRPERF_BENCH_REGION("cf-142");
+   Diagnostic Info(&Diag, DiagBuilder);
+ 
+   assert(Diag.getClient() && "DiagnosticClient not set!");

@@ -1,0 +1,75 @@
+--- a/libcst/_nodes/statement.py
++++ b/libcst/_nodes/statement.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -2033,36 +2034,37 @@
+         )
+ 
+     def _codegen_impl(self, state: CodegenState) -> None:
+-        for ll in self.leading_lines:
+-            ll._codegen(state)
+-        for decorator in self.decorators:
+-            decorator._codegen(state)
+-        for lad in self.lines_after_decorators:
+-            lad._codegen(state)
+-        state.add_indent_tokens()
+-
+-        with state.record_syntactic_position(self, end_node=self.body):
+-            asynchronous = self.asynchronous
+-            if asynchronous is not None:
+-                asynchronous._codegen(state)
+-            state.add_token("def")
+-            self.whitespace_after_def._codegen(state)
+-            self.name._codegen(state)
+-            self.whitespace_after_name._codegen(state)
+-            type_params = self.type_parameters
+-            if type_params is not None:
+-                type_params._codegen(state)
+-            self.whitespace_after_type_parameters._codegen(state)
+-            state.add_token("(")
+-            self.whitespace_before_params._codegen(state)
+-            self.params._codegen(state)
+-            state.add_token(")")
+-            returns = self.returns
+-            if returns is not None:
+-                returns._codegen(state, default_indicator="->")
+-            self.whitespace_before_colon._codegen(state)
+-            state.add_token(":")
+-            self.body._codegen(state)
++        with perfmark.region("lt-096"):
++            for ll in self.leading_lines:
++                ll._codegen(state)
++            for decorator in self.decorators:
++                decorator._codegen(state)
++            for lad in self.lines_after_decorators:
++                lad._codegen(state)
++            state.add_indent_tokens()
++
++            with state.record_syntactic_position(self, end_node=self.body):
++                asynchronous = self.asynchronous
++                if asynchronous is not None:
++                    asynchronous._codegen(state)
++                state.add_token("def")
++                self.whitespace_after_def._codegen(state)
++                self.name._codegen(state)
++                self.whitespace_after_name._codegen(state)
++                type_params = self.type_parameters
++                if type_params is not None:
++                    type_params._codegen(state)
++                self.whitespace_after_type_parameters._codegen(state)
++                state.add_token("(")
++                self.whitespace_before_params._codegen(state)
++                self.params._codegen(state)
++                state.add_token(")")
++                returns = self.returns
++                if returns is not None:
++                    returns._codegen(state, default_indicator="->")
++                self.whitespace_before_colon._codegen(state)
++                state.add_token(":")
++                self.body._codegen(state)
+ 
+     def get_docstring(self, clean: bool = True) -> Optional[str]:
+         """

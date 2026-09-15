@@ -1,0 +1,120 @@
+--- a/lark/load_grammar.py
++++ b/lark/load_grammar.py
+@@ -1,5 +1,6 @@
+ """Parses and compiles Lark grammars into an internal representation.
+ """
++import perfmark
+ 
+ import hashlib
+ import os.path
+@@ -1240,58 +1241,59 @@
+ 
+ 
+     def load_grammar(self, grammar_text: str, grammar_name: str="<?>", mangle: Optional[Callable[[str], str]]=None) -> None:
+-        tree = _parse_grammar(grammar_text, grammar_name)
+-
+-        imports: Dict[Tuple[str, ...], Tuple[Optional[str], Dict[str, str]]] = {}
+-
+-        for stmt in tree.children:
+-            if stmt.data == 'import':
+-                dotted_path, base_path, aliases = self._unpack_import(stmt, grammar_name)
+-                try:
+-                    import_base_path, import_aliases = imports[dotted_path]
+-                    assert base_path == import_base_path, 'Inconsistent base_path for %s.' % '.'.join(dotted_path)
+-                    import_aliases.update(aliases)
+-                except KeyError:
+-                    imports[dotted_path] = base_path, aliases
+-
+-        for dotted_path, (base_path, aliases) in imports.items():
+-            self.do_import(dotted_path, base_path, aliases, mangle)
+-
+-        for stmt in tree.children:
+-            if stmt.data in ('term', 'rule'):
+-                self._define(*self._unpack_definition(stmt, mangle))
+-            elif stmt.data == 'override':
+-                r ,= stmt.children
+-                self._define(*self._unpack_definition(r, mangle), override=True)
+-            elif stmt.data == 'extend':
+-                r ,= stmt.children
+-                self._extend(*self._unpack_definition(r, mangle))
+-            elif stmt.data == 'ignore':
+-                # if mangle is not None, we shouldn't apply ignore, since we aren't in a toplevel grammar
+-                if mangle is None:
+-                    self._ignore(*stmt.children)
+-            elif stmt.data == 'declare':
+-                for symbol in stmt.children:
+-                    assert isinstance(symbol, Symbol), symbol
+-                    is_term = isinstance(symbol, Terminal)
+-                    if not is_term:
+-                        raise GrammarError("Expecting terminal name to follow %%declare, but got rule name %r" % symbol.name)
++        with perfmark.region("lt-199"):
++            tree = _parse_grammar(grammar_text, grammar_name)
++
++            imports: Dict[Tuple[str, ...], Tuple[Optional[str], Dict[str, str]]] = {}
++
++            for stmt in tree.children:
++                if stmt.data == 'import':
++                    dotted_path, base_path, aliases = self._unpack_import(stmt, grammar_name)
++                    try:
++                        import_base_path, import_aliases = imports[dotted_path]
++                        assert base_path == import_base_path, 'Inconsistent base_path for %s.' % '.'.join(dotted_path)
++                        import_aliases.update(aliases)
++                    except KeyError:
++                        imports[dotted_path] = base_path, aliases
++
++            for dotted_path, (base_path, aliases) in imports.items():
++                self.do_import(dotted_path, base_path, aliases, mangle)
++
++            for stmt in tree.children:
++                if stmt.data in ('term', 'rule'):
++                    self._define(*self._unpack_definition(stmt, mangle))
++                elif stmt.data == 'override':
++                    r ,= stmt.children
++                    self._define(*self._unpack_definition(r, mangle), override=True)
++                elif stmt.data == 'extend':
++                    r ,= stmt.children
++                    self._extend(*self._unpack_definition(r, mangle))
++                elif stmt.data == 'ignore':
++                    # if mangle is not None, we shouldn't apply ignore, since we aren't in a toplevel grammar
+                     if mangle is None:
+-                        name = symbol.name
+-                    else:
+-                        name = mangle(symbol.name)
+-                    self._define(name, is_term, None)
+-            elif stmt.data == 'import':
+-                pass
+-            else:
+-                assert False, stmt
+-
+-
+-        term_defs = { name: d.tree
+-            for name, d in self._definitions.items()
+-            if d.is_term
+-        }
+-        resolve_term_references(term_defs)
++                        self._ignore(*stmt.children)
++                elif stmt.data == 'declare':
++                    for symbol in stmt.children:
++                        assert isinstance(symbol, Symbol), symbol
++                        is_term = isinstance(symbol, Terminal)
++                        if not is_term:
++                            raise GrammarError("Expecting terminal name to follow %%declare, but got rule name %r" % symbol.name)
++                        if mangle is None:
++                            name = symbol.name
++                        else:
++                            name = mangle(symbol.name)
++                        self._define(name, is_term, None)
++                elif stmt.data == 'import':
++                    pass
++                else:
++                    assert False, stmt
++
++
++            term_defs = { name: d.tree
++                for name, d in self._definitions.items()
++                if d.is_term
++            }
++            resolve_term_references(term_defs)
+ 
+ 
+     def _remove_unused(self, used):

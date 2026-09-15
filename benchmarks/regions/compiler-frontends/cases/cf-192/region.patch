@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -809,6 +810,7 @@
+                       DiagnosticsEngine &Diags, const char *Argv0,
+                       bool CheckAgainstOriginalInvocation = false,
+                       bool ForceRoundTrip = false) {
++                        DRPERF_BENCH_REGION("cf-192");
+ #ifndef NDEBUG
+   bool DoRoundTripDefault = true;
+ #else

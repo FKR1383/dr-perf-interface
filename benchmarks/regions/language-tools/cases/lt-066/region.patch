@@ -1,0 +1,250 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -8647,124 +8648,125 @@
+         return this
+ 
+     def _parse_window(self, this: exp.Expr | None, alias: bool = False) -> exp.Expr | None:
+-        func = this
+-        comments = func.comments if isinstance(func, exp.Expr) else None
+-
+-        # https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/img_text/nth_value.html
+-        if self.SUPPORTS_NTH_VALUE_FROM_MODIFIER and isinstance(this, exp.NthValue):
+-            if self._match_text_seq("FROM", "FIRST"):
+-                this.set("from_first", True)
+-            elif self._match_text_seq("FROM", "LAST"):
+-                this.set("from_first", False)
+-
+-        # T-SQL allows the OVER (...) syntax after WITHIN GROUP.
+-        # https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-disc-transact-sql?view=sql-server-ver16
+-        if self._match_text_seq("WITHIN", "GROUP"):
+-            order = self._parse_wrapped(self._parse_order)
+-            this = self.expression(exp.WithinGroup(this=this, expression=order))
+-
+-        if self._match_pair(TokenType.FILTER, TokenType.L_PAREN):
+-            self._match(TokenType.WHERE)
+-            this = self.expression(
+-                exp.Filter(this=this, expression=self._parse_where(skip_where_token=True))
+-            )
++        with perfmark.region("lt-066"):
++            func = this
++            comments = func.comments if isinstance(func, exp.Expr) else None
++
++            # https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/img_text/nth_value.html
++            if self.SUPPORTS_NTH_VALUE_FROM_MODIFIER and isinstance(this, exp.NthValue):
++                if self._match_text_seq("FROM", "FIRST"):
++                    this.set("from_first", True)
++                elif self._match_text_seq("FROM", "LAST"):
++                    this.set("from_first", False)
++
++            # T-SQL allows the OVER (...) syntax after WITHIN GROUP.
++            # https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-disc-transact-sql?view=sql-server-ver16
++            if self._match_text_seq("WITHIN", "GROUP"):
++                order = self._parse_wrapped(self._parse_order)
++                this = self.expression(exp.WithinGroup(this=this, expression=order))
++
++            if self._match_pair(TokenType.FILTER, TokenType.L_PAREN):
++                self._match(TokenType.WHERE)
++                this = self.expression(
++                    exp.Filter(this=this, expression=self._parse_where(skip_where_token=True))
++                )
++                self._match_r_paren()
++
++            # SQL spec defines an optional [ { IGNORE | RESPECT } NULLS ] OVER
++            # Some dialects choose to implement and some do not.
++            # https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html
++
++            # There is some code above in _parse_lambda that handles
++            #   SELECT FIRST_VALUE(TABLE.COLUMN IGNORE|RESPECT NULLS) OVER ...
++
++            # The below changes handle
++            #   SELECT FIRST_VALUE(TABLE.COLUMN) IGNORE|RESPECT NULLS OVER ...
++
++            # Oracle allows both formats
++            #   (https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/img_text/first_value.html)
++            #   and Snowflake chose to do the same for familiarity
++            #   https://docs.snowflake.com/en/sql-reference/functions/first_value.html#usage-notes
++            if isinstance(this, exp.AggFunc):
++                ignore_respect = find_in_scope(this, exp.IgnoreNulls, exp.RespectNulls)
++
++                if ignore_respect and ignore_respect is not this:
++                    ignore_respect.replace(ignore_respect.this)
++                    this = self.expression(ignore_respect.__class__(this=this))
++
++            this = self._parse_respect_or_ignore_nulls(this)
++
++            # bigquery select from window x AS (partition by ...)
++            if alias:
++                over = None
++                self._match(TokenType.ALIAS)
++            elif not self._match_set(self.WINDOW_BEFORE_PAREN_TOKENS):
++                return this
++            else:
++                over = self._prev.text.upper()
++
++            if comments and isinstance(func, exp.Expr):
++                func.pop_comments()
++
++            if not self._match(TokenType.L_PAREN):
++                return self.expression(
++                    exp.Window(this=this, alias=self._parse_id_var(False), over=over), comments=comments
++                )
++
++            window_alias = self._parse_id_var(any_token=False, tokens=self.WINDOW_ALIAS_TOKENS)
++
++            first: bool | None = True if self._match(TokenType.FIRST) else None
++            if self._match_text_seq("LAST"):
++                first = False
++
++            partition, order = self._parse_partition_and_order()
++            kind = (
++                self._match_set((TokenType.ROWS, TokenType.RANGE)) or self._match_text_seq("GROUPS")
++            ) and self._prev.text
++
++            if kind:
++                self._match(TokenType.BETWEEN)
++                start = self._parse_window_spec()
++
++                end = self._parse_window_spec() if self._match(TokenType.AND) else {}
++                exclude = (
++                    self._parse_var_from_options(self.WINDOW_EXCLUDE_OPTIONS)
++                    if self._match_text_seq("EXCLUDE")
++                    else None
++                )
++
++                spec = self.expression(
++                    exp.WindowSpec(
++                        kind=kind,
++                        start=start["value"],
++                        start_side=start["side"],
++                        end=end.get("value"),
++                        end_side=end.get("side"),
++                        exclude=exclude,
++                    )
++                )
++            else:
++                spec = None
++
+             self._match_r_paren()
+ 
+-        # SQL spec defines an optional [ { IGNORE | RESPECT } NULLS ] OVER
+-        # Some dialects choose to implement and some do not.
+-        # https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html
+-
+-        # There is some code above in _parse_lambda that handles
+-        #   SELECT FIRST_VALUE(TABLE.COLUMN IGNORE|RESPECT NULLS) OVER ...
+-
+-        # The below changes handle
+-        #   SELECT FIRST_VALUE(TABLE.COLUMN) IGNORE|RESPECT NULLS OVER ...
+-
+-        # Oracle allows both formats
+-        #   (https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/img_text/first_value.html)
+-        #   and Snowflake chose to do the same for familiarity
+-        #   https://docs.snowflake.com/en/sql-reference/functions/first_value.html#usage-notes
+-        if isinstance(this, exp.AggFunc):
+-            ignore_respect = find_in_scope(this, exp.IgnoreNulls, exp.RespectNulls)
+-
+-            if ignore_respect and ignore_respect is not this:
+-                ignore_respect.replace(ignore_respect.this)
+-                this = self.expression(ignore_respect.__class__(this=this))
+-
+-        this = self._parse_respect_or_ignore_nulls(this)
+-
+-        # bigquery select from window x AS (partition by ...)
+-        if alias:
+-            over = None
+-            self._match(TokenType.ALIAS)
+-        elif not self._match_set(self.WINDOW_BEFORE_PAREN_TOKENS):
+-            return this
+-        else:
+-            over = self._prev.text.upper()
+-
+-        if comments and isinstance(func, exp.Expr):
+-            func.pop_comments()
+-
+-        if not self._match(TokenType.L_PAREN):
+-            return self.expression(
+-                exp.Window(this=this, alias=self._parse_id_var(False), over=over), comments=comments
+-            )
+-
+-        window_alias = self._parse_id_var(any_token=False, tokens=self.WINDOW_ALIAS_TOKENS)
+-
+-        first: bool | None = True if self._match(TokenType.FIRST) else None
+-        if self._match_text_seq("LAST"):
+-            first = False
+-
+-        partition, order = self._parse_partition_and_order()
+-        kind = (
+-            self._match_set((TokenType.ROWS, TokenType.RANGE)) or self._match_text_seq("GROUPS")
+-        ) and self._prev.text
+-
+-        if kind:
+-            self._match(TokenType.BETWEEN)
+-            start = self._parse_window_spec()
+-
+-            end = self._parse_window_spec() if self._match(TokenType.AND) else {}
+-            exclude = (
+-                self._parse_var_from_options(self.WINDOW_EXCLUDE_OPTIONS)
+-                if self._match_text_seq("EXCLUDE")
+-                else None
+-            )
+-
+-            spec = self.expression(
+-                exp.WindowSpec(
+-                    kind=kind,
+-                    start=start["value"],
+-                    start_side=start["side"],
+-                    end=end.get("value"),
+-                    end_side=end.get("side"),
+-                    exclude=exclude,
+-                )
+-            )
+-        else:
+-            spec = None
+-
+-        self._match_r_paren()
+-
+-        window = self.expression(
+-            exp.Window(
+-                this=this,
+-                partition_by=partition,
+-                order=order,
+-                spec=spec,
+-                alias=window_alias,
+-                over=over,
+-                first=first,
+-            ),
+-            comments=comments,
+-        )
+-
+-        # This covers Oracle's FIRST/LAST syntax: aggregate KEEP (...) OVER (...)
+-        if self._match_set(self.WINDOW_BEFORE_PAREN_TOKENS, advance=False):
+-            return self._parse_window(window, alias=alias)
+-
+-        return window
++            window = self.expression(
++                exp.Window(
++                    this=this,
++                    partition_by=partition,
++                    order=order,
++                    spec=spec,
++                    alias=window_alias,
++                    over=over,
++                    first=first,
++                ),
++                comments=comments,
++            )
++
++            # This covers Oracle's FIRST/LAST syntax: aggregate KEEP (...) OVER (...)
++            if self._match_set(self.WINDOW_BEFORE_PAREN_TOKENS, advance=False):
++                return self._parse_window(window, alias=alias)
++
++            return window
+ 
+     def _parse_partition_and_order(
+         self,

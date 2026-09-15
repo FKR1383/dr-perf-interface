@@ -1,0 +1,50 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -1387,22 +1388,23 @@
+                 elif fdtype != cdtype:
+                     raise TypeError(f"Incompatible type '{cdtype}' <> '{fdtype}'")
+     # Only one field: use concatenate
+-    if len(newdescr) == 1:
+-        output = ma.concatenate(seqarrays)
+-    else:
+-        #
+-        output = ma.masked_all((np.sum(nrecords),), newdescr)
+-        offset = np.cumsum(np.r_[0, nrecords])
+-        seen = []
+-        for (a, n, i, j) in zip(seqarrays, fldnames, offset[:-1], offset[1:]):
+-            names = a.dtype.names
+-            if names is None:
+-                output[f'f{len(seen)}'][i:j] = a
+-            else:
+-                for name in n:
+-                    output[name][i:j] = a[name]
+-                    if name not in seen:
+-                        seen.append(name)
++    with perfmark.region("gl-103"):
++        if len(newdescr) == 1:
++            output = ma.concatenate(seqarrays)
++        else:
++            #
++            output = ma.masked_all((np.sum(nrecords),), newdescr)
++            offset = np.cumsum(np.r_[0, nrecords])
++            seen = []
++            for (a, n, i, j) in zip(seqarrays, fldnames, offset[:-1], offset[1:]):
++                names = a.dtype.names
++                if names is None:
++                    output[f'f{len(seen)}'][i:j] = a
++                else:
++                    for name in n:
++                        output[name][i:j] = a[name]
++                        if name not in seen:
++                            seen.append(name)
+     #
+     return _fix_output(_fix_defaults(output, defaults),
+                        usemask=usemask, asrecarray=asrecarray)

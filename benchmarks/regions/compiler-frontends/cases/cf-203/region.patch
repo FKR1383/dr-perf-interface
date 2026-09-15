@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/PPExpressions.cpp
++++ b/clang/lib/Lex/PPExpressions.cpp
+@@ -15,6 +15,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/IdentifierTable.h"
+ #include "clang/Basic/SourceLocation.h"
+ #include "clang/Basic/SourceManager.h"
+@@ -592,6 +593,7 @@
+                                      Token &PeekTok, bool ValueLive,
+                                      bool &IncludedUndefinedIds,
+                                      Preprocessor &PP) {
++                                       DRPERF_BENCH_REGION("cf-203");
+   unsigned PeekPrec = getPrecedence(PeekTok.getKind());
+   // If this token isn't valid, report the error.
+   if (PeekPrec == ~0U) {

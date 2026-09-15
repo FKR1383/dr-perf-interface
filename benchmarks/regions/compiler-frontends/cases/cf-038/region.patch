@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -7566,6 +7567,7 @@
+                                      BalancedDelimiterTracker &Tracker,
+                                      bool IsAmbiguous,
+                                      bool RequiresArg) {
++                                       DRPERF_BENCH_REGION("cf-038");
+   assert(getCurScope()->isFunctionPrototypeScope() &&
+          "Should call from a Function scope");
+   // lparen is already consumed!

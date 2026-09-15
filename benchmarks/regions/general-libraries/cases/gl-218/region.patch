@@ -1,0 +1,31 @@
+--- a/jsonschema/_utils.py
++++ b/jsonschema/_utils.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from collections.abc import Mapping, MutableMapping, Sequence
+ from urllib.parse import urlsplit
+ import re
+@@ -358,14 +359,15 @@
+     if validator.is_type(properties, "object"):
+         evaluated_keys += properties.keys() & instance.keys()
+ 
+-    for keyword in ["additionalProperties", "unevaluatedProperties"]:
+-        if (subschema := schema.get(keyword)) is None:
+-            continue
+-        evaluated_keys += (
+-            key
+-            for key, value in instance.items()
+-            if is_valid(validator.descend(value, subschema))
+-        )
++    with perfmark.region("gl-218"):
++        for keyword in ["additionalProperties", "unevaluatedProperties"]:
++            if (subschema := schema.get(keyword)) is None:
++                continue
++            evaluated_keys += (
++                key
++                for key, value in instance.items()
++                if is_valid(validator.descend(value, subschema))
++            )
+ 
+     if "patternProperties" in schema:
+         for property in instance:

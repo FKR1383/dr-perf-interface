@@ -1,0 +1,31 @@
+{
+  "case": "cf-084",
+  "phase": "parsing",
+  "scenario": "complex-declarator-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_84(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_84 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_84(2)==14);\nint main() { Item_84 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int (*decl_0)(double, char const*);\nint (*decl_1)(double, char const*);\nint (*decl_2)(double, char const*);\nint (*decl_3)(double, char const*);\n"
+    },
+    {
+      "size": 16,
+      "source": "int (*decl_0)(double, char const*);\nint (*decl_1)(double, char const*);\nint (*decl_2)(double, char const*);\nint (*decl_3)(double, char const*);\nint (*decl_4)(double, char const*);\nint (*decl_5)(double, char const*);\nint (*decl_6)(double, char const*);\nint (*decl_7)(double, char const*);\nint (*decl_8)(double, char const*);\nint (*decl_9)(double, char const*);\nint (*decl_10)(double, char const*);\nint (*decl_11)(double, char const*);\nint (*decl_12)(double, char const*);\nint (*decl_13)(double, char const*);\nint (*decl_14)(double, char const*);\nint (*decl_15)(double, char const*);\n"
+    },
+    {
+      "size": 64,
+      "source": "int (*decl_0)(double, char const*);\nint (*decl_1)(double, char const*);\nint (*decl_2)(double, char const*);\nint (*decl_3)(double, char const*);\nint (*decl_4)(double, char const*);\nint (*decl_5)(double, char const*);\nint (*decl_6)(double, char const*);\nint (*decl_7)(double, char const*);\nint (*decl_8)(double, char const*);\nint (*decl_9)(double, char const*);\nint (*decl_10)(double, char const*);\nint (*decl_11)(double, char const*);\nint (*decl_12)(double, char const*);\nint (*decl_13)(double, char const*);\nint (*decl_14)(double, char const*);\nint (*decl_15)(double, char const*);\nint (*decl_16)(double, char const*);\nint (*decl_17)(double, char const*);\nint (*decl_18)(double, char const*);\nint (*decl_19)(double, char const*);\nint (*decl_20)(double, char const*);\nint (*decl_21)(double, char const*);\nint (*decl_22)(double, char const*);\nint (*decl_23)(double, char const*);\nint (*decl_24)(double, char const*);\nint (*decl_25)(double, char const*);\nint (*decl_26)(double, char const*);\nint (*decl_27)(double, char const*);\nint (*decl_28)(double, char const*);\nint (*decl_29)(double, char const*);\nint (*decl_30)(double, char const*);\nint (*decl_31)(double, char const*);\nint (*decl_32)(double, char const*);\nint (*decl_33)(double, char const*);\nint (*decl_34)(double, char const*);\nint (*decl_35)(double, char const*);\nint (*decl_36)(double, char const*);\nint (*decl_37)(double, char const*);\nint (*decl_38)(double, char const*);\nint (*decl_39)(double, char const*);\nint (*decl_40)(double, char const*);\nint (*decl_41)(double, char const*);\nint (*decl_42)(double, char const*);\nint (*decl_43)(double, char const*);\nint (*decl_44)(double, char const*);\nint (*decl_45)(double, char const*);\nint (*decl_46)(double, char const*);\nint (*decl_47)(double, char const*);\nint (*decl_48)(double, char const*);\nint (*decl_49)(double, char const*);\nint (*decl_50)(double, char const*);\nint (*decl_51)(double, char const*);\nint (*decl_52)(double, char const*);\nint (*decl_53)(double, char const*);\nint (*decl_54)(double, char const*);\nint (*decl_55)(double, char const*);\nint (*decl_56)(double, char const*);\nint (*decl_57)(double, char const*);\nint (*decl_58)(double, char const*);\nint (*decl_59)(double, char const*);\nint (*decl_60)(double, char const*);\nint (*decl_61)(double, char const*);\nint (*decl_62)(double, char const*);\nint (*decl_63)(double, char const*);\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseExternalDeclaration",
+  "target_source": "clang/lib/Parse/Parser.cpp",
+  "mapping_note": "The complex-declarator-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

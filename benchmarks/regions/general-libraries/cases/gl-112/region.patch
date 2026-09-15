@@ -1,0 +1,60 @@
+--- a/numpy/_core/einsumfunc.py
++++ b/numpy/_core/einsumfunc.py
+@@ -2,6 +2,7 @@
+ Implementation of optimized einsum.
+ 
+ """
++import perfmark
+ import functools
+ import itertools
+ import operator
+@@ -1631,27 +1632,28 @@
+                                              einsum_call=True)
+ 
+     # Start contraction loop
+-    for num, contraction in enumerate(contraction_list):
+-        inds, einsum_str, _ = contraction
+-        tmp_operands = [operands.pop(x) for x in inds]
+-
+-        # Do we need to deal with the output?
+-        handle_out = specified_out and ((num + 1) == len(contraction_list))
+-
+-        # If out was specified
+-        if handle_out:
+-            kwargs["out"] = out
+-
+-        if len(tmp_operands) == 2:
+-            # Call (batched) matrix multiplication if possible
+-            new_view = bmm_einsum(einsum_str, *tmp_operands, **kwargs)
+-        else:
+-            # Call einsum
+-            new_view = c_einsum(einsum_str, *tmp_operands, **kwargs)
+-
+-        # Append new items and dereference what we can
+-        operands.append(new_view)
+-        del tmp_operands, new_view
++    with perfmark.region("gl-112"):
++        for num, contraction in enumerate(contraction_list):
++            inds, einsum_str, _ = contraction
++            tmp_operands = [operands.pop(x) for x in inds]
++    
++            # Do we need to deal with the output?
++            handle_out = specified_out and ((num + 1) == len(contraction_list))
++    
++            # If out was specified
++            if handle_out:
++                kwargs["out"] = out
++    
++            if len(tmp_operands) == 2:
++                # Call (batched) matrix multiplication if possible
++                new_view = bmm_einsum(einsum_str, *tmp_operands, **kwargs)
++            else:
++                # Call einsum
++                new_view = c_einsum(einsum_str, *tmp_operands, **kwargs)
++    
++            # Append new items and dereference what we can
++            operands.append(new_view)
++            del tmp_operands, new_view
+ 
+     if specified_out:
+         return out

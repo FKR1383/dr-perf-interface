@@ -1,0 +1,72 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -741,35 +742,36 @@
+             for binary_format in binary_formats:
+                 yield f"macosx_{major_version}_{minor_version}_{binary_format}"
+ 
+-    if version >= (11, 0):
+-        # Starting with Mac OS 11, each yearly release bumps the major version
+-        # number.   The minor versions are now the midyear updates.
+-        minor_version = 0
+-        for major_version in range(version[0], 10, -1):
+-            compat_version = major_version, minor_version
+-            binary_formats = _mac_binary_formats(compat_version, arch)
+-            for binary_format in binary_formats:
+-                yield f"macosx_{major_version}_{minor_version}_{binary_format}"
+-
+-        # Mac OS 11 on x86_64 is compatible with binaries from previous releases.
+-        # Arm64 support was introduced in 11.0, so no Arm binaries from previous
+-        # releases exist.
+-        #
+-        # However, the "universal2" binary format can have a
+-        # macOS version earlier than 11.0 when the x86_64 part of the binary supports
+-        # that version of macOS.
+-        major_version = 10
+-        if arch == "x86_64":
+-            for minor_version in range(16, 3, -1):
++    with perfmark.region("gl-199"):
++        if version >= (11, 0):
++            # Starting with Mac OS 11, each yearly release bumps the major version
++            # number.   The minor versions are now the midyear updates.
++            minor_version = 0
++            for major_version in range(version[0], 10, -1):
+                 compat_version = major_version, minor_version
+                 binary_formats = _mac_binary_formats(compat_version, arch)
+                 for binary_format in binary_formats:
+                     yield f"macosx_{major_version}_{minor_version}_{binary_format}"
+-        else:
+-            for minor_version in range(16, 3, -1):
+-                compat_version = major_version, minor_version
+-                binary_format = "universal2"
+-                yield f"macosx_{major_version}_{minor_version}_{binary_format}"
++    
++            # Mac OS 11 on x86_64 is compatible with binaries from previous releases.
++            # Arm64 support was introduced in 11.0, so no Arm binaries from previous
++            # releases exist.
++            #
++            # However, the "universal2" binary format can have a
++            # macOS version earlier than 11.0 when the x86_64 part of the binary supports
++            # that version of macOS.
++            major_version = 10
++            if arch == "x86_64":
++                for minor_version in range(16, 3, -1):
++                    compat_version = major_version, minor_version
++                    binary_formats = _mac_binary_formats(compat_version, arch)
++                    for binary_format in binary_formats:
++                        yield f"macosx_{major_version}_{minor_version}_{binary_format}"
++            else:
++                for minor_version in range(16, 3, -1):
++                    compat_version = major_version, minor_version
++                    binary_format = "universal2"
++                    yield f"macosx_{major_version}_{minor_version}_{binary_format}"
+ 
+ 
+ def ios_platforms(

@@ -1,0 +1,42 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -461,18 +462,19 @@
+ 
+     yield from (Tag(interpreter, "none", platform_) for platform_ in platforms)
+ 
+-    if use_abi3 or use_abi3t:
+-        for minor_version in range(python_version[1] - 1, 1, -1):
+-            for platform_ in platforms:
+-                version = _version_nodot((python_version[0], minor_version))
+-                interpreter = f"cp{version}"
+-                if use_abi3:
+-                    yield Tag(interpreter, "abi3", platform_)
+-                if use_abi3t:
+-                    # Support for abi3t was introduced in Python 3.15, but in
+-                    # principle abi3t wheels are possible for older limited API
+-                    # versions, so allow things like ("cp37", "abi3t", "platform")
+-                    yield Tag(interpreter, "abi3t", platform_)
++    with perfmark.region("gl-197"):
++        if use_abi3 or use_abi3t:
++            for minor_version in range(python_version[1] - 1, 1, -1):
++                for platform_ in platforms:
++                    version = _version_nodot((python_version[0], minor_version))
++                    interpreter = f"cp{version}"
++                    if use_abi3:
++                        yield Tag(interpreter, "abi3", platform_)
++                    if use_abi3t:
++                        # Support for abi3t was introduced in Python 3.15, but in
++                        # principle abi3t wheels are possible for older limited API
++                        # versions, so allow things like ("cp37", "abi3t", "platform")
++                        yield Tag(interpreter, "abi3t", platform_)
+ 
+ 
+ def _generic_abi() -> Iterator[str]:

@@ -1,0 +1,84 @@
+--- a/networkx/algorithms/distance_regular.py
++++ b/networkx/algorithms/distance_regular.py
+@@ -3,6 +3,7 @@
+ Distance-regular graphs
+ =======================
+ """
++import perfmark
+ 
+ from collections import defaultdict
+ from itertools import combinations_with_replacement
+@@ -175,39 +176,40 @@
+     # so let's compute it as we go in the hope that we can stop early
+     diam = 0
+     max_diameter_for_dr_graphs = (8 * log(len(G), 2)) / 3
+-    for u, v in combinations_with_replacement(G, 2):
+-        # compute needed shortest path lengths
+-        pl_u = path_length[u]
+-        if v not in pl_u:
+-            pl_u.update(nx.single_source_shortest_path_length(G, u))
+-            for x, distance in pl_u.items():
+-                path_length[x][u] = distance
+-
+-        i = path_length[u][v]
+-        diam = max(diam, i)
+-
+-        # diameter too large: graph can't be distance-regular
+-        if diam > max_diameter_for_dr_graphs:
+-            raise nx.NetworkXError("Graph is not distance regular.")
+-
+-        vnbrs = G[v]
+-        # compute needed path lengths
+-        for n in vnbrs:
+-            pl_n = path_length[n]
+-            if u not in pl_n:
+-                pl_n.update(nx.single_source_shortest_path_length(G, n))
+-                for x, distance in pl_n.items():
+-                    path_length[x][n] = distance
+-
+-        # number of neighbors of v at a distance of i-1 from u
+-        c = sum(1 for n in vnbrs if pl_u[n] == i - 1)
+-        # number of neighbors of v at a distance of i+1 from u
+-        b = sum(1 for n in vnbrs if pl_u[n] == i + 1)
+-        # b, c are independent of u and v
+-        if cint.get(i, c) != c or bint.get(i, b) != b:
+-            raise nx.NetworkXError("Graph is not distance regular")
+-        bint[i] = b
+-        cint[i] = c
++    with perfmark.region("gl-025"):
++        for u, v in combinations_with_replacement(G, 2):
++            # compute needed shortest path lengths
++            pl_u = path_length[u]
++            if v not in pl_u:
++                pl_u.update(nx.single_source_shortest_path_length(G, u))
++                for x, distance in pl_u.items():
++                    path_length[x][u] = distance
++    
++            i = path_length[u][v]
++            diam = max(diam, i)
++    
++            # diameter too large: graph can't be distance-regular
++            if diam > max_diameter_for_dr_graphs:
++                raise nx.NetworkXError("Graph is not distance regular.")
++    
++            vnbrs = G[v]
++            # compute needed path lengths
++            for n in vnbrs:
++                pl_n = path_length[n]
++                if u not in pl_n:
++                    pl_n.update(nx.single_source_shortest_path_length(G, n))
++                    for x, distance in pl_n.items():
++                        path_length[x][n] = distance
++    
++            # number of neighbors of v at a distance of i-1 from u
++            c = sum(1 for n in vnbrs if pl_u[n] == i - 1)
++            # number of neighbors of v at a distance of i+1 from u
++            b = sum(1 for n in vnbrs if pl_u[n] == i + 1)
++            # b, c are independent of u and v
++            if cint.get(i, c) != c or bint.get(i, b) != b:
++                raise nx.NetworkXError("Graph is not distance regular")
++            bint[i] = b
++            cint[i] = c
+ 
+     return (
+         [bint.get(j, 0) for j in range(diam)],

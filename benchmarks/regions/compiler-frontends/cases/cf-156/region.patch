@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriterDecl.cpp
++++ b/clang/lib/Serialization/ASTWriterDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "clang/AST/Attr.h"
+ #include "clang/AST/DeclCXX.h"
+@@ -679,6 +680,7 @@
+ }
+ 
+ void ASTDeclWriter::VisitFunctionDecl(FunctionDecl *D) {
++  DRPERF_BENCH_REGION("cf-156");
+   static_assert(DeclContext::NumFunctionDeclBits == 45,
+                 "You need to update the serializer after you change the "
+                 "FunctionDeclBits");

@@ -1,0 +1,75 @@
+--- a/lark/lark.py
++++ b/lark/lark.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from abc import ABC, abstractmethod
+ import getpass
+ import sys, os, pickle
+@@ -195,36 +196,37 @@
+     }
+ 
+     def __init__(self, options_dict: Dict[str, Any]) -> None:
+-        o = dict(options_dict)
+-
+-        options = {}
+-        for name, default in self._defaults.items():
+-            if name in o:
+-                value = o.pop(name)
+-                if isinstance(default, bool) and name not in ('cache', 'use_bytes', 'propagate_positions'):
+-                    value = bool(value)
+-            else:
+-                value = default
+-
+-            options[name] = value
+-
+-        if isinstance(options['start'], str):
+-            options['start'] = [options['start']]
+-
+-        self.__dict__['options'] = options
+-
+-
+-        assert_config(self.parser, ('earley', 'lalr', 'cyk', None))
+-
+-        if self.parser == 'earley' and self.transformer:
+-            raise ConfigurationError('Cannot specify an embedded transformer when using the Earley algorithm. '
+-                             'Please use your transformer on the resulting parse tree, or use a different algorithm (i.e. LALR)')
+-
+-        if self.cache_grammar and not self.cache:
+-            raise ConfigurationError('cache_grammar cannot be set when cache is disabled')
+-
+-        if o:
+-            raise ConfigurationError("Unknown options: %s" % o.keys())
++        with perfmark.region("lt-211"):
++            o = dict(options_dict)
++
++            options = {}
++            for name, default in self._defaults.items():
++                if name in o:
++                    value = o.pop(name)
++                    if isinstance(default, bool) and name not in ('cache', 'use_bytes', 'propagate_positions'):
++                        value = bool(value)
++                else:
++                    value = default
++
++                options[name] = value
++
++            if isinstance(options['start'], str):
++                options['start'] = [options['start']]
++
++            self.__dict__['options'] = options
++
++
++            assert_config(self.parser, ('earley', 'lalr', 'cyk', None))
++
++            if self.parser == 'earley' and self.transformer:
++                raise ConfigurationError('Cannot specify an embedded transformer when using the Earley algorithm. '
++                                 'Please use your transformer on the resulting parse tree, or use a different algorithm (i.e. LALR)')
++
++            if self.cache_grammar and not self.cache:
++                raise ConfigurationError('cache_grammar cannot be set when cache is disabled')
++
++            if o:
++                raise ConfigurationError("Unknown options: %s" % o.keys())
+ 
+     def __getattr__(self, name: str) -> Any:
+         try:

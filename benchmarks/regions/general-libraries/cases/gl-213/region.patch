@@ -1,0 +1,22 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -598,8 +599,9 @@
+         python_version = sys.version_info[:2]
+     elif not python_version:
+         raise ValueError("python_version must contain at least one item")
+-    for version in _py_interpreter_range(python_version):
+-        yield Tag(version, "none", "any")
++    with perfmark.region("gl-213"):
++        for version in _py_interpreter_range(python_version):
++            yield Tag(version, "none", "any")
+ 
+ 
+ def compatible_tags(

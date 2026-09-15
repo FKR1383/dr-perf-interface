@@ -1,0 +1,33 @@
+--- a/src/requests/cookies.py
++++ b/src/requests/cookies.py
+@@ -8,6 +8,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import calendar
+ import copy
+@@ -613,13 +614,14 @@
+     if not isinstance(cookiejar, cookielib.CookieJar):  # runtime guard
+         raise ValueError("You can only merge into CookieJar")
+ 
+-    if isinstance(cookies, dict):
+-        cookiejar = cookiejar_from_dict(cookies, cookiejar=cookiejar, overwrite=False)
+-    elif isinstance(cookies, cookielib.CookieJar):
+-        if update_method := getattr(cookiejar, "update", None):
+-            update_method(cookies)
+-        else:
+-            for cookie_in_jar in cookies:
+-                cookiejar.set_cookie(cookie_in_jar)
++    with perfmark.region("gl-196"):
++        if isinstance(cookies, dict):
++            cookiejar = cookiejar_from_dict(cookies, cookiejar=cookiejar, overwrite=False)
++        elif isinstance(cookies, cookielib.CookieJar):
++            if update_method := getattr(cookiejar, "update", None):
++                update_method(cookies)
++            else:
++                for cookie_in_jar in cookies:
++                    cookiejar.set_cookie(cookie_in_jar)
+ 
+     return cookiejar

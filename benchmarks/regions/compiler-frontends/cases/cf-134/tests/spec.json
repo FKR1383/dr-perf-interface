@@ -1,0 +1,32 @@
+{
+  "case": "cf-134",
+  "phase": "source-tooling",
+  "scenario": "diagnostic-fixit",
+  "compiler": "clang-check",
+  "flags": [
+    "-fsyntax-only",
+    "-Wall",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_134(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_134 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_134(2)==14);\nint main() { Item_134 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_134_0 { int value[1]; };\nstruct Scale_134_1 { int value[2]; };\nstruct Scale_134_2 { int value[3]; };\nstruct Scale_134_3 { int value[4]; };\ntemplate<class T> constexpr T fold_134(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_134 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_134(2)==14);\nint main() { Item_134 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_134_0 { int value[1]; };\nstruct Scale_134_1 { int value[2]; };\nstruct Scale_134_2 { int value[3]; };\nstruct Scale_134_3 { int value[4]; };\nstruct Scale_134_4 { int value[1]; };\nstruct Scale_134_5 { int value[2]; };\nstruct Scale_134_6 { int value[3]; };\nstruct Scale_134_7 { int value[4]; };\nstruct Scale_134_8 { int value[1]; };\nstruct Scale_134_9 { int value[2]; };\nstruct Scale_134_10 { int value[3]; };\nstruct Scale_134_11 { int value[4]; };\nstruct Scale_134_12 { int value[1]; };\nstruct Scale_134_13 { int value[2]; };\nstruct Scale_134_14 { int value[3]; };\nstruct Scale_134_15 { int value[4]; };\ntemplate<class T> constexpr T fold_134(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_134 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_134(2)==14);\nint main() { Item_134 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_134_0 { int value[1]; };\nstruct Scale_134_1 { int value[2]; };\nstruct Scale_134_2 { int value[3]; };\nstruct Scale_134_3 { int value[4]; };\nstruct Scale_134_4 { int value[1]; };\nstruct Scale_134_5 { int value[2]; };\nstruct Scale_134_6 { int value[3]; };\nstruct Scale_134_7 { int value[4]; };\nstruct Scale_134_8 { int value[1]; };\nstruct Scale_134_9 { int value[2]; };\nstruct Scale_134_10 { int value[3]; };\nstruct Scale_134_11 { int value[4]; };\nstruct Scale_134_12 { int value[1]; };\nstruct Scale_134_13 { int value[2]; };\nstruct Scale_134_14 { int value[3]; };\nstruct Scale_134_15 { int value[4]; };\nstruct Scale_134_16 { int value[1]; };\nstruct Scale_134_17 { int value[2]; };\nstruct Scale_134_18 { int value[3]; };\nstruct Scale_134_19 { int value[4]; };\nstruct Scale_134_20 { int value[1]; };\nstruct Scale_134_21 { int value[2]; };\nstruct Scale_134_22 { int value[3]; };\nstruct Scale_134_23 { int value[4]; };\nstruct Scale_134_24 { int value[1]; };\nstruct Scale_134_25 { int value[2]; };\nstruct Scale_134_26 { int value[3]; };\nstruct Scale_134_27 { int value[4]; };\nstruct Scale_134_28 { int value[1]; };\nstruct Scale_134_29 { int value[2]; };\nstruct Scale_134_30 { int value[3]; };\nstruct Scale_134_31 { int value[4]; };\nstruct Scale_134_32 { int value[1]; };\nstruct Scale_134_33 { int value[2]; };\nstruct Scale_134_34 { int value[3]; };\nstruct Scale_134_35 { int value[4]; };\nstruct Scale_134_36 { int value[1]; };\nstruct Scale_134_37 { int value[2]; };\nstruct Scale_134_38 { int value[3]; };\nstruct Scale_134_39 { int value[4]; };\nstruct Scale_134_40 { int value[1]; };\nstruct Scale_134_41 { int value[2]; };\nstruct Scale_134_42 { int value[3]; };\nstruct Scale_134_43 { int value[4]; };\nstruct Scale_134_44 { int value[1]; };\nstruct Scale_134_45 { int value[2]; };\nstruct Scale_134_46 { int value[3]; };\nstruct Scale_134_47 { int value[4]; };\nstruct Scale_134_48 { int value[1]; };\nstruct Scale_134_49 { int value[2]; };\nstruct Scale_134_50 { int value[3]; };\nstruct Scale_134_51 { int value[4]; };\nstruct Scale_134_52 { int value[1]; };\nstruct Scale_134_53 { int value[2]; };\nstruct Scale_134_54 { int value[3]; };\nstruct Scale_134_55 { int value[4]; };\nstruct Scale_134_56 { int value[1]; };\nstruct Scale_134_57 { int value[2]; };\nstruct Scale_134_58 { int value[3]; };\nstruct Scale_134_59 { int value[4]; };\nstruct Scale_134_60 { int value[1]; };\nstruct Scale_134_61 { int value[2]; };\nstruct Scale_134_62 { int value[3]; };\nstruct Scale_134_63 { int value[4]; };\ntemplate<class T> constexpr T fold_134(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_134 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_134(2)==14);\nint main() { Item_134 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "ToolInvocation::run",
+  "target_source": "clang/lib/Tooling/Tooling.cpp",
+  "mapping_note": "The diagnostic-fixit construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

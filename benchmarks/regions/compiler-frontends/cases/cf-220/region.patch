@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/InitHeaderSearch.cpp
++++ b/clang/lib/Lex/InitHeaderSearch.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/FileManager.h"
+ #include "clang/Basic/LangOptions.h"
+ #include "clang/Config/config.h" // C_INCLUDE_DIRS
+@@ -472,6 +473,7 @@
+ }
+ 
+ void InitHeaderSearch::Realize(const LangOptions &Lang) {
++  DRPERF_BENCH_REGION("cf-220");
+   // Concatenate ANGLE+SYSTEM+AFTER chains together into SearchList.
+   std::vector<DirectoryLookupInfo> SearchList;
+   SearchList.reserve(IncludePath.size());

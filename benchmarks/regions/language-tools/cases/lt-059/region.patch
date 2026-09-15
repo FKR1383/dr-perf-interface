@@ -1,0 +1,94 @@
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import importlib
+ import logging
+@@ -981,45 +982,46 @@
+             The corresponding Dialect instance.
+         """
+ 
+-        if not dialect:
+-            return cls()
+-        if isinstance(dialect, _Dialect):
+-            return dialect()
+-        if isinstance(dialect, Dialect):
+-            return dialect
+-        if isinstance(dialect, str):
+-            try:
+-                dialect_name, *kv_strings = dialect.split(",")
+-                kv_pairs = (kv.split("=") for kv in kv_strings)
+-                kwargs = {}
+-                for pair in kv_pairs:
+-                    key = pair[0].strip()
+-                    value: bool | str | None = None
+-
+-                    if len(pair) == 1:
+-                        # Default initialize standalone settings to True
+-                        value = True
+-                    elif len(pair) == 2:
+-                        value = pair[1].strip()
+-
+-                    kwargs[key] = to_bool(value)
+-
+-            except ValueError:
+-                raise ValueError(
+-                    f"Invalid dialect format: '{dialect}'. "
+-                    "Please use the correct format: 'dialect [, k1 = v2 [, ...]]'."
+-                )
+-
+-            result = cls.get(dialect_name.strip())
+-            if not result:
+-                # Include both built-in dialects and any loaded dialects for better error messages
+-                all_dialects = set(DIALECT_MODULE_NAMES) | set(cls._classes.keys())
+-                suggest_closest_match_and_fail("dialect", dialect_name, all_dialects)
+-
+-            assert result is not None
+-            return result(**kwargs)
+-
+-        raise ValueError(f"Invalid dialect type for '{dialect}': '{type(dialect)}'.")
++        with perfmark.region("lt-059"):
++            if not dialect:
++                return cls()
++            if isinstance(dialect, _Dialect):
++                return dialect()
++            if isinstance(dialect, Dialect):
++                return dialect
++            if isinstance(dialect, str):
++                try:
++                    dialect_name, *kv_strings = dialect.split(",")
++                    kv_pairs = (kv.split("=") for kv in kv_strings)
++                    kwargs = {}
++                    for pair in kv_pairs:
++                        key = pair[0].strip()
++                        value: bool | str | None = None
++
++                        if len(pair) == 1:
++                            # Default initialize standalone settings to True
++                            value = True
++                        elif len(pair) == 2:
++                            value = pair[1].strip()
++
++                        kwargs[key] = to_bool(value)
++
++                except ValueError:
++                    raise ValueError(
++                        f"Invalid dialect format: '{dialect}'. "
++                        "Please use the correct format: 'dialect [, k1 = v2 [, ...]]'."
++                    )
++
++                result = cls.get(dialect_name.strip())
++                if not result:
++                    # Include both built-in dialects and any loaded dialects for better error messages
++                    all_dialects = set(DIALECT_MODULE_NAMES) | set(cls._classes.keys())
++                    suggest_closest_match_and_fail("dialect", dialect_name, all_dialects)
++
++                assert result is not None
++                return result(**kwargs)
++
++            raise ValueError(f"Invalid dialect type for '{dialect}': '{type(dialect)}'.")
+ 
+     @classmethod
+     def format_time(cls, expression: str | exp.Expr | None) -> exp.Expr | None:

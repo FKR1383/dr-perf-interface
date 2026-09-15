@@ -1,0 +1,20 @@
+--- a/src/attr/_make.py
++++ b/src/attr/_make.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: MIT
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import abc
+ import contextlib
+@@ -1998,7 +1999,8 @@
+     if attrs is None:
+         msg = f"{cls!r} is not an attrs-decorated class."
+         raise NotAnAttrsClassError(msg)
+-    return {a.name: a for a in attrs}
++    with perfmark.region("gl-241"):
++        return {a.name: a for a in attrs}
+ 
+ 
+ def validate(inst):

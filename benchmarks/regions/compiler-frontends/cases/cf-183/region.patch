@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/Expr.cpp
++++ b/clang/lib/AST/Expr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/Expr.h"
+ #include "clang/AST/APValue.h"
+ #include "clang/AST/ASTContext.h"
+@@ -3613,6 +3614,7 @@
+ 
+ bool Expr::HasSideEffects(const ASTContext &Ctx,
+                           bool IncludePossibleEffects) const {
++                            DRPERF_BENCH_REGION("cf-183");
+   // In circumstances where we care about definite side effects instead of
+   // potential side effects, we want to ignore expressions that are part of a
+   // macro expansion as a potential side effect.

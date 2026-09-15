@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -2954,6 +2955,7 @@
+ 
+ static bool ParseFrontendArgs(FrontendOptions &Opts, ArgList &Args,
+                               DiagnosticsEngine &Diags, bool &IsHeaderFile) {
++                                DRPERF_BENCH_REGION("cf-168");
+   unsigned NumErrorsBefore = Diags.getNumErrors();
+ 
+   FrontendOptions &FrontendOpts = Opts;

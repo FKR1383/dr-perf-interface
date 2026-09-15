@@ -1,0 +1,90 @@
+--- a/lark/parsers/lalr_parser_state.py
++++ b/lark/parsers/lalr_parser_state.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from copy import deepcopy, copy
+ from typing import Dict, Any, Generic, List
+ from ..lexer import Token, LexerThread
+@@ -65,46 +66,47 @@
+         )
+ 
+     def feed_token(self, token: Token, is_end=False) -> Any:
+-        state_stack = self.state_stack
+-        value_stack = self.value_stack
+-        states = self.parse_conf.states
+-        end_state = self.parse_conf.end_state
+-        callbacks = self.parse_conf.callbacks
++        with perfmark.region("lt-204"):
++            state_stack = self.state_stack
++            value_stack = self.value_stack
++            states = self.parse_conf.states
++            end_state = self.parse_conf.end_state
++            callbacks = self.parse_conf.callbacks
+ 
+-        while True:
+-            state = state_stack[-1]
+-            try:
+-                action, arg = states[state][token.type]
+-            except KeyError:
+-                expected = {s for s in states[state].keys() if s.isupper()}
+-                raise UnexpectedToken(token, expected, state=self, interactive_parser=None)
++            while True:
++                state = state_stack[-1]
++                try:
++                    action, arg = states[state][token.type]
++                except KeyError:
++                    expected = {s for s in states[state].keys() if s.isupper()}
++                    raise UnexpectedToken(token, expected, state=self, interactive_parser=None)
+ 
+-            assert arg != end_state
++                assert arg != end_state
+ 
+-            if action is Shift:
+-                # shift once and return
+-                assert not is_end
+-                state_stack.append(arg)
+-                value_stack.append(token if token.type not in callbacks else callbacks[token.type](token))
+-                return
+-            else:
+-                # reduce+shift as many times as necessary
+-                rule = arg
+-                size = len(rule.expansion)
+-                if size:
+-                    s = value_stack[-size:]
+-                    del state_stack[-size:]
+-                    del value_stack[-size:]
++                if action is Shift:
++                    # shift once and return
++                    assert not is_end
++                    state_stack.append(arg)
++                    value_stack.append(token if token.type not in callbacks else callbacks[token.type](token))
++                    return
+                 else:
+-                    s = []
++                    # reduce+shift as many times as necessary
++                    rule = arg
++                    size = len(rule.expansion)
++                    if size:
++                        s = value_stack[-size:]
++                        del state_stack[-size:]
++                        del value_stack[-size:]
++                    else:
++                        s = []
+ 
+-                value = callbacks[rule](s) if callbacks else s
++                    value = callbacks[rule](s) if callbacks else s
+ 
+-                _action, new_state = states[state_stack[-1]][rule.origin.name]
+-                assert _action is Shift
+-                state_stack.append(new_state)
+-                value_stack.append(value)
++                    _action, new_state = states[state_stack[-1]][rule.origin.name]
++                    assert _action is Shift
++                    state_stack.append(new_state)
++                    value_stack.append(value)
+ 
+-                if is_end and state_stack[-1] == end_state:
+-                    return value_stack[-1]
++                    if is_end and state_stack[-1] == end_state:
++                        return value_stack[-1]
+ ###}

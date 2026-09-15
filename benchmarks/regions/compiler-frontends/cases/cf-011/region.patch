@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReader.cpp
++++ b/clang/lib/Serialization/ASTReader.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "TemplateArgumentHasher.h"
+@@ -10486,6 +10487,7 @@
+ }
+ 
+ void ASTReader::diagnoseOdrViolations() {
++  DRPERF_BENCH_REGION("cf-011");
+   if (PendingOdrMergeFailures.empty() && PendingOdrMergeChecks.empty() &&
+       PendingRecordOdrMergeFailures.empty() &&
+       PendingFunctionOdrMergeFailures.empty() &&

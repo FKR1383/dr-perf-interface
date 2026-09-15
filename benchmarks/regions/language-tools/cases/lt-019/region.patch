@@ -1,0 +1,131 @@
+--- a/sympy/external/importtools.py
++++ b/sympy/external/importtools.py
+@@ -1,5 +1,6 @@
+ """Tools to assist importing optional external modules."""
+ from __future__ import annotations
++import perfmark
+ 
+ import sys
+ import re
+@@ -125,64 +126,65 @@
+     """
+     # keyword argument overrides default, and global variable overrides
+     # keyword argument.
+-    warn_old_version = (WARN_OLD_VERSION if WARN_OLD_VERSION is not None
+-        else warn_old_version or True)
+-    warn_not_installed = (WARN_NOT_INSTALLED if WARN_NOT_INSTALLED is not None
+-        else warn_not_installed or False)
++    with perfmark.region("lt-019"):
++        warn_old_version = (WARN_OLD_VERSION if WARN_OLD_VERSION is not None
++            else warn_old_version or True)
++        warn_not_installed = (WARN_NOT_INSTALLED if WARN_NOT_INSTALLED is not None
++            else warn_not_installed or False)
+ 
+-    import warnings
++        import warnings
+ 
+-    # Check Python first so we don't waste time importing a module we can't use
+-    if min_python_version:
+-        if sys.version_info < min_python_version:
+-            if warn_old_version:
+-                warnings.warn("Python version is too old to use %s "
+-                    "(%s or newer required)" % (
+-                        module, '.'.join(map(str, min_python_version))),
+-                    UserWarning, stacklevel=2)
++        # Check Python first so we don't waste time importing a module we can't use
++        if min_python_version:
++            if sys.version_info < min_python_version:
++                if warn_old_version:
++                    warnings.warn("Python version is too old to use %s "
++                        "(%s or newer required)" % (
++                            module, '.'.join(map(str, min_python_version))),
++                        UserWarning, stacklevel=2)
++                return
++
++        try:
++            mod = __import__(module, **import_kwargs)
++
++            ## there's something funny about imports with matplotlib and py3k. doing
++            ##    from matplotlib import collections
++            ## gives python's stdlib collections module. explicitly re-importing
++            ## the module fixes this.
++            from_list = import_kwargs.get('fromlist', ())
++            for submod in from_list:
++                if submod == 'collections' and mod.__name__ == 'matplotlib':
++                    __import__(module + '.' + submod)
++        except ImportError:
++            if warn_not_installed:
++                warnings.warn("%s module is not installed" % module, UserWarning,
++                        stacklevel=2)
++            return
++        except catch as e:
++            if warn_not_installed:
++                warnings.warn(
++                    "%s module could not be used (%s)" % (module, repr(e)),
++                    stacklevel=2)
+             return
+ 
+-    try:
+-        mod = __import__(module, **import_kwargs)
++        if min_module_version:
++            modversion = getattr(mod, module_version_attr)
++            if module_version_attr_call_args is not None:
++                modversion = modversion(*module_version_attr_call_args)
++            if version_tuple(modversion) < version_tuple(min_module_version):
++                if warn_old_version:
++                    # Attempt to create a pretty string version of the version
++                    if isinstance(min_module_version, str):
++                        verstr = min_module_version
++                    elif isinstance(min_module_version, (tuple, list)):
++                        verstr = '.'.join(map(str, min_module_version))
++                    else:
++                        # Either don't know what this is.  Hopefully
++                        # it's something that has a nice str version, like an int.
++                        verstr = str(min_module_version)
++                    warnings.warn("%s version is too old to use "
++                        "(%s or newer required)" % (module, verstr),
++                        UserWarning, stacklevel=2)
++                return
+ 
+-        ## there's something funny about imports with matplotlib and py3k. doing
+-        ##    from matplotlib import collections
+-        ## gives python's stdlib collections module. explicitly re-importing
+-        ## the module fixes this.
+-        from_list = import_kwargs.get('fromlist', ())
+-        for submod in from_list:
+-            if submod == 'collections' and mod.__name__ == 'matplotlib':
+-                __import__(module + '.' + submod)
+-    except ImportError:
+-        if warn_not_installed:
+-            warnings.warn("%s module is not installed" % module, UserWarning,
+-                    stacklevel=2)
+-        return
+-    except catch as e:
+-        if warn_not_installed:
+-            warnings.warn(
+-                "%s module could not be used (%s)" % (module, repr(e)),
+-                stacklevel=2)
+-        return
+-
+-    if min_module_version:
+-        modversion = getattr(mod, module_version_attr)
+-        if module_version_attr_call_args is not None:
+-            modversion = modversion(*module_version_attr_call_args)
+-        if version_tuple(modversion) < version_tuple(min_module_version):
+-            if warn_old_version:
+-                # Attempt to create a pretty string version of the version
+-                if isinstance(min_module_version, str):
+-                    verstr = min_module_version
+-                elif isinstance(min_module_version, (tuple, list)):
+-                    verstr = '.'.join(map(str, min_module_version))
+-                else:
+-                    # Either don't know what this is.  Hopefully
+-                    # it's something that has a nice str version, like an int.
+-                    verstr = str(min_module_version)
+-                warnings.warn("%s version is too old to use "
+-                    "(%s or newer required)" % (module, verstr),
+-                    UserWarning, stacklevel=2)
+-            return
+-
+-    return mod
++        return mod

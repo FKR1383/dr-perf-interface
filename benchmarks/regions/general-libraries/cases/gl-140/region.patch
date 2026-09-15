@@ -1,0 +1,90 @@
+--- a/pandas/core/dtypes/concat.py
++++ b/pandas/core/dtypes/concat.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import (
+     TYPE_CHECKING,
+@@ -356,42 +357,43 @@
+         raise TypeError("dtype of categories must be the same")
+ 
+     ordered: bool | None = False
+-    if all(first._categories_match_up_to_permutation(other) for other in to_union[1:]):
+-        # identical categories - fastpath
+-        categories = first.categories
+-        ordered = first.ordered
+-
+-        all_codes = [first._encode_with_my_categories(x)._codes for x in to_union]
+-        new_codes = np.concatenate(all_codes)
+-
+-        if sort_categories and not ignore_order and ordered:
+-            raise TypeError("Cannot use sort_categories=True with ordered Categoricals")
+-
+-        if sort_categories and not categories.is_monotonic_increasing:
+-            categories = categories.sort_values()
+-            indexer = categories.get_indexer(first.categories)
+-
+-            from pandas.core.algorithms import take_nd
+-
+-            new_codes = take_nd(indexer, new_codes, fill_value=-1)
+-    elif ignore_order or all(not c.ordered for c in to_union):
+-        # different categories - union and recode
+-        cats = first.categories.append([c.categories for c in to_union[1:]])
+-        categories = cats.unique()
+-        if sort_categories:
+-            categories = categories.sort_values()
+-
+-        all_codes = [
+-            recode_for_categories(c.codes, c.categories, categories, copy=False)
+-            for c in to_union
+-        ]
+-        new_codes = np.concatenate(all_codes)
+-    else:
+-        # ordered - to show a proper error message
+-        if all(c.ordered for c in to_union):
+-            msg = "to union ordered Categoricals, all categories must be the same"
+-            raise TypeError(msg)
+-        raise TypeError("Categorical.ordered must be the same")
++    with perfmark.region("gl-140"):
++        if all(first._categories_match_up_to_permutation(other) for other in to_union[1:]):
++            # identical categories - fastpath
++            categories = first.categories
++            ordered = first.ordered
++    
++            all_codes = [first._encode_with_my_categories(x)._codes for x in to_union]
++            new_codes = np.concatenate(all_codes)
++    
++            if sort_categories and not ignore_order and ordered:
++                raise TypeError("Cannot use sort_categories=True with ordered Categoricals")
++    
++            if sort_categories and not categories.is_monotonic_increasing:
++                categories = categories.sort_values()
++                indexer = categories.get_indexer(first.categories)
++    
++                from pandas.core.algorithms import take_nd
++    
++                new_codes = take_nd(indexer, new_codes, fill_value=-1)
++        elif ignore_order or all(not c.ordered for c in to_union):
++            # different categories - union and recode
++            cats = first.categories.append([c.categories for c in to_union[1:]])
++            categories = cats.unique()
++            if sort_categories:
++                categories = categories.sort_values()
++    
++            all_codes = [
++                recode_for_categories(c.codes, c.categories, categories, copy=False)
++                for c in to_union
++            ]
++            new_codes = np.concatenate(all_codes)
++        else:
++            # ordered - to show a proper error message
++            if all(c.ordered for c in to_union):
++                msg = "to union ordered Categoricals, all categories must be the same"
++                raise TypeError(msg)
++            raise TypeError("Categorical.ordered must be the same")
+ 
+     if ignore_order:
+         ordered = False

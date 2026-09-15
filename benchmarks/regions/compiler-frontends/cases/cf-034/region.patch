@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGDebugInfo.cpp
++++ b/clang/lib/CodeGen/CGDebugInfo.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGDebugInfo.h"
+ #include "CGBlocks.h"
+ #include "CGCXXABI.h"
+@@ -698,6 +699,7 @@
+ }
+ 
+ llvm::DIType *CGDebugInfo::CreateType(const BuiltinType *BT) {
++  DRPERF_BENCH_REGION("cf-034");
+   llvm::dwarf::TypeKind Encoding;
+   StringRef BTName;
+   switch (BT->getKind()) {

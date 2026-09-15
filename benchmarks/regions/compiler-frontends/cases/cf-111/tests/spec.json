@@ -1,0 +1,31 @@
+{
+  "case": "cf-111",
+  "phase": "parsing",
+  "scenario": "compound-statement-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_111(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_111 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_111(2)==14);\nint main() { Item_111 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int function_0(int x){if(x>0)return x; return 0;}\nint function_1(int x){if(x>1)return x; return 1;}\nint function_2(int x){if(x>2)return x; return 2;}\nint function_3(int x){if(x>3)return x; return 3;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int function_0(int x){if(x>0)return x; return 0;}\nint function_1(int x){if(x>1)return x; return 1;}\nint function_2(int x){if(x>2)return x; return 2;}\nint function_3(int x){if(x>3)return x; return 3;}\nint function_4(int x){if(x>4)return x; return 4;}\nint function_5(int x){if(x>5)return x; return 5;}\nint function_6(int x){if(x>6)return x; return 6;}\nint function_7(int x){if(x>7)return x; return 7;}\nint function_8(int x){if(x>8)return x; return 8;}\nint function_9(int x){if(x>9)return x; return 9;}\nint function_10(int x){if(x>10)return x; return 10;}\nint function_11(int x){if(x>11)return x; return 11;}\nint function_12(int x){if(x>12)return x; return 12;}\nint function_13(int x){if(x>13)return x; return 13;}\nint function_14(int x){if(x>14)return x; return 14;}\nint function_15(int x){if(x>15)return x; return 15;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int function_0(int x){if(x>0)return x; return 0;}\nint function_1(int x){if(x>1)return x; return 1;}\nint function_2(int x){if(x>2)return x; return 2;}\nint function_3(int x){if(x>3)return x; return 3;}\nint function_4(int x){if(x>4)return x; return 4;}\nint function_5(int x){if(x>5)return x; return 5;}\nint function_6(int x){if(x>6)return x; return 6;}\nint function_7(int x){if(x>7)return x; return 7;}\nint function_8(int x){if(x>8)return x; return 8;}\nint function_9(int x){if(x>9)return x; return 9;}\nint function_10(int x){if(x>10)return x; return 10;}\nint function_11(int x){if(x>11)return x; return 11;}\nint function_12(int x){if(x>12)return x; return 12;}\nint function_13(int x){if(x>13)return x; return 13;}\nint function_14(int x){if(x>14)return x; return 14;}\nint function_15(int x){if(x>15)return x; return 15;}\nint function_16(int x){if(x>16)return x; return 16;}\nint function_17(int x){if(x>17)return x; return 17;}\nint function_18(int x){if(x>18)return x; return 18;}\nint function_19(int x){if(x>19)return x; return 19;}\nint function_20(int x){if(x>20)return x; return 20;}\nint function_21(int x){if(x>21)return x; return 21;}\nint function_22(int x){if(x>22)return x; return 22;}\nint function_23(int x){if(x>23)return x; return 23;}\nint function_24(int x){if(x>24)return x; return 24;}\nint function_25(int x){if(x>25)return x; return 25;}\nint function_26(int x){if(x>26)return x; return 26;}\nint function_27(int x){if(x>27)return x; return 27;}\nint function_28(int x){if(x>28)return x; return 28;}\nint function_29(int x){if(x>29)return x; return 29;}\nint function_30(int x){if(x>30)return x; return 30;}\nint function_31(int x){if(x>31)return x; return 31;}\nint function_32(int x){if(x>32)return x; return 32;}\nint function_33(int x){if(x>33)return x; return 33;}\nint function_34(int x){if(x>34)return x; return 34;}\nint function_35(int x){if(x>35)return x; return 35;}\nint function_36(int x){if(x>36)return x; return 36;}\nint function_37(int x){if(x>37)return x; return 37;}\nint function_38(int x){if(x>38)return x; return 38;}\nint function_39(int x){if(x>39)return x; return 39;}\nint function_40(int x){if(x>40)return x; return 40;}\nint function_41(int x){if(x>41)return x; return 41;}\nint function_42(int x){if(x>42)return x; return 42;}\nint function_43(int x){if(x>43)return x; return 43;}\nint function_44(int x){if(x>44)return x; return 44;}\nint function_45(int x){if(x>45)return x; return 45;}\nint function_46(int x){if(x>46)return x; return 46;}\nint function_47(int x){if(x>47)return x; return 47;}\nint function_48(int x){if(x>48)return x; return 48;}\nint function_49(int x){if(x>49)return x; return 49;}\nint function_50(int x){if(x>50)return x; return 50;}\nint function_51(int x){if(x>51)return x; return 51;}\nint function_52(int x){if(x>52)return x; return 52;}\nint function_53(int x){if(x>53)return x; return 53;}\nint function_54(int x){if(x>54)return x; return 54;}\nint function_55(int x){if(x>55)return x; return 55;}\nint function_56(int x){if(x>56)return x; return 56;}\nint function_57(int x){if(x>57)return x; return 57;}\nint function_58(int x){if(x>58)return x; return 58;}\nint function_59(int x){if(x>59)return x; return 59;}\nint function_60(int x){if(x>60)return x; return 60;}\nint function_61(int x){if(x>61)return x; return 61;}\nint function_62(int x){if(x>62)return x; return 62;}\nint function_63(int x){if(x>63)return x; return 63;}\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseCompoundStatementBody",
+  "target_source": "clang/lib/Parse/ParseStmt.cpp",
+  "mapping_note": "The compound-statement-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

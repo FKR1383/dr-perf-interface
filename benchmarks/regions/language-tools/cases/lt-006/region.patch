@@ -1,0 +1,242 @@
+--- a/sympy/functions/elementary/trigonometric.py
++++ b/sympy/functions/elementary/trigonometric.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ from sympy.core.add import Add
+ from sympy.core.cache import cacheit
+ from sympy.core.function import DefinedFunction, ArgumentIndexError, PoleError, expand_mul
+@@ -312,120 +313,121 @@
+ 
+     @classmethod
+     def eval(cls, arg):
+-        from sympy.calculus.accumulationbounds import AccumBounds
+-        from sympy.sets.setexpr import SetExpr
+-        if arg.is_Number:
+-            if arg is S.NaN:
++        with perfmark.region("lt-006"):
++            from sympy.calculus.accumulationbounds import AccumBounds
++            from sympy.sets.setexpr import SetExpr
++            if arg.is_Number:
++                if arg is S.NaN:
++                    return S.NaN
++                elif arg.is_zero:
++                    return S.Zero
++                elif arg in (S.Infinity, S.NegativeInfinity):
++                    return AccumBounds(-1, 1)
++
++            if arg is S.ComplexInfinity:
+                 return S.NaN
+-            elif arg.is_zero:
++
++            if isinstance(arg, AccumBounds):
++                from sympy.sets.sets import FiniteSet
++                min, max = arg.min, arg.max
++                d = floor(min/(2*pi))
++                if min is not S.NegativeInfinity:
++                    min = min - d*2*pi
++                if max is not S.Infinity:
++                    max = max - d*2*pi
++                if AccumBounds(min, max).intersection(FiniteSet(pi/2, pi*Rational(5, 2))) \
++                        is not S.EmptySet and \
++                        AccumBounds(min, max).intersection(FiniteSet(pi*Rational(3, 2),
++                            pi*Rational(7, 2))) is not S.EmptySet:
++                    return AccumBounds(-1, 1)
++                elif AccumBounds(min, max).intersection(FiniteSet(pi/2, pi*Rational(5, 2))) \
++                        is not S.EmptySet:
++                    return AccumBounds(Min(sin(min), sin(max)), 1)
++                elif AccumBounds(min, max).intersection(FiniteSet(pi*Rational(3, 2), pi*Rational(8, 2))) \
++                            is not S.EmptySet:
++                    return AccumBounds(-1, Max(sin(min), sin(max)))
++                else:
++                    return AccumBounds(Min(sin(min), sin(max)),
++                                    Max(sin(min), sin(max)))
++            elif isinstance(arg, SetExpr):
++                return arg._eval_func(cls)
++
++            if arg.could_extract_minus_sign():
++                return -cls(-arg)
++
++            i_coeff = _imaginary_unit_as_coefficient(arg)
++            if i_coeff is not None:
++                from sympy.functions.elementary.hyperbolic import sinh
++                return S.ImaginaryUnit*sinh(i_coeff)
++
++            pi_coeff = _pi_coeff(arg)
++            if pi_coeff is not None:
++                if pi_coeff.is_integer:
++                    return S.Zero
++
++                if (2*pi_coeff).is_integer:
++                    # is_even-case handled above as then pi_coeff.is_integer,
++                    # so check if known to be not even
++                    if pi_coeff.is_even is False:
++                        return S.NegativeOne**(pi_coeff - S.Half)
++
++                if not pi_coeff.is_Rational:
++                    narg = pi_coeff*pi
++                    if narg != arg:
++                        return cls(narg)
++                    return None
++
++                # https://github.com/sympy/sympy/issues/6048
++                # transform a sine to a cosine, to avoid redundant code
++                if pi_coeff.is_Rational:
++                    x = pi_coeff % 2
++                    if x > 1:
++                        return -cls((x % 1)*pi)
++                    if 2*x > 1:
++                        return cls((1 - x)*pi)
++                    narg = ((pi_coeff + Rational(3, 2)) % 2)*pi
++                    result = cos(narg)
++                    if not isinstance(result, cos):
++                        return result
++                    if pi_coeff*pi != arg:
++                        return cls(pi_coeff*pi)
++                    return None
++
++            if arg.is_Add:
++                x, m = _peeloff_pi(arg)
++                if m:
++                    m = m*pi
++                    return sin(m)*cos(x) + cos(m)*sin(x)
++
++            if arg.is_zero:
+                 return S.Zero
+-            elif arg in (S.Infinity, S.NegativeInfinity):
+-                return AccumBounds(-1, 1)
+-
+-        if arg is S.ComplexInfinity:
+-            return S.NaN
+-
+-        if isinstance(arg, AccumBounds):
+-            from sympy.sets.sets import FiniteSet
+-            min, max = arg.min, arg.max
+-            d = floor(min/(2*pi))
+-            if min is not S.NegativeInfinity:
+-                min = min - d*2*pi
+-            if max is not S.Infinity:
+-                max = max - d*2*pi
+-            if AccumBounds(min, max).intersection(FiniteSet(pi/2, pi*Rational(5, 2))) \
+-                    is not S.EmptySet and \
+-                    AccumBounds(min, max).intersection(FiniteSet(pi*Rational(3, 2),
+-                        pi*Rational(7, 2))) is not S.EmptySet:
+-                return AccumBounds(-1, 1)
+-            elif AccumBounds(min, max).intersection(FiniteSet(pi/2, pi*Rational(5, 2))) \
+-                    is not S.EmptySet:
+-                return AccumBounds(Min(sin(min), sin(max)), 1)
+-            elif AccumBounds(min, max).intersection(FiniteSet(pi*Rational(3, 2), pi*Rational(8, 2))) \
+-                        is not S.EmptySet:
+-                return AccumBounds(-1, Max(sin(min), sin(max)))
+-            else:
+-                return AccumBounds(Min(sin(min), sin(max)),
+-                                Max(sin(min), sin(max)))
+-        elif isinstance(arg, SetExpr):
+-            return arg._eval_func(cls)
+-
+-        if arg.could_extract_minus_sign():
+-            return -cls(-arg)
+-
+-        i_coeff = _imaginary_unit_as_coefficient(arg)
+-        if i_coeff is not None:
+-            from sympy.functions.elementary.hyperbolic import sinh
+-            return S.ImaginaryUnit*sinh(i_coeff)
+-
+-        pi_coeff = _pi_coeff(arg)
+-        if pi_coeff is not None:
+-            if pi_coeff.is_integer:
+-                return S.Zero
+-
+-            if (2*pi_coeff).is_integer:
+-                # is_even-case handled above as then pi_coeff.is_integer,
+-                # so check if known to be not even
+-                if pi_coeff.is_even is False:
+-                    return S.NegativeOne**(pi_coeff - S.Half)
+-
+-            if not pi_coeff.is_Rational:
+-                narg = pi_coeff*pi
+-                if narg != arg:
+-                    return cls(narg)
+-                return None
+-
+-            # https://github.com/sympy/sympy/issues/6048
+-            # transform a sine to a cosine, to avoid redundant code
+-            if pi_coeff.is_Rational:
+-                x = pi_coeff % 2
+-                if x > 1:
+-                    return -cls((x % 1)*pi)
+-                if 2*x > 1:
+-                    return cls((1 - x)*pi)
+-                narg = ((pi_coeff + Rational(3, 2)) % 2)*pi
+-                result = cos(narg)
+-                if not isinstance(result, cos):
+-                    return result
+-                if pi_coeff*pi != arg:
+-                    return cls(pi_coeff*pi)
+-                return None
+-
+-        if arg.is_Add:
+-            x, m = _peeloff_pi(arg)
+-            if m:
+-                m = m*pi
+-                return sin(m)*cos(x) + cos(m)*sin(x)
+-
+-        if arg.is_zero:
+-            return S.Zero
+-
+-        if isinstance(arg, asin):
+-            return arg.args[0]
+-
+-        if isinstance(arg, atan):
+-            x = arg.args[0]
+-            return x/sqrt(1 + x**2)
+-
+-        if isinstance(arg, atan2):
+-            y, x = arg.args
+-            return y/sqrt(x**2 + y**2)
+-
+-        if isinstance(arg, acos):
+-            x = arg.args[0]
+-            return sqrt(1 - x**2)
+-
+-        if isinstance(arg, acot):
+-            x = arg.args[0]
+-            return 1/(sqrt(1 + 1/x**2)*x)
+-
+-        if isinstance(arg, acsc):
+-            x = arg.args[0]
+-            return 1/x
+-
+-        if isinstance(arg, asec):
+-            x = arg.args[0]
+-            return sqrt(1 - 1/x**2)
++
++            if isinstance(arg, asin):
++                return arg.args[0]
++
++            if isinstance(arg, atan):
++                x = arg.args[0]
++                return x/sqrt(1 + x**2)
++
++            if isinstance(arg, atan2):
++                y, x = arg.args
++                return y/sqrt(x**2 + y**2)
++
++            if isinstance(arg, acos):
++                x = arg.args[0]
++                return sqrt(1 - x**2)
++
++            if isinstance(arg, acot):
++                x = arg.args[0]
++                return 1/(sqrt(1 + 1/x**2)*x)
++
++            if isinstance(arg, acsc):
++                x = arg.args[0]
++                return 1/x
++
++            if isinstance(arg, asec):
++                x = arg.args[0]
++                return sqrt(1 - 1/x**2)
+ 
+     @staticmethod
+     @cacheit

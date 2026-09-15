@@ -1,0 +1,84 @@
+--- a/src/jinja2/compiler.py
++++ b/src/jinja2/compiler.py
+@@ -1,4 +1,5 @@
+ """Compiles nodes from the parser into Python code."""
++import perfmark
+ 
+ import typing as t
+ from contextlib import contextmanager
+@@ -542,40 +543,41 @@
+             Filters and tests in If and CondExpr nodes are checked at
+             runtime instead of compile time.
+         """
+-        visitor = DependencyFinderVisitor()
+-
+-        for node in nodes:
+-            visitor.visit(node)
+-
+-        for id_map, names, dependency in (
+-            (self.filters, visitor.filters, "filters"),
+-            (
+-                self.tests,
+-                visitor.tests,
+-                "tests",
+-            ),
+-        ):
+-            for name in sorted(names):
+-                if name not in id_map:
+-                    id_map[name] = self.temporary_identifier()
+-
+-                # add check during runtime that dependencies used inside of executed
+-                # blocks are defined, as this step may be skipped during compile time
+-                self.writeline("try:")
+-                self.indent()
+-                self.writeline(f"{id_map[name]} = environment.{dependency}[{name!r}]")
+-                self.outdent()
+-                self.writeline("except KeyError:")
+-                self.indent()
+-                self.writeline("@internalcode")
+-                self.writeline(f"def {id_map[name]}(*unused):")
+-                self.indent()
+-                self.writeline(
+-                    f'raise TemplateRuntimeError("No {dependency[:-1]}'
+-                    f' named {name!r} found.")'
+-                )
+-                self.outdent()
+-                self.outdent()
++        with perfmark.region("lt-171"):
++            visitor = DependencyFinderVisitor()
++
++            for node in nodes:
++                visitor.visit(node)
++
++            for id_map, names, dependency in (
++                (self.filters, visitor.filters, "filters"),
++                (
++                    self.tests,
++                    visitor.tests,
++                    "tests",
++                ),
++            ):
++                for name in sorted(names):
++                    if name not in id_map:
++                        id_map[name] = self.temporary_identifier()
++
++                    # add check during runtime that dependencies used inside of executed
++                    # blocks are defined, as this step may be skipped during compile time
++                    self.writeline("try:")
++                    self.indent()
++                    self.writeline(f"{id_map[name]} = environment.{dependency}[{name!r}]")
++                    self.outdent()
++                    self.writeline("except KeyError:")
++                    self.indent()
++                    self.writeline("@internalcode")
++                    self.writeline(f"def {id_map[name]}(*unused):")
++                    self.indent()
++                    self.writeline(
++                        f'raise TemplateRuntimeError("No {dependency[:-1]}'
++                        f' named {name!r} found.")'
++                    )
++                    self.outdent()
++                    self.outdent()
+ 
+     def enter_frame(self, frame: Frame) -> None:
+         undefs = []

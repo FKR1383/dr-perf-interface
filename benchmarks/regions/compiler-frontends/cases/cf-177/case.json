@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-177",
+  "title": "Preprocessor::LookupFile compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Lex/PPDirectives.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Lex/PPDirectives.cpp",
+    "sha256": "24c954b28f1d3a380a30a263aea6471de276e6c58f31aafbcd7be1445b0be5ed"
+  },
+  "region": {
+    "symbol": "Preprocessor::LookupFile",
+    "start_line": 974,
+    "end_line": 1097,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-177",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "preprocessing",
+  "workload": {
+    "description": "Run the bounded include-lookup fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Lex/PPDirectives.cpp:Preprocessor::LookupFile",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Lex/PPDirectives.cpp#L974-L1097"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "7db347d147a2dfe44eaa5b3b3224fac41efb96aae33ae1c14542be899771275d",
+      "patch_sha256": "8616c3fe4b832e838b45b6952e2fe8ebbbfe8143a01756005de0718ce3ea4c48"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

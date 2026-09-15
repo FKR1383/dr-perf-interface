@@ -1,0 +1,54 @@
+--- a/sqlglot/dialects/dialect.py
++++ b/sqlglot/dialects/dialect.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import importlib
+ import logging
+@@ -1135,25 +1136,26 @@
+         Returns:
+             Whether the given text can be identified.
+         """
+-        if identifier.quoted:
+-            return True
+-        if not identify:
+-            return False
+-        if isinstance(identifier.parent, exp.Func):
+-            return False
+-        if identify is True:
+-            return True
+-
+-        is_safe = not self.case_sensitive(identifier.this) and bool(
+-            exp.SAFE_IDENTIFIER_RE.match(identifier.this)
+-        )
+-
+-        if identify == "safe":
+-            return is_safe
+-        if identify == "unsafe":
+-            return not is_safe
+-
+-        raise ValueError(f"Unexpected argument for identify: '{identify}'")
++        with perfmark.region("lt-079"):
++            if identifier.quoted:
++                return True
++            if not identify:
++                return False
++            if isinstance(identifier.parent, exp.Func):
++                return False
++            if identify is True:
++                return True
++
++            is_safe = not self.case_sensitive(identifier.this) and bool(
++                exp.SAFE_IDENTIFIER_RE.match(identifier.this)
++            )
++
++            if identify == "safe":
++                return is_safe
++            if identify == "unsafe":
++                return not is_safe
++
++            raise ValueError(f"Unexpected argument for identify: '{identify}'")
+ 
+     def quote_identifier(self, expression: E, identify: bool = True) -> E:
+         """

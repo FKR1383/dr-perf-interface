@@ -1,0 +1,22 @@
+--- a/src/attr/_make.py
++++ b/src/attr/_make.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: MIT
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import abc
+ import contextlib
+@@ -181,8 +182,9 @@
+             raise ValueError(msg)
+         default = Factory(factory)
+ 
+-    if metadata is None:
+-        metadata = {}
++    with perfmark.region("gl-238"):
++        if metadata is None:
++            metadata = {}
+ 
+     # Apply syntactic sugar by auto-wrapping.
+     if isinstance(on_setattr, (list, tuple)):

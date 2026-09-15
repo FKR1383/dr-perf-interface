@@ -1,0 +1,33 @@
+--- a/networkx/generators/sudoku.py
++++ b/networkx/generators/sudoku.py
+@@ -40,6 +40,7 @@
+ .. [3] Wikipedia contributors. "Glossary of Sudoku." Wikipedia, The Free
+     Encyclopedia, 3 Dec. 2019. Web. 22 Dec. 2019.
+ """
++import perfmark
+ 
+ import networkx as nx
+ 
+@@ -118,13 +119,14 @@
+                 G.add_edge(i, j)
+ 
+     # Add edges for cells in the same box
+-    for band_no in range(n):
+-        for stack_no in range(n):
+-            box_start = n3 * band_no + n * stack_no
+-            for j in range(1, n2):
+-                for i in range(j):
+-                    u = box_start + (i % n) + n2 * (i // n)
+-                    v = box_start + (j % n) + n2 * (j // n)
+-                    G.add_edge(u, v)
++    with perfmark.region("gl-037"):
++        for band_no in range(n):
++            for stack_no in range(n):
++                box_start = n3 * band_no + n * stack_no
++                for j in range(1, n2):
++                    for i in range(j):
++                        u = box_start + (i % n) + n2 * (i // n)
++                        v = box_start + (j % n) + n2 * (j // n)
++                        G.add_edge(u, v)
+ 
+     return G

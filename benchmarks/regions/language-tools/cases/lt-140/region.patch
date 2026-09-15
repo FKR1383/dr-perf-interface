@@ -1,0 +1,33 @@
+--- a/astroid/brain/brain_functools.py
++++ b/astroid/brain/brain_functools.py
+@@ -5,6 +5,7 @@
+ """Astroid hooks for understanding functools library module."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections.abc import Iterator
+ from functools import partial
+@@ -132,14 +133,15 @@
+ 
+ def _looks_like_lru_cache(node) -> bool:
+     """Check if the given function node is decorated with lru_cache."""
+-    if not node.decorators:
++    with perfmark.region("lt-140"):
++        if not node.decorators:
++            return False
++        for decorator in node.decorators.nodes:
++            if not isinstance(decorator, (nodes.Attribute, nodes.Call)):
++                continue
++            if _looks_like_functools_member(decorator, "lru_cache"):
++                return True
+         return False
+-    for decorator in node.decorators.nodes:
+-        if not isinstance(decorator, (nodes.Attribute, nodes.Call)):
+-            continue
+-        if _looks_like_functools_member(decorator, "lru_cache"):
+-            return True
+-    return False
+ 
+ 
+ def _looks_like_functools_member(

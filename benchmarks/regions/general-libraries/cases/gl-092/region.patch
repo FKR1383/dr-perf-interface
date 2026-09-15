@@ -1,0 +1,20 @@
+--- a/networkx/algorithms/clique.py
++++ b/networkx/algorithms/clique.py
+@@ -7,6 +7,7 @@
+ .. _clique_wiki: https://en.wikipedia.org/wiki/Clique_problem
+ 
+ """
++import perfmark
+ 
+ from collections import Counter, defaultdict, deque
+ from itertools import chain, combinations, islice
+@@ -250,7 +251,8 @@
+     if len(G) == 0:
+         return
+ 
+-    adj = {u: {v for v in G[u] if v != u} for u in G}
++    with perfmark.region("gl-092"):
++        adj = {u: {v for v in G[u] if v != u} for u in G}
+ 
+     # Initialize Q with the given nodes and subg, cand with their nbrs
+     Q = nodes[:] if nodes is not None else []

@@ -1,0 +1,18 @@
+--- a/src/urllib3/util/request.py
++++ b/src/urllib3/util/request.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import io
+ import sys
+@@ -141,7 +142,8 @@
+         print(urllib3.util.make_headers(accept_encoding=True))
+         # {'accept-encoding': 'gzip,deflate'}
+     """
+-    headers: dict[str, str] = {}
++    with perfmark.region("gl-174"):
++        headers: dict[str, str] = {}
+     if accept_encoding:
+         if isinstance(accept_encoding, str):
+             pass

@@ -1,0 +1,52 @@
+--- a/pandas/core/groupby/grouper.py
++++ b/pandas/core/groupby/grouper.py
+@@ -4,6 +4,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from itertools import pairwise
+ from typing import (
+@@ -846,23 +847,24 @@
+     )
+ 
+     # is this an index replacement?
+-    if (
+-        not any_callable
+-        and not any_arraylike
+-        and not any_groupers
+-        and match_axis_length
+-        and level is None
+-    ):
+-        if isinstance(obj, DataFrame):
+-            all_in_columns_index = all(
+-                g in obj.columns or g in obj.index.names for g in keys
+-            )
+-        else:
+-            assert isinstance(obj, Series)
+-            all_in_columns_index = all(g in obj.index.names for g in keys)
+-
+-        if not all_in_columns_index:
+-            keys = [com.asarray_tuplesafe(keys)]
++    with perfmark.region("gl-137"):
++        if (
++            not any_callable
++            and not any_arraylike
++            and not any_groupers
++            and match_axis_length
++            and level is None
++        ):
++            if isinstance(obj, DataFrame):
++                all_in_columns_index = all(
++                    g in obj.columns or g in obj.index.names for g in keys
++                )
++            else:
++                assert isinstance(obj, Series)
++                all_in_columns_index = all(g in obj.index.names for g in keys)
++    
++            if not all_in_columns_index:
++                keys = [com.asarray_tuplesafe(keys)]
+ 
+     if isinstance(level, (tuple, list)):
+         if key is None:

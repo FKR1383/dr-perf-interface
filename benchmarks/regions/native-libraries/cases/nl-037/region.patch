@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -928,6 +929,7 @@
+     */
+ #endif
+     void Parse(const Ch* source, size_t length) {
++        DRPERF_BENCH_REGION("nl-037");
+         RAPIDJSON_ASSERT(source != NULL);
+         RAPIDJSON_ASSERT(nameBuffer_ == 0);
+         RAPIDJSON_ASSERT(tokens_ == 0);

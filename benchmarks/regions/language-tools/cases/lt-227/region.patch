@@ -1,0 +1,86 @@
+--- a/Cython/Compiler/TreeFragment.py
++++ b/Cython/Compiler/TreeFragment.py
+@@ -5,6 +5,7 @@
+ """
+ Support for parsing strings into code trees.
+ """
++import perfmark
+ 
+ 
+ import re
+@@ -55,40 +56,41 @@
+     The tree, i.e. a ModuleNode. The ModuleNode's scope attribute is
+     set to the scope used when parsing.
+     """
+-    if context is None:
+-        context = StringParseContext(name)
+-    # Since source files carry an encoding, it makes sense in this context
+-    # to use a unicode string so that code fragments don't have to bother
+-    # with encoding. This means that test code passed in should not have an
+-    # encoding header.
+-    assert isinstance(code, str), "unicode code snippets only please"
+-    encoding = "UTF-8"
+-
+-    module_name = name
+-    if initial_pos is None:
+-        initial_pos = (name, 1, 0)
+-    code_source = StringSourceDescriptor(name, code)
+-    if in_utility_code:
+-        code_source.in_utility_code = True
+-
+-    scope = context.find_module(module_name, pos=initial_pos, need_pxd=False)
+-
+-    buf = StringIO(code)
+-
+-    scanner = PyrexScanner(buf, code_source, source_encoding = encoding,
+-                     scope = scope, context = context, initial_pos = initial_pos)
+-    ctx = Parsing.Ctx(allow_struct_enum_decorator=allow_struct_enum_decorator)
+-
+-    if level is None or level in ("module", "module_pxd"):
+-        in_pxd = (level == "module_pxd")
+-        tree = Parsing.p_module(scanner, in_pxd, module_name, ctx=ctx)
+-        tree.is_pxd = in_pxd
+-    else:
+-        scanner.parse_comments = False
+-        tree = Parsing.p_code(scanner, level=level, ctx=ctx)
+-
+-    tree.scope = scope
+-    return tree
++    with perfmark.region("lt-227"):
++        if context is None:
++            context = StringParseContext(name)
++        # Since source files carry an encoding, it makes sense in this context
++        # to use a unicode string so that code fragments don't have to bother
++        # with encoding. This means that test code passed in should not have an
++        # encoding header.
++        assert isinstance(code, str), "unicode code snippets only please"
++        encoding = "UTF-8"
++
++        module_name = name
++        if initial_pos is None:
++            initial_pos = (name, 1, 0)
++        code_source = StringSourceDescriptor(name, code)
++        if in_utility_code:
++            code_source.in_utility_code = True
++
++        scope = context.find_module(module_name, pos=initial_pos, need_pxd=False)
++
++        buf = StringIO(code)
++
++        scanner = PyrexScanner(buf, code_source, source_encoding = encoding,
++                         scope = scope, context = context, initial_pos = initial_pos)
++        ctx = Parsing.Ctx(allow_struct_enum_decorator=allow_struct_enum_decorator)
++
++        if level is None or level in ("module", "module_pxd"):
++            in_pxd = (level == "module_pxd")
++            tree = Parsing.p_module(scanner, in_pxd, module_name, ctx=ctx)
++            tree.is_pxd = in_pxd
++        else:
++            scanner.parse_comments = False
++            tree = Parsing.p_code(scanner, level=level, ctx=ctx)
++
++        tree.scope = scope
++        return tree
+ 
+ 
+ class TreeCopier(VisitorTransform):

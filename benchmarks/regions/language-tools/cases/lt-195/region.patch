@@ -1,0 +1,45 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -2125,20 +2126,21 @@
+         .. versionchanged:: 3.1.0
+            ``recurse`` argument added.
+         """
+-        if recurse:
+-            for expr in self.visit_all():
+-                expr.set_debug(flag, recurse=False)
++        with perfmark.region("lt-195"):
++            if recurse:
++                for expr in self.visit_all():
++                    expr.set_debug(flag, recurse=False)
++                return self
++
++            if flag:
++                self.set_debug_actions(
++                    _default_start_debug_action,
++                    _default_success_debug_action,
++                    _default_exception_debug_action,
++                )
++            else:
++                self.debug = False
+             return self
+-
+-        if flag:
+-            self.set_debug_actions(
+-                _default_start_debug_action,
+-                _default_success_debug_action,
+-                _default_exception_debug_action,
+-            )
+-        else:
+-            self.debug = False
+-        return self
+ 
+     @property
+     def default_name(self) -> str:

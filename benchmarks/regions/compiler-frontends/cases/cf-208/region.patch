@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/TextNodeDumper.cpp
++++ b/clang/lib/AST/TextNodeDumper.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/TextNodeDumper.h"
+ #include "clang/AST/APValue.h"
+ #include "clang/AST/DeclFriend.h"
+@@ -653,6 +654,7 @@
+ }
+ 
+ void TextNodeDumper::Visit(const APValue &Value, QualType Ty) {
++  DRPERF_BENCH_REGION("cf-208");
+   ColorScope Color(OS, ShowColors, ValueKindColor);
+   switch (Value.getKind()) {
+   case APValue::None:

@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -2244,6 +2245,7 @@
+ static bool CheckConstexprFunctionBody(Sema &SemaRef, const FunctionDecl *Dcl,
+                                        Stmt *Body,
+                                        Sema::CheckConstexprKind Kind) {
++                                         DRPERF_BENCH_REGION("cf-055");
+   SmallVector<SourceLocation, 4> ReturnStmts;
+ 
+   if (isa<CXXTryStmt>(Body)) {

@@ -1,0 +1,44 @@
+--- a/networkx/algorithms/bipartite/edgelist.py
++++ b/networkx/algorithms/bipartite/edgelist.py
+@@ -22,6 +22,7 @@
+ 
+ For each edge (u, v) the node u is assigned to part 0 and the node v to part 1.
+ """
++import perfmark
+ 
+ __all__ = ["generate_edgelist", "write_edgelist", "parse_edgelist", "read_edgelist"]
+ 
+@@ -176,19 +177,20 @@
+         part0 = [n for n, d in G.nodes.items() if d["bipartite"] == 0]
+     except BaseException as err:
+         raise AttributeError("Missing node attribute `bipartite`") from err
+-    if data is True or data is False:
+-        for n in part0:
+-            for edge in G.edges(n, data=data):
+-                yield delimiter.join(map(str, edge))
+-    else:
+-        for n in part0:
+-            for u, v, d in G.edges(n, data=True):
+-                edge = [u, v]
+-                try:
+-                    edge.extend(d[k] for k in data)
+-                except KeyError:
+-                    pass  # missing data for this edge, should warn?
+-                yield delimiter.join(map(str, edge))
++    with perfmark.region("gl-086"):
++        if data is True or data is False:
++            for n in part0:
++                for edge in G.edges(n, data=data):
++                    yield delimiter.join(map(str, edge))
++        else:
++            for n in part0:
++                for u, v, d in G.edges(n, data=True):
++                    edge = [u, v]
++                    try:
++                        edge.extend(d[k] for k in data)
++                    except KeyError:
++                        pass  # missing data for this edge, should warn?
++                    yield delimiter.join(map(str, edge))
+ 
+ 
+ @nx._dispatchable(name="bipartite_parse_edgelist", graphs=None, returns_graph=True)

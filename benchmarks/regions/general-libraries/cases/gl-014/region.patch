@@ -1,0 +1,32 @@
+--- a/networkx/algorithms/triads.py
++++ b/networkx/algorithms/triads.py
+@@ -3,6 +3,7 @@
+ # Copyright 2011 Alex Levenson <alex@isnotinvain.com>
+ # Copyright 2011 Diederik van Liere <diederik.vanliere@rotman.utoronto.ca>
+ """Functions for analyzing triads of a graph."""
++import perfmark
+ 
+ from collections import defaultdict
+ from itertools import combinations, permutations
+@@ -218,13 +219,14 @@
+     nbrs = {n: G.pred[n].keys() | G.succ[n].keys() for n in G}
+     dbl_nbrs = {n: G.pred[n].keys() & G.succ[n].keys() for n in G}
+ 
+-    if Nnot:
+-        sgl_nbrs = {n: G.pred[n].keys() ^ G.succ[n].keys() for n in not_nodeset}
+-        # find number of edges not incident to nodes in nodeset
+-        sgl = sum(1 for n in not_nodeset for nbr in sgl_nbrs[n] if nbr not in nodeset)
+-        sgl_edges_outside = sgl // 2
+-        dbl = sum(1 for n in not_nodeset for nbr in dbl_nbrs[n] if nbr not in nodeset)
+-        dbl_edges_outside = dbl // 2
++    with perfmark.region("gl-014"):
++        if Nnot:
++            sgl_nbrs = {n: G.pred[n].keys() ^ G.succ[n].keys() for n in not_nodeset}
++            # find number of edges not incident to nodes in nodeset
++            sgl = sum(1 for n in not_nodeset for nbr in sgl_nbrs[n] if nbr not in nodeset)
++            sgl_edges_outside = sgl // 2
++            dbl = sum(1 for n in not_nodeset for nbr in dbl_nbrs[n] if nbr not in nodeset)
++            dbl_edges_outside = dbl // 2
+ 
+     # Initialize the count for each triad to be zero.
+     census = {name: 0 for name in TRIAD_NAMES}

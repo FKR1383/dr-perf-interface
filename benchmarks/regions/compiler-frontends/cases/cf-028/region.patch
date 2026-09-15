@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGCall.cpp
++++ b/clang/lib/CodeGen/CGCall.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCall.h"
+ #include "ABIInfo.h"
+ #include "ABIInfoImpl.h"
+@@ -2961,6 +2962,7 @@
+ void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
+                                          llvm::Function *Fn,
+                                          const FunctionArgList &Args) {
++                                           DRPERF_BENCH_REGION("cf-028");
+   if (CurCodeDecl && CurCodeDecl->hasAttr<NakedAttr>())
+     // Naked functions don't have prologues.
+     return;

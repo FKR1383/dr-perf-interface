@@ -1,0 +1,76 @@
+--- a/Cython/Compiler/PyrexTypes.py
++++ b/Cython/Compiler/PyrexTypes.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #   Cython/Python language types
+ #
+@@ -2400,37 +2401,38 @@
+ 
+     def __init__(self, types, name=None):
+         # Use list rather than set to preserve order (list should be short).
+-        flattened_types = []
+-        for t in types:
+-            if t.is_fused:
+-                # recursively merge in subtypes
+-                if isinstance(t, FusedType):
+-                    t_types = t.types
+-                else:
+-                    # handle types that aren't a fused type themselves but contain fused types
+-                    # for example a C++ template where the template type is fused.
+-                    t_fused_types = t.get_fused_types()
+-                    t_types = []
+-                    for substitution in product(
+-                        *[fused_type.types for fused_type in t_fused_types]
+-                    ):
+-                        t_types.append(
+-                            t.specialize(
+-                                {
+-                                    fused_type: sub
+-                                    for fused_type, sub in zip(
+-                                        t_fused_types, substitution
+-                                    )
+-                                }
++        with perfmark.region("lt-243"):
++            flattened_types = []
++            for t in types:
++                if t.is_fused:
++                    # recursively merge in subtypes
++                    if isinstance(t, FusedType):
++                        t_types = t.types
++                    else:
++                        # handle types that aren't a fused type themselves but contain fused types
++                        # for example a C++ template where the template type is fused.
++                        t_fused_types = t.get_fused_types()
++                        t_types = []
++                        for substitution in product(
++                            *[fused_type.types for fused_type in t_fused_types]
++                        ):
++                            t_types.append(
++                                t.specialize(
++                                    {
++                                        fused_type: sub
++                                        for fused_type, sub in zip(
++                                            t_fused_types, substitution
++                                        )
++                                    }
++                                )
+                             )
+-                        )
+-                for subtype in t_types:
+-                    if subtype not in flattened_types:
+-                        flattened_types.append(subtype)
+-            elif t not in flattened_types:
+-                flattened_types.append(t)
+-        self.types = flattened_types
+-        self.name = name
++                    for subtype in t_types:
++                        if subtype not in flattened_types:
++                            flattened_types.append(subtype)
++                elif t not in flattened_types:
++                    flattened_types.append(t)
++            self.types = flattened_types
++            self.name = name
+ 
+     def declaration_code(self, entity_code, for_display = 0,
+                          dll_linkage = None, pyrex = 0):

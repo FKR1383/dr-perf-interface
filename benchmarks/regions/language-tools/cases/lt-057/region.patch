@@ -1,0 +1,30 @@
+--- a/sqlglot/helper.py
++++ b/sqlglot/helper.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import inspect
+@@ -147,13 +148,14 @@
+     Returns:
+         The target subclasses.
+     """
+-    return [
+-        obj
+-        for _, obj in inspect.getmembers(
+-            sys.modules[module_name],
+-            lambda obj: inspect.isclass(obj) and issubclass(obj, classes) and obj not in exclude,
+-        )
+-    ]
++    with perfmark.region("lt-057"):
++        return [
++            obj
++            for _, obj in inspect.getmembers(
++                sys.modules[module_name],
++                lambda obj: inspect.isclass(obj) and issubclass(obj, classes) and obj not in exclude,
++            )
++        ]
+ 
+ 
+ def camel_to_snake_case(name: str) -> str:

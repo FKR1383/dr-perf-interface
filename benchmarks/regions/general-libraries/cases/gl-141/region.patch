@@ -1,0 +1,200 @@
+--- a/pandas/core/computation/eval.py
++++ b/pandas/core/computation/eval.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import tokenize
+ from typing import (
+@@ -379,100 +380,101 @@
+     first_expr = True
+     target_modified = False
+ 
+-    for expr in exprs:
+-        expr = _convert_expression(expr)
+-        _check_for_locals(expr, level, parser)
+-
+-        # get our (possibly passed-in) scope
+-        env = ensure_scope(
+-            level + 1,
+-            global_dict=global_dict,
+-            local_dict=local_dict,
+-            resolvers=resolvers,
+-            target=target,
+-        )
+-
+-        parsed_expr = Expr(expr, engine=engine, parser=parser, env=env)
+-
+-        if engine == "numexpr" and (
+-            (
+-                is_extension_array_dtype(parsed_expr.terms.return_type)
+-                and not is_string_dtype(parsed_expr.terms.return_type)
++    with perfmark.region("gl-141"):
++        for expr in exprs:
++            expr = _convert_expression(expr)
++            _check_for_locals(expr, level, parser)
++    
++            # get our (possibly passed-in) scope
++            env = ensure_scope(
++                level + 1,
++                global_dict=global_dict,
++                local_dict=local_dict,
++                resolvers=resolvers,
++                target=target,
+             )
+-            or (
+-                getattr(parsed_expr.terms, "operand_types", None) is not None
+-                and any(
+-                    (is_extension_array_dtype(elem) and not is_string_dtype(elem))
+-                    for elem in parsed_expr.terms.operand_types
++    
++            parsed_expr = Expr(expr, engine=engine, parser=parser, env=env)
++    
++            if engine == "numexpr" and (
++                (
++                    is_extension_array_dtype(parsed_expr.terms.return_type)
++                    and not is_string_dtype(parsed_expr.terms.return_type)
+                 )
+-            )
+-        ):
+-            warnings.warn(
+-                "Engine has switched to 'python' because numexpr does not support "
+-                "extension array dtypes. Please set your engine to python manually.",
+-                RuntimeWarning,
+-                stacklevel=find_stack_level(),
+-            )
+-            engine = "python"
+-
+-        # construct the engine and evaluate the parsed expression
+-        eng = ENGINES[engine]
+-        eng_inst = eng(parsed_expr)
+-        ret = eng_inst.evaluate()
+-
+-        if parsed_expr.assigner is None:
+-            if multi_line:
+-                raise ValueError(
+-                    "Multi-line expressions are only valid "
+-                    "if all expressions contain an assignment"
++                or (
++                    getattr(parsed_expr.terms, "operand_types", None) is not None
++                    and any(
++                        (is_extension_array_dtype(elem) and not is_string_dtype(elem))
++                        for elem in parsed_expr.terms.operand_types
++                    )
+                 )
+-            if inplace:
+-                raise ValueError("Cannot operate inplace if there is no assignment")
+-
+-        # assign if needed
+-        assigner = parsed_expr.assigner
+-        if env.target is not None and assigner is not None:
+-            target_modified = True
+-
+-            # if returning a copy, copy only on the first assignment
+-            if not inplace and first_expr:
++            ):
++                warnings.warn(
++                    "Engine has switched to 'python' because numexpr does not support "
++                    "extension array dtypes. Please set your engine to python manually.",
++                    RuntimeWarning,
++                    stacklevel=find_stack_level(),
++                )
++                engine = "python"
++    
++            # construct the engine and evaluate the parsed expression
++            eng = ENGINES[engine]
++            eng_inst = eng(parsed_expr)
++            ret = eng_inst.evaluate()
++    
++            if parsed_expr.assigner is None:
++                if multi_line:
++                    raise ValueError(
++                        "Multi-line expressions are only valid "
++                        "if all expressions contain an assignment"
++                    )
++                if inplace:
++                    raise ValueError("Cannot operate inplace if there is no assignment")
++    
++            # assign if needed
++            assigner = parsed_expr.assigner
++            if env.target is not None and assigner is not None:
++                target_modified = True
++    
++                # if returning a copy, copy only on the first assignment
++                if not inplace and first_expr:
++                    try:
++                        target = env.target
++                        if isinstance(target, NDFrame):
++                            target = target.copy(deep=False)
++                        else:
++                            target = target.copy()
++                    except AttributeError as err:
++                        raise ValueError("Cannot return a copy of the target") from err
++                else:
++                    target = env.target
++    
++                # TypeError is most commonly raised (e.g. int, list), but you
++                # get IndexError if you try to do this assignment on np.ndarray.
++                # we will ignore numpy warnings here; e.g. if trying
++                # to use a non-numeric indexer
+                 try:
+-                    target = env.target
+-                    if isinstance(target, NDFrame):
+-                        target = target.copy(deep=False)
++                    if inplace and isinstance(target, NDFrame):
++                        target.loc[:, assigner] = ret
+                     else:
+-                        target = target.copy()
+-                except AttributeError as err:
+-                    raise ValueError("Cannot return a copy of the target") from err
+-            else:
+-                target = env.target
+-
+-            # TypeError is most commonly raised (e.g. int, list), but you
+-            # get IndexError if you try to do this assignment on np.ndarray.
+-            # we will ignore numpy warnings here; e.g. if trying
+-            # to use a non-numeric indexer
+-            try:
+-                if inplace and isinstance(target, NDFrame):
+-                    target.loc[:, assigner] = ret
++                        target[assigner] = ret  # pyright: ignore[reportIndexIssue]
++                except (TypeError, IndexError) as err:
++                    raise ValueError("Cannot assign expression output to target") from err
++    
++                if not resolvers:
++                    resolvers = ({assigner: ret},)
+                 else:
+-                    target[assigner] = ret  # pyright: ignore[reportIndexIssue]
+-            except (TypeError, IndexError) as err:
+-                raise ValueError("Cannot assign expression output to target") from err
+-
+-            if not resolvers:
+-                resolvers = ({assigner: ret},)
+-            else:
+-                # existing resolver needs updated to handle
+-                # case of mutating existing column in copy
+-                for resolver in resolvers:
+-                    if assigner in resolver:
+-                        resolver[assigner] = ret
+-                        break
+-                else:
+-                    resolvers += ({assigner: ret},)
+-
+-            ret = None
+-            first_expr = False
++                    # existing resolver needs updated to handle
++                    # case of mutating existing column in copy
++                    for resolver in resolvers:
++                        if assigner in resolver:
++                            resolver[assigner] = ret
++                            break
++                    else:
++                        resolvers += ({assigner: ret},)
++    
++                ret = None
++                first_expr = False
+ 
+     # We want to exclude `inplace=None` as being False.
+     if inplace is False:

@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExprMember.cpp
++++ b/clang/lib/Sema/SemaExprMember.cpp
+@@ -9,6 +9,7 @@
+ //  This file implements semantic analysis member access expressions.
+ //
+ //===----------------------------------------------------------------------===//
++#include "drperf_bench_region.h"
+ #include "clang/AST/DeclCXX.h"
+ #include "clang/AST/DeclObjC.h"
+ #include "clang/AST/DeclTemplate.h"
+@@ -1332,6 +1333,7 @@
+                                    SourceLocation OpLoc, CXXScopeSpec &SS,
+                                    Decl *ObjCImpDecl, bool HasTemplateArgs,
+                                    SourceLocation TemplateKWLoc) {
++                                     DRPERF_BENCH_REGION("cf-076");
+   assert(BaseExpr.get() && "no base expression");
+ 
+   // Perform default conversions.

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-144",
+  "title": "astroid const_infer_binary_op body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pylint-dev/astroid",
+    "revision": "5d1a0a2efabdc43f6cb8449375476b2915ede8fe",
+    "path": "astroid/protocols.py",
+    "snapshot": "../../upstream/astroid/astroid/protocols.py",
+    "sha256": "0f62d98878f70beabca27d14d5805e8560329baadf2970769e0124e0725218bf"
+  },
+  "region": {
+    "symbol": "const_infer_binary_op",
+    "start_line": 173,
+    "end_line": 240,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-144",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise const_infer_binary_op with bounded, varied astroid inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "astroid:astroid/protocols.py:const_infer_binary_op",
+  "citations": [
+    "https://github.com/pylint-dev/astroid/blob/5d1a0a2efabdc43f6cb8449375476b2915ede8fe/astroid/protocols.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

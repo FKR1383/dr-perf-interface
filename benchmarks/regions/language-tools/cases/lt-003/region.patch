@@ -1,0 +1,200 @@
+--- a/sympy/functions/elementary/complexes.py
++++ b/sympy/functions/elementary/complexes.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import TYPE_CHECKING, overload
+ 
+@@ -536,100 +537,101 @@
+ 
+     @classmethod
+     def eval(cls, arg):
+-        from sympy.simplify.simplify import signsimp
+-
+-        if hasattr(arg, '_eval_Abs'):
+-            obj = arg._eval_Abs()
+-            if obj is not None:
+-                return obj
+-        if not isinstance(arg, Expr):
+-            raise TypeError("Bad argument type for Abs(): %s" % type(arg))
+-
+-        # handle what we can
+-        arg = signsimp(arg, evaluate=False)
+-        n, d = arg.as_numer_denom()
+-        if d.free_symbols and not n.free_symbols:
+-            return cls(n)/cls(d)
+-
+-        if arg.is_Mul:
+-            known = []
+-            unk = []
+-            for t in arg.args:
+-                if t.is_Pow and t.exp.is_integer and t.exp.is_negative:
+-                    bnew = cls(t.base)
+-                    if isinstance(bnew, cls):
+-                        unk.append(t)
++        with perfmark.region("lt-003"):
++            from sympy.simplify.simplify import signsimp
++
++            if hasattr(arg, '_eval_Abs'):
++                obj = arg._eval_Abs()
++                if obj is not None:
++                    return obj
++            if not isinstance(arg, Expr):
++                raise TypeError("Bad argument type for Abs(): %s" % type(arg))
++
++            # handle what we can
++            arg = signsimp(arg, evaluate=False)
++            n, d = arg.as_numer_denom()
++            if d.free_symbols and not n.free_symbols:
++                return cls(n)/cls(d)
++
++            if arg.is_Mul:
++                known = []
++                unk = []
++                for t in arg.args:
++                    if t.is_Pow and t.exp.is_integer and t.exp.is_negative:
++                        bnew = cls(t.base)
++                        if isinstance(bnew, cls):
++                            unk.append(t)
++                        else:
++                            known.append(Pow(bnew, t.exp))
+                     else:
+-                        known.append(Pow(bnew, t.exp))
+-                else:
+-                    tnew = cls(t)
+-                    if isinstance(tnew, cls):
+-                        unk.append(t)
+-                    else:
+-                        known.append(tnew)
+-            known = Mul(*known)
+-            unk = cls(Mul(*unk), evaluate=False) if unk else S.One
+-            return known*unk
+-        if arg is S.NaN:
+-            return S.NaN
+-        if arg is S.ComplexInfinity:
+-            return oo
+-        from sympy.functions.elementary.exponential import exp, log
+-
+-        if arg.is_Pow:
+-            base, exponent = arg.as_base_exp()
+-            if base.is_extended_real:
+-                if exponent.is_integer:
+-                    if exponent.is_even:
+-                        return arg
+-                    if base is S.NegativeOne:
+-                        return S.One
+-                    return Abs(base)**exponent
+-                if base.is_extended_nonnegative:
+-                    return base**re(exponent)
+-                if base.is_extended_negative:
+-                    return (-base)**re(exponent)*exp(-pi*im(exponent))
++                        tnew = cls(t)
++                        if isinstance(tnew, cls):
++                            unk.append(t)
++                        else:
++                            known.append(tnew)
++                known = Mul(*known)
++                unk = cls(Mul(*unk), evaluate=False) if unk else S.One
++                return known*unk
++            if arg is S.NaN:
++                return S.NaN
++            if arg is S.ComplexInfinity:
++                return oo
++            from sympy.functions.elementary.exponential import exp, log
++
++            if arg.is_Pow:
++                base, exponent = arg.as_base_exp()
++                if base.is_extended_real:
++                    if exponent.is_integer:
++                        if exponent.is_even:
++                            return arg
++                        if base is S.NegativeOne:
++                            return S.One
++                        return Abs(base)**exponent
++                    if base.is_extended_nonnegative:
++                        return base**re(exponent)
++                    if base.is_extended_negative:
++                        return (-base)**re(exponent)*exp(-pi*im(exponent))
++                    return
++                elif not base.has(Symbol): # complex base
++                    # express base**exponent as exp(exponent*log(base))
++                    a, b = log(base).as_real_imag()
++                    z = a + I*b
++                    return exp(re(exponent*z))
++            if isinstance(arg, exp):
++                return exp(re(arg.args[0]))
++            if isinstance(arg, AppliedUndef):
++                if arg.is_positive:
++                    return arg
++                elif arg.is_negative:
++                    return -arg
+                 return
+-            elif not base.has(Symbol): # complex base
+-                # express base**exponent as exp(exponent*log(base))
+-                a, b = log(base).as_real_imag()
+-                z = a + I*b
+-                return exp(re(exponent*z))
+-        if isinstance(arg, exp):
+-            return exp(re(arg.args[0]))
+-        if isinstance(arg, AppliedUndef):
+-            if arg.is_positive:
++            if arg.is_Add and arg.has(oo, S.NegativeInfinity):
++                if any(a.is_infinite for a in arg.as_real_imag()):
++                    return oo
++            if arg.is_zero:
++                return S.Zero
++            if arg.is_extended_nonnegative:
+                 return arg
+-            elif arg.is_negative:
++            if arg.is_extended_nonpositive:
+                 return -arg
+-            return
+-        if arg.is_Add and arg.has(oo, S.NegativeInfinity):
+-            if any(a.is_infinite for a in arg.as_real_imag()):
+-                return oo
+-        if arg.is_zero:
+-            return S.Zero
+-        if arg.is_extended_nonnegative:
+-            return arg
+-        if arg.is_extended_nonpositive:
+-            return -arg
+-        if arg.is_imaginary:
+-            arg2 = -I * arg
+-            if arg2.is_extended_nonnegative:
+-                return arg2
+-        if arg.is_extended_real:
+-            return
+-        # reject result if all new conjugates are just wrappers around
+-        # an expression that was already in the arg
+-        conj = signsimp(arg.conjugate(), evaluate=False)
+-        new_conj = conj.atoms(conjugate) - arg.atoms(conjugate)
+-        if new_conj and all(arg.has(i.args[0]) for i in new_conj):
+-            return
+-        if arg != conj and arg != -conj:
+-            ignore = arg.atoms(Abs)
+-            abs_free_arg = arg.xreplace({i: Dummy(real=True) for i in ignore})
+-            unk = [a for a in abs_free_arg.free_symbols if a.is_extended_real is None]
+-            if not unk or not all(conj.has(conjugate(u)) for u in unk):
+-                return sqrt(expand_mul(arg*conj))
++            if arg.is_imaginary:
++                arg2 = -I * arg
++                if arg2.is_extended_nonnegative:
++                    return arg2
++            if arg.is_extended_real:
++                return
++            # reject result if all new conjugates are just wrappers around
++            # an expression that was already in the arg
++            conj = signsimp(arg.conjugate(), evaluate=False)
++            new_conj = conj.atoms(conjugate) - arg.atoms(conjugate)
++            if new_conj and all(arg.has(i.args[0]) for i in new_conj):
++                return
++            if arg != conj and arg != -conj:
++                ignore = arg.atoms(Abs)
++                abs_free_arg = arg.xreplace({i: Dummy(real=True) for i in ignore})
++                unk = [a for a in abs_free_arg.free_symbols if a.is_extended_real is None]
++                if not unk or not all(conj.has(conjugate(u)) for u in unk):
++                    return sqrt(expand_mul(arg*conj))
+ 
+     def _eval_is_real(self):
+         if self.args[0].is_finite:

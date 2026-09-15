@@ -1,0 +1,61 @@
+--- a/lark/parsers/lalr_parser.py
++++ b/lark/parsers/lalr_parser.py
+@@ -1,5 +1,6 @@
+ """This module implements a LALR(1) Parser
+ """
++import perfmark
+ # Author: Erez Shinan (2017)
+ # Email : erezshin@gmail.com
+ from typing import Dict, Any, Optional
+@@ -95,28 +96,29 @@
+             state - the initial state. Changed in-place.
+             last_token - Used only for line information in case of an empty lexer.
+         """
+-        try:
+-            token = last_token
+-            for token in state.lexer.lex(state):
+-                assert token is not None
+-                state.feed_token(token)
++        with perfmark.region("lt-205"):
++            try:
++                token = last_token
++                for token in state.lexer.lex(state):
++                    assert token is not None
++                    state.feed_token(token)
+ 
+-            end_token = Token.new_borrow_pos('$END', '', token) if token else Token('$END', '', 0, 1, 1)
+-            return state.feed_token(end_token, True)
+-        except UnexpectedInput as e:
+-            try:
+-                e.interactive_parser = InteractiveParser(self, state, state.lexer)
+-            except NameError:
+-                pass
+-            raise e
+-        except Exception as e:
+-            if self.debug:
+-                print("")
+-                print("STATE STACK DUMP")
+-                print("----------------")
+-                for i, s in enumerate(state.state_stack):
+-                    print('%d)' % i , s)
+-                print("")
++                end_token = Token.new_borrow_pos('$END', '', token) if token else Token('$END', '', 0, 1, 1)
++                return state.feed_token(end_token, True)
++            except UnexpectedInput as e:
++                try:
++                    e.interactive_parser = InteractiveParser(self, state, state.lexer)
++                except NameError:
++                    pass
++                raise e
++            except Exception as e:
++                if self.debug:
++                    print("")
++                    print("STATE STACK DUMP")
++                    print("----------------")
++                    for i, s in enumerate(state.state_stack):
++                        print('%d)' % i , s)
++                    print("")
+ 
+-            raise
++                raise
+ ###}

@@ -1,0 +1,32 @@
+--- a/networkx/algorithms/approximation/traveling_salesman.py
++++ b/networkx/algorithms/approximation/traveling_salesman.py
+@@ -33,6 +33,7 @@
+ 
+ http://en.wikipedia.org/wiki/Travelling_salesman_problem
+ """
++import perfmark
+ 
+ import math
+ 
+@@ -330,13 +331,14 @@
+         GG = nx.DiGraph()
+     else:
+         GG = nx.Graph()
+-    for u in nodes:
+-        for v in nodes:
+-            if u == v:
+-                continue
+-            # Ensure that the weight attribute on GG has the
+-            # same name as the input graph
+-            GG.add_edge(u, v, **{weight: dist[u][v]})
++    with perfmark.region("gl-064"):
++        for u in nodes:
++            for v in nodes:
++                if u == v:
++                    continue
++                # Ensure that the weight attribute on GG has the
++                # same name as the input graph
++                GG.add_edge(u, v, **{weight: dist[u][v]})
+ 
+     best_GG = method(GG, weight=weight, **kwargs)
+ 

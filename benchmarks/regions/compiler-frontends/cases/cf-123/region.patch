@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/FrontendAction.cpp
++++ b/clang/lib/Frontend/FrontendAction.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/FrontendAction.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -584,6 +585,7 @@
+ 
+ bool FrontendAction::BeginSourceFile(CompilerInstance &CI,
+                                      const FrontendInputFile &RealInput) {
++                                       DRPERF_BENCH_REGION("cf-123");
+   FrontendInputFile Input(RealInput);
+   assert(!Instance && "Already processing a source file!");
+   assert(!Input.isEmpty() && "Unexpected empty filename!");

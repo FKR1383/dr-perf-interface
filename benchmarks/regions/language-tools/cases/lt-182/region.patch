@@ -1,0 +1,92 @@
+--- a/pyparsing/results.py
++++ b/pyparsing/results.py
+@@ -1,6 +1,7 @@
+ # results.py
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ from collections.abc import (
+@@ -200,43 +201,44 @@
+         isinstance=isinstance,
+         **kwargs,
+     ) -> None:
+-        asList = deprecate_argument(kwargs, "asList", True, new_name="aslist")
+-
+-        asList = asList and aslist
+-        self._tokdict: dict[str, list[_ParseResultsWithOffset]]
+-
+-        if name is None or name == "":
+-            return
+-
+-        if isinstance(name, int):
+-            name = str(name)
+-
+-        if not modal:
+-            self._all_names = {name}
+-
+-        self._name = name
+-
+-        if toklist in self._null_values:
+-            return
+-
+-        if isinstance(toklist, (str_type, type)):
+-            toklist = [toklist]
+-
+-        if asList:
+-            if isinstance(toklist, ParseResults):
+-                self[name] = _ParseResultsWithOffset(ParseResults(toklist._toklist), 0)
+-            else:
+-                self[name] = _ParseResultsWithOffset(ParseResults(toklist[0]), 0)
+-            self[name]._name = name
+-            return
+-
+-        try:
+-            self[name] = toklist[0]
+-        except (KeyError, TypeError, IndexError):
+-            if toklist is not self:
+-                self[name] = toklist
+-            else:
+-                self._name = name
++        with perfmark.region("lt-182"):
++            asList = deprecate_argument(kwargs, "asList", True, new_name="aslist")
++
++            asList = asList and aslist
++            self._tokdict: dict[str, list[_ParseResultsWithOffset]]
++
++            if name is None or name == "":
++                return
++
++            if isinstance(name, int):
++                name = str(name)
++
++            if not modal:
++                self._all_names = {name}
++
++            self._name = name
++
++            if toklist in self._null_values:
++                return
++
++            if isinstance(toklist, (str_type, type)):
++                toklist = [toklist]
++
++            if asList:
++                if isinstance(toklist, ParseResults):
++                    self[name] = _ParseResultsWithOffset(ParseResults(toklist._toklist), 0)
++                else:
++                    self[name] = _ParseResultsWithOffset(ParseResults(toklist[0]), 0)
++                self[name]._name = name
++                return
++
++            try:
++                self[name] = toklist[0]
++            except (KeyError, TypeError, IndexError):
++                if toklist is not self:
++                    self[name] = toklist
++                else:
++                    self._name = name
+ 
+     def __eq__(self, other):
+         return (self is other) or (

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-164",
+  "title": "Selected block in pandas.interval_range",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pandas-dev/pandas",
+    "revision": "a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee",
+    "path": "pandas/core/indexes/interval.py",
+    "snapshot": "../../upstream/pandas/pandas/core/indexes/interval.py",
+    "sha256": "0f1426753ada1d949ab9f9d1e8655cf3a177baa2bf5fd3077e7b545635e7dff3"
+  },
+  "region": {
+    "symbol": "interval_range",
+    "start_line": 1505,
+    "end_line": 1540,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-164",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise interval_range with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "pandas:pandas/core/indexes/interval.py:interval_range",
+  "citations": [
+    "https://github.com/pandas-dev/pandas/blob/a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee/pandas/core/indexes/interval.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/pandas/pandas/core/indexes/interval.py",
+        "destination": "tests/original.py",
+        "sha256": "0f1426753ada1d949ab9f9d1e8655cf3a177baa2bf5fd3077e7b545635e7dff3"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls pandas.core.indexes.interval.interval_range on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

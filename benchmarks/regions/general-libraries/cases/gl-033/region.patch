@@ -1,0 +1,45 @@
+--- a/networkx/algorithms/assortativity/neighbor_degree.py
++++ b/networkx/algorithms/assortativity/neighbor_degree.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import networkx as nx
+ 
+ __all__ = ["average_neighbor_degree"]
+@@ -141,20 +142,21 @@
+ 
+     # Main loop: Compute average degree of neighbors
+     avg = {}
+-    for n, deg in source_degree(nodes, weight=weight):
+-        # handle degree zero average
+-        if deg == 0:
+-            avg[n] = 0.0
+-            continue
+-
+-        # we sum over both G_P and G_S, but one of the two is usually empty.
+-        if weight is None:
+-            avg[n] = (
+-                sum(t_deg[nbr] for nbr in G_S[n]) + sum(t_deg[nbr] for nbr in G_P[n])
+-            ) / deg
+-        else:
+-            avg[n] = (
+-                sum(dd.get(weight, 1) * t_deg[nbr] for nbr, dd in G_S[n].items())
+-                + sum(dd.get(weight, 1) * t_deg[nbr] for nbr, dd in G_P[n].items())
+-            ) / deg
++    with perfmark.region("gl-033"):
++        for n, deg in source_degree(nodes, weight=weight):
++            # handle degree zero average
++            if deg == 0:
++                avg[n] = 0.0
++                continue
++    
++            # we sum over both G_P and G_S, but one of the two is usually empty.
++            if weight is None:
++                avg[n] = (
++                    sum(t_deg[nbr] for nbr in G_S[n]) + sum(t_deg[nbr] for nbr in G_P[n])
++                ) / deg
++            else:
++                avg[n] = (
++                    sum(dd.get(weight, 1) * t_deg[nbr] for nbr, dd in G_S[n].items())
++                    + sum(dd.get(weight, 1) * t_deg[nbr] for nbr, dd in G_P[n].items())
++                ) / deg
+     return avg

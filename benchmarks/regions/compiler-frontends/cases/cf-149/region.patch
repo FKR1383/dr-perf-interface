@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/CFG.cpp
++++ b/clang/lib/Analysis/CFG.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/CFG.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Attr.h"
+@@ -2944,6 +2945,7 @@
+ /// VisitDeclSubExpr - Utility method to add block-level expressions for
+ /// DeclStmts and initializers in them.
+ CFGBlock *CFGBuilder::VisitDeclSubExpr(DeclStmt *DS) {
++  DRPERF_BENCH_REGION("cf-149");
+   assert(DS->isSingleDecl() && "Can handle single declarations only.");
+ 
+   if (const auto *TND = dyn_cast<TypedefNameDecl>(DS->getSingleDecl())) {

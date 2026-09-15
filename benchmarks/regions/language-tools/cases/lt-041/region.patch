@@ -1,0 +1,57 @@
+--- a/sympy/polys/domains/complexfield.py
++++ b/sympy/polys/domains/complexfield.py
+@@ -1,5 +1,6 @@
+ """Implementation of :class:`ComplexField` class. """
+ from __future__ import annotations
++import perfmark
+ 
+ 
+ from sympy.core.numbers import Float, I
+@@ -50,26 +51,27 @@
+         # XXX: The tolerance parameter is ignored but is kept for backward
+         # compatibility for now.
+ 
+-        context = MPContext()
+-
+-        if prec is None and dps is None:
+-            context.prec = self._default_precision
+-        elif dps is None:
+-            context.prec = prec
+-        elif prec is None:
+-            context.dps = dps
+-        else:
+-            raise TypeError("Cannot set both prec and dps")
+-
+-        self._context = context
+-
+-        self._dtype = context.mpc
+-        self.zero = self.dtype(0)
+-        self.one = self.dtype(1)
+-
+-        # XXX: Neither of these is actually used anywhere.
+-        self._max_denom = max(2**context.prec // 200, 99)
+-        self._tolerance = self.one / self._max_denom
++        with perfmark.region("lt-041"):
++            context = MPContext()
++
++            if prec is None and dps is None:
++                context.prec = self._default_precision
++            elif dps is None:
++                context.prec = prec
++            elif prec is None:
++                context.dps = dps
++            else:
++                raise TypeError("Cannot set both prec and dps")
++
++            self._context = context
++
++            self._dtype = context.mpc
++            self.zero = self.dtype(0)
++            self.one = self.dtype(1)
++
++            # XXX: Neither of these is actually used anywhere.
++            self._max_denom = max(2**context.prec // 200, 99)
++            self._tolerance = self.one / self._max_denom
+ 
+     @property
+     def tp(self):

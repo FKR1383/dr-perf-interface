@@ -1,0 +1,18 @@
+--- a/src/packaging/dependency_groups.py
++++ b/src/packaging/dependency_groups.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from collections.abc import Mapping, Sequence
+@@ -296,7 +297,8 @@
+     .. versionadded:: 26.1
+     """
+     resolver = DependencyGroupResolver(dependency_groups)
+-    return tuple(str(r) for group in groups for r in resolver.resolve(group))
++    with perfmark.region("gl-205"):
++        return tuple(str(r) for group in groups for r in resolver.resolve(group))
+ 
+ 
+ # ----------------

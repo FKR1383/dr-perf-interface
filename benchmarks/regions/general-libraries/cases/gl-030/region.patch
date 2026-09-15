@@ -1,0 +1,54 @@
+--- a/networkx/algorithms/structuralholes.py
++++ b/networkx/algorithms/structuralholes.py
+@@ -1,4 +1,5 @@
+ """Functions for computing measures of structural holes."""
++import perfmark
+ 
+ import networkx as nx
+ 
+@@ -192,25 +193,26 @@
+     if nodes is None:
+         nodes = G
+     # Use Borgatti's simplified formula for unweighted and undirected graphs
+-    if not G.is_directed() and weight is None:
+-        for v in nodes:
+-            # Effective size is not defined for isolated nodes, including nodes
+-            # with only self-edges
+-            if all(u == v for u in G[v]):
+-                effective_size[v] = float("nan")
+-                continue
+-            E = nx.ego_graph(G, v, center=False, undirected=True)
+-            effective_size[v] = len(E) - (2 * E.size()) / len(E)
+-    else:
+-        for v in nodes:
+-            # Effective size is not defined for isolated nodes, including nodes
+-            # with only self-edges
+-            if all(u == v for u in G[v]):
+-                effective_size[v] = float("nan")
+-                continue
+-            effective_size[v] = sum(
+-                redundancy(G, v, u, weight) for u in set(nx.all_neighbors(G, v))
+-            )
++    with perfmark.region("gl-030"):
++        if not G.is_directed() and weight is None:
++            for v in nodes:
++                # Effective size is not defined for isolated nodes, including nodes
++                # with only self-edges
++                if all(u == v for u in G[v]):
++                    effective_size[v] = float("nan")
++                    continue
++                E = nx.ego_graph(G, v, center=False, undirected=True)
++                effective_size[v] = len(E) - (2 * E.size()) / len(E)
++        else:
++            for v in nodes:
++                # Effective size is not defined for isolated nodes, including nodes
++                # with only self-edges
++                if all(u == v for u in G[v]):
++                    effective_size[v] = float("nan")
++                    continue
++                effective_size[v] = sum(
++                    redundancy(G, v, u, weight) for u in set(nx.all_neighbors(G, v))
++                )
+     return effective_size
+ 
+ 

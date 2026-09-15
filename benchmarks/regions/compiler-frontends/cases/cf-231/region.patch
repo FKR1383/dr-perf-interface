@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/HeaderSearch.cpp
++++ b/clang/lib/Lex/HeaderSearch.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Lex/HeaderSearch.h"
+ #include "clang/Basic/Diagnostic.h"
+ #include "clang/Basic/FileManager.h"
+@@ -1154,6 +1155,7 @@
+     StringRef Filename, FileEntryRef ContextFileEnt,
+     SmallVectorImpl<char> *SearchPath, SmallVectorImpl<char> *RelativePath,
+     Module *RequestingModule, ModuleMap::KnownHeader *SuggestedModule) {
++      DRPERF_BENCH_REGION("cf-231");
+   // Framework names must have a '/' in the filename.  Find it.
+   // FIXME: Should we permit '\' on Windows?
+   size_t SlashPos = Filename.find('/');

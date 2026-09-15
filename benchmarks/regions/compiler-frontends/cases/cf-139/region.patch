@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/Verifier.cpp
++++ b/llvm/lib/IR/Verifier.cpp
+@@ -47,6 +47,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/Verifier.h"
+ #include "llvm/ADT/APFloat.h"
+ #include "llvm/ADT/APInt.h"
+@@ -2774,6 +2775,7 @@
+ // visitFunction - Verify that a function is ok.
+ //
+ void Verifier::visitFunction(const Function &F) {
++  DRPERF_BENCH_REGION("cf-139");
+   visitGlobalValue(F);
+ 
+   // Check function arguments.

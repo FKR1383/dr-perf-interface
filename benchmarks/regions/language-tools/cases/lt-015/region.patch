@@ -1,0 +1,142 @@
+--- a/sympy/polys/euclidtools.py
++++ b/sympy/polys/euclidtools.py
+@@ -1,6 +1,7 @@
+ """Euclidean algorithms, GCDs, LCMs and polynomial remainder sequences. """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import overload, Literal, TYPE_CHECKING
+ 
+@@ -1338,71 +1339,72 @@
+     .. [1] [Liao95]_
+ 
+     """
+-    if not u:
+-        return dup_zz_heu_gcd(f, g, K)
+-
+-    result = _dmp_rr_trivial_gcd(f, g, u, K)
+-
+-    if result is not None:
+-        return result
+-
+-    gcd, f, g = dmp_ground_extract(f, g, u, K)
+-
+-    f_norm = dmp_max_norm(f, u, K)
+-    g_norm = dmp_max_norm(g, u, K)
+-
+-    B = K(2*min(f_norm, g_norm) + 29)
+-
+-    x = max(min(B, 99*K.sqrt(B)),
+-            2*min(f_norm // abs(dmp_ground_LC(f, u, K)),
+-                  g_norm // abs(dmp_ground_LC(g, u, K))) + 4)
+-
+-    for i in range(0, HEU_GCD_MAX):
+-        ff = dmp_eval(f, x, u, K)
+-        gg = dmp_eval(g, x, u, K)
+-
+-        v = u - 1
+-
+-        if not (dmp_zero_p(ff, v) or dmp_zero_p(gg, v)):
+-            h, cff, cfg = dmp_zz_heu_gcd(ff, gg, v, K)
+-
+-            h = _dmp_zz_gcd_interpolate(h, x, v, K)
+-            h = dmp_ground_primitive(h, u, K)[1]
+-
+-            cff_, r = dmp_div(f, h, u, K)
+-
+-            if dmp_zero_p(r, u):
+-                cfg_, r = dmp_div(g, h, u, K)
++    with perfmark.region("lt-015"):
++        if not u:
++            return dup_zz_heu_gcd(f, g, K)
++
++        result = _dmp_rr_trivial_gcd(f, g, u, K)
++
++        if result is not None:
++            return result
++
++        gcd, f, g = dmp_ground_extract(f, g, u, K)
++
++        f_norm = dmp_max_norm(f, u, K)
++        g_norm = dmp_max_norm(g, u, K)
++
++        B = K(2*min(f_norm, g_norm) + 29)
++
++        x = max(min(B, 99*K.sqrt(B)),
++                2*min(f_norm // abs(dmp_ground_LC(f, u, K)),
++                      g_norm // abs(dmp_ground_LC(g, u, K))) + 4)
++
++        for i in range(0, HEU_GCD_MAX):
++            ff = dmp_eval(f, x, u, K)
++            gg = dmp_eval(g, x, u, K)
++
++            v = u - 1
++
++            if not (dmp_zero_p(ff, v) or dmp_zero_p(gg, v)):
++                h, cff, cfg = dmp_zz_heu_gcd(ff, gg, v, K)
++
++                h = _dmp_zz_gcd_interpolate(h, x, v, K)
++                h = dmp_ground_primitive(h, u, K)[1]
++
++                cff_, r = dmp_div(f, h, u, K)
+ 
+                 if dmp_zero_p(r, u):
+-                    h = dmp_mul_ground(h, gcd, u, K)
+-                    return h, cff_, cfg_
+-
+-            cff = _dmp_zz_gcd_interpolate(cff, x, v, K)
+-
+-            h, r = dmp_div(f, cff, u, K)
+-
+-            if dmp_zero_p(r, u):
+-                cfg_, r = dmp_div(g, h, u, K)
++                    cfg_, r = dmp_div(g, h, u, K)
++
++                    if dmp_zero_p(r, u):
++                        h = dmp_mul_ground(h, gcd, u, K)
++                        return h, cff_, cfg_
++
++                cff = _dmp_zz_gcd_interpolate(cff, x, v, K)
++
++                h, r = dmp_div(f, cff, u, K)
+ 
+                 if dmp_zero_p(r, u):
+-                    h = dmp_mul_ground(h, gcd, u, K)
+-                    return h, cff, cfg_
+-
+-            cfg = _dmp_zz_gcd_interpolate(cfg, x, v, K)
+-
+-            h, r = dmp_div(g, cfg, u, K)
+-
+-            if dmp_zero_p(r, u):
+-                cff_, r = dmp_div(f, h, u, K)
++                    cfg_, r = dmp_div(g, h, u, K)
++
++                    if dmp_zero_p(r, u):
++                        h = dmp_mul_ground(h, gcd, u, K)
++                        return h, cff, cfg_
++
++                cfg = _dmp_zz_gcd_interpolate(cfg, x, v, K)
++
++                h, r = dmp_div(g, cfg, u, K)
+ 
+                 if dmp_zero_p(r, u):
+-                    h = dmp_mul_ground(h, gcd, u, K)
+-                    return h, cff_, cfg
+-
+-        x = 73794*x * K.sqrt(K.sqrt(x)) // 27011
+-
+-    raise HeuristicGCDFailed('no luck')
++                    cff_, r = dmp_div(f, h, u, K)
++
++                    if dmp_zero_p(r, u):
++                        h = dmp_mul_ground(h, gcd, u, K)
++                        return h, cff_, cfg
++
++            x = 73794*x * K.sqrt(K.sqrt(x)) // 27011
++
++        raise HeuristicGCDFailed('no luck')
+ 
+ 
+ def dup_qq_heu_gcd(f, g, K0):

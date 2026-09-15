@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGOpenMPRuntime.cpp
++++ b/clang/lib/CodeGen/CGOpenMPRuntime.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGOpenMPRuntime.h"
+ #include "ABIInfoImpl.h"
+ #include "CGCXXABI.h"
+@@ -1851,6 +1852,7 @@
+                                        ArrayRef<llvm::Value *> CapturedVars,
+                                        const Expr *IfCond,
+                                        llvm::Value *NumThreads) {
++                                         DRPERF_BENCH_REGION("cf-245");
+   if (!CGF.HaveInsertPoint())
+     return;
+   llvm::Value *RTLoc = emitUpdateLocation(CGF, Loc);

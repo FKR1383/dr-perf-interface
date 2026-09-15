@@ -1,0 +1,77 @@
+--- a/libcst/_nodes/expression.py
++++ b/libcst/_nodes/expression.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -2075,37 +2076,38 @@
+         default_star: Optional[str] = None,
+         default_comma: bool = False,
+     ) -> None:
+-        with state.record_syntactic_position(self):
+-            star = self.star
+-            if isinstance(star, MaybeSentinel):
+-                if default_star is None:
+-                    raise CSTCodegenError(
+-                        "Must specify a concrete default_star if default used on star."
+-                    )
+-                star = default_star
+-            if isinstance(star, str):
+-                state.add_token(star)
+-            self.whitespace_after_star._codegen(state)
+-            self.name._codegen(state)
+-
+-        annotation = self.annotation
+-        if annotation is not None:
+-            annotation._codegen(state, default_indicator=":")
+-        equal = self.equal
+-        if equal is MaybeSentinel.DEFAULT and self.default is not None:
+-            state.add_token(" = ")
+-        elif isinstance(equal, AssignEqual):
+-            equal._codegen(state)
+-        default = self.default
+-        if default is not None:
+-            default._codegen(state)
+-        comma = self.comma
+-        if comma is MaybeSentinel.DEFAULT and default_comma:
+-            state.add_token(", ")
+-        elif isinstance(comma, Comma):
+-            comma._codegen(state)
+-
+-        self.whitespace_after_param._codegen(state)
++        with perfmark.region("lt-089"):
++            with state.record_syntactic_position(self):
++                star = self.star
++                if isinstance(star, MaybeSentinel):
++                    if default_star is None:
++                        raise CSTCodegenError(
++                            "Must specify a concrete default_star if default used on star."
++                        )
++                    star = default_star
++                if isinstance(star, str):
++                    state.add_token(star)
++                self.whitespace_after_star._codegen(state)
++                self.name._codegen(state)
++
++            annotation = self.annotation
++            if annotation is not None:
++                annotation._codegen(state, default_indicator=":")
++            equal = self.equal
++            if equal is MaybeSentinel.DEFAULT and self.default is not None:
++                state.add_token(" = ")
++            elif isinstance(equal, AssignEqual):
++                equal._codegen(state)
++            default = self.default
++            if default is not None:
++                default._codegen(state)
++            comma = self.comma
++            if comma is MaybeSentinel.DEFAULT and default_comma:
++                state.add_token(", ")
++            elif isinstance(comma, Comma):
++                comma._codegen(state)
++
++            self.whitespace_after_param._codegen(state)
+ 
+ 
+ @add_slots

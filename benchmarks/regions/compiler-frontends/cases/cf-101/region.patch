@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -9635,6 +9636,7 @@
+                                        bool Diagnose,
+                                        bool DiagnoseCFAudited,
+                                        bool ConvertRHS) {
++                                         DRPERF_BENCH_REGION("cf-101");
+   // We need to be able to tell the caller whether we diagnosed a problem, if
+   // they ask us to issue diagnostics.
+   assert((ConvertRHS || !Diagnose) && "can't indicate whether we diagnosed");

@@ -1,0 +1,18 @@
+--- a/include/rapidjson/writer.h
++++ b/include/rapidjson/writer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_WRITER_H_
+ #define RAPIDJSON_WRITER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "stream.h"
+ #include "internal/clzll.h"
+ #include "internal/meta.h"
+@@ -330,6 +331,7 @@
+     }
+ 
+     bool WriteInt64(int64_t i64) {
++        DRPERF_BENCH_REGION("nl-022");
+         char buffer[21];
+         const char* end = internal::i64toa(i64, buffer);
+         PutReserve(*os_, static_cast<size_t>(end - buffer));

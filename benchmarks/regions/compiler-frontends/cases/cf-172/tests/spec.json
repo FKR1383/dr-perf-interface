@@ -1,0 +1,34 @@
+{
+  "case": "cf-172",
+  "phase": "ir-parsing",
+  "scenario": "function-ir-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O0",
+    "-x",
+    "c",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "",
+  "fixture": "define i32 @fold_172(i32 %x) {\nentry:\n  %a = add i32 %x, 6\n  ret i32 %a\n}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "@g172_0 = global i32 0\n@g172_1 = global i32 1\n@g172_2 = global i32 2\n@g172_3 = global i32 3\ndefine i32 @fold_172(i32 %x) {\nentry:\n  %a = add i32 %x, 6\n  ret i32 %a\n}\n"
+    },
+    {
+      "size": 16,
+      "source": "@g172_0 = global i32 0\n@g172_1 = global i32 1\n@g172_2 = global i32 2\n@g172_3 = global i32 3\n@g172_4 = global i32 4\n@g172_5 = global i32 5\n@g172_6 = global i32 6\n@g172_7 = global i32 7\n@g172_8 = global i32 8\n@g172_9 = global i32 9\n@g172_10 = global i32 10\n@g172_11 = global i32 11\n@g172_12 = global i32 12\n@g172_13 = global i32 13\n@g172_14 = global i32 14\n@g172_15 = global i32 15\ndefine i32 @fold_172(i32 %x) {\nentry:\n  %a = add i32 %x, 6\n  ret i32 %a\n}\n"
+    },
+    {
+      "size": 64,
+      "source": "@g172_0 = global i32 0\n@g172_1 = global i32 1\n@g172_2 = global i32 2\n@g172_3 = global i32 3\n@g172_4 = global i32 4\n@g172_5 = global i32 5\n@g172_6 = global i32 6\n@g172_7 = global i32 7\n@g172_8 = global i32 8\n@g172_9 = global i32 9\n@g172_10 = global i32 10\n@g172_11 = global i32 11\n@g172_12 = global i32 12\n@g172_13 = global i32 13\n@g172_14 = global i32 14\n@g172_15 = global i32 15\n@g172_16 = global i32 16\n@g172_17 = global i32 17\n@g172_18 = global i32 18\n@g172_19 = global i32 19\n@g172_20 = global i32 20\n@g172_21 = global i32 21\n@g172_22 = global i32 22\n@g172_23 = global i32 23\n@g172_24 = global i32 24\n@g172_25 = global i32 25\n@g172_26 = global i32 26\n@g172_27 = global i32 27\n@g172_28 = global i32 28\n@g172_29 = global i32 29\n@g172_30 = global i32 30\n@g172_31 = global i32 31\n@g172_32 = global i32 32\n@g172_33 = global i32 33\n@g172_34 = global i32 34\n@g172_35 = global i32 35\n@g172_36 = global i32 36\n@g172_37 = global i32 37\n@g172_38 = global i32 38\n@g172_39 = global i32 39\n@g172_40 = global i32 40\n@g172_41 = global i32 41\n@g172_42 = global i32 42\n@g172_43 = global i32 43\n@g172_44 = global i32 44\n@g172_45 = global i32 45\n@g172_46 = global i32 46\n@g172_47 = global i32 47\n@g172_48 = global i32 48\n@g172_49 = global i32 49\n@g172_50 = global i32 50\n@g172_51 = global i32 51\n@g172_52 = global i32 52\n@g172_53 = global i32 53\n@g172_54 = global i32 54\n@g172_55 = global i32 55\n@g172_56 = global i32 56\n@g172_57 = global i32 57\n@g172_58 = global i32 58\n@g172_59 = global i32 59\n@g172_60 = global i32 60\n@g172_61 = global i32 61\n@g172_62 = global i32 62\n@g172_63 = global i32 63\ndefine i32 @fold_172(i32 %x) {\nentry:\n  %a = add i32 %x, 6\n  ret i32 %a\n}\n"
+    }
+  ],
+  "target_symbol": "LLParser::parseFunctionHeader",
+  "target_source": "llvm/lib/AsmParser/LLParser.cpp",
+  "mapping_note": "The function-ir-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

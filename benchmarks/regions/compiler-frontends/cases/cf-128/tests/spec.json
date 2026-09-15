@@ -1,0 +1,31 @@
+{
+  "case": "cf-128",
+  "phase": "preprocessing",
+  "scenario": "comment-skipping",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "/* bounded block comment */\n// bounded line comment\nint value = 9;\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "/* comment 0 with tokens +-* */ int value_0=0;\n/* comment 1 with tokens +-* */ int value_1=1;\n/* comment 2 with tokens +-* */ int value_2=2;\n/* comment 3 with tokens +-* */ int value_3=3;\n"
+    },
+    {
+      "size": 16,
+      "source": "/* comment 0 with tokens +-* */ int value_0=0;\n/* comment 1 with tokens +-* */ int value_1=1;\n/* comment 2 with tokens +-* */ int value_2=2;\n/* comment 3 with tokens +-* */ int value_3=3;\n/* comment 4 with tokens +-* */ int value_4=4;\n/* comment 5 with tokens +-* */ int value_5=5;\n/* comment 6 with tokens +-* */ int value_6=6;\n/* comment 7 with tokens +-* */ int value_7=7;\n/* comment 8 with tokens +-* */ int value_8=8;\n/* comment 9 with tokens +-* */ int value_9=9;\n/* comment 10 with tokens +-* */ int value_10=10;\n/* comment 11 with tokens +-* */ int value_11=11;\n/* comment 12 with tokens +-* */ int value_12=12;\n/* comment 13 with tokens +-* */ int value_13=13;\n/* comment 14 with tokens +-* */ int value_14=14;\n/* comment 15 with tokens +-* */ int value_15=15;\n"
+    },
+    {
+      "size": 64,
+      "source": "/* comment 0 with tokens +-* */ int value_0=0;\n/* comment 1 with tokens +-* */ int value_1=1;\n/* comment 2 with tokens +-* */ int value_2=2;\n/* comment 3 with tokens +-* */ int value_3=3;\n/* comment 4 with tokens +-* */ int value_4=4;\n/* comment 5 with tokens +-* */ int value_5=5;\n/* comment 6 with tokens +-* */ int value_6=6;\n/* comment 7 with tokens +-* */ int value_7=7;\n/* comment 8 with tokens +-* */ int value_8=8;\n/* comment 9 with tokens +-* */ int value_9=9;\n/* comment 10 with tokens +-* */ int value_10=10;\n/* comment 11 with tokens +-* */ int value_11=11;\n/* comment 12 with tokens +-* */ int value_12=12;\n/* comment 13 with tokens +-* */ int value_13=13;\n/* comment 14 with tokens +-* */ int value_14=14;\n/* comment 15 with tokens +-* */ int value_15=15;\n/* comment 16 with tokens +-* */ int value_16=16;\n/* comment 17 with tokens +-* */ int value_17=17;\n/* comment 18 with tokens +-* */ int value_18=18;\n/* comment 19 with tokens +-* */ int value_19=19;\n/* comment 20 with tokens +-* */ int value_20=20;\n/* comment 21 with tokens +-* */ int value_21=21;\n/* comment 22 with tokens +-* */ int value_22=22;\n/* comment 23 with tokens +-* */ int value_23=23;\n/* comment 24 with tokens +-* */ int value_24=24;\n/* comment 25 with tokens +-* */ int value_25=25;\n/* comment 26 with tokens +-* */ int value_26=26;\n/* comment 27 with tokens +-* */ int value_27=27;\n/* comment 28 with tokens +-* */ int value_28=28;\n/* comment 29 with tokens +-* */ int value_29=29;\n/* comment 30 with tokens +-* */ int value_30=30;\n/* comment 31 with tokens +-* */ int value_31=31;\n/* comment 32 with tokens +-* */ int value_32=32;\n/* comment 33 with tokens +-* */ int value_33=33;\n/* comment 34 with tokens +-* */ int value_34=34;\n/* comment 35 with tokens +-* */ int value_35=35;\n/* comment 36 with tokens +-* */ int value_36=36;\n/* comment 37 with tokens +-* */ int value_37=37;\n/* comment 38 with tokens +-* */ int value_38=38;\n/* comment 39 with tokens +-* */ int value_39=39;\n/* comment 40 with tokens +-* */ int value_40=40;\n/* comment 41 with tokens +-* */ int value_41=41;\n/* comment 42 with tokens +-* */ int value_42=42;\n/* comment 43 with tokens +-* */ int value_43=43;\n/* comment 44 with tokens +-* */ int value_44=44;\n/* comment 45 with tokens +-* */ int value_45=45;\n/* comment 46 with tokens +-* */ int value_46=46;\n/* comment 47 with tokens +-* */ int value_47=47;\n/* comment 48 with tokens +-* */ int value_48=48;\n/* comment 49 with tokens +-* */ int value_49=49;\n/* comment 50 with tokens +-* */ int value_50=50;\n/* comment 51 with tokens +-* */ int value_51=51;\n/* comment 52 with tokens +-* */ int value_52=52;\n/* comment 53 with tokens +-* */ int value_53=53;\n/* comment 54 with tokens +-* */ int value_54=54;\n/* comment 55 with tokens +-* */ int value_55=55;\n/* comment 56 with tokens +-* */ int value_56=56;\n/* comment 57 with tokens +-* */ int value_57=57;\n/* comment 58 with tokens +-* */ int value_58=58;\n/* comment 59 with tokens +-* */ int value_59=59;\n/* comment 60 with tokens +-* */ int value_60=60;\n/* comment 61 with tokens +-* */ int value_61=61;\n/* comment 62 with tokens +-* */ int value_62=62;\n/* comment 63 with tokens +-* */ int value_63=63;\n"
+    }
+  ],
+  "target_symbol": "Lexer::SkipBlockComment",
+  "target_source": "clang/lib/Lex/Lexer.cpp",
+  "mapping_note": "The comment-skipping construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

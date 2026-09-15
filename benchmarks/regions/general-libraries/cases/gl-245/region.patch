@@ -1,0 +1,30 @@
+--- a/pathspec/util.py
++++ b/pathspec/util.py
+@@ -2,6 +2,7 @@
+ This module provides utility methods for dealing with path-specs.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import os.path
+@@ -610,12 +611,13 @@
+ 	:class:`os.PathLike`).
+ 	"""
+ 	norm_files: dict[str, list[StrPath]] = {}
+-	for path in files:
+-		norm_file = normalize_file(path, separators=separators)
+-		if norm_file in norm_files:
+-			norm_files[norm_file].append(path)
+-		else:
+-			norm_files[norm_file] = [path]
++	with perfmark.region("gl-245"):
++		for path in files:
++			norm_file = normalize_file(path, separators=separators)
++			if norm_file in norm_files:
++				norm_files[norm_file].append(path)
++			else:
++				norm_files[norm_file] = [path]
+ 
+ 	return norm_files
+ 

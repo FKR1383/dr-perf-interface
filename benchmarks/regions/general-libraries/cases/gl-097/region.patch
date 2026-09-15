@@ -1,0 +1,36 @@
+--- a/networkx/algorithms/dag.py
++++ b/networkx/algorithms/dag.py
+@@ -4,6 +4,7 @@
+ In general, these functions do not check for acyclic-ness, so it is up
+ to the user to check for that.
+ """
++import perfmark
+ 
+ import heapq
+ from collections import deque
+@@ -863,15 +864,16 @@
+     if reflexive not in {None, True, False}:
+         raise nx.NetworkXError("Incorrect value for the parameter `reflexive`")
+ 
+-    for v in G:
+-        if reflexive is None:
+-            TC.add_edges_from((v, u) for u in nx.descendants(G, v) if u not in TC[v])
+-        elif reflexive is True:
+-            TC.add_edges_from(
+-                (v, u) for u in nx.descendants(G, v) | {v} if u not in TC[v]
+-            )
+-        elif reflexive is False:
+-            TC.add_edges_from((v, e[1]) for e in nx.edge_bfs(G, v) if e[1] not in TC[v])
++    with perfmark.region("gl-097"):
++        for v in G:
++            if reflexive is None:
++                TC.add_edges_from((v, u) for u in nx.descendants(G, v) if u not in TC[v])
++            elif reflexive is True:
++                TC.add_edges_from(
++                    (v, u) for u in nx.descendants(G, v) | {v} if u not in TC[v]
++                )
++            elif reflexive is False:
++                TC.add_edges_from((v, e[1]) for e in nx.edge_bfs(G, v) if e[1] not in TC[v])
+ 
+     return TC
+ 

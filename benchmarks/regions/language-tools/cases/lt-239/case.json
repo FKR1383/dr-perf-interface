@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-239",
+  "title": "cython init_builtins body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/cython/cython",
+    "revision": "dbbbdbb97f116c46495b5ab88ba0195a277016f9",
+    "path": "Cython/Compiler/Builtin.py",
+    "snapshot": "../../upstream/cython/Cython/Compiler/Builtin.py",
+    "sha256": "79afb19d876b24fd124498aeb7e99930a480aaa459eee642ca307a1f239f7bc1"
+  },
+  "region": {
+    "symbol": "init_builtins",
+    "start_line": 953,
+    "end_line": 1002,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-239",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise init_builtins with bounded, varied cython inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "cython:Cython/Compiler/Builtin.py:init_builtins",
+  "citations": [
+    "https://github.com/cython/cython/blob/dbbbdbb97f116c46495b5ab88ba0195a277016f9/Cython/Compiler/Builtin.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

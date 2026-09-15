@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-073",
+  "title": "ExprEngine::Visit compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/StaticAnalyzer/Core/ExprEngine.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/StaticAnalyzer/Core/ExprEngine.cpp",
+    "sha256": "26dcf87b278b410ccccaec591dd89bf3faae052a36ec1681aa727ab2bc0555cb"
+  },
+  "region": {
+    "symbol": "ExprEngine::Visit",
+    "start_line": 1710,
+    "end_line": 2447,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-073",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded control-flow-graph fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/StaticAnalyzer/Core/ExprEngine.cpp:ExprEngine::Visit",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/StaticAnalyzer/Core/ExprEngine.cpp#L1710-L2447"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "a03cc86cadf51efd856db9df04ea81f05dc3cb3a5e6563cd8036b66046125bff",
+      "patch_sha256": "9ab44fe77d3f98cfce7d2af7ef8ab63fdc52da32f0af5454e51d40474d0a8892"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

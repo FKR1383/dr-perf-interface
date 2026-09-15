@@ -1,0 +1,75 @@
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import re
+@@ -3298,36 +3299,37 @@
+         return f"{self.seg('MATCH_RECOGNIZE')} {self.wrap(body)}{alias}"
+ 
+     def query_modifiers(self, expression: exp.Expr, *sqls: str) -> str:
+-        limit = expression.args.get("limit")
+-
+-        if self.LIMIT_FETCH == "LIMIT" and isinstance(limit, exp.Fetch):
+-            count = limit.args.get("count")
+-            # "FETCH FIRST ROWS ONLY" without a count means one row per the SQL
+-            # standard; emitting a bare "LIMIT" here would produce invalid SQL.
+-            limit = exp.Limit(
+-                expression=exp.maybe_copy(count) if count is not None else exp.Literal.number(1)
++        with perfmark.region("lt-067"):
++            limit = expression.args.get("limit")
++
++            if self.LIMIT_FETCH == "LIMIT" and isinstance(limit, exp.Fetch):
++                count = limit.args.get("count")
++                # "FETCH FIRST ROWS ONLY" without a count means one row per the SQL
++                # standard; emitting a bare "LIMIT" here would produce invalid SQL.
++                limit = exp.Limit(
++                    expression=exp.maybe_copy(count) if count is not None else exp.Literal.number(1)
++                )
++            elif self.LIMIT_FETCH == "FETCH" and isinstance(limit, exp.Limit):
++                limit = exp.Fetch(direction="FIRST", count=exp.maybe_copy(limit.expression))
++
++            return csv(
++                *sqls,
++                *[self.sql(join) for join in expression.args.get("joins") or []],
++                self.sql(expression, "match"),
++                *[self.sql(lateral) for lateral in expression.args.get("laterals") or []],
++                self.sql(expression, "prewhere"),
++                self.sql(expression, "where"),
++                self.sql(expression, "connect"),
++                self.sql(expression, "group"),
++                self.sql(expression, "having"),
++                *[gen(self, expression) for gen in self.AFTER_HAVING_MODIFIER_TRANSFORMS.values()],
++                self.sql(expression, "order"),
++                *self.offset_limit_modifiers(expression, isinstance(limit, exp.Fetch), limit),
++                *self.after_limit_modifiers(expression),
++                self.options_modifier(expression),
++                self.sql(expression, "for_"),
++                sep="",
+             )
+-        elif self.LIMIT_FETCH == "FETCH" and isinstance(limit, exp.Limit):
+-            limit = exp.Fetch(direction="FIRST", count=exp.maybe_copy(limit.expression))
+-
+-        return csv(
+-            *sqls,
+-            *[self.sql(join) for join in expression.args.get("joins") or []],
+-            self.sql(expression, "match"),
+-            *[self.sql(lateral) for lateral in expression.args.get("laterals") or []],
+-            self.sql(expression, "prewhere"),
+-            self.sql(expression, "where"),
+-            self.sql(expression, "connect"),
+-            self.sql(expression, "group"),
+-            self.sql(expression, "having"),
+-            *[gen(self, expression) for gen in self.AFTER_HAVING_MODIFIER_TRANSFORMS.values()],
+-            self.sql(expression, "order"),
+-            *self.offset_limit_modifiers(expression, isinstance(limit, exp.Fetch), limit),
+-            *self.after_limit_modifiers(expression),
+-            self.options_modifier(expression),
+-            self.sql(expression, "for_"),
+-            sep="",
+-        )
+ 
+     def options_modifier(self, expression: exp.Expr) -> str:
+         options = self.expressions(expression, key="options")

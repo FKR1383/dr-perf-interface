@@ -1,0 +1,84 @@
+--- a/lark/visitors.py
++++ b/lark/visitors.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from typing import TypeVar, Tuple, List, Callable, Generic, Type, Union, Optional, Any, cast
+ from abc import ABC
+ 
+@@ -296,41 +297,42 @@
+ 
+     def transform(self, tree: Tree[_Leaf_T]) -> _Return_T:
+         # Tree to postfix
+-        rev_postfix = []
+-        q: List[Branch[_Leaf_T]] = [tree]
+-        while q:
+-            t = q.pop()
+-            rev_postfix.append(t)
+-            if isinstance(t, Tree):
+-                q += t.children
+-
+-        # Postfix to tree
+-        stack: List = []
+-        for x in reversed(rev_postfix):
+-            if isinstance(x, Tree):
+-                size = len(x.children)
+-                if size:
+-                    # Discarded children are kept on the stack as placeholders, so
+-                    # that this slice stays aligned with x.children. Drop them here.
+-                    args = [a for a in stack[-size:] if a is not Discard]
+-                    del stack[-size:]
++        with perfmark.region("lt-203"):
++            rev_postfix = []
++            q: List[Branch[_Leaf_T]] = [tree]
++            while q:
++                t = q.pop()
++                rev_postfix.append(t)
++                if isinstance(t, Tree):
++                    q += t.children
++
++            # Postfix to tree
++            stack: List = []
++            for x in reversed(rev_postfix):
++                if isinstance(x, Tree):
++                    size = len(x.children)
++                    if size:
++                        # Discarded children are kept on the stack as placeholders, so
++                        # that this slice stays aligned with x.children. Drop them here.
++                        args = [a for a in stack[-size:] if a is not Discard]
++                        del stack[-size:]
++                    else:
++                        args = []
++
++                    stack.append(self._call_userfunc(x, args))    # may be Discard
++
++                elif self.__visit_tokens__ and isinstance(x, Token):
++                    stack.append(self._call_userfunc_token(x))    # may be Discard
+                 else:
+-                    args = []
+-
+-                stack.append(self._call_userfunc(x, args))    # may be Discard
+-
+-            elif self.__visit_tokens__ and isinstance(x, Token):
+-                stack.append(self._call_userfunc_token(x))    # may be Discard
+-            else:
+-                stack.append(x)
+-
+-        result, = stack  # We should have only one tree remaining
+-        if result is Discard:  # the whole tree was discarded
+-            return None  # type: ignore[return-value]
+-        # There are no guarantees on the type of the value produced by calling a user func for a
+-        # child will produce. This means type system can't statically know that the final result is
+-        # _Return_T. As a result a cast is required.
+-        return cast(_Return_T, result)
++                    stack.append(x)
++
++            result, = stack  # We should have only one tree remaining
++            if result is Discard:  # the whole tree was discarded
++                return None  # type: ignore[return-value]
++            # There are no guarantees on the type of the value produced by calling a user func for a
++            # child will produce. This means type system can't statically know that the final result is
++            # _Return_T. As a result a cast is required.
++            return cast(_Return_T, result)
+ 
+ 
+ class Transformer_InPlaceRecursive(Transformer[_Leaf_T, _Return_T]):

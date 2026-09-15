@@ -1,0 +1,177 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -928,19 +929,42 @@
+     def _parseNoCache(
+         self, instring, loc, do_actions=True, callPreParse=True
+     ) -> tuple[int, ParseResults]:
+-        debugging = self.debug  # and do_actions)
+-        len_instring = len(instring)
+-
+-        if debugging or self.failAction:
+-            # print("Match {} at loc {}({}, {})".format(self, loc, lineno(loc, instring), col(loc, instring)))
+-            try:
++        with perfmark.region("lt-179"):
++            debugging = self.debug  # and do_actions)
++            len_instring = len(instring)
++
++            if debugging or self.failAction:
++                # print("Match {} at loc {}({}, {})".format(self, loc, lineno(loc, instring), col(loc, instring)))
++                try:
++                    if callPreParse and self.callPreparse:
++                        pre_loc = self.preParse(instring, loc)
++                    else:
++                        pre_loc = loc
++                    tokens_start = pre_loc
++                    if self.debugActions.debug_try:
++                        self.debugActions.debug_try(instring, tokens_start, self, False)
++                    if self.mayIndexError or pre_loc >= len_instring:
++                        try:
++                            loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
++                        except IndexError:
++                            raise ParseException(instring, len_instring, self.errmsg, self)
++                    else:
++                        loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
++                except Exception as err:
++                    # print("Exception raised:", err)
++                    if self.debugActions.debug_fail:
++                        self.debugActions.debug_fail(
++                            instring, tokens_start, self, err, False
++                        )
++                    if self.failAction:
++                        self.failAction(instring, tokens_start, self, err)
++                    raise
++            else:
+                 if callPreParse and self.callPreparse:
+                     pre_loc = self.preParse(instring, loc)
+                 else:
+                     pre_loc = loc
+                 tokens_start = pre_loc
+-                if self.debugActions.debug_try:
+-                    self.debugActions.debug_try(instring, tokens_start, self, False)
+                 if self.mayIndexError or pre_loc >= len_instring:
+                     try:
+                         loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
+@@ -948,37 +972,38 @@
+                         raise ParseException(instring, len_instring, self.errmsg, self)
+                 else:
+                     loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
+-            except Exception as err:
+-                # print("Exception raised:", err)
+-                if self.debugActions.debug_fail:
+-                    self.debugActions.debug_fail(
+-                        instring, tokens_start, self, err, False
+-                    )
+-                if self.failAction:
+-                    self.failAction(instring, tokens_start, self, err)
+-                raise
+-        else:
+-            if callPreParse and self.callPreparse:
+-                pre_loc = self.preParse(instring, loc)
+-            else:
+-                pre_loc = loc
+-            tokens_start = pre_loc
+-            if self.mayIndexError or pre_loc >= len_instring:
+-                try:
+-                    loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
+-                except IndexError:
+-                    raise ParseException(instring, len_instring, self.errmsg, self)
+-            else:
+-                loc, tokens = self.parseImpl(instring, pre_loc, do_actions)
+-
+-        tokens = self.postParse(instring, loc, tokens)
+-
+-        ret_tokens = ParseResults(
+-            tokens, self.resultsName, aslist=self.saveAsList, modal=self.modalResults
+-        )
+-        if self.parseAction and (do_actions or self.callDuringTry):
+-            if debugging:
+-                try:
++
++            tokens = self.postParse(instring, loc, tokens)
++
++            ret_tokens = ParseResults(
++                tokens, self.resultsName, aslist=self.saveAsList, modal=self.modalResults
++            )
++            if self.parseAction and (do_actions or self.callDuringTry):
++                if debugging:
++                    try:
++                        for fn in self.parseAction:
++                            try:
++                                tokens = fn(instring, tokens_start, ret_tokens)  # type: ignore [call-arg, arg-type]
++                            except IndexError as parse_action_exc:
++                                exc = ParseException("exception raised in parse action")
++                                raise exc from parse_action_exc
++
++                            if tokens is not None and tokens is not ret_tokens:
++                                ret_tokens = ParseResults(
++                                    tokens,
++                                    self.resultsName,
++                                    aslist=self.saveAsList
++                                    and isinstance(tokens, (ParseResults, list)),
++                                    modal=self.modalResults,
++                                )
++                    except Exception as err:
++                        # print "Exception raised in user parse action:", err
++                        if self.debugActions.debug_fail:
++                            self.debugActions.debug_fail(
++                                instring, tokens_start, self, err, False
++                            )
++                        raise
++                else:
+                     for fn in self.parseAction:
+                         try:
+                             tokens = fn(instring, tokens_start, ret_tokens)  # type: ignore [call-arg, arg-type]
+@@ -994,37 +1019,14 @@
+                                 and isinstance(tokens, (ParseResults, list)),
+                                 modal=self.modalResults,
+                             )
+-                except Exception as err:
+-                    # print "Exception raised in user parse action:", err
+-                    if self.debugActions.debug_fail:
+-                        self.debugActions.debug_fail(
+-                            instring, tokens_start, self, err, False
+-                        )
+-                    raise
+-            else:
+-                for fn in self.parseAction:
+-                    try:
+-                        tokens = fn(instring, tokens_start, ret_tokens)  # type: ignore [call-arg, arg-type]
+-                    except IndexError as parse_action_exc:
+-                        exc = ParseException("exception raised in parse action")
+-                        raise exc from parse_action_exc
+-
+-                    if tokens is not None and tokens is not ret_tokens:
+-                        ret_tokens = ParseResults(
+-                            tokens,
+-                            self.resultsName,
+-                            aslist=self.saveAsList
+-                            and isinstance(tokens, (ParseResults, list)),
+-                            modal=self.modalResults,
+-                        )
+-        if debugging:
+-            # print("Matched", self, "->", ret_tokens.as_list())
+-            if self.debugActions.debug_match:
+-                self.debugActions.debug_match(
+-                    instring, tokens_start, loc, self, ret_tokens, False
+-                )
+-
+-        return loc, ret_tokens
++            if debugging:
++                # print("Matched", self, "->", ret_tokens.as_list())
++                if self.debugActions.debug_match:
++                    self.debugActions.debug_match(
++                        instring, tokens_start, loc, self, ret_tokens, False
++                    )
++
++            return loc, ret_tokens
+ 
+     def try_parse(
+         self,

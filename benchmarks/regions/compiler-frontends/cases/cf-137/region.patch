@@ -1,0 +1,18 @@
+--- a/clang/lib/StaticAnalyzer/Core/ExprEngineC.cpp
++++ b/clang/lib/StaticAnalyzer/Core/ExprEngineC.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/DeclCXX.h"
+ #include "clang/AST/ExprCXX.h"
+ #include "clang/StaticAnalyzer/Core/CheckerManager.h"
+@@ -281,6 +282,7 @@
+ 
+ void ExprEngine::VisitCast(const CastExpr *CastE, const Expr *Ex,
+                            ExplodedNode *Pred, ExplodedNodeSet &Dst) {
++                             DRPERF_BENCH_REGION("cf-137");
+ 
+   ExplodedNodeSet dstPreStmt;
+   getCheckerManager().runCheckersForPreStmt(dstPreStmt, Pred, CastE, *this);

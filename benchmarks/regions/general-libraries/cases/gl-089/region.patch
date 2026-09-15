@@ -1,0 +1,38 @@
+--- a/networkx/algorithms/cluster.py
++++ b/networkx/algorithms/cluster.py
+@@ -1,4 +1,5 @@
+ """Algorithms to characterize the number of triangles in a graph."""
++import perfmark
+ 
+ from collections import Counter
+ from itertools import chain
+@@ -308,17 +309,18 @@
+ 
+     node_to_id = {node: i for i, node in enumerate(relevant_nodes)}
+ 
+-    for u in nbunch:
+-        u_id = node_to_id[u]
+-        u_nbrs = G._adj[u].keys()
+-        for v in u_nbrs:
+-            v_id = node_to_id.get(v, -1)
+-            if v_id <= u_id:
+-                continue
+-            v_nbrs = G._adj[v].keys()
+-            for w in v_nbrs & u_nbrs:
+-                if node_to_id.get(w, -1) > v_id:
+-                    yield u, v, w
++    with perfmark.region("gl-089"):
++        for u in nbunch:
++            u_id = node_to_id[u]
++            u_nbrs = G._adj[u].keys()
++            for v in u_nbrs:
++                v_id = node_to_id.get(v, -1)
++                if v_id <= u_id:
++                    continue
++                v_nbrs = G._adj[v].keys()
++                for w in v_nbrs & u_nbrs:
++                    if node_to_id.get(w, -1) > v_id:
++                        yield u, v, w
+ 
+ 
+ @nx._dispatchable(edge_attrs="weight")

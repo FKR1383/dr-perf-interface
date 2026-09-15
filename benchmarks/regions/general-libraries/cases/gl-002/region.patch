@@ -1,0 +1,478 @@
+--- a/networkx/algorithms/community/leiden.py
++++ b/networkx/algorithms/community/leiden.py
+@@ -1,4 +1,5 @@
+ """Detecting communities based on the Leiden Community Detection algorithm"""
++import perfmark
+ 
+ import functools
+ import itertools
+@@ -277,243 +278,244 @@
+     # node attr "nodes" holds the original nodes represented by this current node
+     nx.set_node_attributes(G, {n: {n} for n in orig_G}, "nodes")
+ 
+-    if metric == "cpm":
+-        # Setup for constant potts model
+-        metric_function = functools.partial(
+-            constant_potts_model,
+-            resolution=resolution,
+-            node_weight="node_weight",
+-            weight="weight",
+-        )
+-
+-        node_weights = dict.fromkeys(G, 1)
+-        node_attributes = {"node_weight": node_weights}
+-
+-        if is_directed:
+-            # Setup for directed constant potts model
+-            gamma = 2 * resolution
+-
++    with perfmark.region("gl-002"):
++        if metric == "cpm":
++            # Setup for constant potts model
++            metric_function = functools.partial(
++                constant_potts_model,
++                resolution=resolution,
++                node_weight="node_weight",
++                weight="weight",
++            )
++    
++            node_weights = dict.fromkeys(G, 1)
++            node_attributes = {"node_weight": node_weights}
++    
++            if is_directed:
++                # Setup for directed constant potts model
++                gamma = 2 * resolution
++    
++                # Note: delta_func uses objects in defining namespace:
++                # - gamma
++                # - node_weights
++                # - edge_wts
++                def delta_func(nodes_to_add, community):
++                    if not community:
++                        return 0
++                    if isinstance(nodes_to_add, set):
++                        nodes_size = sum(node_weights[u] for u in nodes_to_add)
++                        comm_size = sum(node_weights[u] for u in community)
++    
++                        if len(nodes_to_add) <= len(community):
++                            A, C = nodes_to_add, community
++                        else:
++                            A, C = community, nodes_to_add
++                        E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
++                    else:
++                        u = nodes_to_add
++                        nodes_size = node_weights[u]
++                        if len(community) == 1:
++                            v = next(iter(community))
++                            comm_size = node_weights[v]
++                            E = edge_wts[u].get(v, 0)
++                        else:
++                            comm_size = sum(node_weights[u] for u in community)
++                            E = sum(wt for v, wt in edge_wts[u].items() if v in community)
++    
++                    return E - gamma * comm_size * nodes_size
++    
++            else:
++                # Setup for undirected constant potts model
++                gamma = resolution
++    
++                # Note: delta_func uses objects in defining namespace:
++                # - gamma
++                # - node_weights
++                # - edge_wts
++                def delta_func(nodes_to_add, community):
++                    if not community:
++                        return 0
++                    if isinstance(nodes_to_add, set):
++                        nodes_size = sum(node_weights[u] for u in nodes_to_add)
++                        comm_size = sum(node_weights[u] for u in community)
++    
++                        if len(nodes_to_add) <= len(community):
++                            A, C = nodes_to_add, community
++                        else:
++                            A, C = community, nodes_to_add
++                        E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
++                    else:
++                        u = nodes_to_add
++                        nodes_size = node_weights[u]
++                        if len(community) == 1:
++                            v = next(iter(community))
++                            comm_size = node_weights[v]
++                            E = edge_wts[u].get(v, 0)
++                        else:
++                            comm_size = sum(node_weights[v] for v in community)
++                            E = sum(wt for v, wt in edge_wts[u].items() if v in community)
++    
++                    return E - gamma * comm_size * nodes_size
++    
++        elif metric == "modularity":
++            # Setup for (unipartite) modularity
++            metric_function = functools.partial(
++                modularity,
++                resolution=resolution,
++                weight="weight",
++            )
++    
++            if is_directed:
++                # Setup for directed modularity
++                in_degrees = dict(G.in_degree(weight="weight"))
++                out_degrees = dict(G.out_degree(weight="weight"))
++                node_attributes = {"in_degree": in_degrees, "out_degree": out_degrees}
++    
++                m = sum(out_degrees.values())
++                gamma = resolution / m
++    
++                # Note: delta_func uses objects in defining namespace:
++                # - gamma
++                # - in_degrees
++                # - out_degrees
++                # - edge_wts
++                def delta_func(nodes_to_add, community):
++                    if not community:
++                        return 0
++                    if isinstance(nodes_to_add, set):
++                        if len(nodes_to_add) <= len(community):
++                            A, C = nodes_to_add, community
++                        else:
++                            A, C = community, nodes_to_add
++    
++                        A_in = sum(in_degrees[u] for u in A)
++                        A_out = sum(out_degrees[u] for u in A)
++                        C_in = sum(in_degrees[u] for u in C)
++                        C_out = sum(out_degrees[u] for u in C)
++    
++                        E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
++                    else:
++                        u = nodes_to_add
++                        A_in = in_degrees[u]
++                        A_out = out_degrees[u]
++                        if len(community) == 1:
++                            v = next(iter(community))
++                            C_in = in_degrees[v]
++                            C_out = out_degrees[v]
++                            E = edge_wts[u].get(v, 0)
++                        else:
++                            C_in = sum(in_degrees[u] for u in community)
++                            C_out = sum(out_degrees[u] for u in community)
++                            E = sum(wt for v, wt in edge_wts[u].items() if v in community)
++    
++                    # Note: this function returns (m * modularity_delta) to avoid
++                    # extra division by m. The choice of best change is not affected.
++                    # Usual formula would be:
++                    # E / m - (resolution/ m**2) * (A_in * C_out + A_out * C_in)
++                    return E - gamma * (A_in * C_out + A_out * C_in)
++    
++            else:
++                # Setup for undirected modularity
++                degrees = dict(G.degree(weight="weight"))
++                node_attributes = {"degree": degrees}
++    
++                two_m = sum(degrees.values())
++                gamma = resolution / two_m
++    
++                # Note: delta_func uses objects in defining namespace:
++                # - gamma
++                # - degrees
++                # - edge_wts
++                def delta_func(nodes_to_add, community):
++                    if not community:
++                        return 0
++                    if isinstance(nodes_to_add, set):
++                        comm_size = sum(degrees[u] for u in community)
++                        nodes_size = sum(degrees[u] for u in nodes_to_add)
++    
++                        if len(nodes_to_add) <= len(community):
++                            A, C = nodes_to_add, community
++                        else:
++                            A, C = community, nodes_to_add
++                        E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
++                    else:
++                        u = nodes_to_add
++                        nodes_size = degrees[u]
++                        if len(community) == 1:
++                            v = next(iter(community))
++                            comm_size = degrees[v]
++                            E = edge_wts[u].get(v, 0)
++                        else:
++                            comm_size = sum(degrees[u] for u in community)
++                            E = sum(wt for v, wt in edge_wts[u].items() if v in community)
++    
++                    # Note: this function returns (m * modularity_delta) to avoid
++                    # extra division by m. The choice of best change is not affected.
++                    # Usual formula would be:
++                    # E / m - (resolution * 2/ (2*m)**2) * nodes_size * comm_size
++                    return E - gamma * nodes_size * comm_size
++    
++        elif metric == "barber_modularity":
++            # Setup for undirected bipartite barber modularity (not fully implemented)
++    
++            if is_directed:
++                raise nx.NetworkXError("barber_modularity not implemented for DiGraph")
++    
++            # metric should be defined inline rather than
++            # importing nx.bipartite.community.modularity as the
++            # function within this algorithm needs to accept the
++            # aggregated graphs which are not bipartite and therefore
++            # requires a variation of the algorithm
++    
++            def barber_modularity():
++                return
++    
++            metric_function = barber_modularity
++            # TODO check these formulas for how m should appear. written when m=1.
++    
++            red_nodes = {u for u, c in G.nodes(data="bipartite") if c == 0}
++            blue_nodes = {u for u, c in G.nodes(data="bipartite") if c == 1}
++            # TODO add check for this being a bipartite graph
++    
++            degrees = dict(G.degree(weight="weight"))
++            red_degrees = {u: degrees[u] for u in red_nodes}
++            red_degrees.update((u, 0) for u in blue_nodes)
++            blue_degrees = {u: degrees[u] for u in blue_nodes}
++            blue_degrees.update((u, 0) for u in red_nodes)
++    
++            node_attributes = {"red_degree": red_degrees, "blue_degree": blue_degrees}
++    
+             # Note: delta_func uses objects in defining namespace:
+             # - gamma
+-            # - node_weights
++            # - red_degrees
++            # - blue_degrees
+             # - edge_wts
+             def delta_func(nodes_to_add, community):
+-                if not community:
+-                    return 0
++                comm_red = sum(red_degrees[u] for u in community)
++                comm_blue = sum(blue_degrees[u] for u in community)
+                 if isinstance(nodes_to_add, set):
+-                    nodes_size = sum(node_weights[u] for u in nodes_to_add)
+-                    comm_size = sum(node_weights[u] for u in community)
+-
++                    nodes_red = sum(red_degrees[u] for u in nodes_to_add)
++                    nodes_blue = sum(blue_degrees[u] for u in nodes_to_add)
++    
+                     if len(nodes_to_add) <= len(community):
+                         A, C = nodes_to_add, community
+                     else:
+                         A, C = community, nodes_to_add
+                     E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
+                 else:
+-                    u = nodes_to_add
+-                    nodes_size = node_weights[u]
+-                    if len(community) == 1:
+-                        v = next(iter(community))
+-                        comm_size = node_weights[v]
+-                        E = edge_wts[u].get(v, 0)
+-                    else:
+-                        comm_size = sum(node_weights[u] for u in community)
+-                        E = sum(wt for v, wt in edge_wts[u].items() if v in community)
+-
+-                return E - gamma * comm_size * nodes_size
+-
++                    nodes_red = red_degrees[nodes_to_add]
++                    nodes_blue = blue_degrees[nodes_to_add]
++    
++                    u, C = nodes_to_add, community
++                    E = sum(wt for v, wt in edge_wts[u].items() if v in C)
++    
++                return E - resolution * (nodes_red * comm_blue + nodes_blue * comm_red)
++    
++            raise nx.NetworkXError("barber_modularity not implemented for leiden")
+         else:
+-            # Setup for undirected constant potts model
+-            gamma = resolution
+-
+-            # Note: delta_func uses objects in defining namespace:
+-            # - gamma
+-            # - node_weights
+-            # - edge_wts
+-            def delta_func(nodes_to_add, community):
+-                if not community:
+-                    return 0
+-                if isinstance(nodes_to_add, set):
+-                    nodes_size = sum(node_weights[u] for u in nodes_to_add)
+-                    comm_size = sum(node_weights[u] for u in community)
+-
+-                    if len(nodes_to_add) <= len(community):
+-                        A, C = nodes_to_add, community
+-                    else:
+-                        A, C = community, nodes_to_add
+-                    E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
+-                else:
+-                    u = nodes_to_add
+-                    nodes_size = node_weights[u]
+-                    if len(community) == 1:
+-                        v = next(iter(community))
+-                        comm_size = node_weights[v]
+-                        E = edge_wts[u].get(v, 0)
+-                    else:
+-                        comm_size = sum(node_weights[v] for v in community)
+-                        E = sum(wt for v, wt in edge_wts[u].items() if v in community)
+-
+-                return E - gamma * comm_size * nodes_size
+-
+-    elif metric == "modularity":
+-        # Setup for (unipartite) modularity
+-        metric_function = functools.partial(
+-            modularity,
+-            resolution=resolution,
+-            weight="weight",
+-        )
+-
+-        if is_directed:
+-            # Setup for directed modularity
+-            in_degrees = dict(G.in_degree(weight="weight"))
+-            out_degrees = dict(G.out_degree(weight="weight"))
+-            node_attributes = {"in_degree": in_degrees, "out_degree": out_degrees}
+-
+-            m = sum(out_degrees.values())
+-            gamma = resolution / m
+-
+-            # Note: delta_func uses objects in defining namespace:
+-            # - gamma
+-            # - in_degrees
+-            # - out_degrees
+-            # - edge_wts
+-            def delta_func(nodes_to_add, community):
+-                if not community:
+-                    return 0
+-                if isinstance(nodes_to_add, set):
+-                    if len(nodes_to_add) <= len(community):
+-                        A, C = nodes_to_add, community
+-                    else:
+-                        A, C = community, nodes_to_add
+-
+-                    A_in = sum(in_degrees[u] for u in A)
+-                    A_out = sum(out_degrees[u] for u in A)
+-                    C_in = sum(in_degrees[u] for u in C)
+-                    C_out = sum(out_degrees[u] for u in C)
+-
+-                    E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
+-                else:
+-                    u = nodes_to_add
+-                    A_in = in_degrees[u]
+-                    A_out = out_degrees[u]
+-                    if len(community) == 1:
+-                        v = next(iter(community))
+-                        C_in = in_degrees[v]
+-                        C_out = out_degrees[v]
+-                        E = edge_wts[u].get(v, 0)
+-                    else:
+-                        C_in = sum(in_degrees[u] for u in community)
+-                        C_out = sum(out_degrees[u] for u in community)
+-                        E = sum(wt for v, wt in edge_wts[u].items() if v in community)
+-
+-                # Note: this function returns (m * modularity_delta) to avoid
+-                # extra division by m. The choice of best change is not affected.
+-                # Usual formula would be:
+-                # E / m - (resolution/ m**2) * (A_in * C_out + A_out * C_in)
+-                return E - gamma * (A_in * C_out + A_out * C_in)
+-
+-        else:
+-            # Setup for undirected modularity
+-            degrees = dict(G.degree(weight="weight"))
+-            node_attributes = {"degree": degrees}
+-
+-            two_m = sum(degrees.values())
+-            gamma = resolution / two_m
+-
+-            # Note: delta_func uses objects in defining namespace:
+-            # - gamma
+-            # - degrees
+-            # - edge_wts
+-            def delta_func(nodes_to_add, community):
+-                if not community:
+-                    return 0
+-                if isinstance(nodes_to_add, set):
+-                    comm_size = sum(degrees[u] for u in community)
+-                    nodes_size = sum(degrees[u] for u in nodes_to_add)
+-
+-                    if len(nodes_to_add) <= len(community):
+-                        A, C = nodes_to_add, community
+-                    else:
+-                        A, C = community, nodes_to_add
+-                    E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
+-                else:
+-                    u = nodes_to_add
+-                    nodes_size = degrees[u]
+-                    if len(community) == 1:
+-                        v = next(iter(community))
+-                        comm_size = degrees[v]
+-                        E = edge_wts[u].get(v, 0)
+-                    else:
+-                        comm_size = sum(degrees[u] for u in community)
+-                        E = sum(wt for v, wt in edge_wts[u].items() if v in community)
+-
+-                # Note: this function returns (m * modularity_delta) to avoid
+-                # extra division by m. The choice of best change is not affected.
+-                # Usual formula would be:
+-                # E / m - (resolution * 2/ (2*m)**2) * nodes_size * comm_size
+-                return E - gamma * nodes_size * comm_size
+-
+-    elif metric == "barber_modularity":
+-        # Setup for undirected bipartite barber modularity (not fully implemented)
+-
+-        if is_directed:
+-            raise nx.NetworkXError("barber_modularity not implemented for DiGraph")
+-
+-        # metric should be defined inline rather than
+-        # importing nx.bipartite.community.modularity as the
+-        # function within this algorithm needs to accept the
+-        # aggregated graphs which are not bipartite and therefore
+-        # requires a variation of the algorithm
+-
+-        def barber_modularity():
+-            return
+-
+-        metric_function = barber_modularity
+-        # TODO check these formulas for how m should appear. written when m=1.
+-
+-        red_nodes = {u for u, c in G.nodes(data="bipartite") if c == 0}
+-        blue_nodes = {u for u, c in G.nodes(data="bipartite") if c == 1}
+-        # TODO add check for this being a bipartite graph
+-
+-        degrees = dict(G.degree(weight="weight"))
+-        red_degrees = {u: degrees[u] for u in red_nodes}
+-        red_degrees.update((u, 0) for u in blue_nodes)
+-        blue_degrees = {u: degrees[u] for u in blue_nodes}
+-        blue_degrees.update((u, 0) for u in red_nodes)
+-
+-        node_attributes = {"red_degree": red_degrees, "blue_degree": blue_degrees}
+-
+-        # Note: delta_func uses objects in defining namespace:
+-        # - gamma
+-        # - red_degrees
+-        # - blue_degrees
+-        # - edge_wts
+-        def delta_func(nodes_to_add, community):
+-            comm_red = sum(red_degrees[u] for u in community)
+-            comm_blue = sum(blue_degrees[u] for u in community)
+-            if isinstance(nodes_to_add, set):
+-                nodes_red = sum(red_degrees[u] for u in nodes_to_add)
+-                nodes_blue = sum(blue_degrees[u] for u in nodes_to_add)
+-
+-                if len(nodes_to_add) <= len(community):
+-                    A, C = nodes_to_add, community
+-                else:
+-                    A, C = community, nodes_to_add
+-                E = sum(wt for u in A for v, wt in edge_wts[u].items() if v in C)
+-            else:
+-                nodes_red = red_degrees[nodes_to_add]
+-                nodes_blue = blue_degrees[nodes_to_add]
+-
+-                u, C = nodes_to_add, community
+-                E = sum(wt for v, wt in edge_wts[u].items() if v in C)
+-
+-            return E - resolution * (nodes_red * comm_blue + nodes_blue * comm_red)
+-
+-        raise nx.NetworkXError("barber_modularity not implemented for leiden")
+-    else:
+-        raise nx.NetworkXError(
+-            f'leiden only supports metrics "cpm" and "modularity". Got: {metric}'
+-        )
++            raise nx.NetworkXError(
++                f'leiden only supports metrics "cpm" and "modularity". Got: {metric}'
++            )
+ 
+     # The setup phase has ended, the main algorithm now begins.
+     Q = metric_function(G, partition)

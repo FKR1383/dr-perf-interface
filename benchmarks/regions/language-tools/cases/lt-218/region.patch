@@ -1,0 +1,59 @@
+--- a/lark/visitors.py
++++ b/lark/visitors.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from typing import TypeVar, Tuple, List, Callable, Generic, Type, Union, Optional, Any, cast
+ from abc import ABC
+ 
+@@ -572,28 +573,29 @@
+                 def tree_node(self, tree):
+                     tree.children = tree.children[::-1]
+     """
+-    if tree and (meta or inline):
+-        raise ValueError("Visitor functions cannot combine 'tree' with 'meta' or 'inline'.")
+-
+-    func = None
+-    if meta:
+-        if inline:
+-            func = _vargs_meta_inline
+-        else:
+-            func = _vargs_meta
+-    elif inline:
+-        func = _vargs_inline
+-    elif tree:
+-        func = _vargs_tree
+-
+-    if wrapper is not None:
+-        if func is not None:
+-            raise ValueError("Cannot use 'wrapper' along with 'tree', 'meta' or 'inline'.")
+-        func = wrapper
+-
+-    def _visitor_args_dec(obj):
+-        return _apply_v_args(obj, func)
+-    return _visitor_args_dec
++    with perfmark.region("lt-218"):
++        if tree and (meta or inline):
++            raise ValueError("Visitor functions cannot combine 'tree' with 'meta' or 'inline'.")
++
++        func = None
++        if meta:
++            if inline:
++                func = _vargs_meta_inline
++            else:
++                func = _vargs_meta
++        elif inline:
++            func = _vargs_inline
++        elif tree:
++            func = _vargs_tree
++
++        if wrapper is not None:
++            if func is not None:
++                raise ValueError("Cannot use 'wrapper' along with 'tree', 'meta' or 'inline'.")
++            func = wrapper
++
++        def _visitor_args_dec(obj):
++            return _apply_v_args(obj, func)
++        return _visitor_args_dec
+ 
+ 
+ ###}

@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -3670,6 +3671,7 @@
+ }
+ 
+ ExprResult Sema::ActOnNumericConstant(const Token &Tok, Scope *UDLScope) {
++  DRPERF_BENCH_REGION("cf-097");
+   // Fast path for a single digit (which is quite common).  A single digit
+   // cannot have a trigraph, escaped newline, radix prefix, or suffix.
+   if (Tok.getLength() == 1 || Tok.getKind() == tok::binary_data) {

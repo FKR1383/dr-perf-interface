@@ -1,0 +1,38 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1115,16 +1116,17 @@
+         self._set_parent(arg_key, value, index)
+ 
+     def _set_parent(self, arg_key: str, value: object, index: int | None = None) -> None:
+-        if isinstance(value, Expr):
+-            value.parent = self
+-            value.arg_key = arg_key
+-            value.index = index
+-        elif isinstance(value, list):
+-            for i, v in enumerate(value):
+-                if isinstance(v, Expr):
+-                    v.parent = self
+-                    v.arg_key = arg_key
+-                    v.index = i
++        with perfmark.region("lt-081"):
++            if isinstance(value, Expr):
++                value.parent = self
++                value.arg_key = arg_key
++                value.index = index
++            elif isinstance(value, list):
++                for i, v in enumerate(value):
++                    if isinstance(v, Expr):
++                        v.parent = self
++                        v.arg_key = arg_key
++                        v.index = i
+ 
+     def set_kwargs(self, kwargs: Mapping[str, object]) -> Self:
+         """Set multiples keyword arguments at once, using `.set()` method.

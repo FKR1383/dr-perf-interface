@@ -1,0 +1,97 @@
+--- a/src/jinja2/parser.py
++++ b/src/jinja2/parser.py
+@@ -1,4 +1,5 @@
+ """Parse tokens from the lexer into nodes for the compiler."""
++import perfmark
+ 
+ import typing
+ import typing as t
+@@ -705,47 +706,48 @@
+         expression in parentheses.  This is used to figure out if an empty
+         tuple is a valid expression or not.
+         """
+-        lineno = self.stream.current.lineno
+-        if simplified:
+-
+-            def parse() -> nodes.Expr:
+-                return self.parse_primary(with_namespace=with_namespace)
+-
+-        else:
+-
+-            def parse() -> nodes.Expr:
+-                return self.parse_expression(with_condexpr=with_condexpr)
+-
+-        args: list[nodes.Expr] = []
+-        is_tuple = False
+-
+-        while True:
+-            if args:
+-                self.stream.expect("comma")
+-            if self.is_tuple_end(extra_end_rules):
+-                break
+-            args.append(parse())
+-            if self.stream.current.type == "comma":
+-                is_tuple = True
+-            else:
+-                break
++        with perfmark.region("lt-159"):
+             lineno = self.stream.current.lineno
+-
+-        if not is_tuple:
+-            if args:
+-                return args[0]
+-
+-            # if we don't have explicit parentheses, an empty tuple is
+-            # not a valid expression.  This would mean nothing (literally
+-            # nothing) in the spot of an expression would be an empty
+-            # tuple.
+-            if not explicit_parentheses:
+-                self.fail(
+-                    "Expected an expression,"
+-                    f" got {describe_token(self.stream.current)!r}"
+-                )
+-
+-        return nodes.Tuple(args, "load", lineno=lineno)
++            if simplified:
++
++                def parse() -> nodes.Expr:
++                    return self.parse_primary(with_namespace=with_namespace)
++
++            else:
++
++                def parse() -> nodes.Expr:
++                    return self.parse_expression(with_condexpr=with_condexpr)
++
++            args: list[nodes.Expr] = []
++            is_tuple = False
++
++            while True:
++                if args:
++                    self.stream.expect("comma")
++                if self.is_tuple_end(extra_end_rules):
++                    break
++                args.append(parse())
++                if self.stream.current.type == "comma":
++                    is_tuple = True
++                else:
++                    break
++                lineno = self.stream.current.lineno
++
++            if not is_tuple:
++                if args:
++                    return args[0]
++
++                # if we don't have explicit parentheses, an empty tuple is
++                # not a valid expression.  This would mean nothing (literally
++                # nothing) in the spot of an expression would be an empty
++                # tuple.
++                if not explicit_parentheses:
++                    self.fail(
++                        "Expected an expression,"
++                        f" got {describe_token(self.stream.current)!r}"
++                    )
++
++            return nodes.Tuple(args, "load", lineno=lineno)
+ 
+     def parse_list(self) -> nodes.List:
+         token = self.stream.expect("lbracket")

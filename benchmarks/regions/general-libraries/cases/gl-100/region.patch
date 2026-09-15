@@ -1,0 +1,82 @@
+--- a/numpy/_core/einsumfunc.py
++++ b/numpy/_core/einsumfunc.py
+@@ -2,6 +2,7 @@
+ Implementation of optimized einsum.
+ 
+ """
++import perfmark
+ import functools
+ import itertools
+ import operator
+@@ -841,38 +842,39 @@
+     cost_list, scale_list, size_list, contraction_list = [], [], [], []
+ 
+     # Build contraction tuple (positions, gemm, einsum_str, remaining)
+-    for cnum, contract_inds in enumerate(path):
+-        # Make sure we remove inds from right to left
+-        contract_inds = tuple(sorted(contract_inds, reverse=True))
+-
+-        contract = _find_contraction(contract_inds, input_sets, output_set)
+-        out_inds, input_sets, idx_removed, idx_contract = contract
+-
+-        if not einsum_call_arg:
+-            # these are only needed for printing info
+-            cost = _flop_count(
+-                idx_contract, idx_removed, len(contract_inds), dimension_dict
+-            )
+-            cost_list.append(cost)
+-            scale_list.append(len(idx_contract))
+-            size_list.append(_compute_size_by_dict(out_inds, dimension_dict))
+-
+-        tmp_inputs = []
+-        for x in contract_inds:
+-            tmp_inputs.append(input_list.pop(x))
+-
+-        # Last contraction
+-        if (cnum - len(path)) == -1:
+-            idx_result = output_subscript
+-        else:
+-            sort_result = [(dimension_dict[ind], ind) for ind in out_inds]
+-            idx_result = "".join([x[1] for x in sorted(sort_result)])
+-
+-        input_list.append(idx_result)
+-        einsum_str = ",".join(tmp_inputs) + "->" + idx_result
+-
+-        contraction = (contract_inds, einsum_str, input_list[:])
+-        contraction_list.append(contraction)
++    with perfmark.region("gl-100"):
++        for cnum, contract_inds in enumerate(path):
++            # Make sure we remove inds from right to left
++            contract_inds = tuple(sorted(contract_inds, reverse=True))
++    
++            contract = _find_contraction(contract_inds, input_sets, output_set)
++            out_inds, input_sets, idx_removed, idx_contract = contract
++    
++            if not einsum_call_arg:
++                # these are only needed for printing info
++                cost = _flop_count(
++                    idx_contract, idx_removed, len(contract_inds), dimension_dict
++                )
++                cost_list.append(cost)
++                scale_list.append(len(idx_contract))
++                size_list.append(_compute_size_by_dict(out_inds, dimension_dict))
++    
++            tmp_inputs = []
++            for x in contract_inds:
++                tmp_inputs.append(input_list.pop(x))
++    
++            # Last contraction
++            if (cnum - len(path)) == -1:
++                idx_result = output_subscript
++            else:
++                sort_result = [(dimension_dict[ind], ind) for ind in out_inds]
++                idx_result = "".join([x[1] for x in sorted(sort_result)])
++    
++            input_list.append(idx_result)
++            einsum_str = ",".join(tmp_inputs) + "->" + idx_result
++    
++            contraction = (contract_inds, einsum_str, input_list[:])
++            contraction_list.append(contraction)
+ 
+     if len(input_list) != 1:
+         # Explicit "einsum_path" is usually trusted, but we detect this kind of

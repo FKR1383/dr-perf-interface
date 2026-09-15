@@ -1,0 +1,20 @@
+--- a/sympy/strategies/core.py
++++ b/sympy/strategies/core.py
+@@ -1,5 +1,6 @@
+ """ Generic SymPy-Independent Strategies """
+ from __future__ import annotations
++import perfmark
+ from typing import TypeVar, TYPE_CHECKING
+ from sys import stdout
+ 
+@@ -148,6 +149,7 @@
+     >>> rl(4)
+     5
+     """
+-    def minrule(expr: _S) -> _T:
+-        return min([rule(expr) for rule in rules], key=objective)
+-    return minrule
++    with perfmark.region("lt-043"):
++        def minrule(expr: _S) -> _T:
++            return min([rule(expr) for rule in rules], key=objective)
++        return minrule

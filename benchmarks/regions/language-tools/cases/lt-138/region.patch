@@ -1,0 +1,33 @@
+--- a/astroid/interpreter/dunder_lookup.py
++++ b/astroid/interpreter/dunder_lookup.py
+@@ -14,6 +14,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ from typing import TYPE_CHECKING
+@@ -66,14 +67,15 @@
+     will be returned. Otherwise, `astroid.AttributeInferenceError`
+     is going to be raised.
+     """
+-    if isinstance(node, (nodes.List, nodes.Tuple, nodes.Const, nodes.Dict, nodes.Set)):
+-        return _builtin_lookup(node, name)
+-    if isinstance(node, astroid.Instance):
+-        return _lookup_in_mro(node, name)
+-    if isinstance(node, nodes.ClassDef):
+-        return _class_lookup(node, name, context=context)
++    with perfmark.region("lt-138"):
++        if isinstance(node, (nodes.List, nodes.Tuple, nodes.Const, nodes.Dict, nodes.Set)):
++            return _builtin_lookup(node, name)
++        if isinstance(node, astroid.Instance):
++            return _lookup_in_mro(node, name)
++        if isinstance(node, nodes.ClassDef):
++            return _class_lookup(node, name, context=context)
+ 
+-    raise AttributeInferenceError(attribute=name, target=node)
++        raise AttributeInferenceError(attribute=name, target=node)
+ 
+ 
+ def _class_lookup(

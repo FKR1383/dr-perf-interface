@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExprCXX.cpp
++++ b/clang/lib/Parse/ParseExprCXX.cpp
+@@ -9,6 +9,7 @@
+ // This file implements the Expression parsing implementation for C++.
+ //
+ //===----------------------------------------------------------------------===//
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Decl.h"
+ #include "clang/AST/DeclTemplate.h"
+@@ -2991,6 +2992,7 @@
+                                 bool AllowDeductionGuide,
+                                 SourceLocation *TemplateKWLoc,
+                                 UnqualifiedId &Result) {
++                                  DRPERF_BENCH_REGION("cf-082");
+   if (TemplateKWLoc)
+     *TemplateKWLoc = SourceLocation();
+ 

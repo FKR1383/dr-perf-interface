@@ -1,0 +1,204 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -6260,100 +6261,101 @@
+             )
+ 
+     def parseImpl(self, instring, loc, do_actions=True) -> ParseImplReturnType:
+-        if (
+-            self.expr is None
+-            and __diag__.warn_on_parse_using_empty_Forward
+-            and Diagnostics.warn_on_parse_using_empty_Forward
+-            not in self.suppress_warnings_
+-        ):
+-            # walk stack until parse_string, scan_string, search_string, or transform_string is found
+-            parse_fns = (
+-                "parse_string",
+-                "scan_string",
+-                "search_string",
+-                "transform_string",
+-            )
+-            tb = traceback.extract_stack(limit=200)
+-            for i, frm in enumerate(reversed(tb), start=1):
+-                if frm.name in parse_fns:
+-                    stacklevel = i + 1
+-                    break
+-            else:
+-                stacklevel = 2
+-            warnings.warn(
+-                "warn_on_parse_using_empty_Forward:"
+-                " Forward expression was never assigned a value, will not parse any input",
+-                PyparsingDiagnosticWarning,
+-                stacklevel=stacklevel,
+-            )
+-        if not ParserElement._left_recursion_enabled:
+-            return super().parseImpl(instring, loc, do_actions)
+-        # ## Bounded Recursion algorithm ##
+-        # Recursion only needs to be processed at ``Forward`` elements, since they are
+-        # the only ones that can actually refer to themselves. The general idea is
+-        # to handle recursion stepwise: We start at no recursion, then recurse once,
+-        # recurse twice, ..., until more recursion offers no benefit (we hit the bound).
+-        #
+-        # The "trick" here is that each ``Forward`` gets evaluated in two contexts
+-        # - to *match* a specific recursion level, and
+-        # - to *search* the bounded recursion level
+-        # and the two run concurrently. The *search* must *match* each recursion level
+-        # to find the best possible match. This is handled by a memo table, which
+-        # provides the previous match to the next level match attempt.
+-        #
+-        # See also "Left Recursion in Parsing Expression Grammars", Medeiros et al.
+-        #
+-        # There is a complication since we not only *parse* but also *transform* via
+-        # actions: We do not want to run the actions too often while expanding. Thus,
+-        # we expand using `do_actions=False` and only run `do_actions=True` if the next
+-        # recursion level is acceptable.
+-        with ParserElement.recursion_lock:
+-            memo = ParserElement.recursion_memos
+-            try:
+-                # we are parsing at a specific recursion expansion - use it as-is
+-                prev_loc, prev_result = memo[loc, self, do_actions]
+-                if isinstance(prev_result, Exception):
+-                    raise prev_result
+-                return prev_loc, prev_result.copy()
+-            except KeyError:
+-                act_key = (loc, self, True)
+-                peek_key = (loc, self, False)
+-                # we are searching for the best recursion expansion - keep on improving
+-                # both `do_actions` cases must be tracked separately here!
+-                prev_loc, prev_peek = memo[peek_key] = (
+-                    loc - 1,
+-                    ParseException(
+-                        instring, loc, "Forward recursion without base case", self
+-                    ),
++        with perfmark.region("lt-184"):
++            if (
++                self.expr is None
++                and __diag__.warn_on_parse_using_empty_Forward
++                and Diagnostics.warn_on_parse_using_empty_Forward
++                not in self.suppress_warnings_
++            ):
++                # walk stack until parse_string, scan_string, search_string, or transform_string is found
++                parse_fns = (
++                    "parse_string",
++                    "scan_string",
++                    "search_string",
++                    "transform_string",
+                 )
+-                if do_actions:
+-                    memo[act_key] = memo[peek_key]
+-                while True:
+-                    try:
+-                        new_loc, new_peek = super().parseImpl(instring, loc, False)
+-                    except ParseException:
+-                        # we failed before getting any match - do not hide the error
+-                        if isinstance(prev_peek, Exception):
+-                            raise
+-                        new_loc, new_peek = prev_loc, prev_peek
+-                    # the match did not get better: we are done
+-                    if new_loc <= prev_loc:
++                tb = traceback.extract_stack(limit=200)
++                for i, frm in enumerate(reversed(tb), start=1):
++                    if frm.name in parse_fns:
++                        stacklevel = i + 1
++                        break
++                else:
++                    stacklevel = 2
++                warnings.warn(
++                    "warn_on_parse_using_empty_Forward:"
++                    " Forward expression was never assigned a value, will not parse any input",
++                    PyparsingDiagnosticWarning,
++                    stacklevel=stacklevel,
++                )
++            if not ParserElement._left_recursion_enabled:
++                return super().parseImpl(instring, loc, do_actions)
++            # ## Bounded Recursion algorithm ##
++            # Recursion only needs to be processed at ``Forward`` elements, since they are
++            # the only ones that can actually refer to themselves. The general idea is
++            # to handle recursion stepwise: We start at no recursion, then recurse once,
++            # recurse twice, ..., until more recursion offers no benefit (we hit the bound).
++            #
++            # The "trick" here is that each ``Forward`` gets evaluated in two contexts
++            # - to *match* a specific recursion level, and
++            # - to *search* the bounded recursion level
++            # and the two run concurrently. The *search* must *match* each recursion level
++            # to find the best possible match. This is handled by a memo table, which
++            # provides the previous match to the next level match attempt.
++            #
++            # See also "Left Recursion in Parsing Expression Grammars", Medeiros et al.
++            #
++            # There is a complication since we not only *parse* but also *transform* via
++            # actions: We do not want to run the actions too often while expanding. Thus,
++            # we expand using `do_actions=False` and only run `do_actions=True` if the next
++            # recursion level is acceptable.
++            with ParserElement.recursion_lock:
++                memo = ParserElement.recursion_memos
++                try:
++                    # we are parsing at a specific recursion expansion - use it as-is
++                    prev_loc, prev_result = memo[loc, self, do_actions]
++                    if isinstance(prev_result, Exception):
++                        raise prev_result
++                    return prev_loc, prev_result.copy()
++                except KeyError:
++                    act_key = (loc, self, True)
++                    peek_key = (loc, self, False)
++                    # we are searching for the best recursion expansion - keep on improving
++                    # both `do_actions` cases must be tracked separately here!
++                    prev_loc, prev_peek = memo[peek_key] = (
++                        loc - 1,
++                        ParseException(
++                            instring, loc, "Forward recursion without base case", self
++                        ),
++                    )
++                    if do_actions:
++                        memo[act_key] = memo[peek_key]
++                    while True:
++                        try:
++                            new_loc, new_peek = super().parseImpl(instring, loc, False)
++                        except ParseException:
++                            # we failed before getting any match - do not hide the error
++                            if isinstance(prev_peek, Exception):
++                                raise
++                            new_loc, new_peek = prev_loc, prev_peek
++                        # the match did not get better: we are done
++                        if new_loc <= prev_loc:
++                            if do_actions:
++                                # replace the match for do_actions=False as well,
++                                # in case the action did backtrack
++                                prev_loc, prev_result = memo[peek_key] = memo[act_key]
++                                del memo[peek_key], memo[act_key]
++                                return prev_loc, copy.copy(prev_result)
++                            del memo[peek_key]
++                            return prev_loc, copy.copy(prev_peek)
++                        # the match did get better: see if we can improve further
+                         if do_actions:
+-                            # replace the match for do_actions=False as well,
+-                            # in case the action did backtrack
+-                            prev_loc, prev_result = memo[peek_key] = memo[act_key]
+-                            del memo[peek_key], memo[act_key]
+-                            return prev_loc, copy.copy(prev_result)
+-                        del memo[peek_key]
+-                        return prev_loc, copy.copy(prev_peek)
+-                    # the match did get better: see if we can improve further
+-                    if do_actions:
+-                        try:
+-                            memo[act_key] = super().parseImpl(instring, loc, True)
+-                        except ParseException as e:
+-                            memo[peek_key] = memo[act_key] = (new_loc, e)
+-                            raise
+-                    prev_loc, prev_peek = memo[peek_key] = new_loc, new_peek
++                            try:
++                                memo[act_key] = super().parseImpl(instring, loc, True)
++                            except ParseException as e:
++                                memo[peek_key] = memo[act_key] = (new_loc, e)
++                                raise
++                        prev_loc, prev_peek = memo[peek_key] = new_loc, new_peek
+ 
+     def leave_whitespace(self, recursive: bool = True) -> ParserElement:
+         """

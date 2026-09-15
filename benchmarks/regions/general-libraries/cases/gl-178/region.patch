@@ -1,0 +1,18 @@
+--- a/src/urllib3/fields.py
++++ b/src/urllib3/fields.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import email.utils
+ import mimetypes
+@@ -110,7 +111,8 @@
+         value = value.decode("utf-8")
+ 
+     # percent encode \n \r "
+-    value = value.translate({10: "%0A", 13: "%0D", 34: "%22"})
++    with perfmark.region("gl-178"):
++        value = value.translate({10: "%0A", 13: "%0D", 34: "%22"})
+     return f'{name}="{value}"'
+ 
+ 

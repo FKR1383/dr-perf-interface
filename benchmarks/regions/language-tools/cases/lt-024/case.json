@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-024",
+  "title": "sympy multinomial_coefficients body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/sympy/sympy",
+    "revision": "117eaf45237de39c9d4518a3b7c715f0484ccea9",
+    "path": "sympy/ntheory/multinomial.py",
+    "snapshot": "../../upstream/sympy/sympy/ntheory/multinomial.py",
+    "sha256": "21b55a5c6f12a11ef39f19b49fb3f37b45288bdd2d7f5f58951773fca1c8e8a8"
+  },
+  "region": {
+    "symbol": "multinomial_coefficients",
+    "start_line": 88,
+    "end_line": 130,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-024",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise multinomial_coefficients with bounded, varied sympy inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "sympy:sympy/ntheory/multinomial.py:multinomial_coefficients",
+  "citations": [
+    "https://github.com/sympy/sympy/blob/117eaf45237de39c9d4518a3b7c715f0484ccea9/sympy/ntheory/multinomial.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

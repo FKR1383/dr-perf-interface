@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaChecking.cpp
++++ b/clang/lib/Sema/SemaChecking.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "clang/AST/APValue.h"
+ #include "clang/AST/ASTContext.h"
+@@ -11109,6 +11110,7 @@
+ 
+ void Sema::CheckImplicitConversion(Expr *E, QualType T, SourceLocation CC,
+                                    bool *ICContext, bool IsListInit) {
++                                     DRPERF_BENCH_REGION("cf-161");
+   if (E->isTypeDependent() || E->isValueDependent()) return;
+ 
+   const Type *Source = Context.getCanonicalType(E->getType()).getTypePtr();

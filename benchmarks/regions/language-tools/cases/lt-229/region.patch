@@ -1,0 +1,51 @@
+--- a/Cython/Plex/Lexicons.py
++++ b/Cython/Plex/Lexicons.py
+@@ -3,6 +3,7 @@
+ 
+ Lexical Analyser Specification
+ """
++import perfmark
+ 
+ from . import Actions
+ from . import DFA
+@@ -145,23 +146,24 @@
+         self.machine = dfa
+ 
+     def add_token_to_machine(self, machine, initial_state, token_spec, token_number):
+-        try:
+-            (re, action_spec) = self.parse_token_definition(token_spec)
+-            if isinstance(action_spec, Actions.Action):
+-                action = action_spec
+-            else:
+-                try:
+-                    action_spec.__call__
+-                except AttributeError:
+-                    action = Actions.Return(action_spec)
++        with perfmark.region("lt-229"):
++            try:
++                (re, action_spec) = self.parse_token_definition(token_spec)
++                if isinstance(action_spec, Actions.Action):
++                    action = action_spec
+                 else:
+-                    action = Actions.Call(action_spec)
+-            final_state = machine.new_state()
+-            re.build_machine(machine, initial_state, final_state,
+-                             match_bol=1, nocase=0)
+-            final_state.set_action(action, priority=-token_number)
+-        except Errors.PlexError as e:
+-            raise e.__class__("Token number %d: %s" % (token_number, e))
++                    try:
++                        action_spec.__call__
++                    except AttributeError:
++                        action = Actions.Return(action_spec)
++                    else:
++                        action = Actions.Call(action_spec)
++                final_state = machine.new_state()
++                re.build_machine(machine, initial_state, final_state,
++                                 match_bol=1, nocase=0)
++                final_state.set_action(action, priority=-token_number)
++            except Errors.PlexError as e:
++                raise e.__class__("Token number %d: %s" % (token_number, e))
+ 
+     def parse_token_definition(self, token_spec):
+         if not isinstance(token_spec, tuple):

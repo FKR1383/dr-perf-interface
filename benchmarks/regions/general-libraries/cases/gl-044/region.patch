@@ -1,0 +1,22 @@
+--- a/networkx/algorithms/centrality/trophic.py
++++ b/networkx/algorithms/centrality/trophic.py
+@@ -1,4 +1,5 @@
+ """Trophic levels"""
++import perfmark
+ 
+ import networkx as nx
+ from networkx.utils import not_implemented_for
+@@ -49,9 +50,10 @@
+             "Trophic levels are not defined without at least one basal node."
+         )
+ 
+-    reachable_nodes = {
+-        node for layer in nx.bfs_layers(G, sources=basal_nodes) for node in layer
+-    }
++    with perfmark.region("gl-044"):
++        reachable_nodes = {
++            node for layer in nx.bfs_layers(G, sources=basal_nodes) for node in layer
++        }
+ 
+     if len(reachable_nodes) != len(G.nodes):
+         raise nx.NetworkXError(

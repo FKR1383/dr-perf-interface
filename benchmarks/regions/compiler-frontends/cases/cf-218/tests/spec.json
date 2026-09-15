@@ -1,0 +1,35 @@
+{
+  "case": "cf-218",
+  "phase": "ir-construction",
+  "scenario": "inline-asm-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "int fold_218(int x) { int s=0; for(int i=0;i<4;i++) s += x+i; return s; }\nint main(void) { return fold_218(2)!=14; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    }
+  ],
+  "target_symbol": "InlineAsm::ConstraintInfo::Parse",
+  "target_source": "llvm/lib/IR/InlineAsm.cpp",
+  "mapping_note": "The inline-asm-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

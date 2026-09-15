@@ -1,0 +1,45 @@
+--- a/astroid/brain/brain_numpy_core_multiarray.py
++++ b/astroid/brain/brain_numpy_core_multiarray.py
+@@ -3,6 +3,7 @@
+ # Copyright (c) https://github.com/pylint-dev/astroid/blob/main/CONTRIBUTORS.txt
+ 
+ """Astroid hooks for numpy.core.multiarray module."""
++import perfmark
+ 
+ import functools
+ 
+@@ -88,19 +89,20 @@
+ 
+ 
+ def register(manager: AstroidManager) -> None:
+-    register_module_extender(
+-        manager, "numpy.core.multiarray", numpy_core_multiarray_transform
+-    )
++    with perfmark.region("lt-126"):
++        register_module_extender(
++            manager, "numpy.core.multiarray", numpy_core_multiarray_transform
++        )
+ 
+-    method_names = frozenset(METHODS_TO_BE_INFERRED.keys())
++        method_names = frozenset(METHODS_TO_BE_INFERRED.keys())
+ 
+-    manager.register_transform(
+-        nodes.Attribute,
+-        inference_tip(functools.partial(infer_numpy_attribute, METHODS_TO_BE_INFERRED)),
+-        functools.partial(attribute_name_looks_like_numpy_member, method_names),
+-    )
+-    manager.register_transform(
+-        nodes.Name,
+-        inference_tip(functools.partial(infer_numpy_name, METHODS_TO_BE_INFERRED)),
+-        functools.partial(member_name_looks_like_numpy_member, method_names),
+-    )
++        manager.register_transform(
++            nodes.Attribute,
++            inference_tip(functools.partial(infer_numpy_attribute, METHODS_TO_BE_INFERRED)),
++            functools.partial(attribute_name_looks_like_numpy_member, method_names),
++        )
++        manager.register_transform(
++            nodes.Name,
++            inference_tip(functools.partial(infer_numpy_name, METHODS_TO_BE_INFERRED)),
++            functools.partial(member_name_looks_like_numpy_member, method_names),
++        )

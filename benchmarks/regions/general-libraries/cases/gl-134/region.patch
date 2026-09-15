@@ -1,0 +1,78 @@
+--- a/pandas/core/internals/construction.py
++++ b/pandas/core/internals/construction.py
+@@ -4,6 +4,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import abc
+ from typing import (
+@@ -818,36 +819,37 @@
+             columns = default_index(data.shape[1])
+         return arrays, columns
+ 
+-    if isinstance(data[0], (list, tuple)):
+-        arr = _list_to_arrays(data)
+-    elif isinstance(data[0], abc.Mapping):
+-        arr, columns = _list_of_dict_to_arrays(data, columns)
+-    elif isinstance(data[0], ABCSeries):
+-        arr, columns = _list_of_series_to_arrays(data, columns)
+-    else:
+-        # last ditch effort
+-        # GH#23985, GH#49593: if all rows are arrays with a uniform
+-        # dtype, construct columns directly to preserve that dtype
+-        # (e.g. timedelta64, pyarrow, Int64, Categorical). Only take this
+-        # path for non-ragged rows; ragged rows fall through to the
+-        # object/pad path below so they are padded to max width with NaN.
+-        row_dtypes = {row.dtype for row in data if hasattr(row, "dtype")}
+-        if (
+-            len(row_dtypes) == 1
+-            and all(hasattr(row, "dtype") for row in data)
+-            and len({len(row) for row in data}) == 1
+-        ):
+-            common_dtype = row_dtypes.pop()
+-            ncols = len(data[0])
+-            arrays = [
+-                pd_array([row[col_idx] for row in data], dtype=common_dtype)
+-                for col_idx in range(ncols)
+-            ]
+-            columns = _validate_or_indexify_columns(arrays, columns)
+-            return arrays, columns
+-
+-        data = [tuple(x) for x in data]
+-        arr = _list_to_arrays(data)
++    with perfmark.region("gl-134"):
++        if isinstance(data[0], (list, tuple)):
++            arr = _list_to_arrays(data)
++        elif isinstance(data[0], abc.Mapping):
++            arr, columns = _list_of_dict_to_arrays(data, columns)
++        elif isinstance(data[0], ABCSeries):
++            arr, columns = _list_of_series_to_arrays(data, columns)
++        else:
++            # last ditch effort
++            # GH#23985, GH#49593: if all rows are arrays with a uniform
++            # dtype, construct columns directly to preserve that dtype
++            # (e.g. timedelta64, pyarrow, Int64, Categorical). Only take this
++            # path for non-ragged rows; ragged rows fall through to the
++            # object/pad path below so they are padded to max width with NaN.
++            row_dtypes = {row.dtype for row in data if hasattr(row, "dtype")}
++            if (
++                len(row_dtypes) == 1
++                and all(hasattr(row, "dtype") for row in data)
++                and len({len(row) for row in data}) == 1
++            ):
++                common_dtype = row_dtypes.pop()
++                ncols = len(data[0])
++                arrays = [
++                    pd_array([row[col_idx] for row in data], dtype=common_dtype)
++                    for col_idx in range(ncols)
++                ]
++                columns = _validate_or_indexify_columns(arrays, columns)
++                return arrays, columns
++    
++            data = [tuple(x) for x in data]
++            arr = _list_to_arrays(data)
+ 
+     content, columns = _finalize_columns_and_data(arr, columns, dtype)
+     return content, columns

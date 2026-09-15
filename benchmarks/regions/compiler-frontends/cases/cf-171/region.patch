@@ -1,0 +1,18 @@
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Driver/Driver.h"
+ #include "ToolChains/AIX.h"
+ #include "ToolChains/AMDGPU.h"
+@@ -2376,6 +2377,7 @@
+ }
+ 
+ bool Driver::HandleImmediateArgs(Compilation &C) {
++  DRPERF_BENCH_REGION("cf-171");
+   // The order these options are handled in gcc is all over the place, but we
+   // don't expect inconsistencies w.r.t. that to matter in practice.
+ 

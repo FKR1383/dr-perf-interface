@@ -1,0 +1,18 @@
+--- a/include/rapidjson/document.h
++++ b/include/rapidjson/document.h
+@@ -17,6 +17,7 @@
+ 
+ /*! \file document.h */
+ 
++#include "drperf_bench_region.h"
+ #include "reader.h"
+ #include "internal/meta.h"
+ #include "internal/strfunc.h"
+@@ -1356,6 +1357,7 @@
+     */
+     template <typename SourceAllocator>
+     MemberIterator FindMember(const GenericValue<Encoding, SourceAllocator>& name) {
++        DRPERF_BENCH_REGION("nl-004");
+         RAPIDJSON_ASSERT(IsObject());
+         RAPIDJSON_ASSERT(name.IsString());
+         return DoFindMember(name);

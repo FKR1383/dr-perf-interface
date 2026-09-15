@@ -1,0 +1,54 @@
+--- a/src/packaging/_ranges.py
++++ b/src/packaging/_ranges.py
+@@ -4,6 +4,7 @@
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import enum
+ import functools
+@@ -721,24 +722,25 @@
+             )
+         ]
+ 
+-    if op == ">":
+-        if version.dev is not None:
+-            # >V.devN: dev versions have no post-releases, so the
+-            # next real version is V.dev(N+1).
+-            lower_bound = version.__replace__(dev=version.dev + 1, local=None)
+-            return [(LowerBound(lower_bound, True), POS_INF)]
+-        if version.post is not None:
+-            # >V.postN: next real version is V.post(N+1).dev0.
+-            lower_bound = version.__replace__(post=version.post + 1, dev=0, local=None)
+-            return [(LowerBound(lower_bound, True), POS_INF)]
+-        # >V (final or pre-release V): exclude V itself, V+local, and
+-        # every V.postN per PEP 440.
+-        return [
+-            (
+-                LowerBound(BoundaryVersion(version, BoundaryKind.AFTER_POSTS), False),
+-                POS_INF,
+-            )
+-        ]
++    with perfmark.region("gl-208"):
++        if op == ">":
++            if version.dev is not None:
++                # >V.devN: dev versions have no post-releases, so the
++                # next real version is V.dev(N+1).
++                lower_bound = version.__replace__(dev=version.dev + 1, local=None)
++                return [(LowerBound(lower_bound, True), POS_INF)]
++            if version.post is not None:
++                # >V.postN: next real version is V.post(N+1).dev0.
++                lower_bound = version.__replace__(post=version.post + 1, dev=0, local=None)
++                return [(LowerBound(lower_bound, True), POS_INF)]
++            # >V (final or pre-release V): exclude V itself, V+local, and
++            # every V.postN per PEP 440.
++            return [
++                (
++                    LowerBound(BoundaryVersion(version, BoundaryKind.AFTER_POSTS), False),
++                    POS_INF,
++                )
++            ]
+ 
+     if op == "<":
+         # <V excludes pre-releases of V when V is not a pre-release.

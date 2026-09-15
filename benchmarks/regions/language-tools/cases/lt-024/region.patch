@@ -1,0 +1,100 @@
+--- a/sympy/ntheory/multinomial.py
++++ b/sympy/ntheory/multinomial.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import SupportsIndex, Iterable
+ 
+@@ -85,49 +86,50 @@
+ 
+     binomial_coefficients_list, binomial_coefficients
+     """
+-    m = as_int(m)
+-    n = as_int(n)
+-    if not m:
++    with perfmark.region("lt-024"):
++        m = as_int(m)
++        n = as_int(n)
++        if not m:
++            if n:
++                return {}
++            return {(): 1}
++        if m == 2:
++            return binomial_coefficients(n)
++        if m >= 2*n and n > 1:
++            return dict(multinomial_coefficients_iterator(m, n))
++        t = [n] + [0] * (m - 1)
++        r = {tuple(t): 1}
+         if n:
+-            return {}
+-        return {(): 1}
+-    if m == 2:
+-        return binomial_coefficients(n)
+-    if m >= 2*n and n > 1:
+-        return dict(multinomial_coefficients_iterator(m, n))
+-    t = [n] + [0] * (m - 1)
+-    r = {tuple(t): 1}
+-    if n:
+-        j = 0  # j will be the leftmost nonzero position
+-    else:
+-        j = m
+-    # enumerate tuples in co-lex order
+-    while j < m - 1:
+-        # compute next tuple
+-        tj = t[j]
+-        if j:
+-            t[j] = 0
+-            t[0] = tj
+-        if tj > 1:
+-            t[j + 1] += 1
+-            j = 0
+-            start = 1
+-            v = 0
++            j = 0  # j will be the leftmost nonzero position
+         else:
+-            j += 1
+-            start = j + 1
+-            v = r[tuple(t)]
+-            t[j] += 1
+-        # compute the value
+-        # NB: the initialization of v was done above
+-        for k in range(start, m):
+-            if t[k]:
+-                t[k] -= 1
+-                v += r[tuple(t)]
+-                t[k] += 1
+-        t[0] -= 1
+-        r[tuple(t)] = (v * tj) // (n - t[0])
+-    return r
++            j = m
++        # enumerate tuples in co-lex order
++        while j < m - 1:
++            # compute next tuple
++            tj = t[j]
++            if j:
++                t[j] = 0
++                t[0] = tj
++            if tj > 1:
++                t[j + 1] += 1
++                j = 0
++                start = 1
++                v = 0
++            else:
++                j += 1
++                start = j + 1
++                v = r[tuple(t)]
++                t[j] += 1
++            # compute the value
++            # NB: the initialization of v was done above
++            for k in range(start, m):
++                if t[k]:
++                    t[k] -= 1
++                    v += r[tuple(t)]
++                    t[k] += 1
++            t[0] -= 1
++            r[tuple(t)] = (v * tj) // (n - t[0])
++        return r
+ 
+ 
+ def multinomial_coefficients_iterator(

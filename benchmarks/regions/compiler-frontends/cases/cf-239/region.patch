@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/LiveVariables.cpp
++++ b/clang/lib/Analysis/LiveVariables.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/Analyses/LiveVariables.h"
+ #include "clang/AST/Stmt.h"
+ #include "clang/AST/StmtVisitor.h"
+@@ -231,6 +232,7 @@
+ }
+ 
+ void TransferFunctions::Visit(Stmt *S) {
++  DRPERF_BENCH_REGION("cf-239");
+   if (observer)
+     observer->observeStmt(S, currentBlock, val);
+ 

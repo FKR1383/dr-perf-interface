@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-079",
+  "title": "sqlglot Dialect.can_quote body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/tobymao/sqlglot",
+    "revision": "3ca824895ef423f7895fb13d72357548c0f1f367",
+    "path": "sqlglot/dialects/dialect.py",
+    "snapshot": "../../upstream/sqlglot/sqlglot/dialects/dialect.py",
+    "sha256": "6ba7de5e70a5a69db2ab09d436b7579f353eea87417ebd3745bb7c3acd6d33e8"
+  },
+  "region": {
+    "symbol": "Dialect.can_quote",
+    "start_line": 1138,
+    "end_line": 1156,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-079",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise Dialect.can_quote with bounded, varied sqlglot inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "sqlglot:sqlglot/dialects/dialect.py:Dialect.can_quote",
+  "citations": [
+    "https://github.com/tobymao/sqlglot/blob/3ca824895ef423f7895fb13d72357548c0f1f367/sqlglot/dialects/dialect.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

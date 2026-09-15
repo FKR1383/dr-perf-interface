@@ -1,0 +1,132 @@
+--- a/networkx/algorithms/tree/branchings.py
++++ b/networkx/algorithms/tree/branchings.py
+@@ -7,6 +7,7 @@
+     233–240. URL: http://archive.org/details/jresv71Bn4p233
+ 
+ """
++import perfmark
+ 
+ # TODO: Implement method from Gabow, Galil, Spence and Tarjan:
+ #
+@@ -474,63 +475,64 @@
+             return True, None
+ 
+     nodes = iter(list(G.nodes))
+-    while True:
+-        try:
+-            v = next(nodes)
+-        except StopIteration:
+-            # If there are no more new nodes to consider, then we should
+-            # meet stopping condition (b) from the paper:
+-            #   (b) every node of G^i is in D^i and E^i is a branching
+-            assert len(G) == len(B)
+-            if len(B):
+-                assert is_branching(B)
+-
+-            graphs.append((G.copy(), G_edge_index.copy()))
+-            branchings.append((B.copy(), B_edge_index.copy()))
+-            circuits.append([])
+-            minedge_circuit.append(None)
+-
+-            break
+-        else:
+-            #####################
+-            ### BEGIN STEP I1 ###
+-            #####################
+-
+-            # This is a very simple step, so I don't think it needs a method of it's own
+-            if v in selected_nodes:
+-                continue
+-
+-        selected_nodes.add(v)
+-        B.add_node(v)
+-        desired_edge, desired_edge_weight = edmonds_find_desired_edge(v)
+-
+-        # There might be no desired edge if all edges are excluded or
+-        # v is the last node to be added to B, the ultimate root of the branching
+-        if desired_edge is not None and desired_edge_weight > 0:
+-            u = desired_edge[0]
+-            # Flag adding the edge will create a circuit before merging the two
+-            # connected components of u and v in B
+-            circuit = uf[u] == uf[v]
+-            dd = {attr: desired_edge_weight}
+-            if desired_edge[4].get(partition) is not None:
+-                dd[partition] = desired_edge[4].get(partition)
+-
+-            edmonds_add_edge(B, B_edge_index, u, v, desired_edge[2], **dd)
+-            G[u][v][desired_edge[2]][candidate_attr] = True
+-            uf.union(u, v)
+-
+-            ###################
+-            ### END STEP I1 ###
+-            ###################
+-
+-            #####################
+-            ### BEGIN STEP I2 ###
+-            #####################
+-
+-            if circuit:
+-                edmonds_step_I2(v, desired_edge, level)
+-                nodes = iter(list(G.nodes()))
+-                level += 1
++    with perfmark.region("gl-007"):
++        while True:
++            try:
++                v = next(nodes)
++            except StopIteration:
++                # If there are no more new nodes to consider, then we should
++                # meet stopping condition (b) from the paper:
++                #   (b) every node of G^i is in D^i and E^i is a branching
++                assert len(G) == len(B)
++                if len(B):
++                    assert is_branching(B)
++    
++                graphs.append((G.copy(), G_edge_index.copy()))
++                branchings.append((B.copy(), B_edge_index.copy()))
++                circuits.append([])
++                minedge_circuit.append(None)
++    
++                break
++            else:
++                #####################
++                ### BEGIN STEP I1 ###
++                #####################
++    
++                # This is a very simple step, so I don't think it needs a method of it's own
++                if v in selected_nodes:
++                    continue
++    
++            selected_nodes.add(v)
++            B.add_node(v)
++            desired_edge, desired_edge_weight = edmonds_find_desired_edge(v)
++    
++            # There might be no desired edge if all edges are excluded or
++            # v is the last node to be added to B, the ultimate root of the branching
++            if desired_edge is not None and desired_edge_weight > 0:
++                u = desired_edge[0]
++                # Flag adding the edge will create a circuit before merging the two
++                # connected components of u and v in B
++                circuit = uf[u] == uf[v]
++                dd = {attr: desired_edge_weight}
++                if desired_edge[4].get(partition) is not None:
++                    dd[partition] = desired_edge[4].get(partition)
++    
++                edmonds_add_edge(B, B_edge_index, u, v, desired_edge[2], **dd)
++                G[u][v][desired_edge[2]][candidate_attr] = True
++                uf.union(u, v)
++    
++                ###################
++                ### END STEP I1 ###
++                ###################
++    
++                #####################
++                ### BEGIN STEP I2 ###
++                #####################
++    
++                if circuit:
++                    edmonds_step_I2(v, desired_edge, level)
++                    nodes = iter(list(G.nodes()))
++                    level += 1
+ 
+             ###################
+             ### END STEP I2 ###

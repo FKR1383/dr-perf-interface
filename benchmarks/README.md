@@ -2,11 +2,13 @@
 
 The current deliverable is a collection of real code regions with **empty
 markers**, ready for an agent or human to investigate. It is not a run of a
-full agent evaluation pipeline. The intended scale is 200–1,000 source regions.
+full agent evaluation pipeline. It contains 1,000 source regions.
 
-There are currently **207 collected regions**, each with pinned upstream source,
-a patch marking one region without any PCVs, a neutral task, a concrete bounded
-test workload with correctness assertions, and separate reference notes:
+The original **207 cases are preserved**, with **793 additions** from compiler
+frontends, language tools, and general and native libraries. Each addition has
+pinned source, an empty marker, and a test run verified to enter that marker.
+See the [growth record](growth/README.md) for execution evidence and independent
+checks. The starting groups are:
 
 | Group | Regions | Coverage |
 | --- | ---: | --- |
@@ -16,11 +18,20 @@ test workload with correctness assertions, and separate reference notes:
 | [V8 JavaScript runtime / bytecode generator](regions/v8-interpreter/README.md) | 50 | Runtime array, string, property and scope paths; bytecode generation |
 | [Accidental-quadratic cases](regions/accidental-quadratic/) | 21 | CPython, Cython, Black, and Socket CLI regions linked to upstream performance issues |
 
-These are distinct source targets, not 207 independent bugs. Some whole-function
+These are distinct source targets, not independent bugs. Some whole-function
 and child-block targets share a source family, and several parser targets share
 one upstream issue. V8 compilation-time regions are labeled separately from
 execution-time regions. A runtime fallback marker does not imply that every
 JavaScript execution reaches it.
+
+
+The new slices are [compiler frontends](regions/compiler-frontends/) (250),
+[language tools](regions/language-tools/) (250), [general libraries](regions/general-libraries/)
+(250), and [native libraries](regions/native-libraries/README.md) (43). All 793
+new cases have successful correctness and marker-entry evidence. The compiler
+cases use a pinned instrumented LLVM/Clang build; native-library cases compile
+pinned RapidJSON headers. This establishes bounded target execution, not full
+path coverage or an optimization opportunity in every case.
 
 ## Inspect or export a case
 
@@ -61,7 +72,7 @@ scripts, patches, and provisional answer keys. The slide deck and full narrative
 are under [evaluator/evidence/](evaluator/evidence/). The older
 [201-region inventory](evaluator/region-candidates.json) is an expansion queue;
 it overlaps both the historical families and the collected targets and must
-not be added to the 207 count.
+not be added to the collected-region count.
 
 The earlier [agent-pipeline design](PIPELINE_DESIGN.md), pilot runner and scorer
 remain available as deferred evaluation work. The [small-to-large design](SMALL_TO_LARGE.md)
@@ -69,3 +80,8 @@ records the hypothesis that symbolic insights from small executions can reduce
 the need for expensive large-case runs. The current collection supplies code
 targets for testing those ideas later; no agent accuracy or execution savings
 are claimed.
+
+Separate [annotation and optimization experiments](growth/README.md) retain
+failed rounds, correctness checks, and real drperf measurements. Two measured
+workloads show 10.69x and 5.34x target-instruction reductions. These case results
+do not establish agent accuracy or complete the with/without-drperf comparison.

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-243",
+  "title": "WhitespaceManager::alignTrailingComments compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/WhitespaceManager.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/WhitespaceManager.cpp",
+    "sha256": "9995139b2221e9a614ef73fd028fad5777328d2ef7e7d983f5113adb83911aeb"
+  },
+  "region": {
+    "symbol": "WhitespaceManager::alignTrailingComments",
+    "start_line": 1089,
+    "end_line": 1227,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-243",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "formatting",
+  "workload": {
+    "description": "Run the bounded whitespace-layout fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Format/WhitespaceManager.cpp:WhitespaceManager::alignTrailingComments",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Format/WhitespaceManager.cpp#L1089-L1227"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+      "spec_sha256": "10e2e3c487f8e7c7915a9eb5633244f44e9d64f3e63ef63edf547b1addc90704",
+      "patch_sha256": "c38c60547798b61125f4505b2b497c73e3fb8e1fc094ec207b16a70c932b37a4"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

@@ -1,0 +1,116 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -4353,56 +4354,57 @@
+     def _parse_query_modifiers(self, this: None) -> None: ...
+ 
+     def _parse_query_modifiers(self, this):
+-        if isinstance(this, self.MODIFIABLES):
+-            for join in self._parse_joins():
+-                this.append("joins", join)
+-            for lateral in iter(self._parse_lateral, None):
+-                this.append("laterals", lateral)
+-
+-            while True:
+-                if self._match_set(self.QUERY_MODIFIER_PARSERS, advance=False):
+-                    modifier_token = self._curr
+-                    parser = self.QUERY_MODIFIER_PARSERS[modifier_token.token_type]
+-                    key, expression = parser(self)
+-
+-                    if expression:
+-                        if this.args.get(key):
+-                            self.raise_error(
+-                                f"Found multiple '{modifier_token.text.upper()}' clauses",
+-                                token=modifier_token,
+-                            )
+-
+-                        this.set(key, expression)
+-                        if key == "limit":
+-                            offset = expression.args.get("offset")
+-                            expression.set("offset", None)
+-
+-                            if offset:
+-                                offset = exp.Offset(expression=offset)
+-                                this.set("offset", offset)
+-
+-                                limit_by_expressions = expression.expressions
+-                                expression.set("expressions", None)
+-                                offset.set("expressions", limit_by_expressions)
+-                        continue
+-
+-                if self._curr.text.upper() == "START":
+-                    modifier_token = self._curr
+-                    connect = self._parse_connect()
+-                    if connect:
+-                        if this.args.get("connect"):
+-                            self.raise_error(
+-                                "Found multiple 'START WITH' clauses", token=modifier_token
+-                            )
+-
+-                        this.set("connect", connect)
+-                        continue
+-                break
+-
+-        if self.SUPPORTS_IMPLICIT_UNNEST and this and this.args.get("from_"):
+-            this = self._implicit_unnests_to_explicit(this)
+-
+-        return this
++        with perfmark.region("lt-075"):
++            if isinstance(this, self.MODIFIABLES):
++                for join in self._parse_joins():
++                    this.append("joins", join)
++                for lateral in iter(self._parse_lateral, None):
++                    this.append("laterals", lateral)
++
++                while True:
++                    if self._match_set(self.QUERY_MODIFIER_PARSERS, advance=False):
++                        modifier_token = self._curr
++                        parser = self.QUERY_MODIFIER_PARSERS[modifier_token.token_type]
++                        key, expression = parser(self)
++
++                        if expression:
++                            if this.args.get(key):
++                                self.raise_error(
++                                    f"Found multiple '{modifier_token.text.upper()}' clauses",
++                                    token=modifier_token,
++                                )
++
++                            this.set(key, expression)
++                            if key == "limit":
++                                offset = expression.args.get("offset")
++                                expression.set("offset", None)
++
++                                if offset:
++                                    offset = exp.Offset(expression=offset)
++                                    this.set("offset", offset)
++
++                                    limit_by_expressions = expression.expressions
++                                    expression.set("expressions", None)
++                                    offset.set("expressions", limit_by_expressions)
++                            continue
++
++                    if self._curr.text.upper() == "START":
++                        modifier_token = self._curr
++                        connect = self._parse_connect()
++                        if connect:
++                            if this.args.get("connect"):
++                                self.raise_error(
++                                    "Found multiple 'START WITH' clauses", token=modifier_token
++                                )
++
++                            this.set("connect", connect)
++                            continue
++                    break
++
++            if self.SUPPORTS_IMPLICIT_UNNEST and this and this.args.get("from_"):
++                this = self._implicit_unnests_to_explicit(this)
++
++            return this
+ 
+     def _parse_hint_fallback_to_string(self) -> exp.Hint | None:
+         start = self._curr

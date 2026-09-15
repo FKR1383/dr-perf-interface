@@ -1,0 +1,18 @@
+--- a/clang/lib/StaticAnalyzer/Core/ExprEngine.cpp
++++ b/clang/lib/StaticAnalyzer/Core/ExprEngine.cpp
+@@ -12,6 +12,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/StaticAnalyzer/Core/PathSensitive/ExprEngine.h"
+ #include "PrettyStackTraceLocationContext.h"
+ #include "clang/AST/ASTContext.h"
+@@ -1709,6 +1710,7 @@
+ 
+ void ExprEngine::Visit(const Stmt *S, ExplodedNode *Pred,
+                        ExplodedNodeSet &DstTop) {
++                         DRPERF_BENCH_REGION("cf-073");
+   PrettyStackTraceLoc CrashInfo(getContext().getSourceManager(),
+                                 S->getBeginLoc(), "Error evaluating statement");
+   ExplodedNodeSet Dst;

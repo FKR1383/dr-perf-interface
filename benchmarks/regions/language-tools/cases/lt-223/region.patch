@@ -1,0 +1,79 @@
+--- a/lark/lexer.py
++++ b/lark/lexer.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Lexer Implementation
+ 
+ from abc import abstractmethod, ABC
+@@ -675,38 +676,39 @@
+         return self.scanner.match(text, pos)
+ 
+     def next_token(self, lex_state: LexerState, parser_state: Any = None) -> Token:
+-        line_ctr = lex_state.line_ctr
+-        while line_ctr.char_pos < lex_state.text.end:
+-            res = self.match(lex_state.text, line_ctr.char_pos)
+-            if not res:
+-                allowed = self.scanner.allowed_types - self.ignore_types
+-                if not allowed:
+-                    allowed = {"<END-OF-FILE>"}
+-                raise UnexpectedCharacters(lex_state.text.text, line_ctr.char_pos, line_ctr.line, line_ctr.column,
+-                                           allowed=allowed, token_history=lex_state.last_token and [lex_state.last_token],
+-                                           state=parser_state, terminals_by_name=self.terminals_by_name)
+-
+-            value, type_ = res
+-
+-            ignored = type_ in self.ignore_types
+-            t = None
+-            if not ignored or type_ in self.callback:
+-                t = Token(type_, value, line_ctr.char_pos, line_ctr.line, line_ctr.column)
+-            line_ctr.feed(value, type_ in self.newline_types)
+-            if t is not None:
+-                t.end_line = line_ctr.line
+-                t.end_column = line_ctr.column
+-                t.end_pos = line_ctr.char_pos
+-                if t.type in self.callback:
+-                    t = self.callback[t.type](t)
+-                if not ignored:
+-                    if not isinstance(t, Token):
+-                        raise LexError("Callbacks must return a token (returned %r)" % t)
+-                    lex_state.last_token = t
+-                    return t
+-
+-        # EOF
+-        raise EOFError(self)
++        with perfmark.region("lt-223"):
++            line_ctr = lex_state.line_ctr
++            while line_ctr.char_pos < lex_state.text.end:
++                res = self.match(lex_state.text, line_ctr.char_pos)
++                if not res:
++                    allowed = self.scanner.allowed_types - self.ignore_types
++                    if not allowed:
++                        allowed = {"<END-OF-FILE>"}
++                    raise UnexpectedCharacters(lex_state.text.text, line_ctr.char_pos, line_ctr.line, line_ctr.column,
++                                               allowed=allowed, token_history=lex_state.last_token and [lex_state.last_token],
++                                               state=parser_state, terminals_by_name=self.terminals_by_name)
++
++                value, type_ = res
++
++                ignored = type_ in self.ignore_types
++                t = None
++                if not ignored or type_ in self.callback:
++                    t = Token(type_, value, line_ctr.char_pos, line_ctr.line, line_ctr.column)
++                line_ctr.feed(value, type_ in self.newline_types)
++                if t is not None:
++                    t.end_line = line_ctr.line
++                    t.end_column = line_ctr.column
++                    t.end_pos = line_ctr.char_pos
++                    if t.type in self.callback:
++                        t = self.callback[t.type](t)
++                    if not ignored:
++                        if not isinstance(t, Token):
++                            raise LexError("Callbacks must return a token (returned %r)" % t)
++                        lex_state.last_token = t
++                        return t
++
++            # EOF
++            raise EOFError(self)
+ 
+     def search_start(self, text: TextSlice, start_state: Any, pos: int) -> Optional[int]:
+         return self.search_scanner.search(text, pos)

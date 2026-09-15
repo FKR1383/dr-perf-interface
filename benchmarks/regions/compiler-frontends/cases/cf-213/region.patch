@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaOpenMP.cpp
++++ b/clang/lib/Sema/SemaOpenMP.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Sema/SemaOpenMP.h"
+ 
+ #include "TreeTransform.h"
+@@ -15468,6 +15469,7 @@
+ ExprResult
+ SemaOpenMP::PerformOpenMPImplicitIntegerConversion(SourceLocation Loc,
+                                                    Expr *Op) {
++                                                     DRPERF_BENCH_REGION("cf-213");
+   if (!Op)
+     return ExprError();
+ 

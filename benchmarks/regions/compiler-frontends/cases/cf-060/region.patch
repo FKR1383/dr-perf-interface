@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaLookup.cpp
++++ b/clang/lib/Sema/SemaLookup.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/CXXInheritance.h"
+ #include "clang/AST/Decl.h"
+@@ -1273,6 +1274,7 @@
+ } // end anonymous namespace
+ 
+ bool Sema::CppLookupName(LookupResult &R, Scope *S) {
++  DRPERF_BENCH_REGION("cf-060");
+   assert(getLangOpts().CPlusPlus && "Can perform only C++ lookup");
+ 
+   DeclarationName Name = R.getLookupName();

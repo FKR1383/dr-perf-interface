@@ -1,0 +1,32 @@
+{
+  "case": "cf-230",
+  "phase": "formatting",
+  "scenario": "continuation-indentation",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_230(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_230 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_230(2)==14);\nint main() { Item_230 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_230_0 { int value[1]; };\nstruct Scale_230_1 { int value[2]; };\nstruct Scale_230_2 { int value[3]; };\nstruct Scale_230_3 { int value[4]; };\ntemplate<class T> constexpr T fold_230(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_230 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_230(2)==14);\nint main() { Item_230 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_230_0 { int value[1]; };\nstruct Scale_230_1 { int value[2]; };\nstruct Scale_230_2 { int value[3]; };\nstruct Scale_230_3 { int value[4]; };\nstruct Scale_230_4 { int value[1]; };\nstruct Scale_230_5 { int value[2]; };\nstruct Scale_230_6 { int value[3]; };\nstruct Scale_230_7 { int value[4]; };\nstruct Scale_230_8 { int value[1]; };\nstruct Scale_230_9 { int value[2]; };\nstruct Scale_230_10 { int value[3]; };\nstruct Scale_230_11 { int value[4]; };\nstruct Scale_230_12 { int value[1]; };\nstruct Scale_230_13 { int value[2]; };\nstruct Scale_230_14 { int value[3]; };\nstruct Scale_230_15 { int value[4]; };\ntemplate<class T> constexpr T fold_230(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_230 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_230(2)==14);\nint main() { Item_230 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_230_0 { int value[1]; };\nstruct Scale_230_1 { int value[2]; };\nstruct Scale_230_2 { int value[3]; };\nstruct Scale_230_3 { int value[4]; };\nstruct Scale_230_4 { int value[1]; };\nstruct Scale_230_5 { int value[2]; };\nstruct Scale_230_6 { int value[3]; };\nstruct Scale_230_7 { int value[4]; };\nstruct Scale_230_8 { int value[1]; };\nstruct Scale_230_9 { int value[2]; };\nstruct Scale_230_10 { int value[3]; };\nstruct Scale_230_11 { int value[4]; };\nstruct Scale_230_12 { int value[1]; };\nstruct Scale_230_13 { int value[2]; };\nstruct Scale_230_14 { int value[3]; };\nstruct Scale_230_15 { int value[4]; };\nstruct Scale_230_16 { int value[1]; };\nstruct Scale_230_17 { int value[2]; };\nstruct Scale_230_18 { int value[3]; };\nstruct Scale_230_19 { int value[4]; };\nstruct Scale_230_20 { int value[1]; };\nstruct Scale_230_21 { int value[2]; };\nstruct Scale_230_22 { int value[3]; };\nstruct Scale_230_23 { int value[4]; };\nstruct Scale_230_24 { int value[1]; };\nstruct Scale_230_25 { int value[2]; };\nstruct Scale_230_26 { int value[3]; };\nstruct Scale_230_27 { int value[4]; };\nstruct Scale_230_28 { int value[1]; };\nstruct Scale_230_29 { int value[2]; };\nstruct Scale_230_30 { int value[3]; };\nstruct Scale_230_31 { int value[4]; };\nstruct Scale_230_32 { int value[1]; };\nstruct Scale_230_33 { int value[2]; };\nstruct Scale_230_34 { int value[3]; };\nstruct Scale_230_35 { int value[4]; };\nstruct Scale_230_36 { int value[1]; };\nstruct Scale_230_37 { int value[2]; };\nstruct Scale_230_38 { int value[3]; };\nstruct Scale_230_39 { int value[4]; };\nstruct Scale_230_40 { int value[1]; };\nstruct Scale_230_41 { int value[2]; };\nstruct Scale_230_42 { int value[3]; };\nstruct Scale_230_43 { int value[4]; };\nstruct Scale_230_44 { int value[1]; };\nstruct Scale_230_45 { int value[2]; };\nstruct Scale_230_46 { int value[3]; };\nstruct Scale_230_47 { int value[4]; };\nstruct Scale_230_48 { int value[1]; };\nstruct Scale_230_49 { int value[2]; };\nstruct Scale_230_50 { int value[3]; };\nstruct Scale_230_51 { int value[4]; };\nstruct Scale_230_52 { int value[1]; };\nstruct Scale_230_53 { int value[2]; };\nstruct Scale_230_54 { int value[3]; };\nstruct Scale_230_55 { int value[4]; };\nstruct Scale_230_56 { int value[1]; };\nstruct Scale_230_57 { int value[2]; };\nstruct Scale_230_58 { int value[3]; };\nstruct Scale_230_59 { int value[4]; };\nstruct Scale_230_60 { int value[1]; };\nstruct Scale_230_61 { int value[2]; };\nstruct Scale_230_62 { int value[3]; };\nstruct Scale_230_63 { int value[4]; };\ntemplate<class T> constexpr T fold_230(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_230 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_230(2)==14);\nint main() { Item_230 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "ContinuationIndenter::moveStatePastScopeOpener",
+  "target_source": "clang/lib/Format/ContinuationIndenter.cpp",
+  "mapping_note": "The continuation-indentation construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

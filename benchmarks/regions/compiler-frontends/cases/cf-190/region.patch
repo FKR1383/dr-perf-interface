@@ -1,0 +1,18 @@
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Driver/Driver.h"
+ #include "ToolChains/AIX.h"
+ #include "ToolChains/AMDGPU.h"
+@@ -5139,6 +5140,7 @@
+ }
+ 
+ void Driver::BuildJobs(Compilation &C) const {
++  DRPERF_BENCH_REGION("cf-190");
+   llvm::PrettyStackTraceString CrashInfo("Building compilation jobs");
+ 
+   Arg *FinalOutput = C.getArgs().getLastArg(options::OPT_o);

@@ -1,0 +1,32 @@
+{
+  "case": "cf-058",
+  "phase": "parsing",
+  "scenario": "openmp-directive-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-fopenmp",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_58(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_58 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_58(2)==14);\nint main() { Item_58 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "void f(int*p){\n#pragma omp parallel for\nfor(int i=0;i<4;++i)p[i]=i;\n}\n"
+    },
+    {
+      "size": 16,
+      "source": "void f(int*p){\n#pragma omp parallel for\nfor(int i=0;i<16;++i)p[i]=i;\n}\n"
+    },
+    {
+      "size": 64,
+      "source": "void f(int*p){\n#pragma omp parallel for\nfor(int i=0;i<64;++i)p[i]=i;\n}\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseOpenMPDeclarativeOrExecutableDirective",
+  "target_source": "clang/lib/Parse/ParseOpenMP.cpp",
+  "mapping_note": "The openmp-directive-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/Lexer.cpp
++++ b/clang/lib/Lex/Lexer.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Lex/Lexer.h"
+ #include "UnicodeCharSets.h"
+ #include "clang/Basic/CharInfo.h"
+@@ -2586,6 +2587,7 @@
+ /// some tokens, this will store the first token and return true.
+ bool Lexer::SkipLineComment(Token &Result, const char *CurPtr,
+                             bool &TokAtPhysicalStartOfLine) {
++                              DRPERF_BENCH_REGION("cf-145");
+   // If Line comments aren't explicitly enabled for this language, emit an
+   // extension warning.
+   if (!LineComment) {

@@ -1,0 +1,57 @@
+--- a/pandas/core/reshape/merge.py
++++ b/pandas/core/reshape/merge.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ from functools import partial
+@@ -2101,26 +2102,27 @@
+ 
+     lkey: ArrayLike
+     rkey: ArrayLike
+-    if len(left_keys) > 1:
+-        fused = _fuse_int64_keys(left_keys, right_keys)
+-        if fused is not None:
+-            # combine integer-like keys in a single pass, avoiding a
+-            #  hashtable factorization per column
+-            lkey, rkey = fused
++    with perfmark.region("gl-162"):
++        if len(left_keys) > 1:
++            fused = _fuse_int64_keys(left_keys, right_keys)
++            if fused is not None:
++                # combine integer-like keys in a single pass, avoiding a
++                #  hashtable factorization per column
++                lkey, rkey = fused
++            else:
++                # get left & right join labels and num. of levels at each location
++                mapped = (
++                    _factorize_keys(left_keys[n], right_keys[n], sort=sort)
++                    for n in range(len(left_keys))
++                )
++                zipped = zip(*mapped, strict=True)
++                llab, rlab, shape = (list(x) for x in zipped)
++    
++                # get flat i8 keys from label lists
++                lkey, rkey = _get_join_keys(llab, rlab, tuple(shape), sort)
+         else:
+-            # get left & right join labels and num. of levels at each location
+-            mapped = (
+-                _factorize_keys(left_keys[n], right_keys[n], sort=sort)
+-                for n in range(len(left_keys))
+-            )
+-            zipped = zip(*mapped, strict=True)
+-            llab, rlab, shape = (list(x) for x in zipped)
+-
+-            # get flat i8 keys from label lists
+-            lkey, rkey = _get_join_keys(llab, rlab, tuple(shape), sort)
+-    else:
+-        lkey = left_keys[0]
+-        rkey = right_keys[0]
++            lkey = left_keys[0]
++            rkey = right_keys[0]
+ 
+     left = Index(lkey, copy=False)
+     right = Index(rkey, copy=False)

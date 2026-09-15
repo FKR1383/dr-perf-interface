@@ -1,0 +1,32 @@
+--- a/src/jinja2/nodes.py
++++ b/src/jinja2/nodes.py
+@@ -2,6 +2,7 @@
+ some node tree helper functions used by the parser and compiler in order
+ to normalize nodes.
+ """
++import perfmark
+ 
+ import inspect
+ import operator
+@@ -175,13 +176,14 @@
+         over all fields and yields the values of they are nodes.  If the value
+         of a field is a list all the nodes in that list are returned.
+         """
+-        for _, item in self.iter_fields(exclude, only):
+-            if isinstance(item, list):
+-                for n in item:
+-                    if isinstance(n, Node):
+-                        yield n
+-            elif isinstance(item, Node):
+-                yield item
++        with perfmark.region("lt-168"):
++            for _, item in self.iter_fields(exclude, only):
++                if isinstance(item, list):
++                    for n in item:
++                        if isinstance(n, Node):
++                            yield n
++                elif isinstance(item, Node):
++                    yield item
+ 
+     def find(self, node_type: type[_NodeBound]) -> _NodeBound | None:
+         """Find the first node of a given type.  If no such node exists the

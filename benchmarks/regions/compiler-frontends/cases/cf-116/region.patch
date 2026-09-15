@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExpr.cpp
++++ b/clang/lib/Parse/ParseExpr.cpp
+@@ -20,6 +20,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Availability.h"
+ #include "clang/AST/ExprCXX.h"
+@@ -446,6 +447,7 @@
+ /// precedence of at least \p MinPrec.
+ ExprResult
+ Parser::ParseRHSOfBinaryExpression(ExprResult LHS, prec::Level MinPrec) {
++  DRPERF_BENCH_REGION("cf-116");
+   prec::Level NextTokPrec = getBinOpPrecedence(Tok.getKind(),
+                                                GreaterThanIsOperator,
+                                                getLangOpts().CPlusPlus11);

@@ -1,0 +1,94 @@
+--- a/sympy/polys/densebasic.py
++++ b/sympy/polys/densebasic.py
+@@ -1,6 +1,7 @@
+ """Basic tools for dense recursive polynomials in ``K[x]`` or ``K[X]``."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import TYPE_CHECKING, TypeVar, Callable, Any, cast
+ from typing import Iterable # noqa: F401
+@@ -1547,44 +1548,45 @@
+     ((2, 1), ([[1, 0, 0, 2], [3, 0, 0, 4]], [[1, 0, 2], [3, 0, 4]]))
+ 
+     """
+-    if not u:
+-        M, H = dup_multi_deflate(_idup(polys), K)
+-        return (M,), _idmp(H)
+-
+-    F: list[dict[monom, Er]] = []
+-    B = [0] * (u + 1)
+-
+-    for p in polys:
+-        f: dict[monom, Er] = dmp_to_dict(p, u, K)
+-
+-        if not dmp_zero_p(p, u):
+-            for m in f.keys():
+-                for i, e in enumerate(m):
+-                    B[i] = igcd(B[i], e)
+-
+-        F.append(f)
+-
+-    for i, b in enumerate(B):
+-        if not b:
+-            B[i] = 1
+-
+-    Bt = tuple(B)
+-
+-    if all(b == 1 for b in Bt):
+-        return Bt, polys
+-
+-    H2: list[dmp[Er]] = []
+-
+-    for f in F:
+-        h: dict[monom, Er] = {}
+-
+-        for A, coeff in f.items():
+-            N = [a // b for a, b in zip(A, Bt)]
+-            h[tuple(N)] = coeff
+-
+-        H2.append(dmp_from_dict(h, u, K))
+-
+-    return Bt, tuple(H2)
++    with perfmark.region("lt-016"):
++        if not u:
++            M, H = dup_multi_deflate(_idup(polys), K)
++            return (M,), _idmp(H)
++
++        F: list[dict[monom, Er]] = []
++        B = [0] * (u + 1)
++
++        for p in polys:
++            f: dict[monom, Er] = dmp_to_dict(p, u, K)
++
++            if not dmp_zero_p(p, u):
++                for m in f.keys():
++                    for i, e in enumerate(m):
++                        B[i] = igcd(B[i], e)
++
++            F.append(f)
++
++        for i, b in enumerate(B):
++            if not b:
++                B[i] = 1
++
++        Bt = tuple(B)
++
++        if all(b == 1 for b in Bt):
++            return Bt, polys
++
++        H2: list[dmp[Er]] = []
++
++        for f in F:
++            h: dict[monom, Er] = {}
++
++            for A, coeff in f.items():
++                N = [a // b for a, b in zip(A, Bt)]
++                h[tuple(N)] = coeff
++
++            H2.append(dmp_from_dict(h, u, K))
++
++        return Bt, tuple(H2)
+ 
+ 
+ def dup_inflate(f: dup[Er], m: int, K: Domain[Er]) -> dup[Er]:

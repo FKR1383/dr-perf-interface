@@ -1,0 +1,30 @@
+--- a/src/packaging/_ranges.py
++++ b/src/packaging/_ranges.py
+@@ -4,6 +4,7 @@
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import enum
+ import functools
+@@ -678,12 +679,13 @@
+     Used to detect unsatisfiable specifier sets when ``prereleases=False``:
+     if every range is pre-release-only, every contained version is excluded.
+     """
+-    for lower, upper in ranges:
+-        nearest = _lowest_release_at_or_above(lower.version)
+-        if upper.version is None or nearest < upper.version:
+-            return False
+-        if nearest == upper.version and upper.inclusive:
+-            return False
++    with perfmark.region("gl-216"):
++        for lower, upper in ranges:
++            nearest = _lowest_release_at_or_above(lower.version)
++            if upper.version is None or nearest < upper.version:
++                return False
++            if nearest == upper.version and upper.inclusive:
++                return False
+     return True
+ 
+ 

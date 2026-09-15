@@ -1,0 +1,116 @@
+--- a/sympy/core/add.py
++++ b/sympy/core/add.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import TYPE_CHECKING, ClassVar, Literal, overload
+ from collections import defaultdict
+@@ -1200,57 +1201,58 @@
+ 
+         See docstring of Expr.as_content_primitive for more examples.
+         """
+-        con, prim = self.func(*[_keep_coeff(*a.as_content_primitive(
+-            radical=radical, clear=clear)) for a in self.args]).primitive()
+-        if not clear and not con.is_Integer and prim.is_Add:
+-            con, d = con.as_numer_denom()
+-            _p = prim/d
+-            if any(a.as_coeff_Mul()[0].is_Integer for a in _p.args):
+-                prim = _p
+-            else:
+-                con /= d
+-        if radical and prim.is_Add:
+-            # look for common radicals that can be removed
+-            args = prim.args
+-            rads = []
+-            common_q = None
+-            for m in args:
+-                term_rads = defaultdict(list)
+-                for ai in Mul.make_args(m):
+-                    if ai.is_Pow:
+-                        b, e = ai.as_base_exp()
+-                        if e.is_Rational and b.is_Integer:
+-                            term_rads[e.q].append(abs(int(b))**e.p)
+-                if not term_rads:
+-                    break
+-                if common_q is None:
+-                    common_q = set(term_rads.keys())
++        with perfmark.region("lt-010"):
++            con, prim = self.func(*[_keep_coeff(*a.as_content_primitive(
++                radical=radical, clear=clear)) for a in self.args]).primitive()
++            if not clear and not con.is_Integer and prim.is_Add:
++                con, d = con.as_numer_denom()
++                _p = prim/d
++                if any(a.as_coeff_Mul()[0].is_Integer for a in _p.args):
++                    prim = _p
+                 else:
+-                    common_q = common_q & set(term_rads.keys())
+-                    if not common_q:
++                    con /= d
++            if radical and prim.is_Add:
++                # look for common radicals that can be removed
++                args = prim.args
++                rads = []
++                common_q = None
++                for m in args:
++                    term_rads = defaultdict(list)
++                    for ai in Mul.make_args(m):
++                        if ai.is_Pow:
++                            b, e = ai.as_base_exp()
++                            if e.is_Rational and b.is_Integer:
++                                term_rads[e.q].append(abs(int(b))**e.p)
++                    if not term_rads:
+                         break
+-                rads.append(term_rads)
+-            else:
+-                # process rads
+-                # keep only those in common_q
+-                for r in rads:
+-                    for q in list(r.keys()):
+-                        if q not in common_q:
+-                            r.pop(q)
+-                    for q in r:
+-                        r[q] = Mul(*r[q])
+-                # find the gcd of bases for each q
+-                G = []
+-                for q in common_q:
+-                    g = reduce(igcd, [r[q] for r in rads], 0)
+-                    if g != 1:
+-                        G.append(g**Rational(1, q))
+-                if G:
+-                    G = Mul(*G)
+-                    args = [ai/G for ai in args]
+-                    prim = G*prim.func(*args)
+-
+-        return con, prim
++                    if common_q is None:
++                        common_q = set(term_rads.keys())
++                    else:
++                        common_q = common_q & set(term_rads.keys())
++                        if not common_q:
++                            break
++                    rads.append(term_rads)
++                else:
++                    # process rads
++                    # keep only those in common_q
++                    for r in rads:
++                        for q in list(r.keys()):
++                            if q not in common_q:
++                                r.pop(q)
++                        for q in r:
++                            r[q] = Mul(*r[q])
++                    # find the gcd of bases for each q
++                    G = []
++                    for q in common_q:
++                        g = reduce(igcd, [r[q] for r in rads], 0)
++                        if g != 1:
++                            G.append(g**Rational(1, q))
++                    if G:
++                        G = Mul(*G)
++                        args = [ai/G for ai in args]
++                        prim = G*prim.func(*args)
++
++            return con, prim
+ 
+     @property
+     def _sorted_args(self):

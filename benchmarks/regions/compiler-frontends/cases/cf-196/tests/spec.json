@@ -1,0 +1,33 @@
+{
+  "case": "cf-196",
+  "phase": "ast-processing",
+  "scenario": "constexpr-evaluation",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "template<class T> constexpr T fold_196(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_196 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_196(2)==14);\nint main() { Item_196 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "constexpr int sq(int x){return x*x;}\nstatic_assert(sq(0)==0);\nstatic_assert(sq(1)==1);\nstatic_assert(sq(2)==4);\nstatic_assert(sq(3)==9);\n"
+    },
+    {
+      "size": 16,
+      "source": "constexpr int sq(int x){return x*x;}\nstatic_assert(sq(0)==0);\nstatic_assert(sq(1)==1);\nstatic_assert(sq(2)==4);\nstatic_assert(sq(3)==9);\nstatic_assert(sq(4)==16);\nstatic_assert(sq(5)==25);\nstatic_assert(sq(6)==36);\nstatic_assert(sq(7)==49);\nstatic_assert(sq(8)==64);\nstatic_assert(sq(9)==81);\nstatic_assert(sq(10)==100);\nstatic_assert(sq(11)==121);\nstatic_assert(sq(12)==144);\nstatic_assert(sq(13)==169);\nstatic_assert(sq(14)==196);\nstatic_assert(sq(15)==225);\n"
+    },
+    {
+      "size": 64,
+      "source": "constexpr int sq(int x){return x*x;}\nstatic_assert(sq(0)==0);\nstatic_assert(sq(1)==1);\nstatic_assert(sq(2)==4);\nstatic_assert(sq(3)==9);\nstatic_assert(sq(4)==16);\nstatic_assert(sq(5)==25);\nstatic_assert(sq(6)==36);\nstatic_assert(sq(7)==49);\nstatic_assert(sq(8)==64);\nstatic_assert(sq(9)==81);\nstatic_assert(sq(10)==100);\nstatic_assert(sq(11)==121);\nstatic_assert(sq(12)==144);\nstatic_assert(sq(13)==169);\nstatic_assert(sq(14)==196);\nstatic_assert(sq(15)==225);\nstatic_assert(sq(16)==256);\nstatic_assert(sq(17)==289);\nstatic_assert(sq(18)==324);\nstatic_assert(sq(19)==361);\nstatic_assert(sq(20)==400);\nstatic_assert(sq(21)==441);\nstatic_assert(sq(22)==484);\nstatic_assert(sq(23)==529);\nstatic_assert(sq(24)==576);\nstatic_assert(sq(25)==625);\nstatic_assert(sq(26)==676);\nstatic_assert(sq(27)==729);\nstatic_assert(sq(28)==784);\nstatic_assert(sq(29)==841);\nstatic_assert(sq(30)==900);\nstatic_assert(sq(31)==961);\nstatic_assert(sq(32)==1024);\nstatic_assert(sq(33)==1089);\nstatic_assert(sq(34)==1156);\nstatic_assert(sq(35)==1225);\nstatic_assert(sq(36)==1296);\nstatic_assert(sq(37)==1369);\nstatic_assert(sq(38)==1444);\nstatic_assert(sq(39)==1521);\nstatic_assert(sq(40)==1600);\nstatic_assert(sq(41)==1681);\nstatic_assert(sq(42)==1764);\nstatic_assert(sq(43)==1849);\nstatic_assert(sq(44)==1936);\nstatic_assert(sq(45)==2025);\nstatic_assert(sq(46)==2116);\nstatic_assert(sq(47)==2209);\nstatic_assert(sq(48)==2304);\nstatic_assert(sq(49)==2401);\nstatic_assert(sq(50)==2500);\nstatic_assert(sq(51)==2601);\nstatic_assert(sq(52)==2704);\nstatic_assert(sq(53)==2809);\nstatic_assert(sq(54)==2916);\nstatic_assert(sq(55)==3025);\nstatic_assert(sq(56)==3136);\nstatic_assert(sq(57)==3249);\nstatic_assert(sq(58)==3364);\nstatic_assert(sq(59)==3481);\nstatic_assert(sq(60)==3600);\nstatic_assert(sq(61)==3721);\nstatic_assert(sq(62)==3844);\nstatic_assert(sq(63)==3969);\n"
+    }
+  ],
+  "target_symbol": "PointerExprEvaluator::VisitCastExpr",
+  "target_source": "clang/lib/AST/ExprConstant.cpp",
+  "mapping_note": "The constexpr-evaluation construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

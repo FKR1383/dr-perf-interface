@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-092",
+  "title": "Selected block in networkx.find_cliques",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/networkx/networkx",
+    "revision": "4e74880b0da01977da79915167c64e5c2af38b47",
+    "path": "networkx/algorithms/clique.py",
+    "snapshot": "../../upstream/networkx/networkx/algorithms/clique.py",
+    "sha256": "6ce5ca8f397e69bbe6e46bc4220f88263eab0e26fb846a8dc01064309e5b44a0"
+  },
+  "region": {
+    "symbol": "find_cliques",
+    "start_line": 253,
+    "end_line": 253,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-092",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise find_cliques with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "networkx:networkx/algorithms/clique.py:find_cliques",
+  "citations": [
+    "https://github.com/networkx/networkx/blob/4e74880b0da01977da79915167c64e5c2af38b47/networkx/algorithms/clique.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/networkx/networkx/algorithms/clique.py",
+        "destination": "tests/original.py",
+        "sha256": "6ce5ca8f397e69bbe6e46bc4220f88263eab0e26fb846a8dc01064309e5b44a0"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls networkx.algorithms.clique.find_cliques on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

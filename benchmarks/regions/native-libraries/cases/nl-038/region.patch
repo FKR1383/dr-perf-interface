@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -1067,6 +1068,7 @@
+     */
+     template<bool uriFragment, typename OutputStream>
+     bool Stringify(OutputStream& os) const {
++        DRPERF_BENCH_REGION("nl-038");
+         RAPIDJSON_ASSERT(IsValid());
+ 
+         if (uriFragment)

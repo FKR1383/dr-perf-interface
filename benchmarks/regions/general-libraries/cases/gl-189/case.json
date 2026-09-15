@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-189",
+  "title": "Selected block in requests.remove_cookie_by_name",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/psf/requests",
+    "revision": "dae7ef63b4df6eded86637f251fc4e3a06c3b479",
+    "path": "src/requests/cookies.py",
+    "snapshot": "../../upstream/requests/src/requests/cookies.py",
+    "sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+  },
+  "region": {
+    "symbol": "remove_cookie_by_name",
+    "start_line": 172,
+    "end_line": 179,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-189",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise remove_cookie_by_name with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "requests:src/requests/cookies.py:remove_cookie_by_name",
+  "citations": [
+    "https://github.com/psf/requests/blob/dae7ef63b4df6eded86637f251fc4e3a06c3b479/src/requests/cookies.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/requests/src/requests/cookies.py",
+        "destination": "tests/original.py",
+        "sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls requests.cookies.remove_cookie_by_name on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

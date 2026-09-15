@@ -1,0 +1,35 @@
+{
+  "case": "cf-112",
+  "phase": "ir-generation",
+  "scenario": "atomic-expression-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "int main(){int x=1; __atomic_fetch_add(&x,2,__ATOMIC_SEQ_CST); return x!=3;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int *p){int y=0;\ny += __atomic_fetch_add(p,0+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,1+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,2+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,3+1,__ATOMIC_SEQ_CST);\nreturn y;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int *p){int y=0;\ny += __atomic_fetch_add(p,0+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,1+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,2+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,3+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,4+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,5+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,6+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,7+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,8+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,9+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,10+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,11+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,12+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,13+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,14+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,15+1,__ATOMIC_SEQ_CST);\nreturn y;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int *p){int y=0;\ny += __atomic_fetch_add(p,0+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,1+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,2+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,3+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,4+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,5+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,6+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,7+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,8+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,9+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,10+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,11+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,12+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,13+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,14+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,15+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,16+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,17+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,18+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,19+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,20+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,21+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,22+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,23+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,24+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,25+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,26+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,27+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,28+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,29+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,30+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,31+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,32+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,33+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,34+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,35+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,36+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,37+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,38+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,39+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,40+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,41+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,42+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,43+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,44+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,45+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,46+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,47+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,48+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,49+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,50+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,51+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,52+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,53+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,54+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,55+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,56+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,57+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,58+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,59+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,60+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,61+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,62+1,__ATOMIC_SEQ_CST);\ny += __atomic_fetch_add(p,63+1,__ATOMIC_SEQ_CST);\nreturn y;}\n"
+    }
+  ],
+  "target_symbol": "CodeGenFunction::EmitAtomicExpr",
+  "target_source": "clang/lib/CodeGen/CGAtomic.cpp",
+  "mapping_note": "The atomic-expression-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

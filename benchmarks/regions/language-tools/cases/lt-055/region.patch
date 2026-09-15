@@ -1,0 +1,130 @@
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ from enum import IntEnum, auto
+@@ -800,64 +801,65 @@
+                 self._add(TokenType.STRING, text)
+ 
+     def _scan_keywords(self) -> None:
+-        sql = self.sql
+-        sql_size = self.size
+-        single_tokens = self.single_tokens
+-        char_upper = _CHAR_UPPER
+-        size = 0
+-        word = None
+-        chars = self._char
+-        char = chars
+-        prev_space = False
+-        skip = False
+-        trie = self.keyword_trie
+-        single_token = char in single_tokens
+-
+-        while chars:
+-            if not skip:
+-                sub = trie.get(char_upper.get(char, char))
+-                if sub is None:
++        with perfmark.region("lt-055"):
++            sql = self.sql
++            sql_size = self.size
++            single_tokens = self.single_tokens
++            char_upper = _CHAR_UPPER
++            size = 0
++            word = None
++            chars = self._char
++            char = chars
++            prev_space = False
++            skip = False
++            trie = self.keyword_trie
++            single_token = char in single_tokens
++
++            while chars:
++                if not skip:
++                    sub = trie.get(char_upper.get(char, char))
++                    if sub is None:
++                        break
++                    trie = sub
++                    if 0 in trie:
++                        word = chars
++
++                end = self._current + size
++                size += 1
++
++                if end < sql_size:
++                    char = sql[end]
++                    single_token = single_token or char in single_tokens
++                    is_space = char.isspace()
++
++                    if not is_space or not prev_space:
++                        if is_space:
++                            char = " "
++                        chars += char
++                        prev_space = is_space
++                        skip = False
++                    else:
++                        skip = True
++                else:
++                    char = ""
+                     break
+-                trie = sub
+-                if 0 in trie:
+-                    word = chars
+-
+-            end = self._current + size
+-            size += 1
+-
+-            if end < sql_size:
+-                char = sql[end]
+-                single_token = single_token or char in single_tokens
+-                is_space = char.isspace()
+-
+-                if not is_space or not prev_space:
+-                    if is_space:
+-                        char = " "
+-                    chars += char
+-                    prev_space = is_space
+-                    skip = False
+-                else:
+-                    skip = True
+-            else:
+-                char = ""
+-                break
+-
+-        if word:
+-            if self._scan_string(word):
++
++            if word:
++                if self._scan_string(word):
++                    return
++                if self._scan_comment(word):
++                    return
++                if prev_space or single_token or not char:
++                    self._advance(size - 1)
++                    word = word.upper()
++                    self._add(self.keywords[word], text=word)
++                    return
++
++            if self._char in single_tokens:
++                self._add(single_tokens[self._char], text=self._char)
+                 return
+-            if self._scan_comment(word):
+-                return
+-            if prev_space or single_token or not char:
+-                self._advance(size - 1)
+-                word = word.upper()
+-                self._add(self.keywords[word], text=word)
+-                return
+-
+-        if self._char in single_tokens:
+-            self._add(single_tokens[self._char], text=self._char)
+-            return
+-
+-        self._scan_var()
++
++            self._scan_var()
+ 
+     def _scan_comment(self, comment_start: str) -> bool:
+         if comment_start not in self.comments:

@@ -1,0 +1,31 @@
+{
+  "case": "cf-016",
+  "phase": "parsing",
+  "scenario": "class-member-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_16(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_16 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_16(2)==14);\nint main() { Item_16 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Members{\nint method_0(int x) const{return x+0;}\nint method_1(int x) const{return x+1;}\nint method_2(int x) const{return x+2;}\nint method_3(int x) const{return x+3;}\n};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Members{\nint method_0(int x) const{return x+0;}\nint method_1(int x) const{return x+1;}\nint method_2(int x) const{return x+2;}\nint method_3(int x) const{return x+3;}\nint method_4(int x) const{return x+4;}\nint method_5(int x) const{return x+5;}\nint method_6(int x) const{return x+6;}\nint method_7(int x) const{return x+7;}\nint method_8(int x) const{return x+8;}\nint method_9(int x) const{return x+9;}\nint method_10(int x) const{return x+10;}\nint method_11(int x) const{return x+11;}\nint method_12(int x) const{return x+12;}\nint method_13(int x) const{return x+13;}\nint method_14(int x) const{return x+14;}\nint method_15(int x) const{return x+15;}\n};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Members{\nint method_0(int x) const{return x+0;}\nint method_1(int x) const{return x+1;}\nint method_2(int x) const{return x+2;}\nint method_3(int x) const{return x+3;}\nint method_4(int x) const{return x+4;}\nint method_5(int x) const{return x+5;}\nint method_6(int x) const{return x+6;}\nint method_7(int x) const{return x+7;}\nint method_8(int x) const{return x+8;}\nint method_9(int x) const{return x+9;}\nint method_10(int x) const{return x+10;}\nint method_11(int x) const{return x+11;}\nint method_12(int x) const{return x+12;}\nint method_13(int x) const{return x+13;}\nint method_14(int x) const{return x+14;}\nint method_15(int x) const{return x+15;}\nint method_16(int x) const{return x+16;}\nint method_17(int x) const{return x+17;}\nint method_18(int x) const{return x+18;}\nint method_19(int x) const{return x+19;}\nint method_20(int x) const{return x+20;}\nint method_21(int x) const{return x+21;}\nint method_22(int x) const{return x+22;}\nint method_23(int x) const{return x+23;}\nint method_24(int x) const{return x+24;}\nint method_25(int x) const{return x+25;}\nint method_26(int x) const{return x+26;}\nint method_27(int x) const{return x+27;}\nint method_28(int x) const{return x+28;}\nint method_29(int x) const{return x+29;}\nint method_30(int x) const{return x+30;}\nint method_31(int x) const{return x+31;}\nint method_32(int x) const{return x+32;}\nint method_33(int x) const{return x+33;}\nint method_34(int x) const{return x+34;}\nint method_35(int x) const{return x+35;}\nint method_36(int x) const{return x+36;}\nint method_37(int x) const{return x+37;}\nint method_38(int x) const{return x+38;}\nint method_39(int x) const{return x+39;}\nint method_40(int x) const{return x+40;}\nint method_41(int x) const{return x+41;}\nint method_42(int x) const{return x+42;}\nint method_43(int x) const{return x+43;}\nint method_44(int x) const{return x+44;}\nint method_45(int x) const{return x+45;}\nint method_46(int x) const{return x+46;}\nint method_47(int x) const{return x+47;}\nint method_48(int x) const{return x+48;}\nint method_49(int x) const{return x+49;}\nint method_50(int x) const{return x+50;}\nint method_51(int x) const{return x+51;}\nint method_52(int x) const{return x+52;}\nint method_53(int x) const{return x+53;}\nint method_54(int x) const{return x+54;}\nint method_55(int x) const{return x+55;}\nint method_56(int x) const{return x+56;}\nint method_57(int x) const{return x+57;}\nint method_58(int x) const{return x+58;}\nint method_59(int x) const{return x+59;}\nint method_60(int x) const{return x+60;}\nint method_61(int x) const{return x+61;}\nint method_62(int x) const{return x+62;}\nint method_63(int x) const{return x+63;}\n};\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseCXXClassMemberDeclaration",
+  "target_source": "clang/lib/Parse/ParseDeclCXX.cpp",
+  "mapping_note": "The class-member-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}
