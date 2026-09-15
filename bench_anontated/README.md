@@ -1,5 +1,12 @@
 # Agent annotation experiments
 
+For every exported region, sorted with successful annotations first, see the
+[complete code review](review/annotated-regions.md) or the
+[searchable HTML document](review/annotated-regions.html). These include the
+expanded workloads alongside the original trials and distinguish annotation
+results from optimization results. Regenerate them with
+`python3 bench_anontated/review/generate.py`.
+
 See [RESULTS.md](RESULTS.md) for coverage and measured optimization outcomes,
 and [summary.json](summary.json) for every case's status.
 
