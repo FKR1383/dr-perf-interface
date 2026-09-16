@@ -1,0 +1,583 @@
+{
+  "profile": {
+    "tree": "/workspace/out/wan-gx/optimized",
+    "frames": 81,
+    "steps": 50,
+    "load_seconds": 76.46316388202831,
+    "runs": [
+      {
+        "repeat": 0,
+        "generation_host_seconds": 55.488053209963255,
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ]
+      }
+    ],
+    "regions": [
+      "wan_generate",
+      "wan_transformer",
+      "wan_model_to",
+      "wan_block",
+      "wan_self_attention",
+      "wan_cross_attention",
+      "wan_head",
+      "wan_rms_norm",
+      "wan_layer_norm",
+      "wan_rope_apply",
+      "wan_time_embedding",
+      "wan_flash_attention",
+      "wan_encode_text",
+      "wan_tokenize",
+      "wan_t5_encoder",
+      "wan_t5_attention",
+      "wan_t5_ffn",
+      "wan_scheduler",
+      "wan_vae_decode",
+      "wan_vae_clear_cache",
+      "wan_vae_decoder",
+      "wan_vae_residual",
+      "wan_vae_resample",
+      "wan_vae_conv",
+      "wan_vae_attention"
+    ],
+    "numerical_validation": false,
+    "timing_simulation": false,
+    "torch": "2.11.0+cu128",
+    "convolution_backend": "native",
+    "size": [
+      832,
+      480
+    ],
+    "prompt": "A cat walks on the grass, realistic style",
+    "seed": 42,
+    "offload": false,
+    "gx_comm_only": "1",
+    "source_sha256": {
+      "generate.py": "0b12bde63bb316a91ad1462a3db073db4388ec96c818f7548f4e6487939427a4",
+      "gradio/fl2v_14B_singleGPU.py": "5f9ad48a7ef7386d47dc857b83b7d1ea53b52a8aed73d241a6e35087c7ffcf82",
+      "gradio/i2v_14B_singleGPU.py": "5b50fa67e5da28b5b03158e159c692ab1f1d0c303dd7b0e3e9083111a4bfd0ae",
+      "gradio/t2i_14B_singleGPU.py": "0e3ed805bcfc90b10c9e3b53d2ac24a3f0fc8cde62d92e1754579ae676b87c4b",
+      "gradio/t2v_1.3B_singleGPU.py": "4f2b7a1dae07bc4e9dcd397b6ee4a6aa1dcb1f6048d17796c734247873438b1a",
+      "gradio/t2v_14B_singleGPU.py": "d904497f27f259b06037e06020ef176154654636b5c1afeddcc4211260244a8b",
+      "gradio/vace.py": "bf62cb3fce17184b9762e9cd920219a4d8a59f269e59ef8e98caa0c37cf36586",
+      "wan/__init__.py": "bd4c7993b6022f321f63c77d36a146955f0ce1d3a9fb520698b645a9f3e728b9",
+      "wan/configs/__init__.py": "0af8a5a3374058b1b21f0b2408fc109062c55589e4441bcae25fcfa005d3c9d0",
+      "wan/configs/shared_config.py": "a942b6f0a1d1a4ec9a7893c17a6218651ce272953b90d012ce5cdd19d15e45f7",
+      "wan/configs/wan_i2v_14B.py": "86704d4a08fd3b7e71b8256a001cca4fa8c065abd189c67f9f19eb348606ab88",
+      "wan/configs/wan_t2v_14B.py": "99aadb67eec94e28c2a02db45c178c07f7488b7e1b3c148aae1e23e908fe580f",
+      "wan/configs/wan_t2v_1_3B.py": "6976ec4c03f737b69ae17afe13339b32905739205d4c19f16c8b329f9f06e986",
+      "wan/distributed/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wan/distributed/fsdp.py": "b787312856a1f4da54648999c143d08c3dfa09be75be78e8c39fd21f55b823dd",
+      "wan/distributed/xdit_context_parallel.py": "a805a84aca2e41fbcfe1e58806f98f6dd024f3484bfa1f14a7277ed0778d8416",
+      "wan/first_last_frame2video.py": "5cee40e4a25bdb33e64a04ed55d2f23c3092d349f8407529aa98d585c14b724f",
+      "wan/image2video.py": "79fab091a8847dd0f9e5fd81d0c75ce77bc833f8dbe32d5706dce17070ddf609",
+      "wan/modules/__init__.py": "bfc04ed14de761c0cdacbbf4abced65464b894c9e2f84b60cd5c0f24e3a627c8",
+      "wan/modules/attention.py": "18eab86b826615f62e905ef865e25adcc4c1c0a7b8e93bb7abb6c59a9e771fc9",
+      "wan/modules/clip.py": "70a589a3a77d777352fbce633838b490a6ffc7968ec8beb927e5d7a5a585eb89",
+      "wan/modules/model.py": "0deec57fc250749787db5eeaf933e28e5301e570fd9bfe212a8e4d5a78d82d93",
+      "wan/modules/t5.py": "cf821d1f142fb3badfe6dcfe0aa6cb9d93b9457b387f183e3c8d1177a77fcc5f",
+      "wan/modules/tokenizers.py": "cf5b189c1ae017326efadab2fc6380ba223fa7a59d0be6464bd264db53c76934",
+      "wan/modules/vace_model.py": "91194ce34c771f6ecc264577ee7adf542551a62167a793cfef24f876e3291faa",
+      "wan/modules/vae.py": "e253b681e68ec8c04675ec1eea369e9d8496139f619e27d423518f5442ba2905",
+      "wan/modules/xlm_roberta.py": "7e27d93573b5fb0fef1c9db9205264453bd30dcb1404c38031f24ed9c84b8d4a",
+      "wan/text2video.py": "daf048026a811f6e23980b44fed990b0941967b2bb7436d759352a5bd20f3527",
+      "wan/utils/__init__.py": "225f3a18c782ea3776adacdfb4c21bb4ac4d02497c77882545f2c2d619175572",
+      "wan/utils/fm_solvers.py": "b870bdc7253593b75097896b2351e74f747f76d756f58f1b4b0008d6821ae811",
+      "wan/utils/fm_solvers_unipc.py": "2ac6e4edcf8f67ff635b3f24026cd0fd0a34863566529ade9e510bc39fc99505",
+      "wan/utils/prompt_extend.py": "a7d81b451377a47413e932d440d573ea010c0d608c8bb668b3af9c01261c0a67",
+      "wan/utils/qwen_vl_utils.py": "be11ac9808a6d79bb4e99482ea7ae9b2eccd48c2b517845b55f71cf5bb768239",
+      "wan/utils/utils.py": "8e2d85b1c7961233379b9ab38cee153ca8d95358f27cb8bb6dd154e809731c8c",
+      "wan/utils/vace_processor.py": "3fc56687d1d6204cc9603625238f20a8453f7d89f38efff11c3353ac7ab83e36",
+      "wan/vace.py": "bcb792e4750459af3049bfcc52a3e804895d2d7c98bc2e4d2ce7aaa545da9837"
+    },
+    "drperf_binary_sha256": "f690fcf9f0689280e9cf5455c08b9cc800a33c1103c05f868a6e86a8ebb9c0bb",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "diffusers": "0.36.0",
+      "transformers": "5.8.1",
+      "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE",
+      "safetensors": "0.8.0"
+    },
+    "policy": {
+      "WAN_IMAGE": "gx-mixed-profile:rcp-20260915-110d87373a4a",
+      "WAN_CPUS": "8",
+      "WAN_MEMORY": "64g",
+      "WAN_TIMEOUT": "600",
+      "GX_DEVICE_MODEL": "H100",
+      "GX_NUM_LOCAL_GPUS": "1",
+      "GX_SHM_ARENA_GB": "8",
+      "GX_APP_REAL_MAX_BYTES": "16777216",
+      "NCCL_SOCKET_IFNAME": "lo",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "WAN_MODEL": "Wan-AI/Wan2.1-T2V-1.3B",
+      "WAN_SIZE": "832*480",
+      "WAN_FRAMES": "81",
+      "WAN_STEPS": "50",
+      "WAN_SEED": "42",
+      "WAN_OFFLOAD": "False",
+      "WAN_PROMPT": "A cat walks on the grass, realistic style"
+    }
+  },
+  "summary": {
+    "validity": [],
+    "regions": {
+      "wan_block": {
+        "calls": 3000,
+        "own_instructions": 2845420991.0,
+        "mean": 948473.6636666667,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_cross_attention": {
+        "calls": 3000,
+        "own_instructions": 1124858656.0,
+        "mean": 374952.88533333334,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_encode_text": {
+        "calls": 2,
+        "own_instructions": 598434.0,
+        "mean": 299217.0,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "chars"
+        ],
+        "states": 2,
+        "dropped": 0
+      },
+      "wan_flash_attention": {
+        "calls": 6000,
+        "own_instructions": 3727693270.0,
+        "mean": 621282.2116666667,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "q_tokens",
+          "k_tokens"
+        ],
+        "states": 2,
+        "dropped": 0
+      },
+      "wan_generate": {
+        "calls": 1,
+        "own_instructions": 50701763.0,
+        "mean": 50701763.0,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "frames",
+          "steps"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_head": {
+        "calls": 100,
+        "own_instructions": 27185636.0,
+        "mean": 271856.36,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_layer_norm": {
+        "calls": 9100,
+        "own_instructions": 456516377.0,
+        "mean": 50166.634835164834,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_model_to": {
+        "calls": 1,
+        "own_instructions": 47394396.0,
+        "mean": 47394396.0,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "modules"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_rms_norm": {
+        "calls": 9060,
+        "own_instructions": 1265106721.0,
+        "mean": 139636.50342163356,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 2,
+        "dropped": 0
+      },
+      "wan_rope_apply": {
+        "calls": 6000,
+        "own_instructions": 1322766565.0,
+        "mean": 220461.09416666668,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_scheduler": {
+        "calls": 50,
+        "own_instructions": 94824626.0,
+        "mean": 1896492.52,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "step"
+        ],
+        "states": 50,
+        "dropped": 0,
+        "coefficients": [
+          0.0
+        ],
+        "constant": 257824.7999999992,
+        "max_unexplained": 0.8678877373393707,
+        "max_reconstruction_error": 0.2680396903876961
+      },
+      "wan_self_attention": {
+        "calls": 3000,
+        "own_instructions": 2180080399.0,
+        "mean": 726693.4663333333,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_t5_attention": {
+        "calls": 48,
+        "own_instructions": 31108304.0,
+        "mean": 648089.6666666666,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_t5_encoder": {
+        "calls": 2,
+        "own_instructions": 48380999.0,
+        "mean": 24190499.5,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_t5_ffn": {
+        "calls": 48,
+        "own_instructions": 19196465.0,
+        "mean": 399926.3541666667,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_time_embedding": {
+        "calls": 100,
+        "own_instructions": 18728535.0,
+        "mean": 187285.35,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "batch"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_tokenize": {
+        "calls": 2,
+        "own_instructions": 10662895.0,
+        "mean": 5331447.5,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "chars"
+        ],
+        "states": 2,
+        "dropped": 0
+      },
+      "wan_transformer": {
+        "calls": 100,
+        "own_instructions": 2431267987.0,
+        "mean": 24312679.87,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "tokens"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_vae_attention": {
+        "calls": 21,
+        "own_instructions": 13284933.0,
+        "mean": 632615.8571428572,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_vae_clear_cache": {
+        "calls": 2,
+        "own_instructions": 2227411.0,
+        "mean": 1113705.5,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "modules"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_vae_conv": {
+        "calls": 692,
+        "own_instructions": 2951338426.0,
+        "mean": 4264939.921965318,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 9,
+        "dropped": 0,
+        "coefficients": [
+          0.0
+        ],
+        "constant": 71693.84803887748,
+        "max_unexplained": 0.9894800952116999,
+        "max_reconstruction_error": 0.027850413860119373
+      },
+      "wan_vae_decode": {
+        "calls": 1,
+        "own_instructions": 2857261.0,
+        "mean": 2857261.0,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_vae_decoder": {
+        "calls": 21,
+        "own_instructions": 33238838.999999996,
+        "mean": 1582801.857142857,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 1,
+        "dropped": 0
+      },
+      "wan_vae_resample": {
+        "calls": 63,
+        "own_instructions": 37086602.0,
+        "mean": 588676.2222222222,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 4,
+        "dropped": 0,
+        "coefficients": [
+          -0.00018829059913696682
+        ],
+        "constant": 219131.115594244,
+        "max_unexplained": 0.6343012754795649,
+        "max_reconstruction_error": 0.21978551706477517
+      },
+      "wan_vae_residual": {
+        "calls": 294,
+        "own_instructions": 202086485.0,
+        "mean": 687368.9965986394,
+        "gx_module_instructions": 0,
+        "pcvs": [
+          "elements"
+        ],
+        "states": 7,
+        "dropped": 0,
+        "coefficients": [
+          -7.152922869423239e-07
+        ],
+        "constant": 395888.23681037076,
+        "max_unexplained": 0.4173004234901267,
+        "max_reconstruction_error": 0.0694519942514795
+      }
+    },
+    "counters": [
+      {
+        "version": "0.3",
+        "pid": 901,
+        "app": "python3.12",
+        "excluded_cuda_module": "gx_cuda.so",
+        "follow_unmarked_threads": false,
+        "excluded_cuda_exports": 1545,
+        "excluded_cuda_calls": 12546191,
+        "excluded_instructions": 11151042508,
+        "rep_expand": true,
+        "symbols": true,
+        "max_slots": 1048576,
+        "slots_used": 132550,
+        "slots_overflow": 0,
+        "counter_denied": 0,
+        "marker_seen": true,
+        "unmatched_ends": 0,
+        "depth_overflows": 0,
+        "state_overflows": 0,
+        "threads": 3,
+        "trace_file": "/workspace/out/wan-gx/results/optimized-final-profile/raw/run.901.json.trace",
+        "trace_records": 40730,
+        "trace_dropped": 0
+      }
+    ],
+    "total_marked_own_instructions": 18944612976.0
+  },
+  "raw_sha256": {
+    "optimized-final-profile/raw/run.901.json": "debc5f508d085d0a7a91c1a47e2d91cb4731e35ea5ae7db928cd0e09c96edee9",
+    "optimized-final-profile/raw/run.901.json.blocks": "f35c9753d3ee3ed071c90e1543fcd4c8001f7419241f94a495dcd7a6c9aed1ae",
+    "optimized-final-profile/raw/run.901.json.slots": "c0e93e9298c9b3b9108bedf9dd60c8e12a4ccd1171c7d31d578df63ca527cc6c",
+    "optimized-final-profile/raw/run.901.json.trace": "02c82f934ff1f9a1b8890066e444a53dea605c496639a295523dba0be2aa621a"
+  },
+  "unmarked_host": {
+    "tree": "/workspace/out/wan-gx/optimized",
+    "frames": 81,
+    "steps": 50,
+    "load_seconds": 75.16939268703572,
+    "runs": [
+      {
+        "repeat": 0,
+        "generation_host_seconds": 9.271181529969908,
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ]
+      },
+      {
+        "repeat": 1,
+        "generation_host_seconds": 7.985849173041061,
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ]
+      },
+      {
+        "repeat": 2,
+        "generation_host_seconds": 8.017421558964998,
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ]
+      }
+    ],
+    "regions": [],
+    "numerical_validation": false,
+    "timing_simulation": false,
+    "torch": "2.11.0+cu128",
+    "convolution_backend": "native",
+    "size": [
+      832,
+      480
+    ],
+    "prompt": "A cat walks on the grass, realistic style",
+    "seed": 42,
+    "offload": false,
+    "gx_comm_only": "1",
+    "source_sha256": {
+      "generate.py": "0b12bde63bb316a91ad1462a3db073db4388ec96c818f7548f4e6487939427a4",
+      "gradio/fl2v_14B_singleGPU.py": "5f9ad48a7ef7386d47dc857b83b7d1ea53b52a8aed73d241a6e35087c7ffcf82",
+      "gradio/i2v_14B_singleGPU.py": "5b50fa67e5da28b5b03158e159c692ab1f1d0c303dd7b0e3e9083111a4bfd0ae",
+      "gradio/t2i_14B_singleGPU.py": "0e3ed805bcfc90b10c9e3b53d2ac24a3f0fc8cde62d92e1754579ae676b87c4b",
+      "gradio/t2v_1.3B_singleGPU.py": "4f2b7a1dae07bc4e9dcd397b6ee4a6aa1dcb1f6048d17796c734247873438b1a",
+      "gradio/t2v_14B_singleGPU.py": "d904497f27f259b06037e06020ef176154654636b5c1afeddcc4211260244a8b",
+      "gradio/vace.py": "bf62cb3fce17184b9762e9cd920219a4d8a59f269e59ef8e98caa0c37cf36586",
+      "wan/__init__.py": "bd4c7993b6022f321f63c77d36a146955f0ce1d3a9fb520698b645a9f3e728b9",
+      "wan/configs/__init__.py": "0af8a5a3374058b1b21f0b2408fc109062c55589e4441bcae25fcfa005d3c9d0",
+      "wan/configs/shared_config.py": "a942b6f0a1d1a4ec9a7893c17a6218651ce272953b90d012ce5cdd19d15e45f7",
+      "wan/configs/wan_i2v_14B.py": "86704d4a08fd3b7e71b8256a001cca4fa8c065abd189c67f9f19eb348606ab88",
+      "wan/configs/wan_t2v_14B.py": "99aadb67eec94e28c2a02db45c178c07f7488b7e1b3c148aae1e23e908fe580f",
+      "wan/configs/wan_t2v_1_3B.py": "6976ec4c03f737b69ae17afe13339b32905739205d4c19f16c8b329f9f06e986",
+      "wan/distributed/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wan/distributed/fsdp.py": "b787312856a1f4da54648999c143d08c3dfa09be75be78e8c39fd21f55b823dd",
+      "wan/distributed/xdit_context_parallel.py": "a805a84aca2e41fbcfe1e58806f98f6dd024f3484bfa1f14a7277ed0778d8416",
+      "wan/first_last_frame2video.py": "5cee40e4a25bdb33e64a04ed55d2f23c3092d349f8407529aa98d585c14b724f",
+      "wan/image2video.py": "79fab091a8847dd0f9e5fd81d0c75ce77bc833f8dbe32d5706dce17070ddf609",
+      "wan/modules/__init__.py": "bfc04ed14de761c0cdacbbf4abced65464b894c9e2f84b60cd5c0f24e3a627c8",
+      "wan/modules/attention.py": "18eab86b826615f62e905ef865e25adcc4c1c0a7b8e93bb7abb6c59a9e771fc9",
+      "wan/modules/clip.py": "70a589a3a77d777352fbce633838b490a6ffc7968ec8beb927e5d7a5a585eb89",
+      "wan/modules/model.py": "0deec57fc250749787db5eeaf933e28e5301e570fd9bfe212a8e4d5a78d82d93",
+      "wan/modules/t5.py": "cf821d1f142fb3badfe6dcfe0aa6cb9d93b9457b387f183e3c8d1177a77fcc5f",
+      "wan/modules/tokenizers.py": "cf5b189c1ae017326efadab2fc6380ba223fa7a59d0be6464bd264db53c76934",
+      "wan/modules/vace_model.py": "91194ce34c771f6ecc264577ee7adf542551a62167a793cfef24f876e3291faa",
+      "wan/modules/vae.py": "e253b681e68ec8c04675ec1eea369e9d8496139f619e27d423518f5442ba2905",
+      "wan/modules/xlm_roberta.py": "7e27d93573b5fb0fef1c9db9205264453bd30dcb1404c38031f24ed9c84b8d4a",
+      "wan/text2video.py": "daf048026a811f6e23980b44fed990b0941967b2bb7436d759352a5bd20f3527",
+      "wan/utils/__init__.py": "225f3a18c782ea3776adacdfb4c21bb4ac4d02497c77882545f2c2d619175572",
+      "wan/utils/fm_solvers.py": "b870bdc7253593b75097896b2351e74f747f76d756f58f1b4b0008d6821ae811",
+      "wan/utils/fm_solvers_unipc.py": "2ac6e4edcf8f67ff635b3f24026cd0fd0a34863566529ade9e510bc39fc99505",
+      "wan/utils/prompt_extend.py": "a7d81b451377a47413e932d440d573ea010c0d608c8bb668b3af9c01261c0a67",
+      "wan/utils/qwen_vl_utils.py": "be11ac9808a6d79bb4e99482ea7ae9b2eccd48c2b517845b55f71cf5bb768239",
+      "wan/utils/utils.py": "8e2d85b1c7961233379b9ab38cee153ca8d95358f27cb8bb6dd154e809731c8c",
+      "wan/utils/vace_processor.py": "3fc56687d1d6204cc9603625238f20a8453f7d89f38efff11c3353ac7ab83e36",
+      "wan/vace.py": "bcb792e4750459af3049bfcc52a3e804895d2d7c98bc2e4d2ce7aaa545da9837"
+    },
+    "drperf_binary_sha256": "f690fcf9f0689280e9cf5455c08b9cc800a33c1103c05f868a6e86a8ebb9c0bb",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "diffusers": "0.36.0",
+      "transformers": "5.8.1",
+      "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE",
+      "safetensors": "0.8.0"
+    },
+    "policy": {
+      "WAN_IMAGE": "gx-mixed-profile:rcp-20260915-110d87373a4a",
+      "WAN_CPUS": "8",
+      "WAN_MEMORY": "64g",
+      "WAN_TIMEOUT": "600",
+      "GX_DEVICE_MODEL": "H100",
+      "GX_NUM_LOCAL_GPUS": "1",
+      "GX_SHM_ARENA_GB": "8",
+      "GX_APP_REAL_MAX_BYTES": "16777216",
+      "NCCL_SOCKET_IFNAME": "lo",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "WAN_MODEL": "Wan-AI/Wan2.1-T2V-1.3B",
+      "WAN_SIZE": "832*480",
+      "WAN_FRAMES": "81",
+      "WAN_STEPS": "50",
+      "WAN_SEED": "42",
+      "WAN_OFFLOAD": "False",
+      "WAN_PROMPT": "A cat walks on the grass, realistic style"
+    }
+  }
+}

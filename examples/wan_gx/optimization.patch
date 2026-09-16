@@ -1,0 +1,252 @@
+--- a/wan/text2video.py
++++ b/wan/text2video.py
+@@ -233,28 +233,29 @@
+             arg_c = {'context': context, 'seq_len': seq_len}
+             arg_null = {'context': context_null, 'seq_len': seq_len}
+ 
+-            for _, t in enumerate(tqdm(timesteps)):
+-                latent_model_input = latents
+-                timestep = [t]
+-
+-                timestep = torch.stack(timestep)
+-
++            with self.model.cpu_work_cache():
+                 self.model.to(self.device)
+-                noise_pred_cond = self.model(
+-                    latent_model_input, t=timestep, **arg_c)[0]
+-                noise_pred_uncond = self.model(
+-                    latent_model_input, t=timestep, **arg_null)[0]
+-
+-                noise_pred = noise_pred_uncond + guide_scale * (
+-                    noise_pred_cond - noise_pred_uncond)
+-
+-                temp_x0 = sample_scheduler.step(
+-                    noise_pred.unsqueeze(0),
+-                    t,
+-                    latents[0].unsqueeze(0),
+-                    return_dict=False,
+-                    generator=seed_g)[0]
+-                latents = [temp_x0.squeeze(0)]
++                for _, t in enumerate(tqdm(timesteps)):
++                    latent_model_input = latents
++                    timestep = [t]
++
++                    timestep = torch.stack(timestep)
++
++                    noise_pred_cond = self.model(
++                        latent_model_input, t=timestep, **arg_c)[0]
++                    noise_pred_uncond = self.model(
++                        latent_model_input, t=timestep, **arg_null)[0]
++
++                    noise_pred = noise_pred_uncond + guide_scale * (
++                        noise_pred_cond - noise_pred_uncond)
++
++                    temp_x0 = sample_scheduler.step(
++                        noise_pred.unsqueeze(0),
++                        t,
++                        latents[0].unsqueeze(0),
++                        return_dict=False,
++                        generator=seed_g)[0]
++                    latents = [temp_x0.squeeze(0)]
+ 
+             x0 = latents
+             if offload_model:
+--- a/wan/modules/model.py
++++ b/wan/modules/model.py
+@@ -1,5 +1,6 @@
+ # Copyright 2024-2025 The Alibaba Wan Team Authors. All rights reserved.
+ import math
++from contextlib import contextmanager
+ 
+ import torch
+ import torch.cuda.amp as amp
+@@ -39,12 +40,25 @@
+     return freqs
+ 
+ 
++def rope_grid_frequencies(grid_sizes, freqs):
++    c = freqs.shape[1]
++    parts = freqs.split([c - 2 * (c // 3), c // 3, c // 3], dim=1)
++    grids = []
++    for f, h, w in grid_sizes.tolist():
++        grids.append(torch.cat([
++            parts[0][:f].view(f, 1, 1, -1).expand(f, h, w, -1),
++            parts[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
++            parts[2][:w].view(1, 1, w, -1).expand(f, h, w, -1)
++        ], dim=-1).reshape(f * h * w, 1, -1))
++    return tuple(grids)
++
++
+ @amp.autocast(enabled=False)
+ def rope_apply(x, grid_sizes, freqs):
+     n, c = x.size(2), x.size(3) // 2
+ 
+     # split freqs
+-    freqs = freqs.split([c - 2 * (c // 3), c // 3, c // 3], dim=1)
++    grids = freqs if isinstance(freqs, tuple) else rope_grid_frequencies(grid_sizes, freqs)
+ 
+     # loop over samples
+     output = []
+@@ -54,12 +68,7 @@
+         # precompute multipliers
+         x_i = torch.view_as_complex(x[i, :seq_len].to(torch.float64).reshape(
+             seq_len, n, -1, 2))
+-        freqs_i = torch.cat([
+-            freqs[0][:f].view(f, 1, 1, -1).expand(f, h, w, -1),
+-            freqs[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
+-            freqs[2][:w].view(1, 1, w, -1).expand(f, h, w, -1)
+-        ],
+-                            dim=-1).reshape(seq_len, 1, -1)
++        freqs_i = grids[i]
+ 
+         # apply rotary embedding
+         x_i = torch.view_as_real(x_i * freqs_i).flatten(2)
+@@ -172,8 +181,16 @@
+ 
+         # compute query, key, value
+         q = self.norm_q(self.q(x)).view(b, -1, n, d)
+-        k = self.norm_k(self.k(context)).view(b, -1, n, d)
+-        v = self.v(context).view(b, -1, n, d)
++        cache = getattr(self, '_cpu_kv_cache', None)
++        key = (id(context), context._version)
++        cached = cache.get(key) if cache is not None else None
++        if cached is None:
++            k = self.norm_k(self.k(context)).view(b, -1, n, d)
++            v = self.v(context).view(b, -1, n, d)
++            if cache is not None:
++                cache[key] = (context, k, v)
++        else:
++            _, k, v = cached
+ 
+         # compute attention
+         x = flash_attention(q, k, v, k_lens=context_lens)
+@@ -551,12 +568,20 @@
+ 
+         # context
+         context_lens = None
+-        context = self.text_embedding(
+-            torch.stack([
+-                torch.cat(
+-                    [u, u.new_zeros(self.text_len - u.size(0), u.size(1))])
+-                for u in context
+-            ]))
++        cache = getattr(self, '_cpu_context_cache', None)
++        key = tuple((id(u), u._version) for u in context)
++        cached = cache.get(key) if cache is not None else None
++        if cached is None:
++            source_context = context
++            context = self.text_embedding(
++                torch.stack([
++                    torch.cat([u, u.new_zeros(self.text_len - u.size(0), u.size(1))])
++                    for u in context
++                ]))
++            if cache is not None:
++                cache[key] = (source_context, context)
++        else:
++            context = cached[1]
+ 
+         if clip_fea is not None:
+             context_clip = self.img_emb(clip_fea)  # bs x 257 (x2) x dim
+@@ -567,7 +592,7 @@
+             e=e0,
+             seq_lens=seq_lens,
+             grid_sizes=grid_sizes,
+-            freqs=self.freqs,
++            freqs=rope_grid_frequencies(grid_sizes, self.freqs) if not torch.is_grad_enabled() else self.freqs,
+             context=context,
+             context_lens=context_lens)
+ 
+@@ -580,6 +605,21 @@
+         # unpatchify
+         x = self.unpatchify(x, grid_sizes)
+         return [u.float() for u in x]
++
++    @contextmanager
++    def cpu_work_cache(self):
++        if self.training or torch.is_grad_enabled():
++            yield
++            return
++        self._cpu_context_cache = {}
++        for block in self.blocks:
++            block.cross_attn._cpu_kv_cache = {}
++        try:
++            yield
++        finally:
++            self._cpu_context_cache = None
++            for block in self.blocks:
++                block.cross_attn._cpu_kv_cache = None
+ 
+     def unpatchify(self, x, grid_sizes):
+         r"""
+--- a/wan/modules/vae.py
++++ b/wan/modules/vae.py
+@@ -551,19 +551,14 @@
+             z = z / scale[1] + scale[0]
+         iter_ = z.shape[2]
+         x = self.conv2(z)
++        chunks = []
+         for i in range(iter_):
+             self._conv_idx = [0]
+-            if i == 0:
+-                out = self.decoder(
+-                    x[:, :, i:i + 1, :, :],
+-                    feat_cache=self._feat_map,
+-                    feat_idx=self._conv_idx)
+-            else:
+-                out_ = self.decoder(
+-                    x[:, :, i:i + 1, :, :],
+-                    feat_cache=self._feat_map,
+-                    feat_idx=self._conv_idx)
+-                out = torch.cat([out, out_], 2)
++            chunks.append(self.decoder(
++                x[:, :, i:i + 1, :, :],
++                feat_cache=self._feat_map,
++                feat_idx=self._conv_idx))
++        out = chunks[0] if len(chunks) == 1 else torch.cat(chunks, 2)
+         self.clear_cache()
+         return out
+ 
+@@ -580,11 +575,13 @@
+         return mu + std * torch.randn_like(std)
+ 
+     def clear_cache(self):
+-        self._conv_num = count_conv3d(self.decoder)
++        if not hasattr(self, '_conv_num'):
++            self._conv_num = count_conv3d(self.decoder)
+         self._conv_idx = [0]
+         self._feat_map = [None] * self._conv_num
+         #cache encode
+-        self._enc_conv_num = count_conv3d(self.encoder)
++        if not hasattr(self, '_enc_conv_num'):
++            self._enc_conv_num = count_conv3d(self.encoder)
+         self._enc_conv_idx = [0]
+         self._enc_feat_map = [None] * self._enc_conv_num
+ 
+--- a/wan/modules/attention.py
++++ b/wan/modules/attention.py
+@@ -19,6 +19,14 @@
+     'flash_attention',
+     'attention',
+ ]
++
++
++
++
++def pack_kv(x, lengths):
++    if lengths.device.type == "cpu" and lengths.tolist() == [x.shape[1]] * x.shape[0]:
++        return x.flatten(0, 1)
++    return torch.cat([u[:n] for u, n in zip(x, lengths)])
+ 
+ 
+ def flash_attention(
+@@ -76,8 +84,8 @@
+             [lk] * b, dtype=torch.int32).to(
+                 device=k.device, non_blocking=True)
+     else:
+-        k = half(torch.cat([u[:v] for u, v in zip(k, k_lens)]))
+-        v = half(torch.cat([u[:v] for u, v in zip(v, k_lens)]))
++        k = half(pack_kv(k, k_lens))
++        v = half(pack_kv(v, k_lens))
+ 
+     q = q.to(v.dtype)
+     k = k.to(v.dtype)

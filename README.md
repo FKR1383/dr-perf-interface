@@ -77,6 +77,16 @@ These are active checker limitations. See [SPEC.md](SPEC.md) for the mechanics.
 
 ## Findings in Wan video generation
 
+The [full-model GX experiment](examples/wan_gx/README.md) runs the official
+pretrained Wan2.1-T2V-1.3B pipeline through text encoding, 81-frame / 50-step
+denoising and VAE decode. It repairs CPU/GPU control-metadata boundaries,
+marks 25 CPU regions, and removes repeated model transfers, rotary construction,
+prompt/K/V projections, and packing/concatenation work. GX skips device
+computation: these runs assess host work, not video correctness or GPU latency.
+With the same measurement boundary, recorded marked CPU instructions fell
+from 23.63 billion to 18.94 billion (19.84%). See the
+[matched results and limitations](examples/wan_gx/RESULTS.md).
+
 Small CPU executions of real Diffusers code exposed work that an agent could
 inspect and remove. The historical experiments used tiny, randomly initialized
 Wan models; the newer region benchmarks use bounded CPU fixtures. These counts
@@ -133,7 +143,20 @@ Each term is broken down into the functions it comes from, largest first, so a
 coefficient that moves points at the code that moved it.
 
 That is the whole interface: `drperf` followed by the command you would have
-run anyway. No options.
+run anyway. Optional environment controls can narrow the measurement scope:
+
+```
+DRPERF_EXCLUDE_CUDA_MODULE=gx_cuda.so DRPERF_FOLLOW_THREADS=0 bin/drperf python app.py
+```
+
+`DRPERF_EXCLUDE_CUDA_MODULE` selects one module basename. Its instructions and
+synchronous callees beneath exported CUDA driver/runtime and GPU-library APIs
+(cuBLAS, cuDNN, cuSOLVER, cuSPARSE, cuFFT, cuRAND, cuTENSOR) are excluded.
+`DRPERF_FOLLOW_THREADS=0` prevents unmarked threads from inheriting the leader's
+region; explicitly marked worker regions still count. Both are opt-in; default
+measurement retains worker attribution and excludes no CUDA module. Raw output
+records the scope and exclusion counters; an unmatched exclusion is invalid.
+Asynchronous work outside that module is not excluded by a call-stack boundary.
 
 [Source-region benchmarks](benchmarks/README.md) collect 1,000 regions from
 vLLM, Wan, V8 RegExp, JavaScript runtimes, compilers, and libraries, including

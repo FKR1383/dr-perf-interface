@@ -23,6 +23,7 @@
  * Options (client args):  -o FILE  -top N  -max_slots N  -trace N (records,
  *   0 = off)  -blocks (dump per-region per-basic-block counts to FILE.blocks
  *   and the block table to FILE.slots)  -no_rep_expand  -no_symbols  -verbose
+ *   -exclude_cuda_module BASENAME  -no_follow_threads
  */
 #include "dr_api.h"
 #include "drmgr.h"
@@ -114,6 +115,7 @@ typedef struct _thread_t {
     volatile uint64 *total_ptr; /* raw TLS slot 0 of this thread */
     uint64 *followed;           /* what the leader last installed for this thread */
     uint64 final_total;
+    uint64 excluded_total;
     uint64 sys;
     thread_id_t tid;
     int index;
@@ -154,6 +156,10 @@ static bool opt_symbols = true;
 static bool opt_verbose = false;
 static bool opt_block_counters = true;   /* -no_block_counters: keep only the thread total */
 static bool opt_blocks = false;
+static bool opt_follow_threads = true;
+static char opt_exclude_cuda_module[128];
+static int excluded_wrappers;
+static int64 excluded_calls;
 static file_t blocks_file = INVALID_FILE;
 static byte *slot_used;          /* slots referenced by any region (for the .slots table) */
 
@@ -162,6 +168,8 @@ static reg_id_t tls_seg;
 static uint tls_offs;
 #define TLS_TOTAL (tls_offs)
 #define TLS_CUR (tls_offs + sizeof(void *))
+#define TLS_EXCLUDE_DEPTH (tls_offs + 2 * sizeof(void *))
+#define TLS_EXCLUDE_COUNT (tls_offs + 3 * sizeof(void *))
 
 static void *threads_rw;     /* thread list: readers = marker path, writers = thread init/exit */
 static void *keys_lock;      /* key creation, lazy per-thread arrays */
@@ -508,7 +516,7 @@ update_shared(thread_t *self)
         /* a thread with no region of its own counts into the shared key, as in
          * the general path below: instructions between regions belong to no one */
         if (self != NULL && self->depth == 0)
-            set_thread_cur(self, slots_for(shared_key, self));
+            set_thread_cur(self, slots_for(opt_follow_threads ? shared_key : NULL, self));
         return;
     }
     dr_mutex_lock(leader_lock);
@@ -522,7 +530,7 @@ update_shared(thread_t *self)
         /* only when the region the followers count into actually changed */
         dr_rwlock_read_lock(threads_rw);
         for (t = threads; t != NULL; t = t->next) {
-            if (t->alive && t->depth == 0)
+            if (opt_follow_threads && t->alive && t->depth == 0)
                 steer_follower(t, slots_for(nk, t));
         }
         dr_rwlock_read_unlock(threads_rw);
@@ -732,7 +740,7 @@ pre_end(void *wrapcxt, void **user_data)
     if (t->depth > 0)
         set_thread_cur(t, t->stack[t->depth - 1].cur);
     else
-        set_thread_cur(t, slots_for(shared_key, t));
+        set_thread_cur(t, slots_for(opt_follow_threads ? shared_key : NULL, t));
     if (leader == t)
         update_shared(t);
 }
@@ -760,6 +768,52 @@ pre_state(void *wrapcxt, void **user_data)
 
 /* ------------------------------------------------------------- modules */
 
+/* Suppress synchronous work below explicitly selected emulator CUDA exports.
+ * The depth is thread-local: independent work on other threads stays counted. */
+static void
+pre_excluded_cuda(void *wrapcxt, void **user_data)
+{
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    (*(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))++;
+    dr_atomic_add64_return_sum(&excluded_calls, 1);
+    *user_data = (void *)1;
+}
+
+static void
+post_excluded_cuda(void *wrapcxt, void *user_data)
+{
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    ptr_uint_t *depth = (ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH);
+    if (user_data != NULL && *depth > 0)
+        --*depth;
+}
+
+static bool
+exclude_cuda_symbol(const char *name, size_t offset, void *data)
+{
+    const module_data_t *mod = (const module_data_t *)data;
+    const char *n = name;
+    app_pc address;
+    if (n && strncmp(n, "__cuda", 6) == 0)
+        n += 2;
+    if (!n || n[0] != 'c' || n[1] != 'u' ||
+        !((n[2] >= 'A' && n[2] <= 'Z') || strncmp(n, "cuda", 4) == 0 ||
+          strncmp(n, "cublas", 6) == 0 || strncmp(n, "cudnn", 5) == 0 ||
+          strncmp(n, "cusolver", 8) == 0 || strncmp(n, "cusparse", 8) == 0 ||
+          strncmp(n, "cufft", 5) == 0 || strncmp(n, "curand", 6) == 0 ||
+          strncmp(n, "cutensor", 8) == 0))
+        return true;
+    address = (app_pc)dr_get_proc_address(mod->handle, name);
+    if (address == NULL || drwrap_is_wrapped(address, pre_excluded_cuda, post_excluded_cuda))
+        return true;
+    if (!drwrap_wrap(address, pre_excluded_cuda, post_excluded_cuda)) {
+        dr_fprintf(STDERR, "drperf: cannot exclude CUDA export %s\n", name);
+        dr_abort();
+    }
+    excluded_wrappers++;
+    return true;
+}
+
 static void
 event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
 {
@@ -783,6 +837,15 @@ event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
         nmodules++;
     }
     dr_mutex_unlock(slots_lock);
+    if (opt_exclude_cuda_module[0] && name && strcmp(name, opt_exclude_cuda_module) == 0) {
+        /* DR 11.3's ELF export iterator misses symbols in some GNU-hash
+         * libraries. Enumerate on-disk symbols, then resolve exported APIs. */
+        if (drsym_enumerate_symbols(mod->full_path, exclude_cuda_symbol, (void *)mod,
+                                    DRSYM_DEFAULT_FLAGS) != DRSYM_SUCCESS) {
+            dr_fprintf(STDERR, "drperf: cannot enumerate CUDA module %s\n", name);
+            dr_abort();
+        }
+    }
     /* Only walk the export table of modules that can carry the markers:
      * libperfmark.so itself or the main executable (static linking).
      * Walking every module's dynamic section crashes DR on some torch libs. */
@@ -828,6 +891,8 @@ event_thread_init(void *drcontext)
     memset(t, 0, sizeof(*t));
     t->total_ptr = (volatile uint64 *)(base + TLS_TOTAL);
     *t->total_ptr = 0;
+    *(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH) = 0;
+    *(uint64 *)(base + TLS_EXCLUDE_COUNT) = 0;
     t->tid = dr_get_thread_id(drcontext);
     t->alive = true;
     hashtable_init_ex(&t->key_cache, 6, HASH_STRING, true, false, NULL, NULL, NULL);
@@ -838,7 +903,7 @@ event_thread_init(void *drcontext)
     t->next = threads;
     threads = t;
     dr_rwlock_write_unlock(threads_rw);
-    set_thread_cur(t, slots_for(shared_key, t));
+    set_thread_cur(t, slots_for(opt_follow_threads ? shared_key : NULL, t));
 }
 
 static void
@@ -852,6 +917,7 @@ event_thread_exit(void *drcontext)
         close_frame(t, total, seq_end, t_end, true);
     dr_rwlock_write_lock(threads_rw);
     t->final_total = total;
+    t->excluded_total = *(uint64 *)((byte *)t->total_ptr + 3 * sizeof(void *));
     t->alive = false;
     dr_rwlock_write_unlock(threads_rw);
     if (leader == t)
@@ -868,6 +934,9 @@ static bool
 event_pre_syscall(void *drcontext, int sysnum)
 {
     thread_t *t = cur_thread(drcontext);
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    if (opt_exclude_cuda_module[0] && *(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))
+        return true;
     t->sys++;
     return true;
 }
@@ -926,6 +995,7 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
     uint64 slot = packed >> 32;
     uint n = (uint)(packed & 0xffffffffu);
     reg_id_t reg;
+    instr_t *excluded = NULL, *done = NULL;
     drmgr_disable_auto_predication(drcontext, bb);
     if (!drmgr_is_first_instr(drcontext, inst))
         return DR_EMIT_DEFAULT;
@@ -934,6 +1004,20 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
     if (drreg_reserve_aflags(drcontext, bb, inst) != DRREG_SUCCESS ||
         drreg_reserve_register(drcontext, bb, inst, NULL, &reg) != DRREG_SUCCESS)
         DR_ASSERT(false);
+    if (opt_exclude_cuda_module[0]) {
+        int mod = slot_mod[slot];
+        excluded = INSTR_CREATE_label(drcontext);
+        done = INSTR_CREATE_label(drcontext);
+        /* Also suppress module entry/exit blocks around drwrap callbacks and
+         * module-private helpers. Export wrappers extend exclusion into callees. */
+        if (mod >= 0 && strcmp(modules[mod].name, opt_exclude_cuda_module) == 0) {
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jmp(drcontext, opnd_create_instr(excluded)));
+        } else {
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_cmp(drcontext,
+                dr_raw_tls_opnd(drcontext, tls_seg, TLS_EXCLUDE_DEPTH), OPND_CREATE_INT8(0)));
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jcc(drcontext, OP_jnz, opnd_create_instr(excluded)));
+        }
+    }
     instrlist_meta_preinsert(
         bb, inst,
         INSTR_CREATE_add(drcontext, dr_raw_tls_opnd(drcontext, tls_seg, TLS_TOTAL),
@@ -944,6 +1028,13 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
             bb, inst,
             INSTR_CREATE_add(drcontext, OPND_CREATE_MEM64(reg, (int)(slot * sizeof(uint64))),
                              OPND_CREATE_INT32(n)));
+    }
+    if (excluded != NULL) {
+        instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jmp(drcontext, opnd_create_instr(done)));
+        instrlist_meta_preinsert(bb, inst, excluded);
+        instrlist_meta_preinsert(bb, inst, INSTR_CREATE_add(drcontext,
+            dr_raw_tls_opnd(drcontext, tls_seg, TLS_EXCLUDE_COUNT), OPND_CREATE_INT32(n)));
+        instrlist_meta_preinsert(bb, inst, done);
     }
     if (drreg_unreserve_register(drcontext, bb, inst, reg) != DRREG_SUCCESS ||
         drreg_unreserve_aflags(drcontext, bb, inst) != DRREG_SUCCESS)
@@ -1340,6 +1431,7 @@ event_exit(void)
     rkey_t *k;
     thread_t *t, *tn;
     uint64 total = 0;
+    uint64 excluded_total = 0;
     int i, n = 0, ti;
     if (f == INVALID_FILE) {
         dr_fprintf(STDERR, "drperf: cannot open output file %s\n", opt_out);
@@ -1352,6 +1444,13 @@ event_exit(void)
     dr_fprintf(f, "{\n  \"drperf\": {\"version\": \"%s\", \"pid\": %d, \"app\": ", DRPERF_VERSION,
                dr_get_process_id());
     json_str(f, dr_get_application_name());
+    for (t = threads; t != NULL; t = t->next)
+        excluded_total += t->alive ? *(uint64 *)((byte *)t->total_ptr + 3 * sizeof(void *)) : t->excluded_total;
+    dr_fprintf(f, ",\n    \"excluded_cuda_module\": ");
+    json_str(f, opt_exclude_cuda_module);
+    dr_fprintf(f, ", \"follow_unmarked_threads\": %s", opt_follow_threads ? "true" : "false");
+    dr_fprintf(f, ", \"excluded_cuda_exports\": %d, \"excluded_cuda_calls\": %lld, \"excluded_instructions\": %llu",
+               excluded_wrappers, (long long)excluded_calls, (unsigned long long)excluded_total);
     dr_fprintf(f, ",\n    \"rep_expand\": %s, \"symbols\": %s, \"max_slots\": %llu, "
                "\"slots_used\": %llu, \"slots_overflow\": %llu, \"counter_denied\": %lld,\n",
                opt_rep_expand ? "true" : "false", opt_symbols ? "true" : "false",
@@ -1459,7 +1558,7 @@ event_exit(void)
     dr_raw_mem_free(slot_mod, opt_max_slots * sizeof(int));
     dr_raw_mem_free(slot_sym, opt_max_slots * sizeof(int));
     dr_raw_mem_free(dummy_slots, opt_max_slots * sizeof(uint64));
-    dr_raw_tls_cfree(tls_offs, 2);
+    dr_raw_tls_cfree(tls_offs, 4);
     drmgr_unregister_tls_field(tls_idx);
     dr_mutex_destroy(keys_lock);
     dr_mutex_destroy(leader_lock);
@@ -1510,6 +1609,10 @@ parse_options(int argc, const char *argv[])
             opt_block_counters = false;
         } else if (strcmp(argv[i], "-no_symbols") == 0) {
             opt_symbols = false;
+        } else if (strcmp(argv[i], "-exclude_cuda_module") == 0 && i + 1 < argc) {
+            safe_strcpy(opt_exclude_cuda_module, argv[++i], sizeof(opt_exclude_cuda_module));
+        } else if (strcmp(argv[i], "-no_follow_threads") == 0) {
+            opt_follow_threads = false;
         } else if (strcmp(argv[i], "-verbose") == 0) {
             opt_verbose = true;
         } else {
@@ -1529,7 +1632,11 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     if (!drmgr_init() || drreg_init(&ops) != DRREG_SUCCESS || !drwrap_init() || !drutil_init() ||
         !drx_init())
         DR_ASSERT(false);
-    if (opt_symbols && drsym_init(0) != DRSYM_SUCCESS) {
+    if ((opt_symbols || opt_exclude_cuda_module[0]) && drsym_init(0) != DRSYM_SUCCESS) {
+        if (opt_exclude_cuda_module[0]) {
+            dr_fprintf(STDERR, "drperf: drsym_init failed; requested CUDA exclusion unavailable\n");
+            dr_abort();
+        }
         dr_fprintf(STDERR, "drperf: drsym_init failed; symbols disabled\n");
         opt_symbols = false;
     }
@@ -1550,7 +1657,7 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     DR_ASSERT_MSG(slot_pc != NULL && slot_mod != NULL && slot_sym != NULL && dummy_slots != NULL,
                   "drperf: allocation failed");
     tls_idx = drmgr_register_tls_field();
-    if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, 2, 0))
+    if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, 4, 0))
         DR_ASSERT(false);
     tsc0 = rdtsc();
     us0 = dr_get_microseconds();

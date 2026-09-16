@@ -16,6 +16,19 @@ beyond either are counted and reported, not placed at a point.  Blocks beyond
 the counter table are merged into one slot, which is reported and invalidates
 the run.
 
+**Optional measurement scope.** `DRPERF_FOLLOW_THREADS=0` attributes instructions
+only while their own thread has an open region; unmarked workers do not inherit
+the leader's region. `DRPERF_EXCLUDE_CUDA_MODULE=basename` suppresses the selected
+module's blocks and synchronous callees beneath its exported CUDA driver/runtime
+and cuBLAS/cuDNN/cuSOLVER/cuSPARSE/cuFFT/cuRAND/cuTENSOR APIs. Exclusion depth is
+thread-local and nested; normal return restores counting. Asynchronous callee
+work on another thread is outside this stack scope. Raw output records the
+scope, matched exports, call count and excluded instructions. The latter is a
+process-wide diagnostic, not a per-region cost. An exclusion matching no exports
+invalidates the run. These options change what cost means; compare identical
+scopes and check remaining module attribution. Defaults retain the measurement
+above. Exclusion still instruments execution and is not a wall-time speedup.
+
 **Cost formulae (`derive`).** Over the observed points $V \subset \mathbb{Z}^k$,
 $|V| \ge k + 2$, each block gets a least-squares plane
 $a_\beta \cdot v + d_\beta$; tolerance $\theta(y) = \max(64,\ 0.05\,y)$.
