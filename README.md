@@ -84,8 +84,10 @@ marks 25 CPU regions, and removes repeated model transfers, rotary construction,
 prompt/K/V projections, and packing/concatenation work. GX skips device
 computation: these runs assess host work, not video correctness or GPU latency.
 With the same measurement boundary, recorded marked CPU instructions fell
-from 23.63 billion to 18.94 billion (19.84%). See the
-[matched results and limitations](examples/wan_gx/RESULTS.md).
+from 23.63 billion to 18.94 billion in the first pass, then to **14.39 billion
+(39.12% below baseline)** after further attention metadata, layout, convolution
+and dispatch changes. See the [latest results and limitations](examples/wan_gx/MORE_RESULTS.md)
+and the [first comparison](examples/wan_gx/RESULTS.md).
 
 Small CPU executions of real Diffusers code exposed work that an agent could
 inspect and remove. The historical experiments used tiny, randomly initialized

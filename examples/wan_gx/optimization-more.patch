@@ -1,0 +1,253 @@
+--- a/wan/modules/attention.py
++++ b/wan/modules/attention.py
+@@ -1,5 +1,7 @@
+ # Copyright 2024-2025 The Alibaba Wan Team Authors. All rights reserved.
+ import torch
++from contextlib import contextmanager
++from contextvars import ContextVar
+ 
+ try:
+     import flash_attn_interface
+@@ -21,6 +23,37 @@
+ ]
+ 
+ 
++
++
++_metadata_cache = ContextVar('wan_attention_metadata', default=None)
++
++
++@contextmanager
++def cache_attention_metadata():
++    token = _metadata_cache.set({})
++    try:
++        yield
++    finally:
++        _metadata_cache.reset(token)
++
++
++def cumulative_lengths(lengths, batch, full_length, device):
++    # CPU-owned lengths require no device arithmetic or device-to-host read.
++    if lengths is not None and lengths.device.type != 'cpu':
++        return torch.cat([lengths.new_zeros([1]), lengths]).cumsum(
++            0, dtype=torch.int32).to(device, non_blocking=True)
++    values = tuple(lengths.tolist()) if lengths is not None else (full_length,) * batch
++    key = (device, values)
++    cache = _metadata_cache.get()
++    if cache is not None and key in cache:
++        return cache[key]
++    prefix = [0]
++    for length in values:
++        prefix.append(prefix[-1] + length)
++    result = torch.tensor(prefix, dtype=torch.int32, device=device)
++    if cache is not None:
++        cache[key] = result
++    return result
+ 
+ 
+ def pack_kv(x, lengths):
+@@ -70,9 +103,6 @@
+     # preprocess query
+     if q_lens is None:
+         q = half(q.flatten(0, 1))
+-        q_lens = torch.tensor(
+-            [lq] * b, dtype=torch.int32).to(
+-                device=q.device, non_blocking=True)
+     else:
+         q = half(torch.cat([u[:v] for u, v in zip(q, q_lens)]))
+ 
+@@ -80,9 +110,6 @@
+     if k_lens is None:
+         k = half(k.flatten(0, 1))
+         v = half(v.flatten(0, 1))
+-        k_lens = torch.tensor(
+-            [lk] * b, dtype=torch.int32).to(
+-                device=k.device, non_blocking=True)
+     else:
+         k = half(pack_kv(k, k_lens))
+         v = half(pack_kv(v, k_lens))
+@@ -105,10 +132,8 @@
+             q=q,
+             k=k,
+             v=v,
+-            cu_seqlens_q=torch.cat([q_lens.new_zeros([1]), q_lens]).cumsum(
+-                0, dtype=torch.int32).to(q.device, non_blocking=True),
+-            cu_seqlens_k=torch.cat([k_lens.new_zeros([1]), k_lens]).cumsum(
+-                0, dtype=torch.int32).to(q.device, non_blocking=True),
++            cu_seqlens_q=cumulative_lengths(q_lens, b, lq, q.device),
++            cu_seqlens_k=cumulative_lengths(k_lens, b, lk, q.device),
+             seqused_q=None,
+             seqused_k=None,
+             max_seqlen_q=lq,
+@@ -122,10 +147,8 @@
+             q=q,
+             k=k,
+             v=v,
+-            cu_seqlens_q=torch.cat([q_lens.new_zeros([1]), q_lens]).cumsum(
+-                0, dtype=torch.int32).to(q.device, non_blocking=True),
+-            cu_seqlens_k=torch.cat([k_lens.new_zeros([1]), k_lens]).cumsum(
+-                0, dtype=torch.int32).to(q.device, non_blocking=True),
++            cu_seqlens_q=cumulative_lengths(q_lens, b, lq, q.device),
++            cu_seqlens_k=cumulative_lengths(k_lens, b, lk, q.device),
+             max_seqlen_q=lq,
+             max_seqlen_k=lk,
+             dropout_p=dropout_p,
+--- a/wan/modules/model.py
++++ b/wan/modules/model.py
+@@ -8,7 +8,7 @@
+ from diffusers.configuration_utils import ConfigMixin, register_to_config
+ from diffusers.models.modeling_utils import ModelMixin
+ 
+-from .attention import flash_attention
++from .attention import flash_attention, cache_attention_metadata
+ 
+ __all__ = ['WanModel']
+ 
+@@ -59,6 +59,11 @@
+ 
+     # split freqs
+     grids = freqs if isinstance(freqs, tuple) else rope_grid_frequencies(grid_sizes, freqs)
++
++    # The common single, unpadded sequence needs no slice/cat/stack copies.
++    if x.size(0) == 1 and grids[0].size(0) == x.size(1):
++        z = torch.view_as_complex(x.to(torch.float64).reshape(1, x.size(1), n, c, 2))
++        return torch.view_as_real(z * grids[0]).flatten(3).float()
+ 
+     # loop over samples
+     output = []
+@@ -311,7 +316,7 @@
+             freqs(Tensor): Rope freqs, shape [1024, C / num_heads / 2]
+         """
+         assert e.dtype == torch.float32
+-        with amp.autocast(dtype=torch.float32):
++        with amp.autocast(enabled=False):
+             e = (self.modulation + e).chunk(6, dim=1)
+         assert e[0].dtype == torch.float32
+ 
+@@ -319,14 +324,14 @@
+         y = self.self_attn(
+             self.norm1(x).float() * (1 + e[1]) + e[0], seq_lens, grid_sizes,
+             freqs)
+-        with amp.autocast(dtype=torch.float32):
++        with amp.autocast(enabled=False):
+             x = x + y * e[2]
+ 
+         # cross-attention & ffn function
+         def cross_attn_ffn(x, context, context_lens, e):
+             x = x + self.cross_attn(self.norm3(x), context, context_lens)
+             y = self.ffn(self.norm2(x).float() * (1 + e[4]) + e[3])
+-            with amp.autocast(dtype=torch.float32):
++            with amp.autocast(enabled=False):
+                 x = x + y * e[5]
+             return x
+ 
+@@ -358,7 +363,7 @@
+             e(Tensor): Shape [B, C]
+         """
+         assert e.dtype == torch.float32
+-        with amp.autocast(dtype=torch.float32):
++        with amp.autocast(enabled=False):
+             e = (self.modulation + e.unsqueeze(1)).chunk(2, dim=1)
+             x = (self.head(self.norm(x) * (1 + e[1]) + e[0]))
+         return x
+@@ -384,6 +389,16 @@
+             image_embeds = image_embeds + self.emb_pos
+         clip_extra_context_tokens = self.proj(image_embeds)
+         return clip_extra_context_tokens
++
++
++def framewise_conv3d(layer, x):
++    if (layer.kernel_size[0], layer.stride[0], layer.padding[0], layer.dilation[0]) != (1, 1, 0, 1):
++        return layer(x)
++    b, c, t, h, w = x.shape
++    frames = x.permute(0, 2, 1, 3, 4).reshape(b * t, c, h, w)
++    y = torch.nn.functional.conv2d(frames, layer.weight[:, :, 0], layer.bias,
++                                  layer.stride[1:], layer.padding[1:], layer.dilation[1:], layer.groups)
++    return y.reshape(b, t, y.size(1), y.size(2), y.size(3)).permute(0, 2, 1, 3, 4)
+ 
+ 
+ class WanModel(ModelMixin, ConfigMixin):
+@@ -548,19 +563,22 @@
+             x = [torch.cat([u, v], dim=0) for u, v in zip(x, y)]
+ 
+         # embeddings
+-        x = [self.patch_embedding(u.unsqueeze(0)) for u in x]
++        x = [framewise_conv3d(self.patch_embedding, u.unsqueeze(0)) for u in x]
+         grid_sizes = torch.stack(
+             [torch.tensor(u.shape[2:], dtype=torch.long) for u in x])
+         x = [u.flatten(2).transpose(1, 2) for u in x]
+         seq_lens = torch.tensor([u.size(1) for u in x], dtype=torch.long)
+         assert seq_lens.max() <= seq_len
+-        x = torch.cat([
+-            torch.cat([u, u.new_zeros(1, seq_len - u.size(1), u.size(2))],
+-                      dim=1) for u in x
+-        ])
++        if len(x) == 1 and x[0].size(1) == seq_len:
++            x = x[0]
++        else:
++            x = torch.cat([
++                torch.cat([u, u.new_zeros(1, seq_len - u.size(1), u.size(2))],
++                          dim=1) for u in x
++            ])
+ 
+         # time embeddings
+-        with amp.autocast(dtype=torch.float32):
++        with amp.autocast(enabled=False):
+             e = self.time_embedding(
+                 sinusoidal_embedding_1d(self.freq_dim, t).float())
+             e0 = self.time_projection(e).unflatten(1, (6, self.dim))
+@@ -592,7 +610,7 @@
+             e=e0,
+             seq_lens=seq_lens,
+             grid_sizes=grid_sizes,
+-            freqs=rope_grid_frequencies(grid_sizes, self.freqs) if not torch.is_grad_enabled() else self.freqs,
++            freqs=self.cached_rope_grids(grid_sizes),
+             context=context,
+             context_lens=context_lens)
+ 
+@@ -605,6 +623,17 @@
+         # unpatchify
+         x = self.unpatchify(x, grid_sizes)
+         return [u.float() for u in x]
++
++    def cached_rope_grids(self, grid_sizes):
++        if torch.is_grad_enabled():
++            return self.freqs
++        cache = getattr(self, '_cpu_rope_cache', None)
++        key = (tuple(map(tuple, grid_sizes.tolist())), id(self.freqs), self.freqs._version)
++        if cache is None:
++            return rope_grid_frequencies(grid_sizes, self.freqs)
++        if key not in cache:
++            cache[key] = rope_grid_frequencies(grid_sizes, self.freqs)
++        return cache[key]
+ 
+     @contextmanager
+     def cpu_work_cache(self):
+@@ -612,11 +641,14 @@
+             yield
+             return
+         self._cpu_context_cache = {}
++        self._cpu_rope_cache = {}
+         for block in self.blocks:
+             block.cross_attn._cpu_kv_cache = {}
+         try:
+-            yield
++            with cache_attention_metadata():
++                yield
+         finally:
++            self._cpu_rope_cache = None
+             self._cpu_context_cache = None
+             for block in self.blocks:
+                 block.cross_attn._cpu_kv_cache = None
+--- a/wan/modules/vae.py
++++ b/wan/modules/vae.py
+@@ -31,7 +31,8 @@
+             cache_x = cache_x.to(x.device)
+             x = torch.cat([cache_x, x], dim=2)
+             padding[4] -= cache_x.shape[2]
+-        x = F.pad(x, padding)
++        if any(padding):
++            x = F.pad(x, padding)
+ 
+         return super().forward(x)
+ 

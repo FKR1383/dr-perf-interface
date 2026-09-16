@@ -1,0 +1,53 @@
+--- a/wan/modules/model.py
++++ b/wan/modules/model.py
+@@ -100,7 +100,7 @@
+         return self._norm(x.float()).type_as(x) * self.weight
+ 
+     def _norm(self, x):
+-        return x * torch.rsqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.eps)
++        return torch.nn.functional.rms_norm(x, (self.dim,), eps=self.eps)
+ 
+ 
+ class WanLayerNorm(nn.LayerNorm):
+@@ -316,26 +316,18 @@
+             freqs(Tensor): Rope freqs, shape [1024, C / num_heads / 2]
+         """
+         assert e.dtype == torch.float32
+-        with amp.autocast(enabled=False):
+-            e = (self.modulation + e).chunk(6, dim=1)
++        e = (self.modulation + e).chunk(6, dim=1)
+         assert e[0].dtype == torch.float32
+ 
+         # self-attention
+         y = self.self_attn(
+             self.norm1(x).float() * (1 + e[1]) + e[0], seq_lens, grid_sizes,
+             freqs)
+-        with amp.autocast(enabled=False):
+-            x = x + y * e[2]
+-
+-        # cross-attention & ffn function
+-        def cross_attn_ffn(x, context, context_lens, e):
+-            x = x + self.cross_attn(self.norm3(x), context, context_lens)
+-            y = self.ffn(self.norm2(x).float() * (1 + e[4]) + e[3])
+-            with amp.autocast(enabled=False):
+-                x = x + y * e[5]
+-            return x
+-
+-        x = cross_attn_ffn(x, context, context_lens, e)
++        x = x + y * e[2]
++
++        x = x + self.cross_attn(self.norm3(x), context, context_lens)
++        y = self.ffn(self.norm2(x).float() * (1 + e[4]) + e[3])
++        x = x + y * e[5]
+         return x
+ 
+ 
+@@ -570,7 +562,7 @@
+         seq_lens = torch.tensor([u.size(1) for u in x], dtype=torch.long)
+         assert seq_lens.max() <= seq_len
+         if len(x) == 1 and x[0].size(1) == seq_len:
+-            x = x[0]
++            x = x[0].contiguous()
+         else:
+             x = torch.cat([
+                 torch.cat([u, u.new_zeros(1, seq_len - u.size(1), u.size(2))],

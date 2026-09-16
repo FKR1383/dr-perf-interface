@@ -7,6 +7,8 @@ UniPC scheduling, and VAE decode. The full case uses 832x480, 81 frames,
 these are structural executions of the actual model, not generated-video
 correctness tests or GPU latency measurements. Timing simulation is off.
 See [the measured comparison](RESULTS.md) and [pinned provenance](evidence/provenance.json).
+The [further optimization passes](MORE_RESULTS.md) extend the initial 19.84%
+instruction reduction to 39.12%, while preserving the first-pass code and evidence.
 
 ## Boundary repairs shared by both variants
 
