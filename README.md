@@ -1,13 +1,107 @@
-# drperf
+# drperf: interactive performance-interface discovery
 
-Cheap perf interface generation for coding changes.
+**A checker for lightweight performance interfaces, built to help coding agents
+understand and improve the cost of their code.**
 
-Exact instruction counts for marked regions of a program, turned into a cost
-function of the state you declare, plus the relations between those states
-across regions, from one run.
+An agent already has an implicit cost model when it writes or optimizes code.
+That model can drift from reality, especially across library calls. drperf makes
+the model explicit: the human or agent annotates a region with the expressions
+it believes the cost depends on—its **performance-critical variables (PCVs)**—and
+drperf checks how much of the observed execution those PCVs explain.
 
-DynamoRIO-based, so the counts cover everything the region executes:
-interpreter, allocator, C/Rust/C++ extensions, worker threads.
+The interactive part is the discovery. The annotator proposes the vocabulary;
+the checker supplies coefficients and feedback. The analogy to interactive
+theorem proving is this division of work, not an all-input proof of performance.
+drperf is an experimental execution-based checker.
+
+## Explain first, then optimize
+
+1. **State the cost model.** Mark the region and declare its PCVs. Coefficients
+   are inferred; the annotator does not supply them.
+2. **Explain the observed cost.** Run small tests that vary the PCVs, inspect
+   the unexplained functions, and refine the annotation: add a variable, change
+   an expression, or split a region. Check reconstruction error and variation
+   between inputs as well as the unexplained share.
+3. **Optimize the explained work.** Investigate an unexpectedly large
+   coefficient or a dependency that should not exist. Change the code, check
+   correctness, and compare the same workload and region boundaries again.
+
+For example, a lookup that unexpectedly copies its whole map has a cost that
+grows with map size. Naming that dependency explains the surprise; removing
+the copy removes the corresponding work. Explanation and optimization are
+separate steps: a good fit can describe inefficient code perfectly.
+
+PCVs are expressions, not just existing variables. A nested loop may need
+`n*m`; a conditional path may need `n if enabled else 0`; a tree lookup may need
+counts of different comparisons. The final formula is affine in the declared
+PCVs, so the annotator supplies the nonlinear or conditional structure:
+
+```python
+with perfmark.region("pair_scan", pairs=len(left) * len(right)):
+    for a in left:
+        for b in right:
+            inspect_pair(a, b)
+```
+
+## What the checker computes
+
+DynamoRIO counts user-space CPU instructions executed inside each region,
+including interpreter, allocator, native extensions, and attributed worker
+threads. The marker records PCV values at entry. For each executed basic block,
+drperf fits a joint affine formula over all declared PCVs:
+
+```text
+block instruction cost = a1*PCV1 + ... + ak*PCVk + d
+```
+
+A block is accepted only when the fit is within tolerance at every observed
+state. Accepted blocks contribute to the region formula; rejected blocks form
+the unexplained part, tabulated by state and broken down by function:
+
+```text
+observed cost is modeled as A*PCVs + Constant + unexplained
+```
+
+**Lightweight** means the interface describes only the supplied PCVs at the
+states exercised by the tests. It does not prove a bound over all inputs.
+Small cases can reveal a repeated copy, a quadratic term, or redundant work
+without first running a large workload. Predicting the benefit at larger sizes
+is a separate hypothesis to validate.
+
+The current collector fits **mean block counts for calls sharing a PCV state**.
+Exact counting therefore does not imply that every individual call is explained:
+averaging can hide a missing variable, and per-block tolerances do not guarantee
+a small relative error in the final formula. The
+[hash-table study](examples/hash_table_cost/README.md) reproduces both issues.
+These are active checker limitations. See [SPEC.md](SPEC.md) for the mechanics.
+
+## Findings in Wan video generation
+
+Small CPU executions of real Diffusers code exposed work that an agent could
+inspect and remove. The historical experiments used tiny, randomly initialized
+Wan models; the newer region benchmarks use bounded CPU fixtures. These counts
+include CPU tensor kernels and are not measurements of GPU kernel execution.
+
+| Finding | Change and recorded evidence |
+| --- | --- |
+| Rotary tables rebuilt each transformer forward | Cache by shape/device/dtype; historical mean region instructions fell 87.9%. [Record and corrections](benchmarks/cases/wan_a/reference/record.md) |
+| Fixed prompt projected repeatedly | Cache the text projection and per-layer cross-attention K/V; the historical cross-attention projection region fell from 378,712 to 137,932 instructions. [Record](benchmarks/cases/wan_c/reference/record.md) |
+| Text-encoder work follows padded length and its square | Encode a shorter padded sequence, then restore the output shape; a tiny CPU case with 32 real tokens and a 512-token budget used 45.5x fewer region instructions. GPU output digests differ; this is not a general equivalence claim. [Record](benchmarks/cases/wan_d/reference/record.md) |
+| VAE repeatedly concatenates a growing output | Collect chunks and concatenate once. The quadratic copying is real, but the original attribution of rising per-frame cost was corrected: different first/later chunk work explained most of that trend. [Record and correction](benchmarks/cases/wan_a/reference/record.md) |
+| VAE blend loops dispatch tensor operations per row/column | Broadcast the blend for nonoverlapping extents greater than one; recent tiny CPU workloads used 23.07% / 23.54% fewer region instructions. The optimized fits still fail the 5% unexplained gate. [Patches and results](bench_optimized/wan/README.md) |
+
+**The archive also reports a real GPU follow-up, with no meaningful end-to-end
+speedup.** On an A100-SXM4-80GB with Wan2.1-T2V-1.3B in bfloat16, the 81-frame,
+30-step run took 98.831 s pristine, 98.897 s with the earlier fixes except T5,
+and 98.992 s with all earlier fixes. The non-T5 variant retained the baseline
+latent digest; the T5 padding change did not. This historical run is separate
+from the recent CPU blend experiments and has not been rerun for this README.
+See [the GPU follow-up](benchmarks/evaluator/evidence/CASES.md#the-wan-fixes-on-a-real-gpu-no-wall-clock-change-and-why-that-is-the-honest-answer).
+
+The useful result is discovering unnecessary work from small executions.
+Whether removing it reduces latency depends on the actual execution path and
+bottleneck. drperf counts CPU instructions; GPU correctness, device timings,
+memory use, and end-to-end speedups need their own measurements.
 
 ## Use
 
@@ -41,10 +135,15 @@ coefficient that moves points at the code that moved it.
 That is the whole interface: `drperf` followed by the command you would have
 run anyway. No options.
 
-[Source-region benchmarks](benchmarks/README.md) collect vLLM, Wan, V8 RegExp,
-JavaScript runtime and accidental-quadratic cases. Each target has pinned source
-and an empty marker, ready for PCV discovery. Historical evidence and future
-evaluation designs are kept alongside the collection.
+[Source-region benchmarks](benchmarks/README.md) collect 1,000 regions from
+vLLM, Wan, V8 RegExp, JavaScript runtimes, compilers, and libraries, including
+accidental-quadratic cases. Each target has pinned source, an empty marker, and
+test support, ready for PCV discovery. The planned evaluation compares agents
+with and without drperf feedback, including whether small cases expose growth
+that timing alone misses. The collection is not a completed agent-accuracy study.
+Browse [annotated regions, successful cases first](bench_anontated/review/annotated-regions.md),
+[experiment results](bench_anontated/RESULTS.md), and
+[optimization copies](bench_optimized/README.md).
 
 [Runnable synthetic counterexamples](examples/drperf_limits/README.md) show six
 ways a performance interface can fail or appear misleadingly successful, with
@@ -97,9 +196,10 @@ Outside DynamoRIO the markers are empty functions, one call each.
 - A state gets a coefficient only if it varied during the run. Otherwise the
   line says why it has none: it never varied, it moved in step with another
   state, or the cost did not follow it.
-- Cost that follows no declared state is reported as a percentage and left out
-  of the formula, never smeared into a coefficient. It is broken down by
-  function too, under `unexplained`.
+- Blocks whose observed state means fail the affine check are reported under
+  `unexplained`, as a percentage and by function. An omitted variable can still
+  hide in a coefficient or constant if it is correlated with a PCV or averaged
+  into the state means. Low unexplained cost alone is not proof of completeness.
 - A region keeps at most 128 distinct state combinations, and the counter
   arrays are bounded in address space. Calls beyond either limit are reported
   as not modelled rather than merged into a state point they do not belong to.
@@ -216,6 +316,9 @@ state combinations, which bounds memory when a declared state has many values.
 
 - Instructions are not time. A change that removes instructions but adds cache
   misses passes; one that vectorizes and adds instructions looks worse.
+- GPU kernels are not instrumented. A CPU fixture can reveal source-level
+  redundant work, but its instruction coefficients do not transfer to GPU
+  execution. The Wan GPU follow-up above found no meaningful latency benefit.
 - Counts are exact and reproducible for deterministic single-threaded programs.
   With OpenMP the partition of work varies between runs; the total usually does
   not, and runtime spin-waiting is excluded and reported separately.
