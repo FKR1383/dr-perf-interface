@@ -187,3 +187,65 @@ remains small here. For the proposed calculus, distinguish:
 These measurements separate all three questions. They support a concrete
 critique of the current framework without asserting that B-trees are
 fundamentally inexpressible.
+
+## Follow-up: what is semantic here, and does it survive deeper trees?
+
+The proposed interface is a fixed collection of functions of the actual tree
+and query key:
+
+```text
+PCVs(T, q) = (internal_descents(T,q),
+             internal_less(T,q), internal_greater(T,q), internal_equal(T,q),
+             leaf_less(T,q), leaf_greater(T,q))
+```
+
+They count meaningful search operations along the path selected by the query.
+They do not store native instruction counts, coefficients, or an encoded path
+identity. `path_summary` evaluates them from the tree's state before the
+measured lookup. It does replay the search decisions: this is an
+implementation-aware interface, not an abstraction using only mapping size
+and height. Calling it "good" means it is compact, interpretable, and has a
+fixed number of features as the tree grows; it does not establish that this is
+the abstraction an application author wants.
+
+Using descents `E=D-1`, the measured interface becomes:
+
+```text
+instructions per lookup = 306.05078125
+                       + 34*E + 10*IL + 11*IG + 3*IE + 9*LL + 11*LG
+```
+
+To address the shallow original range (depths 2–4), run:
+
+```sh
+out/btrees-study/venv/bin/python examples/btree_branches/deeper.py --record
+```
+
+This builds 8,192-, 32,768-, 131,072-, and 524,288-key trees in each insertion
+order, tests eight query ranks per tree, and measures 98,304 lookups natively
+and under drperf. All construction finishes before the first marker. The
+96 new cases cover internal-node depths **4–8**, versus 2–4 originally, with
+the largest tree **256 times** the old maximum size. Node capacity settings
+remain eight; these are still deliberately small-fanout trees, not a test of
+the default capacity settings.
+
+Both predictive formulas are frozen from the original 128/512-key training
+cases, and the target binary/checker hashes are verified against that baseline.
+The follow-up does not retrain them on the larger trees:
+
+| Check on new cases | Result |
+| --- | ---: |
+| Frozen depth/comparisons formula: worst total prediction error | 3.008% |
+| Frozen six-count formula: worst total prediction error | Below 1e-9 relative |
+| Fresh drperf blockwise fit with depth/comparisons: maximum unexplained | 60.52% |
+| Fresh six-count blockwise fit with depth: maximum unexplained | 19.94% |
+| Fresh six-count blockwise fit with descents: maximum unexplained | 0.00% |
+
+The six-count checker calls remain offline because the marker limit is four.
+See [deeper-evidence.json](deeper-evidence.json) for every frozen prediction,
+path, raw-data hash, and the baseline evidence hash. Eighty of the 96 new cases
+have depth greater than four.
+
+This extends the empirical evidence; it is not an all-depth proof. Such a proof
+would establish the per-event cost identities compositionally under explicit
+assumptions about key types, hit/miss behavior, and resident node state.
