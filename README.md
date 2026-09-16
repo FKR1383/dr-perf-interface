@@ -49,6 +49,9 @@ evaluation designs are kept alongside the collection.
 [Runnable synthetic counterexamples](examples/drperf_limits/README.md) show six
 ways a performance interface can fail or appear misleadingly successful, with
 repaired PCVs and checks against actual drperf measurements.
+The [B-tree branch study](examples/btree_branches/README.md) examines real Python
+BTrees lookups and separates semantic expressibility from limitations of the
+current blockwise checker.
 
 Start with `examples/playground`, a 250-line C system with three regions and a
 one-line change to measure. `SPEC.md` states exactly what is computed, on one
