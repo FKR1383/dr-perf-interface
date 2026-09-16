@@ -9,6 +9,9 @@ correctness tests or GPU latency measurements. Timing simulation is off.
 See [the measured comparison](RESULTS.md) and [pinned provenance](evidence/provenance.json).
 The [further optimization passes](MORE_RESULTS.md) extend the initial 19.84%
 instruction reduction to 39.12%, while preserving the first-pass code and evidence.
+The subsequent [real A100 comparison](NATIVE_RESULTS.md) measured 218.88 s versus
+207.43 s for one full generation per variant (5.23% lower latency). The outputs
+differ; numerical and perceptual equivalence remain unestablished.
 
 ## Boundary repairs shared by both variants
 

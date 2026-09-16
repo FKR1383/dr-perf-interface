@@ -89,6 +89,14 @@ from 23.63 billion to 18.94 billion in the first pass, then to **14.39 billion
 and dispatch changes. See the [latest results and limitations](examples/wan_gx/MORE_RESULTS.md)
 and the [first comparison](examples/wan_gx/RESULTS.md).
 
+A [native A100 PCIe 40GB follow-up](examples/wan_gx/NATIVE_RESULTS.md) measured
+**218.88 s baseline versus 207.43 s optimized (5.23% lower generation latency)**
+for one matched 81-frame / 50-step pair, including text encoding and VAE decode,
+excluding model loading. Both outputs are finite, but their final latent
+relative L2 difference is 3.15%; numerical/perceptual equivalence has not been
+established. This is a measured latency result, not yet a validated equivalent
+replacement.
+
 Small CPU executions of real Diffusers code exposed work that an agent could
 inspect and remove. The historical experiments used tiny, randomly initialized
 Wan models; the newer region benchmarks use bounded CPU fixtures. These counts
@@ -343,7 +351,8 @@ state combinations, which bounds memory when a declared state has many values.
   misses passes; one that vectorizes and adds instructions looks worse.
 - GPU kernels are not instrumented. A CPU fixture can reveal source-level
   redundant work, but its instruction coefficients do not transfer to GPU
-  execution. The Wan GPU follow-up above found no meaningful latency benefit.
+  execution. The separate native Wan comparisons above measure latency and
+  numerical differences directly; CPU savings alone establish neither.
 - Counts are exact and reproducible for deterministic single-threaded programs.
   With OpenMP the partition of work varies between runs; the total usually does
   not, and runtime spin-waiting is excluded and reported separately.

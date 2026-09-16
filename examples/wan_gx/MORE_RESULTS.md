@@ -106,3 +106,11 @@ Use the same [profiling and host-time commands](README.md#reproduction), with
 `report_more.py` validates and packages the completed measurements.
 Compact evidence: [metadata/layout pass](evidence/optimized-more.json),
 [dispatch pass](evidence/optimized-dispatch.json).
+
+## Native GPU follow-up
+
+A subsequent [real A100 PCIe 40GB run](NATIVE_RESULTS.md) of the same full
+workload measured 218.88 s baseline versus 207.43 s candidate: 5.23% lower
+generation latency in one pair, using cuDNN. Final latent relative L2 error is
+3.15%; decoded pixel RMSE is 0.0379 on [-1, 1]. Both outputs are finite, but this
+does not establish numerical or perceptual equivalence.
