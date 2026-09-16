@@ -176,7 +176,7 @@ cost = 106*small_n + 5*large_n + 106*large_n_squared + 2*large_path + 26
 ```
 
 The indicator captures fixed overhead that differs between paths. This uses
-the current marker's maximum of four PCVs. In a larger example, separate
+four PCVs; the marker now retains all declared PCVs with dynamic storage. In a larger example, separate
 path-specific regions can reduce the number needed, provided their costs are
 accounted for explicitly; nested marked work must not silently disappear.
 

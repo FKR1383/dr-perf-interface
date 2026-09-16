@@ -1,5 +1,40 @@
 # B-tree branches: a real test of the framework
 
+## Current behavior: both implementation issues are fixed
+
+The checker now accepts valid negative intercepts, and the C client, Python
+bindings, and Rust binding retain all declared PCVs using dynamically sized
+storage. There is no fixed four-PCV limit. Existing state-count and memory
+budgets still apply.
+
+The current regression uses six PCVs directly through `perfmark_begin_v`,
+including the original `depth` expression. Both the depth and descents
+interfaces have **zero unexplained blocks**, with relative reconstruction
+error below 1e-9. This was checked on **120 tree/query cases, depths 2–8, up to
+524,288 keys**, and 184,320 lookups both natively and under DynamoRIO. Every
+physical tree/query case is also checked separately, so feature-state averaging
+cannot hide a failed prediction.
+
+```sh
+./build.sh
+python3 -m venv out/btrees-study/venv
+out/btrees-study/venv/bin/pip install -r examples/btree_branches/requirements.txt
+out/btrees-study/venv/bin/python examples/btree_branches/fixed.py --record
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+See [fixed.py](fixed.py) and [fixed-evidence.json](fixed-evidence.json). The
+unit/integration tests additionally cover PCV translation, genuinely curved
+counts, and 0–64 PCVs through C, Rust, Python's C extension, and ctypes.
+
+The remainder of this document and the original `evidence.json` /
+`deeper-evidence.json` describe the **pre-fix investigation at commit
+`ffa8bbe`**. Its `validate.py` and `deeper.py` deliberately assert the old
+failure and should be run on that revision; use `fixed.py` on current code.
+The blockwise acceptance criterion itself remains unchanged.
+
+## Historical investigation
+
 **Dynamic branching does not prevent a small semantic affine interface in this
 experiment. The current checker nevertheless rejects useful interfaces.** Two
 causes are its stronger per-basic-block requirement and its negative-intercept
@@ -13,7 +48,7 @@ The older Ditto case in this repo uses Rust `BTreeMap` behind a Python API;
 these are different implementations and these measurements do not validate
 that older case.
 
-## Reproduce
+## Reproduce the historical investigation (revision ffa8bbe)
 
 From the repo root, with drperf already built:
 

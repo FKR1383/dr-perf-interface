@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <limits.h>
 #include "../../perfmark/perfmark.h"
 
 /* Measure the installed, unmodified BTrees extension, without a Python loop.
@@ -13,27 +14,43 @@ static PyObject *measure(PyObject *self, PyObject *args) {
         return NULL;
     if (!PyTuple_Check(labels) || !PyTuple_Check(features) || repeats < 1 ||
         PyTuple_GET_SIZE(labels) != PyTuple_GET_SIZE(features) ||
-        PyTuple_GET_SIZE(labels) > 4) {
-        PyErr_SetString(PyExc_ValueError, "expected matching PCV tuples of at most four items");
+        PyTuple_GET_SIZE(labels) > INT_MAX) {
+        PyErr_SetString(PyExc_ValueError, "expected matching PCV tuples whose length fits the C ABI");
         return NULL;
     }
     int k = (int)PyTuple_GET_SIZE(labels);
-    const char *names[4];
-    int64_t values[4];
+    const char **names = PyMem_Calloc((size_t)k, sizeof(*names));
+    int64_t *values = PyMem_Calloc((size_t)k, sizeof(*values));
+    if (k && (!names || !values)) {
+        PyMem_Free(names);
+        PyMem_Free(values);
+        return PyErr_NoMemory();
+    }
     for (int i = 0; i < k; ++i) {
         names[i] = PyUnicode_AsUTF8(PyTuple_GET_ITEM(labels, i));
         values[i] = PyLong_AsLongLong(PyTuple_GET_ITEM(features, i));
-        if (PyErr_Occurred()) return NULL;
+        if (PyErr_Occurred()) {
+            PyMem_Free(names);
+            PyMem_Free(values);
+            return NULL;
+        }
     }
     long checksum = 0;
     perfmark_begin_v(region, k, names, values);
     for (int i = 0; i < repeats; ++i) {
         PyObject *result = PyObject_GetItem(tree, key);
-        if (!result) { perfmark_end(region); return NULL; }
+        if (!result) {
+            perfmark_end(region);
+            PyMem_Free(names);
+            PyMem_Free(values);
+            return NULL;
+        }
         checksum += PyLong_AsLong(result);
         Py_DECREF(result);
     }
     perfmark_end(region);
+    PyMem_Free(names);
+    PyMem_Free(values);
     return PyLong_FromLong(checksum);
 }
 static PyMethodDef methods[] = {

@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 void perfmark_begin(const char *region, const char *state_name, int64_t state_value);
-/* Several declared states (at most 4): all of them form the aggregation key,
+/* Several declared states: all n of them form the aggregation key,
  * so the cost formula can be derived in all of them (`drperf derive`). */
 void perfmark_begin_v(const char *region, int n, const char *const *names, const int64_t *values);
 void perfmark_end(const char *region);

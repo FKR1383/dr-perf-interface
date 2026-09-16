@@ -52,7 +52,7 @@
 /* Counter arrays are mapped, not committed: a key only faults in the pages of
  * the blocks it actually runs, so this bounds address space, not memory. */
 #define COUNTER_BUDGET (96ULL << 30)
-#define KEY_STATES 4        /* declared states that form a key (perfmark_begin_v) */
+#define STACK_KEY_STATES 8  /* allocation-free marker fast path, not a limit */
 
 /* ------------------------------------------------------------------ types */
 
@@ -66,9 +66,9 @@ typedef struct _rkey_t {
     char state_name[RNAME_MAX]; /* first declared state (kept for readers of the JSON) */
     int64 state_value;
     bool overflow;              /* the "<other>" bucket: state combinations beyond the budget */
-    int nkstates;               /* declared states in the key: 0 (none) .. KEY_STATES */
-    char kname[KEY_STATES][STATE_NAME_MAX];
-    int64 kval[KEY_STATES];
+    int nkstates;               /* all declared states in the aggregation key */
+    char (*kname)[STATE_NAME_MAX];
+    int64 *kval;
     char parent[RNAME_MAX]; /* enclosing region at first instance */
     char root[RNAME_MAX];   /* outermost open region when begun; part of the key */
     int index;
@@ -350,7 +350,7 @@ key_matches(rkey_t *k, const char *region, int nk, const char *const *names, con
     if (k->overflow || k->nkstates != want || strcmp(k->region, region) != 0 ||
         strcmp(k->root, root) != 0)
         return false;
-    for (i = 0; i < want && i < KEY_STATES; i++) {
+    for (i = 0; i < want; i++) {
         if (k->kval[i] != vals[i] || strcmp(k->kname[i], names[i]) != 0)
             return false;
     }
@@ -368,7 +368,9 @@ static rkey_t *
 get_key(thread_t *t, const char *region, int nk, const char *const *names, const int64 *vals,
         const char *parent, rkey_t *rootkey)
 {
-    char kbuf[2 * RNAME_MAX + KEY_STATES * (STATE_NAME_MAX + 24) + 32];
+    char stack_kbuf[2 * RNAME_MAX + STACK_KEY_STATES * (STATE_NAME_MAX + 24) + 32];
+    char *kbuf = stack_kbuf;
+    size_t kbuf_size = sizeof(stack_kbuf), pos;
     char nbuf[STATE_NAME_MAX];
     const char *root = rootkey != NULL ? rootkey->region : "";
     bool overflow = false;
@@ -378,7 +380,7 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     uint h;
     uint64 hv;
     const char *cp;
-    int i, pos, w;
+    int i, w;
     bool hit;
     /* Fast path.  The marker fires once per region and building the string key
      * below costs microseconds, so hash the contents and verify against the
@@ -390,7 +392,7 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
     for (cp = root; *cp != '\0'; cp++)
         hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
-    for (i = 0; i < nk && i < KEY_STATES; i++) {
+    for (i = 0; i < nk; i++) {
         for (cp = names[i]; *cp != '\0'; cp++)
             hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
         hv = (hv ^ (uint64)vals[i]) * 1099511628211ULL;
@@ -401,20 +403,34 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     if (hit)
         return t->fast[h].key;
 
-    pos = 0;
-    w = dr_snprintf(kbuf, sizeof(kbuf), "%s", region);
-    pos = w < 0 ? (int)sizeof(kbuf) - 1 : w;
-    for (i = 0; i < nk && pos < (int)sizeof(kbuf) - 1; i++) {
-        safe_strcpy(nbuf, names[i], STATE_NAME_MAX);
-        w = dr_snprintf(kbuf + pos, sizeof(kbuf) - pos, "\1%s=%lld", nbuf, (long long)vals[i]);
-        pos = w < 0 ? (int)sizeof(kbuf) - 1 : pos + w;
+    if (nk > STACK_KEY_STATES) {
+        if ((size_t)nk > (SIZE_MAX - 2 * RNAME_MAX - 32) / (STATE_NAME_MAX + 24)) {
+            dr_fprintf(STDERR, "drperf: declared state key is too large\n");
+            dr_abort();
+        }
+        kbuf_size = 2 * RNAME_MAX + (size_t)nk * (STATE_NAME_MAX + 24) + 32;
+        kbuf = dr_thread_alloc(dr_get_current_drcontext(), kbuf_size);
+        if (kbuf == NULL) {
+            dr_fprintf(STDERR, "drperf: out of memory for declared state key\n");
+            dr_abort();
+        }
     }
-    if (pos < (int)sizeof(kbuf) - 1)
-        dr_snprintf(kbuf + pos, sizeof(kbuf) - pos, "\1%s", root);
-    kbuf[sizeof(kbuf) - 1] = '\0';
+    pos = 0;
+    w = dr_snprintf(kbuf, kbuf_size, "%s", region);
+    pos = w < 0 ? kbuf_size - 1 : (size_t)w;
+    for (i = 0; i < nk && pos < kbuf_size - 1; i++) {
+        safe_strcpy(nbuf, names[i], STATE_NAME_MAX);
+        w = dr_snprintf(kbuf + pos, kbuf_size - pos, "\1%s=%lld", nbuf, (long long)vals[i]);
+        pos = w < 0 ? kbuf_size - 1 : pos + (size_t)w;
+    }
+    if (pos < kbuf_size - 1)
+        dr_snprintf(kbuf + pos, kbuf_size - pos, "\1%s", root);
+    kbuf[kbuf_size - 1] = '\0';
     k = hashtable_lookup(&t->key_cache, kbuf);
     if (k != NULL) {
         remember_key(t, h, hv, k);
+        if (kbuf != stack_kbuf)
+            dr_thread_free(dr_get_current_drcontext(), kbuf, kbuf_size);
         return k;
     }
     dr_mutex_lock(keys_lock);
@@ -423,8 +439,8 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         (counter_bytes + opt_max_slots * sizeof(uint64) > COUNTER_BUDGET || !region_key_budget(region))) {
         overflow = true;
         /* out of budget: one shared bucket per region, not counted per state */
-        dr_snprintf(kbuf, sizeof(kbuf), "%s\1<other>", region);
-        kbuf[sizeof(kbuf) - 1] = '\0';
+        dr_snprintf(kbuf, kbuf_size, "%s\1<other>", region);
+        kbuf[kbuf_size - 1] = '\0';
         k = hashtable_lookup(&key_table, kbuf);
         nk = 0;
         names = &empty_name;
@@ -441,7 +457,15 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         k->state_value = nk > 0 ? vals[0] : 0;
         k->nkstates = (nk == 1 && names[0][0] == '\0') ? 0 : nk;
         k->overflow = overflow;
-        for (i = 0; i < nk && i < KEY_STATES; i++) {
+        if (k->nkstates > 0) {
+            k->kname = dr_global_alloc((size_t)k->nkstates * sizeof(*k->kname));
+            k->kval = dr_global_alloc((size_t)k->nkstates * sizeof(*k->kval));
+            if (k->kname == NULL || k->kval == NULL) {
+                dr_fprintf(STDERR, "drperf: out of memory for declared states\n");
+                dr_abort();
+            }
+        }
+        for (i = 0; i < k->nkstates; i++) {
             safe_strcpy(k->kname[i], names[i], STATE_NAME_MAX);
             k->kval[i] = vals[i];
         }
@@ -463,6 +487,8 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     dr_mutex_unlock(keys_lock);
     hashtable_add(&t->key_cache, kbuf, k);
     remember_key(t, h, hv, k);
+    if (kbuf != stack_kbuf)
+        dr_thread_free(dr_get_current_drcontext(), kbuf, kbuf_size);
     return k;
 }
 
@@ -623,8 +649,8 @@ pre_begin(void *wrapcxt, void **user_data)
     begin_common(t, total, region, 1, &sname, &sval);
 }
 
-/* perfmark_begin_v(region, n, names[], values[]): up to KEY_STATES declared
- * states; all of them form the key, so block counts are kept per combination
+/* perfmark_begin_v(region, n, names[], values[]): all n declared
+ * states form the key, so block counts are kept per combination
  * of their values and a formula can be derived in all of them. */
 static void
 pre_begin_v(void *wrapcxt, void **user_data)
@@ -636,12 +662,22 @@ pre_begin_v(void *wrapcxt, void **user_data)
     int n = (int)(ptr_int_t)drwrap_get_arg(wrapcxt, 1);
     const char *const *anames = (const char *const *)drwrap_get_arg(wrapcxt, 2);
     const int64 *avals = (const int64 *)drwrap_get_arg(wrapcxt, 3);
-    const char *names[KEY_STATES];
-    int64 vals[KEY_STATES];
+    const char *stack_names[STACK_KEY_STATES];
+    int64 stack_vals[STACK_KEY_STATES];
+    const char **names = stack_names;
+    int64 *vals = stack_vals;
     int i, nk = 0;
-    if (n > KEY_STATES) {
-        dr_atomic_add64_return_sum(&state_overflows, 1);
-        n = KEY_STATES;
+    if (n > STACK_KEY_STATES) {
+        if ((size_t)n > SIZE_MAX / sizeof(*names) || (size_t)n > SIZE_MAX / sizeof(*vals)) {
+            dr_fprintf(STDERR, "drperf: too many declared states\n");
+            dr_abort();
+        }
+        names = dr_thread_alloc(drcontext, (size_t)n * sizeof(*names));
+        vals = dr_thread_alloc(drcontext, (size_t)n * sizeof(*vals));
+        if (names == NULL || vals == NULL) {
+            dr_fprintf(STDERR, "drperf: out of memory for marker states\n");
+            dr_abort();
+        }
     }
     for (i = 0; i < n; i++) {
         const char *nm = NULL;
@@ -659,6 +695,10 @@ pre_begin_v(void *wrapcxt, void **user_data)
         nk = 1;
     }
     begin_common(t, total, region, nk, names, vals);
+    if (n > STACK_KEY_STATES) {
+        dr_thread_free(drcontext, names, (size_t)n * sizeof(*names));
+        dr_thread_free(drcontext, vals, (size_t)n * sizeof(*vals));
+    }
 }
 
 static void
@@ -1389,6 +1429,10 @@ event_exit(void)
                 dr_raw_mem_free(k->tslots[ti], opt_max_slots * sizeof(uint64));
         }
         dr_global_free(k->tslots, MAX_THREADS * sizeof(uint64 *));
+        if (k->nkstates > 0) {
+            dr_global_free(k->kname, (size_t)k->nkstates * sizeof(*k->kname));
+            dr_global_free(k->kval, (size_t)k->nkstates * sizeof(*k->kval));
+        }
         dr_global_free(k, sizeof(*k));
         k = kn;
     }

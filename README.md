@@ -60,8 +60,11 @@ page.
 ## Markers
 
 You declare a region and the integers that matter to it. Nothing else is added
-to the program. Up to four declared states per region; all of them form the key
-and the formula is derived in all of them.
+to the program. Every declared integer state forms part of the key, and the
+formula is derived in all of them. PCV storage is dynamically sized in the
+client and bindings; there is no fixed four-PCV limit. Fitting k PCVs still
+needs at least max(3, k+2) distinct observed states, within the existing
+128-state-per-region measurement budget.
 
 ```c
 #include "perfmark.h"
@@ -165,12 +168,18 @@ almost all of that run is PyTorch and vLLM startup that no region covers.
 | 4 workers under the main thread's region (`tests/cthreads.c`) | 4 x 400,006 attributed to `loop_work`, exact |
 | marker path, 32 threads x 200K begin/end pairs | 4.2 µs per pair per thread |
 | C / Rust / C++ suites (`examples/{c,rust,cpp}_suite`, 27 cases) | exact `a*n + d` with 0 irregular on every exactly-affine case (loops, nested regions, rep-string, pthreads, scoped threads, OpenMP with waiting excluded, virtual and template calls); a delta of +3 instructions per iteration recovered exactly; prediction 8x beyond the profiled range within 0.0%; byte-identical block dumps across repeats |
-| negative controls | `n^2`, hash-table rehashing and an independent undeclared variable are reported as irregular, not fitted; `n log n` over a fourfold range passes as a line with a negative constant, which is flagged |
+| negative controls | sufficiently curved counts such as `n^2` fail the observed-point tolerance; curves such as `n log n` can pass over a limited range. A negative constant alone is not evidence of curvature |
 | two declared states, C (`c9_twovar`) | `4*n + 5*m + 29` exact, coefficients attributed to the two loops; the product `n*m` comes out 98.9% irregular |
 | two declared states, Python (`examples/py_twovar`) | `1,028*n + 1,280*m`, 1.8% irregular, although both loops run in the same interpreter blocks |
 | queue invariant, 2 threads | `q = cum(produce.m) - cum(consume.q)` learned exactly, in C, Rust and Python |
 | vLLM `execute_model` (decode regime, all threads) | `172,749,376*num_tokens + 12,515,892`, 1.2% irregular; predicts a larger run's decode steps within 1.4% |
 | vLLM slowdown | 25.7 s profiled vs 12.1 s native (2.1x); 41 s including analysis |
+
+Run `python3 -m unittest discover -s tests -p 'test_*.py' -v` after building
+for affine-acceptance and end-to-end marker regressions, including 64 PCVs
+through C, Rust, Python's native extension, and the ctypes fallback. The
+[B-tree regression](examples/btree_branches/README.md) checks six PCVs through
+the normal marker at depths 2–8.
 
 ## Layout
 
