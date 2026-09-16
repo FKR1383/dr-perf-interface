@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'out/wan-a100'
 GX = Path(os.environ.get('WAN_GX_ROOT', '/home/ubuntu/GX/NEX'))
-HOST = os.environ.get('WAN_NATIVE_HOST', 'A100')
+HOST = os.environ.get('WAN_NATIVE_HOST', 'jcm@A100')
 REMOTE = os.environ.get('WAN_NATIVE_WORKSPACE', '/home/jcm/drperf-wan-a100-20260916')
 PREFIX = 'drperf-wan-native-'
 

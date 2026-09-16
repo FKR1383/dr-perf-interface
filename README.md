@@ -97,6 +97,15 @@ relative L2 difference is 3.15%; numerical/perceptual equivalence has not been
 established. This is a measured latency result, not yet a validated equivalent
 replacement.
 
+A [GX/GXVM timing case study](examples/wan_gx/TIMING_STUDY.md) holds all
+359,473 GPU launches/BLAS operations fixed. Trace-guided drperf work removed
+redundant model-residency walks and precision scopes: marked CPU instructions
+fell **15.39%**, while one paired simulation measured **195.75 -> 195.03 s
+(0.37% lower)**. Stream gaps fell from 0.77 s to 0.05 s; GPU work dominates the
+remaining time. The study includes checked launch sequences and reusable
+profiling inputs. GX skips GPU arithmetic; these are experimental simulated
+timings with CPU-profile limitations, not a hardware speedup claim.
+
 Small CPU executions of real Diffusers code exposed work that an agent could
 inspect and remove. The historical experiments used tiny, randomly initialized
 Wan models; the newer region benchmarks use bounded CPU fixtures. These counts

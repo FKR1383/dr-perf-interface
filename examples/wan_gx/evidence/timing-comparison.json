@@ -1,0 +1,3280 @@
+{
+  "records": {
+    "baseline": {
+      "workload": {
+        "role": "replay",
+        "pid": 352,
+        "config": {
+          "size": [
+            832,
+            480
+          ],
+          "frame_num": 81,
+          "sampling_steps": 50,
+          "sample_solver": "unipc",
+          "shift": 5.0,
+          "guide_scale": 5.0,
+          "seed": 42,
+          "offload_model": false
+        },
+        "prompt": "A cat walks on the grass, realistic style",
+        "warmup_steps": 4,
+        "convolution_backend": "cudnn",
+        "gpu": "NVIDIA A100-PCIE-40GB",
+        "cudnn_version": 91900,
+        "cudnn_policy": {
+          "allow_tf32": true,
+          "benchmark": false,
+          "deterministic": false
+        },
+        "packages": {
+          "torch": "2.11.0+cu128",
+          "diffusers": "0.36.0",
+          "transformers": "5.8.1",
+          "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE",
+          "safetensors": "0.8.0"
+        },
+        "source_sha256": {
+          "generate.py": "0b12bde63bb316a91ad1462a3db073db4388ec96c818f7548f4e6487939427a4",
+          "gradio/fl2v_14B_singleGPU.py": "5f9ad48a7ef7386d47dc857b83b7d1ea53b52a8aed73d241a6e35087c7ffcf82",
+          "gradio/i2v_14B_singleGPU.py": "5b50fa67e5da28b5b03158e159c692ab1f1d0c303dd7b0e3e9083111a4bfd0ae",
+          "gradio/t2i_14B_singleGPU.py": "0e3ed805bcfc90b10c9e3b53d2ac24a3f0fc8cde62d92e1754579ae676b87c4b",
+          "gradio/t2v_1.3B_singleGPU.py": "4f2b7a1dae07bc4e9dcd397b6ee4a6aa1dcb1f6048d17796c734247873438b1a",
+          "gradio/t2v_14B_singleGPU.py": "d904497f27f259b06037e06020ef176154654636b5c1afeddcc4211260244a8b",
+          "gradio/vace.py": "bf62cb3fce17184b9762e9cd920219a4d8a59f269e59ef8e98caa0c37cf36586",
+          "wan/__init__.py": "bd4c7993b6022f321f63c77d36a146955f0ce1d3a9fb520698b645a9f3e728b9",
+          "wan/configs/__init__.py": "0af8a5a3374058b1b21f0b2408fc109062c55589e4441bcae25fcfa005d3c9d0",
+          "wan/configs/shared_config.py": "a942b6f0a1d1a4ec9a7893c17a6218651ce272953b90d012ce5cdd19d15e45f7",
+          "wan/configs/wan_i2v_14B.py": "86704d4a08fd3b7e71b8256a001cca4fa8c065abd189c67f9f19eb348606ab88",
+          "wan/configs/wan_t2v_14B.py": "99aadb67eec94e28c2a02db45c178c07f7488b7e1b3c148aae1e23e908fe580f",
+          "wan/configs/wan_t2v_1_3B.py": "6976ec4c03f737b69ae17afe13339b32905739205d4c19f16c8b329f9f06e986",
+          "wan/distributed/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wan/distributed/fsdp.py": "b787312856a1f4da54648999c143d08c3dfa09be75be78e8c39fd21f55b823dd",
+          "wan/distributed/xdit_context_parallel.py": "a805a84aca2e41fbcfe1e58806f98f6dd024f3484bfa1f14a7277ed0778d8416",
+          "wan/first_last_frame2video.py": "5cee40e4a25bdb33e64a04ed55d2f23c3092d349f8407529aa98d585c14b724f",
+          "wan/image2video.py": "79fab091a8847dd0f9e5fd81d0c75ce77bc833f8dbe32d5706dce17070ddf609",
+          "wan/modules/__init__.py": "bfc04ed14de761c0cdacbbf4abced65464b894c9e2f84b60cd5c0f24e3a627c8",
+          "wan/modules/attention.py": "23fe7c6f6e4065242d95e5e188cb2d1a16bd283f05dca7e7e878977158fcfdbc",
+          "wan/modules/clip.py": "70a589a3a77d777352fbce633838b490a6ffc7968ec8beb927e5d7a5a585eb89",
+          "wan/modules/model.py": "c1572ade3bf7345bd4c00d4a19535788fab62f9c08b5aeb15f6d01f4435bb47a",
+          "wan/modules/t5.py": "cf821d1f142fb3badfe6dcfe0aa6cb9d93b9457b387f183e3c8d1177a77fcc5f",
+          "wan/modules/tokenizers.py": "cf5b189c1ae017326efadab2fc6380ba223fa7a59d0be6464bd264db53c76934",
+          "wan/modules/vace_model.py": "91194ce34c771f6ecc264577ee7adf542551a62167a793cfef24f876e3291faa",
+          "wan/modules/vae.py": "4912ffd7a9fbb17ceef9a17d4a9c4b8aee36ec37c32594f54e57693b29909498",
+          "wan/modules/xlm_roberta.py": "7e27d93573b5fb0fef1c9db9205264453bd30dcb1404c38031f24ed9c84b8d4a",
+          "wan/text2video.py": "8bb00e21f548706fe41ba4cf93ee4090c8a03bbb2bb797d0a7afe5194c132539",
+          "wan/utils/__init__.py": "225f3a18c782ea3776adacdfb4c21bb4ac4d02497c77882545f2c2d619175572",
+          "wan/utils/fm_solvers.py": "b870bdc7253593b75097896b2351e74f747f76d756f58f1b4b0008d6821ae811",
+          "wan/utils/fm_solvers_unipc.py": "2ac6e4edcf8f67ff635b3f24026cd0fd0a34863566529ade9e510bc39fc99505",
+          "wan/utils/prompt_extend.py": "a7d81b451377a47413e932d440d573ea010c0d608c8bb668b3af9c01261c0a67",
+          "wan/utils/qwen_vl_utils.py": "be11ac9808a6d79bb4e99482ea7ae9b2eccd48c2b517845b55f71cf5bb768239",
+          "wan/utils/utils.py": "8e2d85b1c7961233379b9ab38cee153ca8d95358f27cb8bb6dd154e809731c8c",
+          "wan/utils/vace_processor.py": "3fc56687d1d6204cc9603625238f20a8453f7d89f38efff11c3353ac7ab83e36",
+          "wan/vace.py": "bcb792e4750459af3049bfcc52a3e804895d2d7c98bc2e4d2ce7aaa545da9837"
+        },
+        "environment": {
+          "GXVM_ADAPTIVE_BUDGET": "0",
+          "GXVM_CPU_TIMING": "1",
+          "GXVM_DEFER_SCHEDULING": "1",
+          "GXVM_EPOCH_NS": "10000",
+          "GXVM_EPOCH_PATH": "/workspace/runs/1789583521307047090/d0/epoch",
+          "GXVM_GPU_DIRECT": "1",
+          "GXVM_GPU_HBM_BYTES_PER_SECOND": "1555000000000",
+          "GXVM_GPU_MEMORY_MODE": "hbm",
+          "GXVM_GPU_NVLINK_BYTES_PER_SECOND": "300000000000",
+          "GXVM_HIERARCHICAL_EPOCH": "1",
+          "GXVM_LATE_ATTACH_ACTIVE": "1",
+          "GXVM_NATIVE_IPC_ACCOUNTING": "refund",
+          "GXVM_NATIVE_IPC_COST_SCALE_PPM": "1000000",
+          "GXVM_NATIVE_IPC_REPLAY": "/workspace/.gx-cache/ddf4375175f04d05139c5ce9439cbfd74935565bf47994616ec051c94c9a9447/data",
+          "GX_CHROME_TRACE": "1",
+          "GX_CUDA_CONTEXT_LIMITS": "/workspace/.gx-cache/c8a4c604932f6c97e4412460f07a02a010fbe80ba9502cc9c45d415e09218f39/data",
+          "GX_CUDA_DEVICE_ATTRIBUTES": "/workspace/.gx-cache/c0c4d3fdf3513571f37b1bf9e496271fb2d21bc224b86d9abcbaf63eb2eb6da7/data",
+          "GX_DEVICE_MODEL": "A100",
+          "GX_PREDICT_DB": "/workspace/.gx-cache/015c0b13f31db25554f158697056a3c647ac8b4e42cb2e5727ecbae8dd723a3f/data",
+          "GX_PROFILE_DB": "",
+          "GX_PROFILE_SO": "/home/jma/GX/src/profile/gx_profile.so",
+          "GX_REAL_ALLOC_MAX_BYTES": "268435456",
+          "GX_REAL_CUDNN": "1"
+        },
+        "phase_events": [
+          {
+            "name": "text_encoder",
+            "start_ns": 6050000,
+            "end_ns": 29400000
+          },
+          {
+            "name": "text_encoder",
+            "start_ns": 80000000,
+            "end_ns": 103390000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 169180000,
+            "end_ns": 790150000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 790150000,
+            "end_ns": 2679230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 2694740000,
+            "end_ns": 4569080000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 4569090000,
+            "end_ns": 6457410000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 7741120000,
+            "end_ns": 8362150000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 8362160000,
+            "end_ns": 10251230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 11535000000,
+            "end_ns": 12156070000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 12156070000,
+            "end_ns": 14045100000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 15328880000,
+            "end_ns": 15949940000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 15949950000,
+            "end_ns": 17839010000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 19122760000,
+            "end_ns": 19743800000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 19743810000,
+            "end_ns": 21632870000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 22916650000,
+            "end_ns": 23537720000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 23537730000,
+            "end_ns": 25426770000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 26710500000,
+            "end_ns": 27331560000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 27331570000,
+            "end_ns": 29220710000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 30504410000,
+            "end_ns": 31125570000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 31125580000,
+            "end_ns": 33014620000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 34298280000,
+            "end_ns": 34919460000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 34919470000,
+            "end_ns": 36808520000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 38092160000,
+            "end_ns": 38713330000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 38713340000,
+            "end_ns": 40602360000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 41886060000,
+            "end_ns": 42507240000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 42507250000,
+            "end_ns": 44396280000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 45679940000,
+            "end_ns": 46301120000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 46301130000,
+            "end_ns": 48190120000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 49473810000,
+            "end_ns": 50095000000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 50095010000,
+            "end_ns": 51984060000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 53267730000,
+            "end_ns": 53888870000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 53888880000,
+            "end_ns": 55777930000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 57061670000,
+            "end_ns": 57682820000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 57682820000,
+            "end_ns": 59571920000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 60855620000,
+            "end_ns": 61476810000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 61476820000,
+            "end_ns": 63365830000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 64649510000,
+            "end_ns": 65270690000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 65270700000,
+            "end_ns": 67159750000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 68443410000,
+            "end_ns": 69064590000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 69064600000,
+            "end_ns": 70953630000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 72237290000,
+            "end_ns": 72858460000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 72858470000,
+            "end_ns": 74747520000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 76031160000,
+            "end_ns": 76652320000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 76652330000,
+            "end_ns": 78541410000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 79825040000,
+            "end_ns": 80446200000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 80446210000,
+            "end_ns": 82335250000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 83618890000,
+            "end_ns": 84240100000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 84240110000,
+            "end_ns": 86129130000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 87412770000,
+            "end_ns": 88033970000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 88033980000,
+            "end_ns": 89923000000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 91206640000,
+            "end_ns": 91827860000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 91827870000,
+            "end_ns": 93716840000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 95000530000,
+            "end_ns": 95621700000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 95621710000,
+            "end_ns": 97510790000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 98794420000,
+            "end_ns": 99415650000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 99415660000,
+            "end_ns": 101304630000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 102588340000,
+            "end_ns": 103209540000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 103209550000,
+            "end_ns": 105098550000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 106382230000,
+            "end_ns": 107003430000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 107003440000,
+            "end_ns": 108892450000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 110176120000,
+            "end_ns": 110797300000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 110797310000,
+            "end_ns": 112686360000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 113970010000,
+            "end_ns": 114591230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 114591230000,
+            "end_ns": 116480230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 117763910000,
+            "end_ns": 118385100000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 118385110000,
+            "end_ns": 120274190000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 121557850000,
+            "end_ns": 122179030000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 122179040000,
+            "end_ns": 124068040000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 125351740000,
+            "end_ns": 125972950000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 125972960000,
+            "end_ns": 127861930000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 129145640000,
+            "end_ns": 129766800000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 129766810000,
+            "end_ns": 131655850000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 132939540000,
+            "end_ns": 133560710000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 133560720000,
+            "end_ns": 135449720000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 136733420000,
+            "end_ns": 137354620000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 137354630000,
+            "end_ns": 139243670000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 140527330000,
+            "end_ns": 141148530000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 141148540000,
+            "end_ns": 143037530000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 144321220000,
+            "end_ns": 144942430000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 144942440000,
+            "end_ns": 146831440000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 148115100000,
+            "end_ns": 148736330000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 148736340000,
+            "end_ns": 150625300000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 151908980000,
+            "end_ns": 152530140000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 152530150000,
+            "end_ns": 154419150000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 155702880000,
+            "end_ns": 156324020000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 156324030000,
+            "end_ns": 158213060000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 159496790000,
+            "end_ns": 160117950000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 160117960000,
+            "end_ns": 162006970000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 163290640000,
+            "end_ns": 163911780000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 163911790000,
+            "end_ns": 165800790000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 167084510000,
+            "end_ns": 167705660000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 167705670000,
+            "end_ns": 169594670000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 170878400000,
+            "end_ns": 171499550000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 171499560000,
+            "end_ns": 173388600000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 174672280000,
+            "end_ns": 175293420000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 175293430000,
+            "end_ns": 177182440000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 178466200000,
+            "end_ns": 179087360000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 179087370000,
+            "end_ns": 180976400000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 182260090000,
+            "end_ns": 182881230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 182881240000,
+            "end_ns": 184770290000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 186053980000,
+            "end_ns": 186675170000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 186675170000,
+            "end_ns": 188564170000
+          },
+          {
+            "name": "vae_decode",
+            "start_ns": 189832680000,
+            "end_ns": 190014570000
+          }
+        ],
+        "load_host_seconds": 75.72247750870883,
+        "start_perf_counter_ns": 9384596339647587,
+        "end_perf_counter_ns": 9384792090747587,
+        "start_ns": 200000,
+        "end_ns": 195751300000,
+        "elapsed_seconds": 195.7511,
+        "clock": "gxvm_time_ns",
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ],
+        "numerical_equivalence_checked": false,
+        "finite_check_performed": false
+      },
+      "inventory": {
+        "observable_inventory_matches": true,
+        "limitations": [
+          "Does not compare tensor values or arbitrary kernel arguments.",
+          "Regular kernel parameter hashes and cluster dimensions are absent from GX trace."
+        ],
+        "config_differences": [],
+        "skipped_native_launches": [],
+        "source_changes": {},
+        "allowed_source_changes": [],
+        "emulated_stream_sequence_sha256": {
+          "0": "26d01870d5a4f6f4244d2e173d65c84fa1e1a14a27fae15938a4eb4a951b7188"
+        },
+        "native_launches": 359473,
+        "emu_launches": 359473,
+        "missing": [],
+        "ambiguous": [],
+        "mismatched_metadata": [],
+        "without_usable_samples": [],
+        "count_differences": []
+      },
+      "timing": {
+        "elapsed_virtual_seconds": 195.7511,
+        "launches": 359473,
+        "predicted_kernel_seconds": 193.534945467,
+        "counters": {
+          "pid": "352",
+          "rank": "unknown",
+          "local_rank": "unknown",
+          "hits": "359473",
+          "misses": "0",
+          "errors": "0",
+          "coverage": "1.000000",
+          "virtual_wait_calls": "359473",
+          "predicted_latency_ns": "193534945467",
+          "cache_hits": "358741",
+          "sqlite_queries": "732"
+        },
+        "streams": [
+          {
+            "stream": 1,
+            "task_seconds": 194.98251,
+            "gap_seconds": 0.76859,
+            "largest_gaps": [
+              {
+                "start_ns": 153920000,
+                "end_ns": 169210000,
+                "seconds": 0.01529
+              },
+              {
+                "start_ns": 15313690000,
+                "end_ns": 15328910000,
+                "seconds": 0.01522
+              },
+              {
+                "start_ns": 106367040000,
+                "end_ns": 106382260000,
+                "seconds": 0.01522
+              },
+              {
+                "start_ns": 11519820000,
+                "end_ns": 11535030000,
+                "seconds": 0.01521
+              },
+              {
+                "start_ns": 68428230000,
+                "end_ns": 68443440000,
+                "seconds": 0.01521
+              },
+              {
+                "start_ns": 91191460000,
+                "end_ns": 91206670000,
+                "seconds": 0.01521
+              },
+              {
+                "start_ns": 140512140000,
+                "end_ns": 140527350000,
+                "seconds": 0.01521
+              },
+              {
+                "start_ns": 182244910000,
+                "end_ns": 182260120000,
+                "seconds": 0.01521
+              },
+              {
+                "start_ns": 7725950000,
+                "end_ns": 7741150000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 72222120000,
+                "end_ns": 72237320000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 113954840000,
+                "end_ns": 113970040000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 136718250000,
+                "end_ns": 136733450000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 148099930000,
+                "end_ns": 148115130000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 174657110000,
+                "end_ns": 174672310000,
+                "seconds": 0.0152
+              },
+              {
+                "start_ns": 76016000000,
+                "end_ns": 76031190000,
+                "seconds": 0.01519
+              },
+              {
+                "start_ns": 83603730000,
+                "end_ns": 83618920000,
+                "seconds": 0.01519
+              },
+              {
+                "start_ns": 125336570000,
+                "end_ns": 125351760000,
+                "seconds": 0.01519
+              },
+              {
+                "start_ns": 163275470000,
+                "end_ns": 163290660000,
+                "seconds": 0.01519
+              },
+              {
+                "start_ns": 102573200000,
+                "end_ns": 102588370000,
+                "seconds": 0.01517
+              },
+              {
+                "start_ns": 117748780000,
+                "end_ns": 117763940000,
+                "seconds": 0.01516
+              }
+            ]
+          }
+        ],
+        "phases": {
+          "text_encoder": {
+            "calls": 2,
+            "host_submission_virtual_seconds": 0.046740000000000004,
+            "predicted_kernel_seconds": 0.133729876
+          },
+          "transformer": {
+            "calls": 100,
+            "host_submission_virtual_seconds": 126.76189999999997,
+            "predicted_kernel_seconds": 187.52042664999985
+          },
+          "vae_decode": {
+            "calls": 1,
+            "host_submission_virtual_seconds": 0.18189,
+            "predicted_kernel_seconds": 5.860442496
+          }
+        },
+        "kernels": [
+          {
+            "name": "_ZN5flash16flash_fwd_kernelI23Flash_fwd_kernel_traitsILi128ELi128ELi64ELi4ELb0ELb0EN7cutlass10bfloat16_tE19Flash_kernel_traitsILi128ELi128ELi64ELi4ES3_EELb0ELb0ELb0ELb0ELb0ELb1ELb0ELb0EEEvNS_16Flash_fwd_paramsE",
+            "calls": 6000,
+            "predicted_seconds": 101.37108
+          },
+          {
+            "name": "cublasLtMatmul",
+            "calls": 30600,
+            "predicted_seconds": 36.7478101
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 106238,
+            "predicted_seconds": 9.989571634
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 24594,
+            "predicted_seconds": 6.7973935
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_15gpu_kernel_implINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 18098,
+            "predicted_seconds": 5.49958477
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 18779,
+            "predicted_seconds": 4.817283398
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIN3c107complexIdEES6_S6_NS0_15binary_internal10MulFunctorIS6_EEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 6000,
+            "predicted_seconds": 3.679638
+          },
+          {
+            "name": "_ZN2at6native53_GLOBAL__N__21739cd4_20_layer_norm_kernel_cu_9c5ada8a28vectorized_layer_norm_kernelIffLb0EEEviT0_PKT_S6_S6_PS3_S7_PS4_",
+            "calls": 9100,
+            "predicted_seconds": 2.7740895
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 9618,
+            "predicted_seconds": 2.738831754
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE4_clEvEUldE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 6100,
+            "predicted_seconds": 2.7298665
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135529pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLm2EEEEviS6_T1_",
+            "calls": 12098,
+            "predicted_seconds": 2.689964602
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 3100,
+            "predicted_seconds": 2.6237229
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIfEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 7038,
+            "predicted_seconds": 2.117464403
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize128x128x16_stage4_warpsize2x2x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 504,
+            "predicted_seconds": 1.629067067
+          },
+          {
+            "name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+            "calls": 12098,
+            "predicted_seconds": 1.49263734
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelINS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EELi4E23TrivialOffsetCalculatorILi2EjES7_ILi1EjENS0_6memory12LoadWithCastILi2EEENSA_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 3196,
+            "predicted_seconds": 1.254311324
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize256x64x32_stage3_warpsize4x2x1_g1_tensor16x8x8_execute_kernel__5x_cudnn",
+            "calls": 147,
+            "predicted_seconds": 1.18141745
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_EEvS4_RKT_EUliE_EEviT1_",
+            "calls": 2871,
+            "predicted_seconds": 0.768059907
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nchwToNhwcKernelIfffLb0ELb1EL21cudnnKernelDataType_t2EEEvNS0_18nchw2nhwc_params_tIT1_EEPKT_PT0_",
+            "calls": 1466,
+            "predicted_seconds": 0.415833126
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 18831,
+            "predicted_seconds": 0.309956721
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c19CatArrayBatchedCopyINS1_10OpaqueTypeILj16EEEjLi4ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 6000,
+            "predicted_seconds": 0.231012
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10DivFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 631,
+            "predicted_seconds": 0.212765549
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 1025,
+            "predicted_seconds": 0.199987759
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_62_GLOBAL__N__7d4ed096_23_ActivationSiluKernel_cu_70c0f2ac_1560211silu_kernelERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 809,
+            "predicted_seconds": 0.197416362
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 633,
+            "predicted_seconds": 0.141190109
+          },
+          {
+            "name": "_ZN2at6native13reduce_kernelILi128ELi4ENS0_8ReduceOpIfNS0_10NormTwoOpsIfffLb1EEEjfLi4ELi4EEEEEvT1_",
+            "calls": 630,
+            "predicted_seconds": 0.096688834
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_wo_smem_tf32f32_tf32f32_f32_nhwckrsc_nhwc_tilesize128x16x64_stage1_warpsize4x1x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 21,
+            "predicted_seconds": 0.087579627
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 12098,
+            "predicted_seconds": 0.075798846
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c19CatArrayBatchedCopyINS1_10OpaqueTypeILj2EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.0756531
+          },
+          {
+            "name": "_Z42fmha_cutlassF_f32_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIfN7cutlass4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.061780992
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c35CatArrayBatchedCopy_alignedK_contigINS1_10OpaqueTypeILj4EEEjLi1ELi128ELi1ELi16EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 9000,
+            "predicted_seconds": 0.060822
+          },
+          {
+            "name": "_ZN14at_cuda_detail3cub16DeviceScanKernelINS0_16DeviceScanPolicyIiSt4plusIiEE9Policy900EPKiPiNS0_13ScanTileStateIiLb1EEES4_NS0_8NullTypeEjiLb0EEEvT0_T1_T2_iT3_T4_T5_",
+            "calls": 9000,
+            "predicted_seconds": 0.058059
+          },
+          {
+            "name": "_ZN2at6native53_GLOBAL__N__222ba01c_20_UpSampleNearest2d_cu_198c5ce228upsample_nearest2d_out_frameIfXadL_ZNS0_43nearest_neighbor_exact_compute_source_indexEfiiEEEEvPKT_PS3_mmmmmff",
+            "calls": 63,
+            "predicted_seconds": 0.055998425
+          },
+          {
+            "name": "cublasGemmEx",
+            "calls": 336,
+            "predicted_seconds": 0.049235472
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIiEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 9000,
+            "predicted_seconds": 0.047916
+          },
+          {
+            "name": "_ZN14at_cuda_detail3cub20DeviceScanInitKernelINS0_13ScanTileStateIiLb1EEEEEvT_i",
+            "calls": 9000,
+            "predicted_seconds": 0.046071
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_wo_smem_tf32f32_tf32f32_f32_nhwckrsc_nhwc_tilesize128x32x64_stage1_warpsize4x1x1_g1_tensor16x8x8_alignc8_execute_kernel__5x_cudnn",
+            "calls": 40,
+            "predicted_seconds": 0.04531198
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIN3c108BFloat16EEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0271052
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_",
+            "calls": 196,
+            "predicted_seconds": 0.022594776
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nhwcToNchwKernelI13__nv_bfloat16S2_fLb1ELb0EL21cudnnKernelDataType_t0EEEvNS0_18nhwc2nchw_params_tIT1_EEPKT_PT0_",
+            "calls": 100,
+            "predicted_seconds": 0.0203878
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_bf16bf16_bf16f32_f32_nhwckrsc_nhwc_tilesize128x128x32_stage4_warpsize2x2x1_g1_tensor16x8x16_execute_kernel__5x_cudnn",
+            "calls": 100,
+            "predicted_seconds": 0.0138444
+          },
+          {
+            "name": "_ZN2at6native24vectorized_gather_kernelILi16ElEEvPcS2_PT0_illllb",
+            "calls": 50,
+            "predicted_seconds": 0.009824206
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIN3c108BFloat16EEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 240,
+            "predicted_seconds": 0.009702432
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nhwcToNchwKernelIfffLb1ELb0EL21cudnnKernelDataType_t0EEEvNS0_18nhwc2nchw_params_tIT1_EEPKT_PT0_",
+            "calls": 61,
+            "predicted_seconds": 0.007780339
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_49_GLOBAL__N__d2ba64fb_16_TensorCompare_cu_71e06f4e19launch_clamp_scalarERNS_18TensorIteratorBaseEN3c106ScalarES6_NS0_6detail11ClampLimitsEENKUlvE_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 631,
+            "predicted_seconds": 0.005420083
+          },
+          {
+            "name": "_ZN43_GLOBAL__N__b6de9c8c_10_SoftMax_cu_9f978f6320softmax_warp_forwardIfffLi9ELb0ELb0EEEvPT0_PKT_iiiPKbib",
+            "calls": 48,
+            "predicted_seconds": 0.005274
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_44_GLOBAL__N__50c743a2_11_Indexing_cu_89862edb18masked_fill_kernelERNS_14TensorIteratorERKN3c106ScalarEENKUlvE_clEvENKUlvE10_clEvEUlNS6_8BFloat16EbE_EEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 48,
+            "predicted_seconds": 0.003588096
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIN3c108BFloat16ES5_S5_NS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 194,
+            "predicted_seconds": 0.002790566
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nchwToNhwcKernelI13__nv_bfloat16S2_fLb0ELb1EL21cudnnKernelDataType_t0EEEvNS0_18nchw2nhwc_params_tIT1_EEPKT_PT0_",
+            "calls": 200,
+            "predicted_seconds": 0.0026213
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I51cutlass_80_tensorop_s1688gemm_256x64_16x4_nn_align4EEvNT_6ParamsE",
+            "calls": 22,
+            "predicted_seconds": 0.00251083
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I68cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_32x5_tn_align8EEvNT_6ParamsE",
+            "calls": 48,
+            "predicted_seconds": 0.002374032
+          },
+          {
+            "name": "ampere_bf16_s16816gemm_bf16_64x128_sliced1x2_ldg8_f2f_stages_64x3_nn",
+            "calls": 48,
+            "predicted_seconds": 0.002300304
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIN3c108BFloat16ES4_S4_NS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 192,
+            "predicted_seconds": 0.002241312
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 148,
+            "predicted_seconds": 0.001974836
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIN3c108BFloat16ES4_S4_NS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 96,
+            "predicted_seconds": 0.001926624
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 192,
+            "predicted_seconds": 0.001828416
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I52cutlass_80_tensorop_s1688gemm_128x128_16x5_nn_align4EEvNT_6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.001771917
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize128x64x32_stage5_warpsize2x2x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 21,
+            "predicted_seconds": 0.001610637
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_15gpu_kernel_implIZZZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135524pow_tensor_tensor_kernelERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE4_clEvEUlddE_EEvS5_RKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0010752
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c30CatArrayBatchedCopy_vectorizedINS1_10OpaqueTypeILj2EEEjLi1ELi128ELi1ELi16ELi8EEEvPcNS1_25CatArrInputTensorMetadataIT_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.00107515
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0008396
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0008191
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_11FillFunctorIlEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 148,
+            "predicted_seconds": 0.000817112
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE2_clEvEUllE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 96,
+            "predicted_seconds": 0.000786336
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I52cutlass_80_tensorop_s1688gemm_256x128_16x3_nn_align4EEvNT_6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.000782733
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c30CatArrayBatchedCopy_vectorizedINS1_10OpaqueTypeILj8EEEjLi2ELi128ELi1ELi16ELi2EEEvPcNS1_25CatArrInputTensorMetadataIT_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.0007168
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIdddNS0_15binary_internal10MulFunctorIdEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0006451
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_16tanh_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000634032
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_21compare_scalar_kernelIlEEvRNS_18TensorIteratorBaseENS0_50_GLOBAL__N__e50ef81d_17_CompareKernels_cu_8f1b29aa6OpTypeET_EUllE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 96,
+            "predicted_seconds": 0.000629184
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13BUnaryFunctorIdddNS0_15binary_internal10MulFunctorIdEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0005837
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15neg_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE4_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0005734
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135529pow_tensor_scalar_kernel_implIN3c108BFloat16ES5_EEvRNS_18TensorIteratorBaseET0_EUlS5_E0_St5arrayIPcLm2EEEEviS8_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000560352
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIN3c108BFloat16EEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000555408
+          },
+          {
+            "name": "_ZN50_GLOBAL__N__fa15d16e_17_RangeFactories_cu_38772b0829elementwise_kernel_with_indexIiZZZN2at6native15arange_cuda_outERKN3c106ScalarES6_S6_RNS1_6TensorEENKUlvE_clEvENKUlvE2_clEvEUllE_EEvT_T0_PN15function_traitsISD_E11result_typeE",
+            "calls": 96,
+            "predicted_seconds": 0.000511104
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIlEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 48,
+            "predicted_seconds": 0.000378432
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_49_GLOBAL__N__d2ba64fb_16_TensorCompare_cu_71e06f4e17where_kernel_implERNS_14TensorIteratorEENKUlvE_clEvENKUlvE6_clEvEUlbllE_St5arrayIPcLm4EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000344064
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13BinaryFunctorIlllZZZNS0_19minimum_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE2_clEvEUlllE_EESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000334224
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_21CUDAFunctorOnSelf_addIlEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000329328
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_15CUDAFunctor_addIlEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000329328
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13AUnaryFunctorIlllNS0_15binary_internal10MulFunctorIlEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000324384
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15log_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000324384
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_10AbsFunctorIlEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000319488
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIllbNS0_51_GLOBAL__N__28ce311f_18_CompareEQKernel_cu_d8008c9616CompareEqFunctorIlEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000294912
+          },
+          {
+            "name": "_ZN2at6native54_GLOBAL__N__d8ceb000_21_DistributionNormal_cu_0c5b6e8543distribution_elementwise_grid_stride_kernelIfLi4EZNS0_9templates4cuda20normal_and_transformIffPNS_17CUDAGeneratorImplEZZZNS4_13normal_kernelIS7_EEvRKNS_10TensorBaseEddT_ENKUlvE_clEvENKUlvE0_clEvEUlfE_EEvRNS_18TensorIteratorBaseET1_T2_EUlP24curandStatePhilox4_32_10E0_ZNS1_27distribution_nullary_kernelIff6float4S7_SM_SF_EEvSH_SJ_RKT3_T4_EUlifE_EEvlNS_15PhiloxCudaStateESI_SJ_",
+            "calls": 1,
+            "predicted_seconds": 1.9455e-05
+          }
+        ],
+        "limitations": [
+          "Task durations include epoch rounding and simulator bookkeeping.",
+          "Stream gaps are not a direct measurement of application CPU cost.",
+          "Phase submission ranges can overlap queued GPU work."
+        ]
+      },
+      "drperf": {
+        "validity": [],
+        "regions": {
+          "wan_block": {
+            "calls": 3000,
+            "own_instructions": 2846827912.0,
+            "mean": 948942.6373333334,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_cross_attention": {
+            "calls": 3000,
+            "own_instructions": 1798751485.0,
+            "mean": 599583.8283333334,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_encode_text": {
+            "calls": 2,
+            "own_instructions": 580490.0,
+            "mean": 290245.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "chars"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_flash_attention": {
+            "calls": 6000,
+            "own_instructions": 3993314583.0,
+            "mean": 665552.4305,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "q_tokens",
+              "k_tokens"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_generate": {
+            "calls": 1,
+            "own_instructions": 46452669.0,
+            "mean": 46452669.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "frames",
+              "steps"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_head": {
+            "calls": 100,
+            "own_instructions": 27115706.0,
+            "mean": 271157.06,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_layer_norm": {
+            "calls": 9100,
+            "own_instructions": 448391936.0,
+            "mean": 49273.83912087912,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_model_to": {
+            "calls": 50,
+            "own_instructions": 2352966688.0,
+            "mean": 47059333.76,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "modules"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_rms_norm": {
+            "calls": 12000,
+            "own_instructions": 1660919124.0,
+            "mean": 138409.927,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_rope_apply": {
+            "calls": 6000,
+            "own_instructions": 2252293350.0,
+            "mean": 375382.225,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_scheduler": {
+            "calls": 50,
+            "own_instructions": 94580738.0,
+            "mean": 1891614.76,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "step"
+            ],
+            "states": 50,
+            "dropped": 0,
+            "coefficients": [
+              0.0
+            ],
+            "constant": 256493.71999999954,
+            "max_unexplained": 0.8696772682409041,
+            "max_reconstruction_error": 0.30451510029876144
+          },
+          "wan_self_attention": {
+            "calls": 3000,
+            "own_instructions": 2170064197.0,
+            "mean": 723354.7323333333,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_attention": {
+            "calls": 48,
+            "own_instructions": 30606437.0,
+            "mean": 637634.1041666666,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_encoder": {
+            "calls": 2,
+            "own_instructions": 47220869.0,
+            "mean": 23610434.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_ffn": {
+            "calls": 48,
+            "own_instructions": 18862842.0,
+            "mean": 392975.875,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_time_embedding": {
+            "calls": 100,
+            "own_instructions": 18394173.0,
+            "mean": 183941.73,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "batch"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_tokenize": {
+            "calls": 2,
+            "own_instructions": 9896155.0,
+            "mean": 4948077.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "chars"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_transformer": {
+            "calls": 100,
+            "own_instructions": 375822157.0,
+            "mean": 3758221.57,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "tokens"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_attention": {
+            "calls": 21,
+            "own_instructions": 11703928.0,
+            "mean": 557329.9047619047,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_clear_cache": {
+            "calls": 2,
+            "own_instructions": 4189001.0,
+            "mean": 2094500.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "modules"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_conv": {
+            "calls": 692,
+            "own_instructions": 101369585.0,
+            "mean": 146487.83959537573,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 9,
+            "dropped": 0,
+            "coefficients": [
+              5.158088733109975e-07
+            ],
+            "constant": 94277.27322173951,
+            "max_unexplained": 0.2668956175942628,
+            "max_reconstruction_error": 0.41690414861236075
+          },
+          "wan_vae_decode": {
+            "calls": 1,
+            "own_instructions": 3390034.0,
+            "mean": 3390034.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_decoder": {
+            "calls": 21,
+            "own_instructions": 33194161.0,
+            "mean": 1580674.3333333333,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_resample": {
+            "calls": 63,
+            "own_instructions": 34832771.0,
+            "mean": 552901.126984127,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 4,
+            "dropped": 0,
+            "coefficients": [
+              -6.400741650570392e-05
+            ],
+            "constant": 194858.3160776397,
+            "max_unexplained": 0.6449818724839061,
+            "max_reconstruction_error": 0.33554797388988783
+          },
+          "wan_vae_residual": {
+            "calls": 294,
+            "own_instructions": 200210715.0,
+            "mean": 680988.8265306122,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 7,
+            "dropped": 0,
+            "coefficients": [
+              -1.984799859897868e-06
+            ],
+            "constant": 394042.3806520037,
+            "max_unexplained": 0.4125404563997238,
+            "max_reconstruction_error": 0.0710630672176673
+          }
+        },
+        "counters": [
+          {
+            "version": "0.3",
+            "pid": 309,
+            "app": "python3.12",
+            "excluded_cuda_module": "gx_cuda.so",
+            "follow_unmarked_threads": false,
+            "excluded_cuda_exports": 1551,
+            "excluded_cuda_calls": 8208059,
+            "excluded_instructions": 218961466200,
+            "rep_expand": true,
+            "symbols": true,
+            "max_slots": 1048576,
+            "slots_used": 140402,
+            "slots_overflow": 0,
+            "counter_denied": 0,
+            "marker_seen": true,
+            "unmatched_ends": 0,
+            "depth_overflows": 0,
+            "state_overflows": 0,
+            "threads": 19,
+            "trace_file": "/workspace/runs/1789584046890044733/drperf/raw/run.309.json.trace",
+            "trace_records": 43719,
+            "trace_dropped": 0
+          }
+        ],
+        "total_marked_own_instructions": 18581951706.0
+      },
+      "controller_completion": {
+        "passed": true,
+        "failure": null,
+        "cleanup_errors": [],
+        "applications": {
+          "gx-wan-timing-clock-18d5e0bb236634b2-0": {
+            "container": "gx-wan-timing-clock-18d5e0bb236634b2-0",
+            "returncode": 0,
+            "host_seconds": 370.362789875
+          }
+        },
+        "containers_retained_stopped": true,
+        "logs": "/home/ubuntu/GX/NEX/build/experiments/wan-timing-clock-1789583521307047090"
+      },
+      "runtime": {
+        "mode": "replay",
+        "attachment": "late",
+        "epoch": {
+          "ns": 10000,
+          "shared_path": "/workspace/runs/1789583521307047090/d0/epoch",
+          "create": false
+        },
+        "replay": {
+          "database": "/workspace/.gx-cache/ddf4375175f04d05139c5ce9439cbfd74935565bf47994616ec051c94c9a9447/data",
+          "accounting": "refund",
+          "ns_per_instruction_scale": 1.0
+        },
+        "gpu_memory": {
+          "mode": "hbm",
+          "hbm_bytes_per_second": 1555000000000,
+          "nvlink_bytes_per_second": 300000000000
+        },
+        "cwd": "/workspace",
+        "dynamorio": {
+          "root": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/dynamorio",
+          "client": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_native_client.so",
+          "late_attach": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_late_attach.so",
+          "profiler": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_native_ipc_profiler.so"
+        }
+      },
+      "drperf_controller_completion": {
+        "passed": true,
+        "failure": null,
+        "cleanup_errors": [],
+        "applications": {
+          "gx-wan-drperf-base-db-18d5e13582964d3d-0": {
+            "container": "gx-wan-drperf-base-db-18d5e13582964d3d-0",
+            "returncode": 0,
+            "host_seconds": 338.812935467
+          }
+        },
+        "containers_retained_stopped": true,
+        "logs": "/home/ubuntu/GX/NEX/build/experiments/wan-drperf-base-db-1789584046890044733"
+      },
+      "raw_sha256": {
+        "out/wan-timing/baseline-replay-clock-result/wan/report.json": "01df0bcd9b6f721e052cef36a3d857f85bde64ae41b4f440604018d4d6424943",
+        "out/wan-timing/baseline-replay-clock-result/inventory-audit.json": "705f2141586540ff8669e3041103e7ca79363b9dd5c958d9a0d1e9f3577f2e26",
+        "out/wan-timing/baseline-replay-clock-result/timing-audit.json": "b8d61026a63e0bcc395ade08f2cfa382ea1fda89ea0663f99d44a3cd979bc2b3",
+        "out/wan-timing/baseline-drperf-db-result/drperf-summary.json": "b93845c4b77dddc1235031d4b38432bc1f45fc1a350feede590a24410ab60bf1",
+        "out/wan-timing/baseline-drperf-db-result/wan/report.json": "ee5a7c945c0e9a1aac0dcdddf27f0a97385d0f0a615370cfc1f92fde15f020f6",
+        "out/wan-timing/baseline-drperf-db-result/drperf/raw/run.309.json": "04097db2a4901b062bbfeb247caa6b3f9900b357cd5853387c0c2e54bd7b3d00",
+        "out/wan-timing/baseline-drperf-db-result/drperf/raw/run.309.json.blocks": "d722f97a41a6b68efbdf9b2f3b23b1a6dddb254982b7af27730749d710e7b808",
+        "out/wan-timing/baseline-drperf-db-result/drperf/raw/run.309.json.slots": "e9431e9b4c8e69a8b566381a53693cb82b1f59b85344ed52620cd008e52eba1e",
+        "out/wan-timing/baseline-drperf-db-result/drperf/raw/run.309.json.trace": "26417f08d98119f6b4f2ff7c1ebd5cea39a440040d9599e4d71aafe151e3fc6b",
+        "out/wan-timing/baseline-replay-clock-result/kernel_profile_gx/chrome_trace_352.json": "66fe00a968eee9a75a0a70ffa74bb536d23cdbe8fe2e8f6bc725b2b6b5d2ca9b"
+      }
+    },
+    "optimized": {
+      "workload": {
+        "role": "replay",
+        "pid": 308,
+        "config": {
+          "size": [
+            832,
+            480
+          ],
+          "frame_num": 81,
+          "sampling_steps": 50,
+          "sample_solver": "unipc",
+          "shift": 5.0,
+          "guide_scale": 5.0,
+          "seed": 42,
+          "offload_model": false
+        },
+        "prompt": "A cat walks on the grass, realistic style",
+        "warmup_steps": 4,
+        "convolution_backend": "cudnn",
+        "gpu": "NVIDIA A100-PCIE-40GB",
+        "cudnn_version": 91900,
+        "cudnn_policy": {
+          "allow_tf32": true,
+          "benchmark": false,
+          "deterministic": false
+        },
+        "packages": {
+          "torch": "2.11.0+cu128",
+          "diffusers": "0.36.0",
+          "transformers": "5.8.1",
+          "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE",
+          "safetensors": "0.8.0"
+        },
+        "source_sha256": {
+          "generate.py": "0b12bde63bb316a91ad1462a3db073db4388ec96c818f7548f4e6487939427a4",
+          "gradio/fl2v_14B_singleGPU.py": "5f9ad48a7ef7386d47dc857b83b7d1ea53b52a8aed73d241a6e35087c7ffcf82",
+          "gradio/i2v_14B_singleGPU.py": "5b50fa67e5da28b5b03158e159c692ab1f1d0c303dd7b0e3e9083111a4bfd0ae",
+          "gradio/t2i_14B_singleGPU.py": "0e3ed805bcfc90b10c9e3b53d2ac24a3f0fc8cde62d92e1754579ae676b87c4b",
+          "gradio/t2v_1.3B_singleGPU.py": "4f2b7a1dae07bc4e9dcd397b6ee4a6aa1dcb1f6048d17796c734247873438b1a",
+          "gradio/t2v_14B_singleGPU.py": "d904497f27f259b06037e06020ef176154654636b5c1afeddcc4211260244a8b",
+          "gradio/vace.py": "bf62cb3fce17184b9762e9cd920219a4d8a59f269e59ef8e98caa0c37cf36586",
+          "wan/__init__.py": "bd4c7993b6022f321f63c77d36a146955f0ce1d3a9fb520698b645a9f3e728b9",
+          "wan/configs/__init__.py": "0af8a5a3374058b1b21f0b2408fc109062c55589e4441bcae25fcfa005d3c9d0",
+          "wan/configs/shared_config.py": "a942b6f0a1d1a4ec9a7893c17a6218651ce272953b90d012ce5cdd19d15e45f7",
+          "wan/configs/wan_i2v_14B.py": "86704d4a08fd3b7e71b8256a001cca4fa8c065abd189c67f9f19eb348606ab88",
+          "wan/configs/wan_t2v_14B.py": "99aadb67eec94e28c2a02db45c178c07f7488b7e1b3c148aae1e23e908fe580f",
+          "wan/configs/wan_t2v_1_3B.py": "6976ec4c03f737b69ae17afe13339b32905739205d4c19f16c8b329f9f06e986",
+          "wan/distributed/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "wan/distributed/fsdp.py": "b787312856a1f4da54648999c143d08c3dfa09be75be78e8c39fd21f55b823dd",
+          "wan/distributed/xdit_context_parallel.py": "a805a84aca2e41fbcfe1e58806f98f6dd024f3484bfa1f14a7277ed0778d8416",
+          "wan/first_last_frame2video.py": "5cee40e4a25bdb33e64a04ed55d2f23c3092d349f8407529aa98d585c14b724f",
+          "wan/image2video.py": "79fab091a8847dd0f9e5fd81d0c75ce77bc833f8dbe32d5706dce17070ddf609",
+          "wan/modules/__init__.py": "bfc04ed14de761c0cdacbbf4abced65464b894c9e2f84b60cd5c0f24e3a627c8",
+          "wan/modules/attention.py": "23fe7c6f6e4065242d95e5e188cb2d1a16bd283f05dca7e7e878977158fcfdbc",
+          "wan/modules/clip.py": "70a589a3a77d777352fbce633838b490a6ffc7968ec8beb927e5d7a5a585eb89",
+          "wan/modules/model.py": "09ad62bffbe9baeaaa72779e6096b1b5254f3626f4e4c2ad080a82ab864e2f24",
+          "wan/modules/t5.py": "cf821d1f142fb3badfe6dcfe0aa6cb9d93b9457b387f183e3c8d1177a77fcc5f",
+          "wan/modules/tokenizers.py": "cf5b189c1ae017326efadab2fc6380ba223fa7a59d0be6464bd264db53c76934",
+          "wan/modules/vace_model.py": "91194ce34c771f6ecc264577ee7adf542551a62167a793cfef24f876e3291faa",
+          "wan/modules/vae.py": "4912ffd7a9fbb17ceef9a17d4a9c4b8aee36ec37c32594f54e57693b29909498",
+          "wan/modules/xlm_roberta.py": "7e27d93573b5fb0fef1c9db9205264453bd30dcb1404c38031f24ed9c84b8d4a",
+          "wan/text2video.py": "19f577a7081aba4ee6c3dcc8f2d04413dea6aec5de45d324ac6b48674e265529",
+          "wan/utils/__init__.py": "225f3a18c782ea3776adacdfb4c21bb4ac4d02497c77882545f2c2d619175572",
+          "wan/utils/fm_solvers.py": "b870bdc7253593b75097896b2351e74f747f76d756f58f1b4b0008d6821ae811",
+          "wan/utils/fm_solvers_unipc.py": "2ac6e4edcf8f67ff635b3f24026cd0fd0a34863566529ade9e510bc39fc99505",
+          "wan/utils/prompt_extend.py": "a7d81b451377a47413e932d440d573ea010c0d608c8bb668b3af9c01261c0a67",
+          "wan/utils/qwen_vl_utils.py": "be11ac9808a6d79bb4e99482ea7ae9b2eccd48c2b517845b55f71cf5bb768239",
+          "wan/utils/utils.py": "8e2d85b1c7961233379b9ab38cee153ca8d95358f27cb8bb6dd154e809731c8c",
+          "wan/utils/vace_processor.py": "3fc56687d1d6204cc9603625238f20a8453f7d89f38efff11c3353ac7ab83e36",
+          "wan/vace.py": "bcb792e4750459af3049bfcc52a3e804895d2d7c98bc2e4d2ce7aaa545da9837"
+        },
+        "environment": {
+          "GXVM_ADAPTIVE_BUDGET": "0",
+          "GXVM_CPU_TIMING": "1",
+          "GXVM_DEFER_SCHEDULING": "1",
+          "GXVM_EPOCH_NS": "10000",
+          "GXVM_EPOCH_PATH": "/workspace/runs/1789584897170650337/d0/epoch",
+          "GXVM_GPU_DIRECT": "1",
+          "GXVM_GPU_HBM_BYTES_PER_SECOND": "1555000000000",
+          "GXVM_GPU_MEMORY_MODE": "hbm",
+          "GXVM_GPU_NVLINK_BYTES_PER_SECOND": "300000000000",
+          "GXVM_HIERARCHICAL_EPOCH": "1",
+          "GXVM_LATE_ATTACH_ACTIVE": "1",
+          "GXVM_NATIVE_IPC_ACCOUNTING": "refund",
+          "GXVM_NATIVE_IPC_COST_SCALE_PPM": "1000000",
+          "GXVM_NATIVE_IPC_REPLAY": "/workspace/.gx-cache/ddf4375175f04d05139c5ce9439cbfd74935565bf47994616ec051c94c9a9447/data",
+          "GX_CHROME_TRACE": "1",
+          "GX_CUDA_CONTEXT_LIMITS": "/workspace/.gx-cache/c8a4c604932f6c97e4412460f07a02a010fbe80ba9502cc9c45d415e09218f39/data",
+          "GX_CUDA_DEVICE_ATTRIBUTES": "/workspace/.gx-cache/c0c4d3fdf3513571f37b1bf9e496271fb2d21bc224b86d9abcbaf63eb2eb6da7/data",
+          "GX_DEVICE_MODEL": "A100",
+          "GX_PREDICT_DB": "/workspace/.gx-cache/015c0b13f31db25554f158697056a3c647ac8b4e42cb2e5727ecbae8dd723a3f/data",
+          "GX_PROFILE_DB": "",
+          "GX_PROFILE_SO": "/home/jma/GX/src/profile/gx_profile.so",
+          "GX_REAL_ALLOC_MAX_BYTES": "268435456",
+          "GX_REAL_CUDNN": "1"
+        },
+        "phase_events": [
+          {
+            "name": "text_encoder",
+            "start_ns": 6050000,
+            "end_ns": 29410000
+          },
+          {
+            "name": "text_encoder",
+            "start_ns": 79970000,
+            "end_ns": 103350000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 169150000,
+            "end_ns": 788410000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 788420000,
+            "end_ns": 2677530000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 2677950000,
+            "end_ns": 4567340000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 4567350000,
+            "end_ns": 6455700000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 7725990000,
+            "end_ns": 8345390000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 8345400000,
+            "end_ns": 10234480000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 11504870000,
+            "end_ns": 12124230000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 12124240000,
+            "end_ns": 14013280000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 15283700000,
+            "end_ns": 15903040000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 15903050000,
+            "end_ns": 17792090000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 19062510000,
+            "end_ns": 19681850000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 19681860000,
+            "end_ns": 21570940000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 22841360000,
+            "end_ns": 23460690000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 23460700000,
+            "end_ns": 25349770000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 26620180000,
+            "end_ns": 27239640000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 27239650000,
+            "end_ns": 29128690000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 30398940000,
+            "end_ns": 31018450000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 31018460000,
+            "end_ns": 32907520000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 34177810000,
+            "end_ns": 34797380000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 34797390000,
+            "end_ns": 36686390000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 37956700000,
+            "end_ns": 38576210000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 38576220000,
+            "end_ns": 40465210000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 41735550000,
+            "end_ns": 42355010000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 42355020000,
+            "end_ns": 44244060000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 45514310000,
+            "end_ns": 46133880000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 46133880000,
+            "end_ns": 48022910000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 49293220000,
+            "end_ns": 49912680000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 49912680000,
+            "end_ns": 51801740000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 53072080000,
+            "end_ns": 53691540000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 53691550000,
+            "end_ns": 55580590000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 56850950000,
+            "end_ns": 57470400000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 57470400000,
+            "end_ns": 59359450000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 60629750000,
+            "end_ns": 61249270000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 61249280000,
+            "end_ns": 63138280000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 64408660000,
+            "end_ns": 65028100000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 65028110000,
+            "end_ns": 66917160000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 68187430000,
+            "end_ns": 68806940000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 68806950000,
+            "end_ns": 70696030000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 71966340000,
+            "end_ns": 72585800000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 72585810000,
+            "end_ns": 74474840000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 75745190000,
+            "end_ns": 76364660000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 76364670000,
+            "end_ns": 78253710000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 79523990000,
+            "end_ns": 80143520000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 80143530000,
+            "end_ns": 82032590000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 83302830000,
+            "end_ns": 83922360000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 83922370000,
+            "end_ns": 85811530000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 87081690000,
+            "end_ns": 87701240000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 87701250000,
+            "end_ns": 89590320000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 90860600000,
+            "end_ns": 91480050000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 91480060000,
+            "end_ns": 93369170000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 94639450000,
+            "end_ns": 95258940000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 95258950000,
+            "end_ns": 97147990000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 98418230000,
+            "end_ns": 99037790000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 99037800000,
+            "end_ns": 100926800000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 102197120000,
+            "end_ns": 102816580000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 102816590000,
+            "end_ns": 104705650000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 105975920000,
+            "end_ns": 106595500000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 106595510000,
+            "end_ns": 108484470000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 109754840000,
+            "end_ns": 110374310000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 110374320000,
+            "end_ns": 112263360000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 113533670000,
+            "end_ns": 114153110000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 114153120000,
+            "end_ns": 116042140000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 117312510000,
+            "end_ns": 117931990000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 117932000000,
+            "end_ns": 119821050000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 121091330000,
+            "end_ns": 121710860000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 121710870000,
+            "end_ns": 123599900000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 124870230000,
+            "end_ns": 125489680000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 125489690000,
+            "end_ns": 127378720000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 128649060000,
+            "end_ns": 129268490000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 129268500000,
+            "end_ns": 131157570000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 132427900000,
+            "end_ns": 133047390000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 133047400000,
+            "end_ns": 134936410000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 136206730000,
+            "end_ns": 136826240000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 136826250000,
+            "end_ns": 138715210000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 139985490000,
+            "end_ns": 140605020000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 140605030000,
+            "end_ns": 142494050000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 143764400000,
+            "end_ns": 144383850000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 144383860000,
+            "end_ns": 146272880000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 147543220000,
+            "end_ns": 148162660000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 148162670000,
+            "end_ns": 150051760000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 151322070000,
+            "end_ns": 151941490000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 151941500000,
+            "end_ns": 153830590000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 155100840000,
+            "end_ns": 155720400000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 155720410000,
+            "end_ns": 157609420000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 158879760000,
+            "end_ns": 159499240000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 159499250000,
+            "end_ns": 161388260000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 162658530000,
+            "end_ns": 163278070000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 163278080000,
+            "end_ns": 165167050000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 166437410000,
+            "end_ns": 167056890000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 167056900000,
+            "end_ns": 168945860000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 170216240000,
+            "end_ns": 170835710000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 170835710000,
+            "end_ns": 172724690000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 173995050000,
+            "end_ns": 174614480000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 174614490000,
+            "end_ns": 176503590000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 177773840000,
+            "end_ns": 178393370000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 178393380000,
+            "end_ns": 180282370000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 181552740000,
+            "end_ns": 182172200000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 182172210000,
+            "end_ns": 184061200000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 185331590000,
+            "end_ns": 185951060000
+          },
+          {
+            "name": "transformer",
+            "start_ns": 185951060000,
+            "end_ns": 187840160000
+          },
+          {
+            "name": "vae_decode",
+            "start_ns": 189110370000,
+            "end_ns": 189292390000
+          }
+        ],
+        "load_host_seconds": 75.6968346759677,
+        "start_perf_counter_ns": 9385967386829413,
+        "end_perf_counter_ns": 9386162415559413,
+        "start_ns": 200000,
+        "end_ns": 195028930000,
+        "elapsed_seconds": 195.02873,
+        "clock": "gxvm_time_ns",
+        "shape": [
+          3,
+          81,
+          480,
+          832
+        ],
+        "numerical_equivalence_checked": false,
+        "finite_check_performed": false
+      },
+      "inventory": {
+        "observable_inventory_matches": true,
+        "limitations": [
+          "Does not compare tensor values or arbitrary kernel arguments.",
+          "Regular kernel parameter hashes and cluster dimensions are absent from GX trace."
+        ],
+        "config_differences": [],
+        "skipped_native_launches": [],
+        "source_changes": {
+          "wan/modules/model.py": {
+            "native": "c1572ade3bf7345bd4c00d4a19535788fab62f9c08b5aeb15f6d01f4435bb47a",
+            "emulated": "09ad62bffbe9baeaaa72779e6096b1b5254f3626f4e4c2ad080a82ab864e2f24"
+          },
+          "wan/text2video.py": {
+            "native": "8bb00e21f548706fe41ba4cf93ee4090c8a03bbb2bb797d0a7afe5194c132539",
+            "emulated": "19f577a7081aba4ee6c3dcc8f2d04413dea6aec5de45d324ac6b48674e265529"
+          }
+        },
+        "allowed_source_changes": [
+          "wan/modules/model.py",
+          "wan/text2video.py"
+        ],
+        "emulated_stream_sequence_sha256": {
+          "0": "26d01870d5a4f6f4244d2e173d65c84fa1e1a14a27fae15938a4eb4a951b7188"
+        },
+        "native_launches": 359473,
+        "emu_launches": 359473,
+        "missing": [],
+        "ambiguous": [],
+        "mismatched_metadata": [],
+        "without_usable_samples": [],
+        "count_differences": []
+      },
+      "timing": {
+        "elapsed_virtual_seconds": 195.02873,
+        "launches": 359473,
+        "predicted_kernel_seconds": 193.534945467,
+        "counters": {
+          "pid": "308",
+          "rank": "unknown",
+          "local_rank": "unknown",
+          "hits": "359473",
+          "misses": "0",
+          "errors": "0",
+          "coverage": "1.000000",
+          "virtual_wait_calls": "359473",
+          "predicted_latency_ns": "193534945467",
+          "cache_hits": "358741",
+          "sqlite_queries": "732"
+        },
+        "streams": [
+          {
+            "stream": 1,
+            "task_seconds": 194.98254,
+            "gap_seconds": 0.04619,
+            "largest_gaps": [
+              {
+                "start_ns": 153900000,
+                "end_ns": 169180000,
+                "seconds": 0.01528
+              },
+              {
+                "start_ns": 200000,
+                "end_ns": 6070000,
+                "seconds": 0.00587
+              },
+              {
+                "start_ns": 189110210000,
+                "end_ns": 189111040000,
+                "seconds": 0.00083
+              },
+              {
+                "start_ns": 11504530000,
+                "end_ns": 11504670000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 53071740000,
+                "end_ns": 53071880000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 64408310000,
+                "end_ns": 64408450000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 71966000000,
+                "end_ns": 71966140000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 90860260000,
+                "end_ns": 90860400000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 94639110000,
+                "end_ns": 94639250000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 102196780000,
+                "end_ns": 102196920000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 109754500000,
+                "end_ns": 109754640000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 117312170000,
+                "end_ns": 117312310000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 124869890000,
+                "end_ns": 124870030000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 136206390000,
+                "end_ns": 136206530000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 143764060000,
+                "end_ns": 143764200000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 151321730000,
+                "end_ns": 151321870000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 158879420000,
+                "end_ns": 158879560000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 173994710000,
+                "end_ns": 173994850000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 181552400000,
+                "end_ns": 181552540000,
+                "seconds": 0.00014
+              },
+              {
+                "start_ns": 189109990000,
+                "end_ns": 189110130000,
+                "seconds": 0.00014
+              }
+            ]
+          }
+        ],
+        "phases": {
+          "text_encoder": {
+            "calls": 2,
+            "host_submission_virtual_seconds": 0.046740000000000004,
+            "predicted_kernel_seconds": 0.133729876
+          },
+          "transformer": {
+            "calls": 100,
+            "host_submission_virtual_seconds": 126.69475999999999,
+            "predicted_kernel_seconds": 187.52030407999985
+          },
+          "vae_decode": {
+            "calls": 1,
+            "host_submission_virtual_seconds": 0.18202,
+            "predicted_kernel_seconds": 5.860442496
+          }
+        },
+        "kernels": [
+          {
+            "name": "_ZN5flash16flash_fwd_kernelI23Flash_fwd_kernel_traitsILi128ELi128ELi64ELi4ELb0ELb0EN7cutlass10bfloat16_tE19Flash_kernel_traitsILi128ELi128ELi64ELi4ES3_EELb0ELb0ELb0ELb0ELb0ELb1ELb0ELb0EEEvNS_16Flash_fwd_paramsE",
+            "calls": 6000,
+            "predicted_seconds": 101.37108
+          },
+          {
+            "name": "cublasLtMatmul",
+            "calls": 30600,
+            "predicted_seconds": 36.7478101
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_25bfloat16_copy_kernel_cudaERNS_18TensorIteratorBaseEEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 106238,
+            "predicted_seconds": 9.989571634
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 24594,
+            "predicted_seconds": 6.7973935
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_15gpu_kernel_implINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 18098,
+            "predicted_seconds": 5.49958477
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 18779,
+            "predicted_seconds": 4.817283398
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIN3c107complexIdEES6_S6_NS0_15binary_internal10MulFunctorIS6_EEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 6000,
+            "predicted_seconds": 3.679638
+          },
+          {
+            "name": "_ZN2at6native53_GLOBAL__N__21739cd4_20_layer_norm_kernel_cu_9c5ada8a28vectorized_layer_norm_kernelIffLb0EEEviT0_PKT_S6_S6_PS3_S7_PS4_",
+            "calls": 9100,
+            "predicted_seconds": 2.7740895
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 9618,
+            "predicted_seconds": 2.738831754
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE4_clEvEUldE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 6100,
+            "predicted_seconds": 2.7298665
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135529pow_tensor_scalar_kernel_implIffEEvRNS_18TensorIteratorBaseET0_EUlfE_St5arrayIPcLm2EEEEviS6_T1_",
+            "calls": 12098,
+            "predicted_seconds": 2.689964602
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_18GeluCUDAKernelImplERNS_18TensorIteratorBaseENS0_8GeluTypeEENKUlvE_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 3100,
+            "predicted_seconds": 2.6237229
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIfEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 7038,
+            "predicted_seconds": 2.117464403
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize128x128x16_stage4_warpsize2x2x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 504,
+            "predicted_seconds": 1.629067067
+          },
+          {
+            "name": "_ZN2at6native13reduce_kernelILi512ELi1ENS0_8ReduceOpIfNS0_7MeanOpsIffffEEjfLi4ELi4EEEEEvT1_",
+            "calls": 12098,
+            "predicted_seconds": 1.49263734
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelINS0_15CUDAFunctor_addIfEESt5arrayIPcLm3EELi4E23TrivialOffsetCalculatorILi2EjES7_ILi1EjENS0_6memory12LoadWithCastILi2EEENSA_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 3196,
+            "predicted_seconds": 1.254311324
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize256x64x32_stage3_warpsize4x2x1_g1_tensor16x8x8_execute_kernel__5x_cudnn",
+            "calls": 147,
+            "predicted_seconds": 1.18141745
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE5_clEvEUlfE_EEvS4_RKT_EUliE_EEviT1_",
+            "calls": 2871,
+            "predicted_seconds": 0.768059907
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nchwToNhwcKernelIfffLb0ELb1EL21cudnnKernelDataType_t2EEEvNS0_18nchw2nhwc_params_tIT1_EEPKT_PT0_",
+            "calls": 1466,
+            "predicted_seconds": 0.415833126
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIfEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 18831,
+            "predicted_seconds": 0.309956721
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c19CatArrayBatchedCopyINS1_10OpaqueTypeILj16EEEjLi4ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 6000,
+            "predicted_seconds": 0.231012
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10DivFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 631,
+            "predicted_seconds": 0.212765549
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 1025,
+            "predicted_seconds": 0.199987759
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_62_GLOBAL__N__7d4ed096_23_ActivationSiluKernel_cu_70c0f2ac_1560211silu_kernelERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 809,
+            "predicted_seconds": 0.197416362
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIfEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 633,
+            "predicted_seconds": 0.141190109
+          },
+          {
+            "name": "_ZN2at6native13reduce_kernelILi128ELi4ENS0_8ReduceOpIfNS0_10NormTwoOpsIfffLb1EEEjfLi4ELi4EEEEEvT1_",
+            "calls": 630,
+            "predicted_seconds": 0.096688834
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_wo_smem_tf32f32_tf32f32_f32_nhwckrsc_nhwc_tilesize128x16x64_stage1_warpsize4x1x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 21,
+            "predicted_seconds": 0.087579627
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_17rsqrt_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 12098,
+            "predicted_seconds": 0.075798846
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c19CatArrayBatchedCopyINS1_10OpaqueTypeILj2EEEjLi3ELi64ELi64EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.0756531
+          },
+          {
+            "name": "_Z42fmha_cutlassF_f32_aligned_32x128_gmem_sm80N22PyTorchMemEffAttention15AttentionKernelIfN7cutlass4arch4Sm80ELb1ELi32ELi128ELi65536ELb1ELb1EE6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.061780992
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c35CatArrayBatchedCopy_alignedK_contigINS1_10OpaqueTypeILj4EEEjLi1ELi128ELi1ELi16EEEvPT_NS1_25CatArrInputTensorMetadataIS5_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 9000,
+            "predicted_seconds": 0.060822
+          },
+          {
+            "name": "_ZN14at_cuda_detail3cub16DeviceScanKernelINS0_16DeviceScanPolicyIiSt4plusIiEE9Policy900EPKiPiNS0_13ScanTileStateIiLb1EEES4_NS0_8NullTypeEjiLb0EEEvT0_T1_T2_iT3_T4_T5_",
+            "calls": 9000,
+            "predicted_seconds": 0.058059
+          },
+          {
+            "name": "_ZN2at6native53_GLOBAL__N__222ba01c_20_UpSampleNearest2d_cu_198c5ce228upsample_nearest2d_out_frameIfXadL_ZNS0_43nearest_neighbor_exact_compute_source_indexEfiiEEEEvPKT_PS3_mmmmmff",
+            "calls": 63,
+            "predicted_seconds": 0.055998425
+          },
+          {
+            "name": "cublasGemmEx",
+            "calls": 336,
+            "predicted_seconds": 0.049235472
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIiEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 9000,
+            "predicted_seconds": 0.047916
+          },
+          {
+            "name": "_ZN14at_cuda_detail3cub20DeviceScanInitKernelINS0_13ScanTileStateIiLb1EEEEEvT_i",
+            "calls": 9000,
+            "predicted_seconds": 0.046071
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_indexed_wo_smem_tf32f32_tf32f32_f32_nhwckrsc_nhwc_tilesize128x32x64_stage1_warpsize4x1x1_g1_tensor16x8x8_alignc8_execute_kernel__5x_cudnn",
+            "calls": 40,
+            "predicted_seconds": 0.04531198
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIN3c108BFloat16EEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0271052
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE10_clEvEUlN3c108BFloat16EE_EEvS4_RKT_EUliE_EEviT1_",
+            "calls": 196,
+            "predicted_seconds": 0.022594776
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nhwcToNchwKernelI13__nv_bfloat16S2_fLb1ELb0EL21cudnnKernelDataType_t0EEEvNS0_18nhwc2nchw_params_tIT1_EEPKT_PT0_",
+            "calls": 100,
+            "predicted_seconds": 0.0203878
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_bf16bf16_bf16f32_f32_nhwckrsc_nhwc_tilesize128x128x32_stage4_warpsize2x2x1_g1_tensor16x8x16_execute_kernel__5x_cudnn",
+            "calls": 100,
+            "predicted_seconds": 0.0138444
+          },
+          {
+            "name": "_ZN2at6native24vectorized_gather_kernelILi16ElEEvPcS2_PT0_illllb",
+            "calls": 50,
+            "predicted_seconds": 0.009824206
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIN3c108BFloat16EEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 240,
+            "predicted_seconds": 0.009702432
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nhwcToNchwKernelIfffLb1ELb0EL21cudnnKernelDataType_t0EEEvNS0_18nhwc2nchw_params_tIT1_EEPKT_PT0_",
+            "calls": 61,
+            "predicted_seconds": 0.007780339
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_49_GLOBAL__N__d2ba64fb_16_TensorCompare_cu_71e06f4e19launch_clamp_scalarERNS_18TensorIteratorBaseEN3c106ScalarES6_NS0_6detail11ClampLimitsEENKUlvE_clEvENKUlvE5_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 631,
+            "predicted_seconds": 0.005420083
+          },
+          {
+            "name": "_ZN43_GLOBAL__N__b6de9c8c_10_SoftMax_cu_9f978f6320softmax_warp_forwardIfffLi9ELb0ELb0EEEvPT0_PKT_iiiPKbib",
+            "calls": 48,
+            "predicted_seconds": 0.005274
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastIZZZNS0_44_GLOBAL__N__50c743a2_11_Indexing_cu_89862edb18masked_fill_kernelERNS_14TensorIteratorERKN3c106ScalarEENKUlvE_clEvENKUlvE10_clEvEUlNS6_8BFloat16EbE_EEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 48,
+            "predicted_seconds": 0.003588096
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIN3c108BFloat16ES5_S5_NS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 194,
+            "predicted_seconds": 0.002790566
+          },
+          {
+            "name": "_ZN5cudnn19engines_precompiled16nchwToNhwcKernelI13__nv_bfloat16S2_fLb0ELb1EL21cudnnKernelDataType_t0EEEvNS0_18nchw2nhwc_params_tIT1_EEPKT_PT0_",
+            "calls": 200,
+            "predicted_seconds": 0.0026213
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I51cutlass_80_tensorop_s1688gemm_256x64_16x4_nn_align4EEvNT_6ParamsE",
+            "calls": 22,
+            "predicted_seconds": 0.00251083
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I68cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x128_32x5_tn_align8EEvNT_6ParamsE",
+            "calls": 48,
+            "predicted_seconds": 0.002374032
+          },
+          {
+            "name": "ampere_bf16_s16816gemm_bf16_64x128_sliced1x2_ldg8_f2f_stages_64x3_nn",
+            "calls": 48,
+            "predicted_seconds": 0.002300304
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIN3c108BFloat16ES4_S4_NS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 192,
+            "predicted_seconds": 0.002241312
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_11FillFunctorIN3c108BFloat16EEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 148,
+            "predicted_seconds": 0.001974836
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIN3c108BFloat16ES4_S4_NS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 96,
+            "predicted_seconds": 0.001926624
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BUnaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 192,
+            "predicted_seconds": 0.001828416
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I52cutlass_80_tensorop_s1688gemm_128x128_16x5_nn_align4EEvNT_6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.001771917
+          },
+          {
+            "name": "sm80_xmma_fprop_implicit_gemm_tf32f32_tf32f32_f32_nhwckrsc_nchw_tilesize128x64x32_stage5_warpsize2x2x1_g1_tensor16x8x8_alignc4_execute_kernel__5x_cudnn",
+            "calls": 21,
+            "predicted_seconds": 0.001610637
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi4EZNS0_15gpu_kernel_implIZZZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135524pow_tensor_tensor_kernelERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE4_clEvEUlddE_EEvS5_RKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0010752
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c30CatArrayBatchedCopy_vectorizedINS1_10OpaqueTypeILj2EEEjLi1ELi128ELi1ELi16ELi8EEEvPcNS1_25CatArrInputTensorMetadataIT_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.00107515
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15cos_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0008396
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15sin_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0008191
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_11FillFunctorIlEESt5arrayIPcLm1EEEEviT0_T1_",
+            "calls": 148,
+            "predicted_seconds": 0.000817112
+          },
+          {
+            "name": "_ZN2at6native27unrolled_elementwise_kernelIZZZNS0_23direct_copy_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE1_clEvENKUlvE2_clEvEUllE_St5arrayIPcLm2EELi4E23TrivialOffsetCalculatorILi1EjESB_NS0_6memory12LoadWithCastILi1EEENSC_13StoreWithCastILi1EEEEEviT_T0_T2_T3_T4_T5_",
+            "calls": 96,
+            "predicted_seconds": 0.000786336
+          },
+          {
+            "name": "_ZN7cutlass7Kernel2I52cutlass_80_tensorop_s1688gemm_256x128_16x3_nn_align4EEvNT_6ParamsE",
+            "calls": 21,
+            "predicted_seconds": 0.000782733
+          },
+          {
+            "name": "_ZN2at6native40_GLOBAL__N__0f1a8107_8_Shape_cu_49f7391c30CatArrayBatchedCopy_vectorizedINS1_10OpaqueTypeILj8EEEjLi2ELi128ELi1ELi16ELi2EEEvPcNS1_25CatArrInputTensorMetadataIT_T0_XT2_EXT3_EEENS1_16TensorSizeStrideIS8_Lj4EEEiS8_",
+            "calls": 100,
+            "predicted_seconds": 0.0007168
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIdddNS0_15binary_internal10MulFunctorIdEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 100,
+            "predicted_seconds": 0.0006451
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_16tanh_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE2_clEvEUlN3c108BFloat16EE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000634032
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_21compare_scalar_kernelIlEEvRNS_18TensorIteratorBaseENS0_50_GLOBAL__N__e50ef81d_17_CompareKernels_cu_8f1b29aa6OpTypeET_EUllE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 96,
+            "predicted_seconds": 0.000629184
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13BUnaryFunctorIdddNS0_15binary_internal10MulFunctorIdEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0005837
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_15neg_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE4_clEvEUldE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 100,
+            "predicted_seconds": 0.0005734
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZNS0_51_GLOBAL__N__b1108092_12_PowKernel_cu_70c0f2ac_2135529pow_tensor_scalar_kernel_implIN3c108BFloat16ES5_EEvRNS_18TensorIteratorBaseET0_EUlS5_E0_St5arrayIPcLm2EEEEviS8_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000560352
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_21CUDAFunctorOnSelf_addIN3c108BFloat16EEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000555408
+          },
+          {
+            "name": "_ZN50_GLOBAL__N__fa15d16e_17_RangeFactories_cu_38772b0829elementwise_kernel_with_indexIiZZZN2at6native15arange_cuda_outERKN3c106ScalarES6_S6_RNS1_6TensorEENKUlvE_clEvENKUlvE2_clEvEUllE_EEvT_T0_PN15function_traitsISD_E11result_typeE",
+            "calls": 96,
+            "predicted_seconds": 0.000511104
+          },
+          {
+            "name": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIlEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+            "calls": 48,
+            "predicted_seconds": 0.000378432
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2EZZZNS0_49_GLOBAL__N__d2ba64fb_16_TensorCompare_cu_71e06f4e17where_kernel_implERNS_14TensorIteratorEENKUlvE_clEvENKUlvE6_clEvEUlbllE_St5arrayIPcLm4EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000344064
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13BinaryFunctorIlllZZZNS0_19minimum_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE_clEvENKUlvE2_clEvEUlllE_EESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000334224
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_21CUDAFunctorOnSelf_addIlEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000329328
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_15CUDAFunctor_addIlEESt5arrayIPcLm3EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000329328
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_13AUnaryFunctorIlllNS0_15binary_internal10MulFunctorIlEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000324384
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4EZZZNS0_15log_kernel_cudaERNS_18TensorIteratorBaseEENKUlvE0_clEvENKUlvE0_clEvEUlfE_St5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000324384
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi2ENS0_10AbsFunctorIlEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000319488
+          },
+          {
+            "name": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13AUnaryFunctorIllbNS0_51_GLOBAL__N__28ce311f_18_CompareEQKernel_cu_d8008c9616CompareEqFunctorIlEEEESt5arrayIPcLm2EEEEviT0_T1_",
+            "calls": 48,
+            "predicted_seconds": 0.000294912
+          },
+          {
+            "name": "_ZN2at6native54_GLOBAL__N__d8ceb000_21_DistributionNormal_cu_0c5b6e8543distribution_elementwise_grid_stride_kernelIfLi4EZNS0_9templates4cuda20normal_and_transformIffPNS_17CUDAGeneratorImplEZZZNS4_13normal_kernelIS7_EEvRKNS_10TensorBaseEddT_ENKUlvE_clEvENKUlvE0_clEvEUlfE_EEvRNS_18TensorIteratorBaseET1_T2_EUlP24curandStatePhilox4_32_10E0_ZNS1_27distribution_nullary_kernelIff6float4S7_SM_SF_EEvSH_SJ_RKT3_T4_EUlifE_EEvlNS_15PhiloxCudaStateESI_SJ_",
+            "calls": 1,
+            "predicted_seconds": 1.9455e-05
+          }
+        ],
+        "limitations": [
+          "Task durations include epoch rounding and simulator bookkeeping.",
+          "Stream gaps are not a direct measurement of application CPU cost.",
+          "Phase submission ranges can overlap queued GPU work."
+        ]
+      },
+      "drperf": {
+        "validity": [],
+        "regions": {
+          "wan_block": {
+            "calls": 3000,
+            "own_instructions": 2299404648.0,
+            "mean": 766468.216,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_cross_attention": {
+            "calls": 3000,
+            "own_instructions": 1798840387.0,
+            "mean": 599613.4623333333,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_encode_text": {
+            "calls": 2,
+            "own_instructions": 578618.0,
+            "mean": 289309.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "chars"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_flash_attention": {
+            "calls": 6000,
+            "own_instructions": 3993589065.0,
+            "mean": 665598.1775,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "q_tokens",
+              "k_tokens"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_generate": {
+            "calls": 1,
+            "own_instructions": 44598537.0,
+            "mean": 44598537.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "frames",
+              "steps"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_head": {
+            "calls": 100,
+            "own_instructions": 24835507.0,
+            "mean": 248355.07,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_layer_norm": {
+            "calls": 9100,
+            "own_instructions": 448078877.0,
+            "mean": 49239.437032967035,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_model_to": {
+            "calls": 1,
+            "own_instructions": 46792783.0,
+            "mean": 46792783.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "modules"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_rms_norm": {
+            "calls": 12000,
+            "own_instructions": 1662354774.0,
+            "mean": 138529.5645,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_rope_apply": {
+            "calls": 6000,
+            "own_instructions": 2253929130.0,
+            "mean": 375654.855,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_scheduler": {
+            "calls": 50,
+            "own_instructions": 94444345.0,
+            "mean": 1888886.9,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "step"
+            ],
+            "states": 50,
+            "dropped": 0,
+            "coefficients": [
+              0.0
+            ],
+            "constant": 255512.85999999972,
+            "max_unexplained": 0.8699629856729906,
+            "max_reconstruction_error": 0.30381224982516575
+          },
+          "wan_self_attention": {
+            "calls": 3000,
+            "own_instructions": 2167611772.0,
+            "mean": 722537.2573333334,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_attention": {
+            "calls": 48,
+            "own_instructions": 30623913.0,
+            "mean": 637998.1875,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_encoder": {
+            "calls": 2,
+            "own_instructions": 47286125.0,
+            "mean": 23643062.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_t5_ffn": {
+            "calls": 48,
+            "own_instructions": 18813173.0,
+            "mean": 391941.1041666667,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_time_embedding": {
+            "calls": 100,
+            "own_instructions": 18306956.0,
+            "mean": 183069.56,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "batch"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_tokenize": {
+            "calls": 2,
+            "own_instructions": 9889919.0,
+            "mean": 4944959.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "chars"
+            ],
+            "states": 2,
+            "dropped": 0
+          },
+          "wan_transformer": {
+            "calls": 100,
+            "own_instructions": 372750718.0,
+            "mean": 3727507.18,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "tokens"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_attention": {
+            "calls": 21,
+            "own_instructions": 11711141.999999998,
+            "mean": 557673.4285714285,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_clear_cache": {
+            "calls": 2,
+            "own_instructions": 4191079.0,
+            "mean": 2095539.5,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "modules"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_conv": {
+            "calls": 692,
+            "own_instructions": 101288149.0,
+            "mean": 146370.15751445087,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 9,
+            "dropped": 0,
+            "coefficients": [
+              5.158088733109975e-07
+            ],
+            "constant": 94289.98880911776,
+            "max_unexplained": 0.2658601584814337,
+            "max_reconstruction_error": 0.42025464581102523
+          },
+          "wan_vae_decode": {
+            "calls": 1,
+            "own_instructions": 3388103.0,
+            "mean": 3388103.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_decoder": {
+            "calls": 21,
+            "own_instructions": 33166530.999999996,
+            "mean": 1579358.619047619,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 1,
+            "dropped": 0
+          },
+          "wan_vae_resample": {
+            "calls": 63,
+            "own_instructions": 34896267.0,
+            "mean": 553909.0,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 4,
+            "dropped": 0,
+            "coefficients": [
+              -6.543757034484786e-05
+            ],
+            "constant": 195662.94582960292,
+            "max_unexplained": 0.6444425936946454,
+            "max_reconstruction_error": 0.33356157982689216
+          },
+          "wan_vae_residual": {
+            "calls": 294,
+            "own_instructions": 199957295.0,
+            "mean": 680126.8537414966,
+            "gx_module_instructions": 0,
+            "pcvs": [
+              "elements"
+            ],
+            "states": 7,
+            "dropped": 0,
+            "coefficients": [
+              -2.9027664441712444e-06
+            ],
+            "constant": 393223.7300250488,
+            "max_unexplained": 0.41341499968628675,
+            "max_reconstruction_error": 0.07065106400828494
+          }
+        },
+        "counters": [
+          {
+            "version": "0.3",
+            "pid": 396,
+            "app": "python3.12",
+            "excluded_cuda_module": "gx_cuda.so",
+            "follow_unmarked_threads": false,
+            "excluded_cuda_exports": 1551,
+            "excluded_cuda_calls": 8208059,
+            "excluded_instructions": 219119386308,
+            "rep_expand": true,
+            "symbols": true,
+            "max_slots": 1048576,
+            "slots_used": 140477,
+            "slots_overflow": 0,
+            "counter_denied": 0,
+            "marker_seen": true,
+            "unmatched_ends": 0,
+            "depth_overflows": 0,
+            "state_overflows": 0,
+            "threads": 19,
+            "trace_file": "/workspace/runs/1789584465559740349/drperf/raw/run.396.json.trace",
+            "trace_records": 43670,
+            "trace_dropped": 0
+          }
+        ],
+        "total_marked_own_instructions": 15721327813.0
+      },
+      "controller_completion": {
+        "passed": true,
+        "failure": null,
+        "cleanup_errors": [],
+        "applications": {
+          "gx-wan-timing-cpu-18d5e1fb7b42b4e1-0": {
+            "container": "gx-wan-timing-cpu-18d5e1fb7b42b4e1-0",
+            "returncode": 0,
+            "host_seconds": 365.722974325
+          }
+        },
+        "containers_retained_stopped": true,
+        "logs": "/home/ubuntu/GX/NEX/build/experiments/wan-timing-cpu-1789584897170650337"
+      },
+      "runtime": {
+        "mode": "replay",
+        "attachment": "late",
+        "epoch": {
+          "ns": 10000,
+          "shared_path": "/workspace/runs/1789584897170650337/d0/epoch",
+          "create": false
+        },
+        "replay": {
+          "database": "/workspace/.gx-cache/ddf4375175f04d05139c5ce9439cbfd74935565bf47994616ec051c94c9a9447/data",
+          "accounting": "refund",
+          "ns_per_instruction_scale": 1.0
+        },
+        "gpu_memory": {
+          "mode": "hbm",
+          "hbm_bytes_per_second": 1555000000000,
+          "nvlink_bytes_per_second": 300000000000
+        },
+        "cwd": "/workspace",
+        "dynamorio": {
+          "root": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/dynamorio",
+          "client": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_native_client.so",
+          "late_attach": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_late_attach.so",
+          "profiler": "/workspace/.gx-cache/07875667ce0255738733fe8d675cfc708db725a0ab349f8d33e82c062d5b75c3/data/libgxvm_native_ipc_profiler.so"
+        }
+      },
+      "drperf_controller_completion": {
+        "passed": true,
+        "failure": null,
+        "cleanup_errors": [],
+        "applications": {
+          "gx-wan-drperf-cpu-db-18d5e196fd3edfbd-0": {
+            "container": "gx-wan-drperf-cpu-db-18d5e196fd3edfbd-0",
+            "returncode": 0,
+            "host_seconds": 342.091889881
+          }
+        },
+        "containers_retained_stopped": true,
+        "logs": "/home/ubuntu/GX/NEX/build/experiments/wan-drperf-cpu-db-1789584465559740349"
+      },
+      "raw_sha256": {
+        "out/wan-timing/cpu-replay-clock-result/wan/report.json": "03b4e4eb0a8ad9b64aca922283863e7dbd3fbd5eda8fb05c6be68cc13cef2400",
+        "out/wan-timing/cpu-replay-clock-result/inventory-audit.json": "7daa7f51e2a950fc1a5910795eb59f18f8717f7f28c4dc0e15b228663639cc74",
+        "out/wan-timing/cpu-replay-clock-result/timing-audit.json": "6f95fec1cdbb4246e2b3913e0a11391a415d77e231751a5fa9be90d3a2a5cb66",
+        "out/wan-timing/cpu-drperf-db-result/drperf-summary.json": "d007b22cd9be63d7427fad3aa985698ae62a6a1d673d9c646aae2be9d1c1402c",
+        "out/wan-timing/cpu-drperf-db-result/wan/report.json": "fec10bac49fe9f495eb99a08286da1e637cdb68037d6bb8846450b89ee20246a",
+        "out/wan-timing/cpu-drperf-db-result/drperf/raw/run.396.json": "df39b7c300c49335b8209af8377b8c56f32d44c5f492c6041872a11e64816c0e",
+        "out/wan-timing/cpu-drperf-db-result/drperf/raw/run.396.json.blocks": "8d7d84f5c8a6e77f7e23ed54462ee693daf2d68e61f327f2b59584ee6969c211",
+        "out/wan-timing/cpu-drperf-db-result/drperf/raw/run.396.json.slots": "ca6e0f90f0357532c11805824c079acc09799dffa8058a9a9420e110fa33a348",
+        "out/wan-timing/cpu-drperf-db-result/drperf/raw/run.396.json.trace": "80664eb40a593d0bcaa8b631f09fcb4a2680e6c1020800b6b0e8301c4c6cff04",
+        "out/wan-timing/cpu-replay-clock-result/kernel_profile_gx/chrome_trace_308.json": "c6c14b7e4ad9d988661ef22db1b4e8277c24dd58c2dd19dee32106fb8c1f13a6"
+      }
+    }
+  },
+  "comparison": {
+    "baseline_virtual_seconds": 195.7511,
+    "optimized_virtual_seconds": 195.02873,
+    "virtual_reduction_percent": 0.3690247462211027,
+    "baseline_marked_instructions": 18581951706.0,
+    "optimized_marked_instructions": 15721327813.0,
+    "marked_instruction_reduction_percent": 15.394636356074065
+  },
+  "limitations": [
+    "One paired simulation, not a statistical hardware speedup measurement.",
+    "GX skips GPU arithmetic; full GPU output equivalence is not measured.",
+    "CPU replay includes sampled costs and qualified fallbacks; unresolved samples remain.",
+    "drperf counts marked caller-thread work; most fixed-shape regions have insufficient states for an affine fit.",
+    "Stream task durations include epoch rounding and simulator bookkeeping."
+  ],
+  "cpu_validation": {
+    "log": "out/wan-timing/cpu-drperf-db-result/gx-wan-drperf-cpu-db-18d5e196fd3edfbd-0.log",
+    "sha256": "c97e4ae2a9ed59fca32acd62d4141f76f5d13ad07d116d4aeb2b5d944c93cd43",
+    "checks": "12 exact nonzero CPU outputs and operation sequences; CUDA autocast policy"
+  }
+}
