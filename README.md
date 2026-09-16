@@ -46,6 +46,10 @@ JavaScript runtime and accidental-quadratic cases. Each target has pinned source
 and an empty marker, ready for PCV discovery. Historical evidence and future
 evaluation designs are kept alongside the collection.
 
+[Runnable synthetic counterexamples](examples/drperf_limits/README.md) show six
+ways a performance interface can fail or appear misleadingly successful, with
+repaired PCVs and checks against actual drperf measurements.
+
 Start with `examples/playground`, a 250-line C system with three regions and a
 one-line change to measure. `SPEC.md` states exactly what is computed, on one
 page.
