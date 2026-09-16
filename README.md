@@ -52,6 +52,9 @@ repaired PCVs and checks against actual drperf measurements.
 The [B-tree branch study](examples/btree_branches/README.md) examines real Python
 BTrees lookups and separates semantic expressibility from limitations of the
 current blockwise checker.
+The [hash-table study](examples/hash_table_cost/README.md) tests real CPython
+dictionary collisions, costly equality callbacks, and resizing, including
+cases where fitting state averages hides large differences between inputs.
 
 Start with `examples/playground`, a 250-line C system with three regions and a
 one-line change to measure. `SPEC.md` states exactly what is computed, on one
