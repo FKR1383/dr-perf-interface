@@ -114,6 +114,20 @@ class ResultsTests(unittest.TestCase):
         self.assertIn("irregularity: n/a", text)
         self.assertIn("reason:       five features", text)
 
+    def test_summary_distinguishes_revised_baseline_from_initial_answer(self):
+        data = {"agent_only_initial": {"variables": ["array"]},
+                "agent_only": {"variables": ["n"]}, "agent_drperf": result(),
+                "agent_only_measurability": {"rounds_used": 2, "max_rounds": 3,
+                                             "stop_reason": "measurable"},
+                "agent_only_measurement": {"formula": "2*n", "irregularity": 0.99,
+                                           "status": "ok"}}
+        text = summary(data).split("=== Agent + Dr. Perf ===")[0]
+        self.assertIn("mode: static reasoning with measurability feedback", text)
+        self.assertIn("initial variables: {array}", text)
+        self.assertIn("variables: {n}", text)
+        self.assertIn("measurability rounds: 2/3", text)
+        self.assertIn("irregularity: 99%", text)
+
 
 class MeasurementTests(unittest.TestCase):
     def setUp(self):
@@ -406,10 +420,10 @@ class HarnessTests(unittest.TestCase):
                     self.assertNotIn("Agent + Dr. Perf", kwargs["input"])
                     self.assertNotIn("Required irregularity", kwargs["input"])
                     answer = {"variables": ["n", "n"]}
-                elif len(invocations) == 1:
-                    old_cwd, old_control, old_home = invocations[0]
-                    for path in (old_cwd, old_control, old_home):
-                        self.assertFalse(path.exists())
+                elif len(invocations) == 2:
+                    for old_cwd, old_control, old_home in invocations:
+                        for path in (old_cwd, old_control, old_home):
+                            self.assertFalse(path.exists())
                     self.assertEqual(command[command.index("--sandbox") + 1], "workspace-write")
                     self.assertNotIn("baseline-secret", kwargs["input"])
                     (cwd / "alias.py").write_text("temporary instrumentation")
@@ -426,7 +440,7 @@ class HarnessTests(unittest.TestCase):
                         os.chdir(previous)
                     answer = result([fitted(formula="4*n + 20", irregularity=0)])
                 else:
-                    self.assertEqual(len(invocations), 2)
+                    self.assertEqual(len(invocations), 1)
                     for old_cwd, old_control, old_home in invocations:
                         for path in (old_cwd, old_control, old_home):
                             self.assertFalse(path.exists())
@@ -437,7 +451,7 @@ class HarnessTests(unittest.TestCase):
                     self.assertIn('Frozen feature labels (JSON): ["n"]', kwargs["input"])
                     self.assertFalse((cwd.parent / "measurement-config.json").exists())
                     (cwd / "app.py").write_text("post-hoc instrumentation")
-                    answer = {"status": "ready", "reason": "",
+                    answer = {"status": "ready", "reason": "", "advice": "",
                               "bindings": [{"variable": "n", "expression": "n", "location": "app.py:1"}]}
                 invocations.append((cwd, control, private_home))
                 kwargs["stdout"].write("baseline-secret" if len(invocations) == 1 else "experimental-log")
@@ -462,14 +476,16 @@ class HarnessTests(unittest.TestCase):
             self.assertEqual(value["comparison"]["agent_only"]["missing"], ["entries"])
             self.assertTrue((output / "result.json").is_file())
             self.assertFalse(any("auth.json" in str(p) for p in output.rglob("*")))
-            self.assertEqual((output / "logs/agent_only/codex.log").read_text(), "baseline-secret")
-            self.assertTrue((output / "measurements/agent_only/raw/run.1.json").is_file())
+            self.assertEqual((output / "logs/agent_only/round-001/codex.log").read_text(), "baseline-secret")
+            self.assertTrue((output / "measurements/agent_only/round-001/raw/run.1.json").is_file())
             self.assertTrue((output / "measurements/attempt-001/raw/run.1.json").is_file())
             self.assertEqual(json.loads((output / "agent_only.json").read_text()), {"variables": ["n"]})
             self.assertEqual(json.loads((output / "agent_only_measurement.json").read_text()),
                              value["agent_only_measurement"])
             self.assertIn("post-hoc instrumentation",
-                          (output / "measurements/agent_only/instrumentation.patch").read_text())
+                          (output / "measurements/agent_only/round-001/instrumentation.patch").read_text())
+            self.assertEqual(value["agent_only_measurability"]["stop_reason"], "measurable")
+            self.assertEqual(json.loads((output / "agent_only_initial.json").read_text()), {"variables": ["n"]})
 
     def test_invalid_codex_json_and_missing_cli(self):
         with patch.object(codex_runner.shutil, "which", return_value=None):
@@ -496,6 +512,8 @@ class HarnessTests(unittest.TestCase):
                      ["--workspace", temp, "--region", "parse", "--max-attempts", "11", "--", "./app"]]
             cases += [["--workspace", temp, "--region", "parse", "--target-irregularity", target,
                        "--", "./app"] for target in ["0", "-0.1", "10", "nan", "inf"]]
+            cases += [["--workspace", temp, "--region", "parse", "--agent-only-max-rounds", rounds,
+                       "--", "./app"] for rounds in ["0", "11"]]
             for args in cases:
                 err = io.StringIO()
                 with contextlib.redirect_stderr(err):
@@ -516,6 +534,7 @@ class HarnessTests(unittest.TestCase):
                                "--results-dir", temp + "/results", "--", "./app"])
             self.assertEqual(rc, 2)
             self.assertEqual(evaluated.call_args.args[4], 10)
+            self.assertEqual(evaluated.call_args.args[8], 3)
             self.assertIn("final formula:", output.getvalue())
             self.assertIn("target met:         no", output.getvalue())
             self.assertIn("irregularity target: <10%", output.getvalue())

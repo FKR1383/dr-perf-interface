@@ -98,12 +98,94 @@ def rebase_command(command, source, destination):
     return [rebase(arg) for arg in command]
 
 
+def capture_files(base, prefix, captured):
+    for path in base.rglob("*"):
+        if path.is_file() and "codex-home" not in path.relative_to(base).parts:
+            captured[f"{prefix}/{path.relative_to(base)}"] = path.read_bytes()
+
+
+def agent_only_search(executable, snapshot, source, region, command, captured, model=None,
+                      max_rounds=baseline_measure.DEFAULT_ROUNDS):
+    """Static proposals alternate with isolated measurability checks, not fit feedback."""
+    initial = None
+    history = []
+    prompt = Template((HERE / "prompts/agent_only.md").read_text()).substitute(region=repr(region))
+    for number in range(1, max_rounds + 1):
+        current_prompt = prompt
+        if history:
+            # history contains only prior proposals and allowlisted feasibility
+            # advice, never formulas, scores, counts, traces, or other-agent output.
+            current_prompt += (
+                "\n\nRevise your previous answer using the measurability feedback below. "
+                "You may use this feedback in addition to static source reasoning. "
+                "It comes from a separate instrumentation service and concerns only "
+                "whether your features can be represented and measured. It provides no "
+                "evidence about how well they explain cost. You still MUST NOT run the "
+                "application, Dr. Perf, or any experiments, edit files, or inspect other "
+                "sessions/artifacts. Choose any revisions yourself from the source. "
+                "Define scalar entry-state expressions precisely; do not replace array "
+                "contents with their addresses, invent future values, replay the region, "
+                "or change the workload or region. Return the same variable-only schema. "
+                "If you cannot improve the answer under these restrictions, retain your "
+                "best static answer; the bounded loop may end without a measurable set.\n" +
+                json.dumps(history, indent=2))
+        label = f"round-{number:03d}"
+        print(f"Running Agent Only (measurability round {number}/{max_rounds})...",
+              file=sys.stderr, flush=True)
+        with tempfile.TemporaryDirectory(prefix="drperf-static-") as session:
+            session = Path(session)
+            target, control = session / "workspace", session / "control"
+            shutil.copytree(snapshot, target)
+            try:
+                answer = codex_runner.invoke(executable, "agent_only", target, control,
+                                             current_prompt, model=model)
+            finally:
+                capture_files(control, f"logs/agent_only/{label}", captured)
+        if initial is None:
+            initial = {"variables": list(answer["variables"])}
+        print(f"Checking Agent Only measurability ({number}/{max_rounds})...",
+              file=sys.stderr, flush=True)
+        with tempfile.TemporaryDirectory(prefix="drperf-baseline-") as session:
+            session = Path(session)
+            target = session / "workspace"
+            shutil.copytree(snapshot, target)
+            control, journal = session / "control", session / "measurement"
+            try:
+                measured = baseline_measure.measure(
+                    executable, target, control, journal, region,
+                    rebase_command(command, source, target), answer["variables"], model)
+            finally:
+                capture_files(control, f"logs/agent_only_instrumentation/{label}", captured)
+                capture_files(journal, f"measurements/agent_only/{label}", captured)
+        history.append({"round": number, "variables": list(answer["variables"]),
+                        "feedback": baseline_measure.feedback(measured)})
+        print(f"Agent Only measurability round {number}: {measured['status']}",
+              file=sys.stderr, flush=True)
+        if measured["status"] == "ok":
+            stop_reason = "measurable"
+            break  # Never retry because irregularity is high.
+        if not baseline_measure.retryable(measured):
+            stop_reason = "measurement_unavailable"
+            break
+    else:
+        stop_reason = "round_limit_reached"
+    return {"agent_only": answer, "agent_only_initial": initial,
+            "agent_only_measurement": measured,
+            "agent_only_measurability": {
+                "method": "static_with_measurability_feedback", "rounds": history,
+                "rounds_used": len(history), "max_rounds": max_rounds,
+                "measurable": measured["status"] == "ok", "stop_reason": stop_reason}}
+
+
 def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS, model=None,
-             ground_truth=None, target_irregularity=0.1):
+             ground_truth=None, target_irregularity=0.1,
+             agent_only_max_rounds=baseline_measure.DEFAULT_ROUNDS):
     if not 1 <= max_attempts <= MAX_ATTEMPTS:
         raise EvaluationError(f"max-attempts must be between 1 and {MAX_ATTEMPTS}")
     if not math.isfinite(target_irregularity) or not 0 < target_irregularity <= 1:
         raise EvaluationError("target irregularity must be a fraction greater than 0 and at most 1")
+    if not 1 <= agent_only_max_rounds <= baseline_measure.MAX_ROUNDS:
+        raise EvaluationError(f"agent-only-max-rounds must be between 1 and {baseline_measure.MAX_ROUNDS}")
     executable = codex_runner.find_codex()
     drperf_measure.check_build()
     captured = {}
@@ -117,65 +199,34 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
                 raise EvaluationError("temporary directory is inside the workspace; set TMPDIR outside the workspace")
             snapshot = root / "snapshot"
             copy_workspace(workspace, snapshot, results_dir)
-            outputs = {}
-            for competitor in ("agent_only", "agent_drperf"):
-                with tempfile.TemporaryDirectory(prefix="drperf-competitor-") as session:
-                    session = Path(session)
-                    target = session / "workspace"
-                    shutil.copytree(snapshot, target)
-                    control = session / "control"
-                    journal = session / "measurements"
-                    journal.mkdir()
-                    config = {"workspace": str(target), "journal": str(journal),
-                              "region": region, "command": rebase_command(command, workspace, target),
-                              "max_attempts": max_attempts, "target_irregularity": target_irregularity}
-                    config_path = session / "measurement-config.json"
-                    # No experimental prompt/config exists during the static run.
-                    if competitor == "agent_drperf":
-                        write_json(config_path, config)
-                    prompt_name = "agent_only" if competitor == "agent_only" else "drperf_agent"
-                    prompt = Template((HERE / "prompts" / f"{prompt_name}.md").read_text()).substitute(
-                        region=repr(region), command=shlex.join(config["command"]),
-                        max_attempts=max_attempts, drperf_root=HERE.parent,
-                        target_irregularity=target_irregularity, target_percent=f"{100 * target_irregularity:g}",
-                        helper=shlex.join([sys.executable, str(HERE / "drperf_measure.py"),
-                                           "--config", str(config_path)]))
-                    print(f"Running {'Agent Only' if competitor == 'agent_only' else 'Agent + Dr. Perf'}...",
-                          file=sys.stderr, flush=True)
-                    try:
-                        if competitor == "agent_drperf":
-                            answer, search_status = search(executable, target, control, prompt, config, model)
-                        else:
-                            answer = codex_runner.invoke(executable, competitor, target, control, prompt,
-                                                         max_attempts, model)
-                        outputs[competitor] = answer
-                    finally:
-                        # Hold logs in memory until BOTH sessions have ended.
-                        # Raw measurement data is saved for audit/re-analysis.
-                        for base, prefix in ((control, f"logs/{competitor}"),
-                                             (journal, "measurements")):
-                            for path in base.rglob("*"):
-                                if path.is_file() and "codex-home" not in path.relative_to(base).parts:
-                                    captured[f"{prefix}/{path.relative_to(base)}"] = path.read_bytes()
-            # Neither discovery competitor can receive post-hoc baseline feedback.
-            # Start from the original snapshot, not the experimental agent's edits.
-            print("Measuring Agent Only's frozen feature set...", file=sys.stderr, flush=True)
-            with tempfile.TemporaryDirectory(prefix="drperf-baseline-") as session:
+            outputs = agent_only_search(executable, snapshot, workspace, region, command,
+                                        captured, model, agent_only_max_rounds)
+            with tempfile.TemporaryDirectory(prefix="drperf-competitor-") as session:
                 session = Path(session)
                 target = session / "workspace"
                 shutil.copytree(snapshot, target)
-                control, journal = session / "control", session / "measurement"
+                control = session / "control"
+                journal = session / "measurements"
+                journal.mkdir()
+                config = {"workspace": str(target), "journal": str(journal),
+                          "region": region, "command": rebase_command(command, workspace, target),
+                          "max_attempts": max_attempts, "target_irregularity": target_irregularity}
+                config_path = session / "measurement-config.json"
+                write_json(config_path, config)
+                prompt = Template((HERE / "prompts/drperf_agent.md").read_text()).substitute(
+                    region=repr(region), command=shlex.join(config["command"]),
+                    max_attempts=max_attempts, drperf_root=HERE.parent,
+                    target_irregularity=target_irregularity, target_percent=f"{100 * target_irregularity:g}",
+                    helper=shlex.join([sys.executable, str(HERE / "drperf_measure.py"),
+                                       "--config", str(config_path)]))
+                print("Running Agent + Dr. Perf...", file=sys.stderr, flush=True)
                 try:
-                    outputs["agent_only_measurement"] = baseline_measure.measure(
-                        executable, target, control, journal, region,
-                        rebase_command(command, workspace, target),
-                        outputs["agent_only"]["variables"], model)
+                    answer, search_status = search(executable, target, control, prompt, config, model)
+                    outputs["agent_drperf"] = answer
                 finally:
-                    for base, prefix in ((control, "logs/agent_only_instrumentation"),
-                                         (journal, "measurements/agent_only")):
-                        for path in base.rglob("*"):
-                            if path.is_file() and "codex-home" not in path.relative_to(base).parts:
-                                captured[f"{prefix}/{path.relative_to(base)}"] = path.read_bytes()
+                    # Hold logs in memory until BOTH competitors have ended.
+                    capture_files(control, "logs/agent_drperf", captured)
+                    capture_files(journal, "measurements", captured)
             result = {"region": region, **outputs, "search": search_status}
             if ground_truth is not None:
                 truth = variables(ground_truth)
@@ -189,7 +240,7 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         if result is not None:
-            for competitor in ("agent_only", "agent_drperf"):
+            for competitor in ("agent_only", "agent_only_initial", "agent_only_measurability", "agent_drperf"):
                 write_json(results_dir / f"{competitor}.json", result[competitor])
             write_json(results_dir / "agent_only_measurement.json", result["agent_only_measurement"])
             write_json(results_dir / "result.json", result)
@@ -207,6 +258,8 @@ def main(argv=None):
     parser.add_argument("--ground-truth", help="comma-separated source expressions; an empty string means the empty set")
     parser.add_argument("--results-dir", type=Path)
     parser.add_argument("--model", help="Codex model (default: your normal Codex configuration)")
+    parser.add_argument("--agent-only-max-rounds", type=int, default=baseline_measure.DEFAULT_ROUNDS,
+                        help="maximum static proposal/measurability rounds (default: 3, maximum: 10)")
     args_list = list(sys.argv[1:] if argv is None else argv)
     split = args_list.index("--") if "--" in args_list else len(args_list)
     args = parser.parse_args(args_list[:split])
@@ -224,6 +277,8 @@ def main(argv=None):
             raise EvaluationError(f"max-attempts must be between 1 and {MAX_ATTEMPTS}")
         if not math.isfinite(args.target_irregularity) or not 0 < args.target_irregularity <= 1:
             raise EvaluationError("target irregularity must be a fraction greater than 0 and at most 1")
+        if not 1 <= args.agent_only_max_rounds <= baseline_measure.MAX_ROUNDS:
+            raise EvaluationError(f"agent-only-max-rounds must be between 1 and {baseline_measure.MAX_ROUNDS}")
         truth = None if args.ground_truth is None else (
             variables([v.strip() for v in args.ground_truth.split(",")]) if args.ground_truth else [])
         if args.results_dir:
@@ -236,7 +291,7 @@ def main(argv=None):
         else:
             results_dir = Path(tempfile.mkdtemp(prefix="drperf-results-"))
         result = evaluate(workspace, args.region, command, results_dir, args.max_attempts,
-                          args.model, truth, args.target_irregularity)
+                          args.model, truth, args.target_irregularity, args.agent_only_max_rounds)
         print(summary(result))
         print(f"\nResults: {results_dir / 'result.json'}")
         if result["agent_drperf"]["final_formula"] is None:

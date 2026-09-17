@@ -1,10 +1,11 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "required": ["status", "reason", "bindings"],
+  "required": ["status", "reason", "advice", "bindings"],
   "properties": {
     "status": {"type": "string", "enum": ["ready", "unsupported"]},
     "reason": {"type": "string"},
+    "advice": {"type": "string"},
     "bindings": {
       "type": "array",
       "items": {

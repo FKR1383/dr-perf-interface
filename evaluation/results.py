@@ -107,7 +107,15 @@ def summary(result):
         return "n/a" if value is None else f"{100 * value:.4g}%"
 
     dr = result["agent_drperf"]
-    lines = ["=== Agent Only ===", f"variables: {names(result['agent_only']['variables'])}"]
+    lines = ["=== Agent Only ==="]
+    if "agent_only_measurability" in result:
+        check = result["agent_only_measurability"]
+        lines.append("mode: static reasoning with measurability feedback")
+        if result["agent_only_initial"]["variables"] != result["agent_only"]["variables"]:
+            lines.append(f"initial variables: {names(result['agent_only_initial']['variables'])}")
+        lines += [f"measurability rounds: {check['rounds_used']}/{check['max_rounds']}",
+                  f"measurability stopped: {check['stop_reason']}"]
+    lines.append(f"variables: {names(result['agent_only']['variables'])}")
     if "agent_only_measurement" in result:
         measured = result["agent_only_measurement"]
         lines += [f"formula:      {measured['formula'] if measured['formula'] is not None else 'n/a'}",

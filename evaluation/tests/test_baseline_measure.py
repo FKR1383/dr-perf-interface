@@ -1,5 +1,7 @@
 """Frozen-answer measurement tests; Codex is substituted, never called live."""
 import json
+import contextlib
+import io
 import os
 from pathlib import Path
 import shutil
@@ -8,12 +10,12 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from evaluation import baseline_measure as baseline, codex_runner, drperf_measure
+from evaluation import baseline_measure as baseline, codex_runner, drperf_measure, run
 from evaluation.results import EvaluationError, validate_result
 
 
 def ready(names):
-    return {"status": "ready", "reason": "", "bindings": [
+    return {"status": "ready", "reason": "", "advice": "", "bindings": [
         {"variable": n, "expression": n, "location": "driver.c:1"} for n in names]}
 
 
@@ -89,7 +91,7 @@ class BaselineMeasurementTests(unittest.TestCase):
                                             "agent_only")["variables"]), 5)
 
     def test_unsupported_pointer_and_binding_changes_are_not_measured(self):
-        answers = [({"status": "unsupported", "reason": "input is a buffer pointer", "bindings": []},
+        answers = [({"status": "unsupported", "reason": "input is a buffer pointer", "advice": "Define a scalar.", "bindings": []},
                     "unsupported_features"),
                    (ready(["length"]), "instrumentation_error"),
                    (ready([]), "instrumentation_error"),
@@ -132,6 +134,135 @@ class BaselineMeasurementTests(unittest.TestCase):
         self.assertEqual(answer, ready(["n"]))
 
 
+class MeasurabilityLoopTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.source = self.root / "source"
+        self.source.mkdir()
+        (self.source / "driver.c").write_text("untouched source\n")
+        self.captured = {}
+
+    def loop(self, rounds=3):
+        with contextlib.redirect_stderr(io.StringIO()):
+            return run.agent_only_search("codex", self.source, self.source, "work",
+                                         [str(self.source / "program"), "fixed=1"],
+                                         self.captured, "model-name", rounds)
+
+    def test_array_revised_with_advice_then_stop_even_at_high_irregularity(self):
+        events, static_prompts, old_sessions = [], [], []
+        candidate = ["feature[i][j] for all i,j", "n"]
+        advice = "An array is not a scalar state; define the exact scalar expression you intend."
+
+        def invoke(executable, competitor, workspace, control, prompt, **kwargs):
+            for old in old_sessions:
+                self.assertFalse(old.exists())
+            old_sessions.append(workspace.parent)
+            self.assertEqual((workspace / "driver.c").read_text(), "untouched source\n")
+            self.assertFalse((workspace / "private-evidence.log").exists())
+            self.assertEqual(kwargs["model"], "model-name")
+            control.mkdir()
+            (control / "codex.log").write_text("private-evidence-log")
+            (control / "codex-home").mkdir()
+            (control / "codex-home/auth.json").write_text("do not export")
+            events.append(competitor)
+            if competitor == "agent_only":
+                static_prompts.append(prompt)
+                self.assertNotIn("private-evidence", prompt)
+                if len(static_prompts) == 1:
+                    return {"variables": candidate}
+                self.assertIn(advice, prompt)
+                return {"variables": ["n"]}
+            (workspace / "driver.c").write_text("instrumentation changes\n")
+            (workspace / "private-evidence.log").write_text("not for static sessions")
+            if len(static_prompts) == 1:
+                return {"status": "unsupported", "reason": "feature is a floating-point matrix",
+                        "advice": advice, "bindings": []}
+            return ready(["n"])
+
+        def measure(command, out, region, expected):
+            events.append("native_measurement")
+            self.assertEqual(command, [str(Path.cwd() / "program"), "fixed=1"])
+            self.assertEqual(expected, ["n"])
+            return {"formula": "private-performance-formula", "irregularity": 0.9999,
+                    "status": "ok", "details": {"unexplained_functions": ["private-cost-details"]}}
+
+        with patch.object(codex_runner, "invoke", side_effect=invoke), \
+             patch.object(drperf_measure, "measure", side_effect=measure) as measured:
+            result = self.loop()
+        self.assertEqual(events, ["agent_only", "agent_only_instrumentation", "agent_only",
+                                  "agent_only_instrumentation", "native_measurement"])
+        measured.assert_called_once()
+        self.assertEqual(result["agent_only_initial"]["variables"], candidate)
+        self.assertEqual(result["agent_only"]["variables"], ["n"])
+        metadata = result["agent_only_measurability"]
+        self.assertEqual(metadata["rounds_used"], 2)
+        self.assertEqual(metadata["stop_reason"], "measurable")
+        self.assertNotIn("private-performance", json.dumps(metadata))
+        self.assertNotIn("private-cost", json.dumps(metadata))
+        self.assertNotIn("0.9999", json.dumps(metadata))
+        self.assertEqual(result["agent_only_measurement"]["irregularity"], 0.9999)
+        self.assertEqual((self.source / "driver.c").read_text(), "untouched source\n")
+        self.assertIn("measurements/agent_only/round-001/instrumentation.json", self.captured)
+        self.assertIn("measurements/agent_only/round-002/measurement.json", self.captured)
+        self.assertFalse(any("auth.json" in name for name in self.captured))
+        self.assertTrue(all(not p.exists() for p in old_sessions))
+
+    def test_native_diagnostics_are_not_forwarded_to_static_revision(self):
+        prompts = []
+
+        def invoke(executable, competitor, workspace, control, prompt, **kwargs):
+            if competitor == "agent_only":
+                prompts.append(prompt)
+                self.assertNotIn("LEAK_NATIVE_RESULT", prompt)
+                self.assertNotIn("0.812345", prompt)
+                return {"variables": ["n"] if len(prompts) == 1 else ["m"]}
+            return ready(["n"] if len(prompts) == 1 else ["m"])
+
+        failure = drperf_measure.failed("insufficient_state_variation", "LEAK_NATIVE_RESULT",
+                                       instruction_count=812345, irregularity=0.812345,
+                                       formula="LEAK_NATIVE_RESULT")
+        success = {"status": "ok", "formula": "7*m", "irregularity": 1.0, "details": {}}
+        with patch.object(codex_runner, "invoke", side_effect=invoke), \
+             patch.object(drperf_measure, "measure", side_effect=[failure, success]) as measured:
+            result = self.loop()
+        self.assertEqual(measured.call_count, 2)
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("enough distinct state combinations", prompts[1])
+        self.assertEqual(result["agent_only_measurability"]["stop_reason"], "measurable")
+
+    def test_round_budget_preserves_all_failed_proposals(self):
+        def invoke(executable, competitor, *args, **kwargs):
+            if competitor == "agent_only":
+                return {"variables": ["array"]}
+            return {"status": "unsupported", "reason": "array-valued", "advice": "Define a scalar.",
+                    "bindings": []}
+
+        with patch.object(codex_runner, "invoke", side_effect=invoke) as invoked, \
+             patch.object(drperf_measure, "measure") as measured:
+            result = self.loop(rounds=2)
+        self.assertEqual(invoked.call_count, 4)
+        measured.assert_not_called()
+        metadata = result["agent_only_measurability"]
+        self.assertEqual(metadata["rounds_used"], 2)
+        self.assertEqual(metadata["stop_reason"], "round_limit_reached")
+        self.assertFalse(metadata["measurable"])
+        self.assertIsNone(result["agent_only_measurement"]["irregularity"])
+
+    def test_tool_failure_does_not_request_cost_feature_revision(self):
+        def invoke(executable, competitor, *args, **kwargs):
+            return {"variables": ["n"]} if competitor == "agent_only" else ready(["n"])
+
+        with patch.object(codex_runner, "invoke", side_effect=invoke) as invoked, \
+             patch.object(drperf_measure, "measure", return_value=drperf_measure.failed(
+                 "workload_failed", "LEAK_EXECUTION_OUTPUT")):
+            result = self.loop()
+        self.assertEqual(invoked.call_count, 2)
+        self.assertEqual(result["agent_only_measurability"]["stop_reason"], "measurement_unavailable")
+        self.assertNotIn("LEAK_EXECUTION_OUTPUT", json.dumps(result["agent_only_measurability"]))
+
+
 @unittest.skipUnless(os.environ.get("DRPERF_EVAL_INTEGRATION") == "1",
                      "set DRPERF_EVAL_INTEGRATION=1 for native frozen-answer measurements")
 class NativeBaselineTests(unittest.TestCase):
@@ -162,7 +293,7 @@ int main(void) {
                 subprocess.run(["cc", "-O2", "-g", "driver.c", "-L" + str(root / "build"),
                                 "-lperfmark", "-Wl,-rpath," + str(root / "build"), "-o", "program"],
                                cwd=workspace, check=True)
-                return {"status": "ready", "reason": "", "bindings": [
+                return {"status": "ready", "reason": "", "advice": "", "bindings": [
                     {"variable": "n^2", "expression": "(int64_t)n*n", "location": "driver.c:5"}]}
 
             with patch.object(codex_runner, "invoke", side_effect=instrument) as instrumented:
