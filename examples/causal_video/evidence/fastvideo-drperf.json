@@ -1,0 +1,218 @@
+{
+  "schema": "causal-video-fastvideo-drperf-v1",
+  "run_passed": true,
+  "validity": [],
+  "worker_pid": 307,
+  "torch_interop_threads": 1,
+  "metadata_mode": true,
+  "worker_cpu_output": true,
+  "dit_layerwise_offload": true,
+  "worker_attention_backend": {
+    "self": "FLASH_ATTN",
+    "cross": "FLASH_ATTN"
+  },
+  "measured_public_call_seconds_under_drperf": 18.859858566,
+  "gx_trace_cleanup_seconds_outside_measurement": 25.56847534701228,
+  "gx_trace_cleanup_workers_exited": [
+    true
+  ],
+  "excluded_setup_regions": [
+    "fastvideo_attach_setup"
+  ],
+  "counter_validity": {
+    "marker_seen": true,
+    "excluded_cuda_module": "gx_cuda.so",
+    "excluded_cuda_exports": 1551,
+    "slots_overflow": 0,
+    "counter_denied": 0,
+    "state_overflows": 0,
+    "trace_dropped": 0,
+    "unmatched_ends": 0,
+    "depth_overflows": 0
+  },
+  "total_marked_exclusive_instructions": 8632102827,
+  "top_regions": [
+    {
+      "region": "fastvideo_transformer",
+      "calls": 35,
+      "exclusive_instructions": 4995926811,
+      "fraction_of_marked": 0.5787612718622217
+    },
+    {
+      "region": "fastvideo_causal_denoise",
+      "calls": 1,
+      "exclusive_instructions": 1066177352,
+      "fraction_of_marked": 0.12351305045453671
+    },
+    {
+      "region": "fastvideo_cross_attention",
+      "calls": 1050,
+      "exclusive_instructions": 694798419,
+      "fraction_of_marked": 0.08049005357382544
+    },
+    {
+      "region": "fastvideo_self_attention",
+      "calls": 1050,
+      "exclusive_instructions": 569299108,
+      "fraction_of_marked": 0.06595138165167735
+    },
+    {
+      "region": "fastvideo_rope",
+      "calls": 2100,
+      "exclusive_instructions": 485999779,
+      "fraction_of_marked": 0.05630143532116662
+    },
+    {
+      "region": "fastvideo_vae_decoder",
+      "calls": 21,
+      "exclusive_instructions": 360225832,
+      "fraction_of_marked": 0.041730947744652025
+    },
+    {
+      "region": "fastvideo_pipeline",
+      "calls": 1,
+      "exclusive_instructions": 343708288,
+      "fraction_of_marked": 0.03981744597908739
+    },
+    {
+      "region": "fastvideo_text_encode",
+      "calls": 1,
+      "exclusive_instructions": 98389714,
+      "fraction_of_marked": 0.011398116539141639
+    }
+  ],
+  "rope_tables": {
+    "calls": 35,
+    "exclusive_instructions": 568769,
+    "mean_exclusive_instructions": 16250.542857142857,
+    "distinct_states": 7,
+    "state_values": [
+      [
+        3,
+        30,
+        52,
+        128,
+        0
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        3
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        6
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        9
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        12
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        15
+      ],
+      [
+        3,
+        30,
+        52,
+        128,
+        18
+      ]
+    ],
+    "fixed_pcv_observations": {
+      "frames": 3,
+      "height": 30,
+      "width": 52,
+      "head_dim": 128
+    },
+    "conditional_fit": {
+      "condition": {
+        "frames": 3,
+        "height": 30,
+        "width": 52,
+        "head_dim": 128
+      },
+      "coefficients": {
+        "start_frame": 0.0
+      },
+      "constant": 16250.54285714286,
+      "max_unexplained_fraction": 0.0,
+      "max_reconstruction_error_fraction": 0.008254533978026042
+    }
+  },
+  "limitations": [
+    "Worker exclusive host instructions, not GPU time or public-call wall time",
+    "Rope table cache is already warm after one full warmup; observed table cost cannot quantify cold misses",
+    "fastvideo_block instrumentation was installed but no block region appeared; its work remains in ancestor regions"
+  ],
+  "artifacts": {
+    "managed_result": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/result.json",
+      "bytes": 414,
+      "sha256": "7e0de2e938f546d676c105e1e7aadc636887d4379a95df1a8ef9dbc328987df0"
+    },
+    "worker_report": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/host-0/model/report.json",
+      "bytes": 159914,
+      "sha256": "e271e138ab214710d6e60c65f457302575f72b7d8eea910ce45c2bf2b25c40ad"
+    },
+    "summary": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-drperf81-early-summary.json",
+      "bytes": 34419,
+      "sha256": "514cff6660b1035beabe0cb75e22603dc881787a7090435c994d93a75c5bbe4a"
+    },
+    "raw_json": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/host-0/drperf/raw/run.307.json",
+      "bytes": 140574,
+      "sha256": "f9782a63f8162af5e09d6003bfc8de219eda485e636ebb314ca02fc791c53956"
+    },
+    "raw_trace": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/host-0/drperf/raw/run.307.json.trace",
+      "bytes": 1318327,
+      "sha256": "55b63f35c73c21bc6ae4ad18dd12588c53af11904c83f26491d5b60e1f494e71"
+    },
+    "raw_blocks": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/host-0/drperf/raw/run.307.json.blocks",
+      "bytes": 2420899,
+      "sha256": "85b3fd17b974b6f58d3416566a7858956e6afe1b078f3cf6ac3eb120683b020e"
+    },
+    "raw_slots": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-drperf81-early-1789611354395122031/host-0/drperf/raw/run.307.json.slots",
+      "bytes": 4059344,
+      "sha256": "e48953f482957df2e9a83d57762b74b256f626165e94eec8039420b7a4bc7402"
+    },
+    "runner_source": {
+      "path": "/home/ubuntu/drperf/examples/causal_video/fastvideo_runner.py",
+      "bytes": 16888,
+      "sha256": "bc6e3ccad03b18b0a1fd1ce265501f3c9fd3ac13847178ebf5b3ed8a56ad4223"
+    },
+    "instrumentation_source": {
+      "path": "/home/ubuntu/drperf/examples/causal_video/instrument_fastvideo.py",
+      "bytes": 5237,
+      "sha256": "f3a91fac2bd500e70bc6d671cd32a7a9750ea652bb9544aa24b2b3997528cd0a"
+    },
+    "summarizer_source": {
+      "path": "/home/ubuntu/drperf/examples/causal_video/summarize_drperf.py",
+      "bytes": 13526,
+      "sha256": "51fba84bef4485b8d52c668a2750b1758413b22bac92be82a15c5a413ed425a2"
+    }
+  }
+}

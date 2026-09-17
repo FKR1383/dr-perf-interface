@@ -1,0 +1,667 @@
+{
+  "hardware": "A100-PCIE-40GB GPU1",
+  "study": "native-only; GX timing and drperf attribution pending",
+  "scope": "full pretrained model; 21 latent frames produce 63 streamed pixel frames in pinned Inferix",
+  "protocol": "one model load, full same-size warmup, three consecutive measured generations per variant; variants run sequentially",
+  "records": {
+    "base": {
+      "role": "native",
+      "source_tree": "/workspace/causal/Inferix-metadata",
+      "packages": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "transformers": "5.8.1",
+        "diffusers": "0.38.0",
+        "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE"
+      },
+      "latent_frames": 21,
+      "segments": 1,
+      "seed": 42,
+      "warmup_frames": 21,
+      "repetitions": 3,
+      "kv_residency": "offload",
+      "harness_sha256": {
+        "inferix_runner.py": "74bb01cbbf216a39523eaf5b24aa8c3a16d309f1343c182d684b2006905d03fb",
+        "compat.py": "7786a380c384177542fd08fce99f9c9a0e97ed33b5c2b8d21a775a6b2ceb302a"
+      },
+      "cudnn_version": 91900,
+      "cudnn_policy": {
+        "enabled": true,
+        "benchmark": false,
+        "deterministic": false
+      },
+      "prompt": "A cat walks on the grass, realistic style",
+      "streaming_mode": "TRUE_STREAMING",
+      "low_memory": false,
+      "shape": [
+        1,
+        63,
+        480,
+        832,
+        3
+      ],
+      "finite": true,
+      "peak_gpu_allocated_bytes": 24858970112,
+      "peak_gpu_reserved_bytes": 27426553856,
+      "asset_identity": {
+        "LICENSE.txt": {
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        "Wan2.1_VAE.pth": {
+          "bytes": 507609880,
+          "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981"
+        },
+        "config.json": {
+          "bytes": 249,
+          "sha256": "ab37994c43740513f94b3ba6233a784035a67b43c8cde83c8f31aa90468c67ce"
+        },
+        "diffusion_pytorch_model.safetensors": {
+          "bytes": 5676070424,
+          "sha256": "96b6b242ca1c2f24e9d02cd6596066fab6d310e2d7538f33ae267cb18d957e8f"
+        },
+        "google/umt5-xxl/special_tokens_map.json": {
+          "bytes": 6623,
+          "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d"
+        },
+        "google/umt5-xxl/spiece.model": {
+          "bytes": 4548313,
+          "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458"
+        },
+        "google/umt5-xxl/tokenizer.json": {
+          "bytes": 16837417,
+          "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b"
+        },
+        "google/umt5-xxl/tokenizer_config.json": {
+          "bytes": 61728,
+          "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05"
+        },
+        "models_t5_umt5-xxl-enc-bf16.pth": {
+          "bytes": 11361920418,
+          "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d"
+        },
+        "self_forcing_dmd.pt": {
+          "bytes": 5676252553,
+          "sha256": "a0413986d9734e02c09504e1520f5697ba6df731bb2f0f35577485e9cc8f56a3"
+        }
+      },
+      "seconds": [
+        41.229532699,
+        41.290691717,
+        41.304810179
+      ],
+      "median_seconds": 41.290691717,
+      "report_sha256": "866620fd0144d5ee5b9052e716d502c565d3dea45c0796734878ffe3df097f83",
+      "source_manifest_sha256": "eed1ec1f78afc0af09195052c3ddadc1972682bc94555045422599d4b202a84b",
+      "native_output_file_sha256": "5de8121ed9e0d6d9c9fb5f85dc5ff0c53aa4ca5d213079488261ba4481d719ad"
+    },
+    "gpukv": {
+      "role": "native",
+      "source_tree": "/workspace/causal/Inferix-metadata",
+      "packages": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "transformers": "5.8.1",
+        "diffusers": "0.38.0",
+        "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE"
+      },
+      "latent_frames": 21,
+      "segments": 1,
+      "seed": 42,
+      "warmup_frames": 21,
+      "repetitions": 3,
+      "kv_residency": "gpu",
+      "harness_sha256": {
+        "inferix_runner.py": "74bb01cbbf216a39523eaf5b24aa8c3a16d309f1343c182d684b2006905d03fb",
+        "compat.py": "7786a380c384177542fd08fce99f9c9a0e97ed33b5c2b8d21a775a6b2ceb302a"
+      },
+      "cudnn_version": 91900,
+      "cudnn_policy": {
+        "enabled": true,
+        "benchmark": false,
+        "deterministic": false
+      },
+      "prompt": "A cat walks on the grass, realistic style",
+      "streaming_mode": "TRUE_STREAMING",
+      "low_memory": false,
+      "shape": [
+        1,
+        63,
+        480,
+        832,
+        3
+      ],
+      "finite": true,
+      "peak_gpu_allocated_bytes": 30990772224,
+      "peak_gpu_reserved_bytes": 32260489216,
+      "asset_identity": {
+        "LICENSE.txt": {
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        "Wan2.1_VAE.pth": {
+          "bytes": 507609880,
+          "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981"
+        },
+        "config.json": {
+          "bytes": 249,
+          "sha256": "ab37994c43740513f94b3ba6233a784035a67b43c8cde83c8f31aa90468c67ce"
+        },
+        "diffusion_pytorch_model.safetensors": {
+          "bytes": 5676070424,
+          "sha256": "96b6b242ca1c2f24e9d02cd6596066fab6d310e2d7538f33ae267cb18d957e8f"
+        },
+        "google/umt5-xxl/special_tokens_map.json": {
+          "bytes": 6623,
+          "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d"
+        },
+        "google/umt5-xxl/spiece.model": {
+          "bytes": 4548313,
+          "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458"
+        },
+        "google/umt5-xxl/tokenizer.json": {
+          "bytes": 16837417,
+          "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b"
+        },
+        "google/umt5-xxl/tokenizer_config.json": {
+          "bytes": 61728,
+          "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05"
+        },
+        "models_t5_umt5-xxl-enc-bf16.pth": {
+          "bytes": 11361920418,
+          "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d"
+        },
+        "self_forcing_dmd.pt": {
+          "bytes": 5676252553,
+          "sha256": "a0413986d9734e02c09504e1520f5697ba6df731bb2f0f35577485e9cc8f56a3"
+        }
+      },
+      "seconds": [
+        16.553458698,
+        16.662119217,
+        16.737775295
+      ],
+      "median_seconds": 16.662119217,
+      "report_sha256": "373282e2bfa31cd33972c177303209847d63e07d87dbfc5c530467b6dc0c7fe2",
+      "source_manifest_sha256": "eed1ec1f78afc0af09195052c3ddadc1972682bc94555045422599d4b202a84b",
+      "native_output_file_sha256": "5de8121ed9e0d6d9c9fb5f85dc5ff0c53aa4ca5d213079488261ba4481d719ad"
+    },
+    "combined": {
+      "role": "native",
+      "source_tree": "/workspace/causal/Inferix-optimized",
+      "packages": {
+        "torch": "2.11.0+cu128",
+        "torchvision": "0.26.0+cu128",
+        "transformers": "5.8.1",
+        "diffusers": "0.38.0",
+        "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE"
+      },
+      "latent_frames": 21,
+      "segments": 1,
+      "seed": 42,
+      "warmup_frames": 21,
+      "repetitions": 3,
+      "kv_residency": "gpu",
+      "harness_sha256": {
+        "inferix_runner.py": "74bb01cbbf216a39523eaf5b24aa8c3a16d309f1343c182d684b2006905d03fb",
+        "compat.py": "7786a380c384177542fd08fce99f9c9a0e97ed33b5c2b8d21a775a6b2ceb302a"
+      },
+      "cudnn_version": 91900,
+      "cudnn_policy": {
+        "enabled": true,
+        "benchmark": false,
+        "deterministic": false
+      },
+      "prompt": "A cat walks on the grass, realistic style",
+      "streaming_mode": "TRUE_STREAMING",
+      "low_memory": false,
+      "shape": [
+        1,
+        63,
+        480,
+        832,
+        3
+      ],
+      "finite": true,
+      "peak_gpu_allocated_bytes": 30990772224,
+      "peak_gpu_reserved_bytes": 32260489216,
+      "asset_identity": {
+        "LICENSE.txt": {
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        "Wan2.1_VAE.pth": {
+          "bytes": 507609880,
+          "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981"
+        },
+        "config.json": {
+          "bytes": 249,
+          "sha256": "ab37994c43740513f94b3ba6233a784035a67b43c8cde83c8f31aa90468c67ce"
+        },
+        "diffusion_pytorch_model.safetensors": {
+          "bytes": 5676070424,
+          "sha256": "96b6b242ca1c2f24e9d02cd6596066fab6d310e2d7538f33ae267cb18d957e8f"
+        },
+        "google/umt5-xxl/special_tokens_map.json": {
+          "bytes": 6623,
+          "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d"
+        },
+        "google/umt5-xxl/spiece.model": {
+          "bytes": 4548313,
+          "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458"
+        },
+        "google/umt5-xxl/tokenizer.json": {
+          "bytes": 16837417,
+          "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b"
+        },
+        "google/umt5-xxl/tokenizer_config.json": {
+          "bytes": 61728,
+          "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05"
+        },
+        "models_t5_umt5-xxl-enc-bf16.pth": {
+          "bytes": 11361920418,
+          "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d"
+        },
+        "self_forcing_dmd.pt": {
+          "bytes": 5676252553,
+          "sha256": "a0413986d9734e02c09504e1520f5697ba6df731bb2f0f35577485e9cc8f56a3"
+        }
+      },
+      "seconds": [
+        12.580376814,
+        12.65159318,
+        12.708112155
+      ],
+      "median_seconds": 12.65159318,
+      "report_sha256": "a86420b1b131e458f9d8c1f01fe3251e3045112a9976a2bcaae1cd86ede8e585",
+      "source_manifest_sha256": "1639d7514accdf83b7a603112b5adc09a250b70d43fbda98de2e1642627e53a2",
+      "native_output_file_sha256": "5de8121ed9e0d6d9c9fb5f85dc5ff0c53aa4ca5d213079488261ba4481d719ad"
+    }
+  },
+  "multisegment_validation": {
+    "schema": "inferix-native-semantic-comparison-v1",
+    "artifacts": {
+      "original": "/workspace/causal/runs/inferix-base-validation",
+      "adapted": "/workspace/causal/runs/inferix-combined-validation"
+    },
+    "settings": {
+      "role": "native",
+      "latent_frames": 6,
+      "segments": 2,
+      "seed": 42,
+      "prompt": "A cat walks on the grass, realistic style",
+      "warmup_frames": 6,
+      "streaming_mode": "TRUE_STREAMING",
+      "low_memory": false,
+      "clock": "host_perf_counter_ns"
+    },
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "transformers": "5.8.1",
+      "diffusers": "0.38.0",
+      "flash-attn": "2.8.3+cu12torch2.11cxx11abiTRUE"
+    },
+    "source_changes": {
+      "inferix/pipeline/self_forcing/pipeline.py": {
+        "original": "8dbc434f04d0549a340856ce2b4926a368a89185efb85bf5b55a3b823dddbad5",
+        "adapted": "4f0ade4bc0b34a0b00d3e8c1909a68daf680c673ca8e23405e2f5e8f74a39051"
+      }
+    },
+    "allowed_source_changes": [
+      "inferix/pipeline/self_forcing/pipeline.py"
+    ],
+    "allowed_kv_residency_change": true,
+    "input_identity": {
+      "asset_manifest_recorded": true,
+      "strict_asset_identity_proved": true,
+      "files": 10
+    },
+    "stream_chunk_shapes": [
+      [
+        9,
+        480,
+        832,
+        3
+      ],
+      [
+        9,
+        480,
+        832,
+        3
+      ],
+      [
+        9,
+        480,
+        832,
+        3
+      ]
+    ],
+    "atol": 0.0,
+    "rtol": 0.0,
+    "tensor_comparisons": [],
+    "validation": {
+      "available": true,
+      "segments": [
+        {
+          "index": 0,
+          "callbacks": [
+            {
+              "name": "segment 0 callback 0",
+              "shape_a": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.uint8",
+              "dtype_b": "torch.uint8",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            },
+            {
+              "name": "segment 0 callback 1",
+              "shape_a": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.uint8",
+              "dtype_b": "torch.uint8",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "outputs": [
+            {
+              "name": "segment 0 video",
+              "shape_a": [
+                1,
+                18,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                1,
+                18,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.float32",
+              "dtype_b": "torch.float32",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            },
+            {
+              "name": "segment 0 latent",
+              "shape_a": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "shape_b": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "dtype_a": "torch.bfloat16",
+              "dtype_b": "torch.bfloat16",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "cache_empty": [
+            {
+              "side": "original",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            },
+            {
+              "side": "adapted",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "callbacks": [
+            {
+              "name": "segment 1 callback 0",
+              "shape_a": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.uint8",
+              "dtype_b": "torch.uint8",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            },
+            {
+              "name": "segment 1 callback 1",
+              "shape_a": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.uint8",
+              "dtype_b": "torch.uint8",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "outputs": [
+            {
+              "name": "segment 1 video",
+              "shape_a": [
+                1,
+                18,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                1,
+                18,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.float32",
+              "dtype_b": "torch.float32",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            },
+            {
+              "name": "segment 1 latent",
+              "shape_a": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "shape_b": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "dtype_a": "torch.bfloat16",
+              "dtype_b": "torch.bfloat16",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "cache_empty": [
+            {
+              "side": "original",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            },
+            {
+              "side": "adapted",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "callbacks": [
+            {
+              "name": "segment 2 callback 0",
+              "shape_a": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.uint8",
+              "dtype_b": "torch.uint8",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "outputs": [
+            {
+              "name": "segment 2 video",
+              "shape_a": [
+                1,
+                9,
+                480,
+                832,
+                3
+              ],
+              "shape_b": [
+                1,
+                9,
+                480,
+                832,
+                3
+              ],
+              "dtype_a": "torch.float32",
+              "dtype_b": "torch.float32",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            },
+            {
+              "name": "segment 2 latent",
+              "shape_a": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "shape_b": [
+                1,
+                6,
+                16,
+                60,
+                104
+              ],
+              "dtype_a": "torch.bfloat16",
+              "dtype_b": "torch.bfloat16",
+              "finite_a": true,
+              "finite_b": true,
+              "allclose": true,
+              "max_abs_error": 0.0,
+              "mean_abs_error": 0.0
+            }
+          ],
+          "cache_empty": [
+            {
+              "side": "original",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            },
+            {
+              "side": "adapted",
+              "_feat_map": true,
+              "_enc_feat_map": true
+            }
+          ]
+        }
+      ],
+      "cache_empty": true
+    },
+    "performance": {
+      "eligible": false,
+      "reason": "validation copies alter execution; host times are excluded from semantic comparison"
+    },
+    "passed": true,
+    "failures": []
+  }
+}

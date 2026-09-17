@@ -1,0 +1,85 @@
+--- a/src/sims/gpu/cuda_intercept/driver_intercept.c
++++ b/src/sims/gpu/cuda_intercept/driver_intercept.c
+@@ -49,6 +49,18 @@
+         fprintf(stderr, "GX_KERNEL_ATTR %s kernel=%p attr=%d value=%d status=%d\n",
+                 api, (void *)kernel, (int)attrib, value, (int)status);
+ }
++
++/* Probe only the output APIs that can feed CUDA 13/cuDNN launch setup.
++ * This diagnostic changes no status or output and is disabled by default. */
++static void gx_log_cudnn_output_probe(const char *api, const void *handle,
++                                      size_t index, const void *output_a,
++                                      const void *output_b) {
++    if (!getenv("GX_CUDNN_OUTPUT_PROBE")) return;
++    static unsigned int logged;
++    if (__sync_fetch_and_add(&logged, 1) < 128)
++        fprintf(stderr, "GX_CUDNN_OUTPUT_PROBE %s handle=%p index=%zu out_a=%p out_b=%p\n",
++                api, handle, index, output_a, output_b);
++}
+ #endif
+ 
+ 
+@@ -1191,6 +1203,8 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    gx_log_cudnn_output_probe("cuFuncGetModule: success without output",
++                              (void *)hfunc, 0, hmod, NULL);
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuFuncGetModule) {
+@@ -1205,6 +1219,8 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    gx_log_cudnn_output_probe("cuFuncGetParamInfo: success without outputs",
++                              (void *)func, paramIndex, paramOffset, paramSize);
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuFuncGetParamInfo) {
+@@ -2755,6 +2771,8 @@
+     /* GX: our CUkernel handles ARE the underlying emulator CUfunction handles
+      * (minted by cuModuleGetFunction), so this is an identity mapping. */
+     if (pFunc) *pFunc = (CUfunction)kernel;
++    gx_log_cudnn_output_probe("cuKernelGetFunction: identity output",
++                              (void *)kernel, 0, pFunc, NULL);
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuKernelGetFunction) {
+@@ -2769,6 +2787,8 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    gx_log_cudnn_output_probe("cuKernelGetLibrary: success without output",
++                              (void *)kernel, 0, pLib, NULL);
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuKernelGetLibrary) {
+@@ -2801,6 +2821,8 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    gx_log_cudnn_output_probe("cuKernelGetParamInfo: success without outputs",
++                              (void *)kernel, paramIndex, paramOffset, paramSize);
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuKernelGetParamInfo) {
+--- a/src/sims/gpu/emu/kernel.c
++++ b/src/sims/gpu/emu/kernel.c
+@@ -478,6 +478,16 @@
+                           void **extra) {
+   ENTRY_PRINT_FEMU;
+ 
++  /* Diagnostic only: establish whether cuDNN's rejected grid reaches GX. */
++  if (config && getenv("GX_CUDNN_OUTPUT_PROBE") &&
++      (!config->gridDimX || !config->gridDimY || !config->gridDimZ ||
++       config->gridDimX > 2147483647u || config->gridDimY > 65535u ||
++       config->gridDimZ > 65535u))
++    fprintf(stderr, "GX_CUDNN_OUTPUT_PROBE cuLaunchKernelEx invalid grid=(%u,%u,%u) block=(%u,%u,%u) config=%p func=%p\n",
++            config->gridDimX, config->gridDimY, config->gridDimZ,
++            config->blockDimX, config->blockDimY, config->blockDimZ,
++            (const void *)config, (void *)f);
++
+   pthread_mutex_lock(&cuda_host_api_lock);
+ 
+   //   wrap_func_t* wf = (wrap_func_t*)f;

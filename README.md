@@ -132,6 +132,17 @@ Whether removing it reduces latency depends on the actual execution path and
 bottleneck. drperf counts CPU instructions; GPU correctness, device timings,
 memory use, and end-to-end speedups need their own measurements.
 
+The [causal-video study](examples/causal_video/README.md) extends this workflow to
+pretrained Inferix and FastVideo Self-Forcing models, with A100 kernel databases,
+GX `partial_sync`, and separate drperf measurements. A [native Inferix
+comparison](examples/causal_video/NATIVE_RESULTS.md) reduces median latency from
+41.29 to 12.65 seconds with identical saved output. A separate
+[drperf-guided RoPE cache](examples/causal_video/CPU_RESULTS.md) reduces marked
+CPU instructions by 5.2% but yields no additional native latency improvement.
+The [FastVideo comparison](examples/causal_video/FASTVIDEO_NATIVE_RESULTS.md)
+finds no convincing latency gain from keeping DiT weights resident; the study
+includes both [native kernel databases](examples/causal_video/evidence/kernel-databases/README.md).
+
 ## Use
 
 ```

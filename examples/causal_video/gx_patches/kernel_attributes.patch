@@ -1,0 +1,67 @@
+--- a/src/sims/gpu/cuda_intercept/driver_intercept.c
++++ b/src/sims/gpu/cuda_intercept/driver_intercept.c
+@@ -7,6 +7,7 @@
+ #include <light/cuda_orig.h>
+ #ifdef FEMU
+ #include <light/func-emu-internal.h>
++#include <light/resource-mg.h>
+ #endif
+ #ifdef INSTRUMENT
+ #include "../instrumented/fatbin_capture.h"
+@@ -29,7 +30,25 @@
+  * so we mint an opaque module and resolve one launch-safe function handle. */
+ extern CUresult cuModuleLoadData(CUmodule* module, const void* image);
+ extern CUresult cuModuleGetFunction(CUfunction* hfunc, CUmodule hmod, const char* name);
+-
++extern CUresult cuFuncGetAttribute(int *pi, CUfunction_attribute attrib, CUfunction hfunc);
++extern CUresult cuFuncSetAttribute(CUfunction hfunc, CUfunction_attribute attrib, int value);
++
++/* CUkernel is the CUfunction handle minted by cuModuleGetFunction in GX.
++ * Check the registration before passing it to the function-attribute path;
++ * cuDNN can probe candidate kernels during plan selection. */
++static int gx_registered_kernel_handle(CUkernel kernel) {
++    return kernel && resource_mg_get(rm_functions, (void *)kernel) != (void *)kernel;
++}
++
++static void gx_log_kernel_attribute(const char *api, CUkernel kernel,
++                                    CUfunction_attribute attrib, int value,
++                                    CUresult status) {
++    if (!getenv("GX_CUDA_KERNEL_ATTR_DEBUG")) return;
++    static unsigned int logged;
++    if (__sync_fetch_and_add(&logged, 1) < 128)
++        fprintf(stderr, "GX_KERNEL_ATTR %s kernel=%p attr=%d value=%d status=%d\n",
++                api, (void *)kernel, (int)attrib, value, (int)status);
++}
+ #endif
+ 
+ 
+@@ -2712,7 +2731,14 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+-    return CUDA_SUCCESS;
++    (void)dev;
++    if (!pi) return CUDA_ERROR_INVALID_VALUE;
++    if ((unsigned)attrib >= CU_FUNC_ATTRIBUTE_MAX) return CUDA_ERROR_INVALID_VALUE;
++    if (!gx_registered_kernel_handle(kernel)) return CUDA_ERROR_INVALID_HANDLE;
++    CUresult status = cuFuncGetAttribute(pi, attrib, (CUfunction)kernel);
++    gx_log_kernel_attribute("get", kernel, attrib,
++                            status == CUDA_SUCCESS ? *pi : 0, status);
++    return status;
+ #else
+     if (!original_cuKernelGetAttribute) {
+         LOG(LOG_ERROR, "Function cuKernelGetAttribute not found in underlying library");
+@@ -2789,7 +2815,12 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+-    return CUDA_SUCCESS;
++    (void)dev;
++    if ((unsigned)attrib >= CU_FUNC_ATTRIBUTE_MAX) return CUDA_ERROR_INVALID_VALUE;
++    if (!gx_registered_kernel_handle(kernel)) return CUDA_ERROR_INVALID_HANDLE;
++    CUresult status = cuFuncSetAttribute((CUfunction)kernel, attrib, val);
++    gx_log_kernel_attribute("set", kernel, attrib, val, status);
++    return status;
+ #else
+     if (!original_cuKernelSetAttribute) {
+         LOG(LOG_ERROR, "Function cuKernelSetAttribute not found in underlying library");

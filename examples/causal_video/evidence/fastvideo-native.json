@@ -1,0 +1,89 @@
+{
+  "hardware": "A100-PCIE-40GB GPU1",
+  "workload": {
+    "frames": 81,
+    "height": 480,
+    "width": 832,
+    "steps": 4,
+    "seed": 42,
+    "worker_cpu_output": true,
+    "metadata_mode": true
+  },
+  "runner_sha256": {
+    "native_pair": "10d397e4b11a6ed133d95a1f7b32a12a1f35a1b9b7f31ba88789c5874aa1c425",
+    "final_gpu_profile": "bc6e3ccad03b18b0a1fd1ce265501f3c9fd3ac13847178ebf5b3ed8a56ad4223",
+    "difference": "A GX_CHROME_TRACE-only shutdown grace was added after native pair; inactive in native and gpu-profile roles"
+  },
+  "native_offload": {
+    "report": "out/causal-video/fastvideo-gpu/cpuout-interop1-offload3-native-report.json",
+    "iteration_seconds": [
+      15.308867407,
+      15.424156946,
+      15.451847921
+    ],
+    "mean_iteration_seconds": 15.394957424666666,
+    "worker_gpu_memory_bytes": {
+      "allocated": 12311025152,
+      "reserved": 29645340672,
+      "peak_allocated": 20405046784,
+      "peak_reserved": 29645340672
+    },
+    "saved_fp16_sha256": "642f5f2a44e2c3a318b66f2c26dab5477c198c25ce809740ced2808ff6125410",
+    "worker_interop_threads": 1,
+    "dit_layerwise_offload": true
+  },
+  "native_resident": {
+    "report": "out/causal-video/fastvideo-gpu/cpuout-interop1-resident3-native-report.json",
+    "iteration_seconds": [
+      15.241351614,
+      15.359603867,
+      15.385934298
+    ],
+    "mean_iteration_seconds": 15.328963259666667,
+    "worker_gpu_memory_bytes": {
+      "allocated": 15008223232,
+      "reserved": 30746345472,
+      "peak_allocated": 23102280704,
+      "peak_reserved": 30746345472
+    },
+    "saved_fp16_sha256": "642f5f2a44e2c3a318b66f2c26dab5477c198c25ce809740ced2808ff6125410",
+    "worker_interop_threads": 1,
+    "dit_layerwise_offload": false
+  },
+  "physical_gpu_profile": {
+    "database": "out/causal-video/fastvideo-gpu/fastvideo-cpuout-interop1-gpu-final.rank0.pid6105.sqlite",
+    "report": "out/causal-video/fastvideo-gpu/cpuout-interop1-gpu-final-report.json",
+    "sampled_signatures": 396,
+    "observed_signatures": 396,
+    "measured_samples": 1045,
+    "skipped_launches": 0,
+    "saved_fp16_sha256": "642f5f2a44e2c3a318b66f2c26dab5477c198c25ce809740ced2808ff6125410"
+  },
+  "cudnn": {
+    "version": 91900,
+    "mapped_dso_sha256": {
+      "libcudnn.so.9": "94f44e2e8fb2d4bca8c534b14f03ef84e095376dad72a257fd854377ef0b3427",
+      "libcudnn_adv.so.9": "a0b81bcbf08d179bae332c62218ed907f51f311b5fbd2156f0c0b13a6c1bcf63",
+      "libcudnn_cnn.so.9": "94341125830e58eaa50b908f73f356802c5f66a60a1940efa5f6b427cc6058aa",
+      "libcudnn_engines_precompiled.so.9": "5192b64e6a1c59165716bbe4517b37f0dfdfa349dfbb1772a4ba38a1e83b0b41",
+      "libcudnn_engines_runtime_compiled.so.9": "d6184fc49c8e93c47440de8d63b77f7e7d5ad1e5e223b82608789fe599035d2f",
+      "libcudnn_graph.so.9": "74d0007de32dd07a5a1e7a0e9d2c53cb101ac9bd7b0d5d88b63cc6e7a3691129",
+      "libcudnn_heuristic.so.9": "b7051f52dea857d0c0c612865b058e538d703d35cb4fbfa066e81cbca785fda5",
+      "libcudnn_ops.so.9": "282e3829ea9dd547ab02bd880e68bc96fcf06e5ac50da48b571288502467f372",
+      "libcudnn.so.9.8.0": "72f74476dcdc074b9d56f8c5cf576ceff6a595989832b9b0798478dc48a4ffcd"
+    }
+  },
+  "validation_scope": "Saved serialized fp16 tensor equality, finite and same shape/mean/std; no full fp32 or frame-grid bitwise comparison.",
+  "identity_checks": {
+    "source_sha256_map_equal": true,
+    "source_sha256_map_digest": "e34b5fbe40eec6ebb4919f89c96796fa36fb7d039fd3d503ab520dbd794ddc73",
+    "model_prompt_sampling_packages_cudnn_policy_equal": true,
+    "native_pair_environment_equal": true,
+    "mapped_cudnn_dso_hashes_equal": true,
+    "worker_interop_threads": [
+      1,
+      1,
+      1
+    ]
+  }
+}

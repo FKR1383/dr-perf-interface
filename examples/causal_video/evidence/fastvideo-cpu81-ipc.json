@@ -1,0 +1,99 @@
+{
+  "schema": "causal-video-fastvideo-cpu-ipc-v1",
+  "run_passed": true,
+  "sample_period": {
+    "instruction_period": 5000000,
+    "task_period_ns": 5000000
+  },
+  "sampling": {
+    "threads": 176,
+    "resolved_instruction_samples": 3330,
+    "unresolved_instruction_samples": 64,
+    "unresolved_instruction_fraction_all": 0.01885680612846199,
+    "resolved_task_samples": 1025,
+    "unresolved_task_samples": 6,
+    "unresolved_task_fraction_all": 0.005819592628516004,
+    "dropped": 0
+  },
+  "replay_coverage": {
+    "page_min_samples": 4,
+    "module_min_samples": 32,
+    "covered_resolved_instruction_samples": 3250,
+    "coverage_of_resolved": 0.975975975975976,
+    "coverage_of_all": 0.9575721862109605,
+    "uncovered_resolved_instruction_samples": 80,
+    "fallback_ns_per_instruction_unscaled": 0.30377136122569237
+  },
+  "artifacts": {
+    "managed_result": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-cpu81-ipc-1789610640997916465/result.json",
+      "bytes": 398,
+      "sha256": "f585759f186fccaa5f3196d9d88b20e89ce84136f45a17c114e076a27cf1e336"
+    },
+    "worker_report": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/report.json",
+      "bytes": 157976,
+      "sha256": "d1d4071244c83cc90a9cc60d5f337a8dd34a86757b848b7b34e9ba083966bed9"
+    },
+    "raw_profile": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/profile-339.db",
+      "bytes": 15779,
+      "sha256": "a993964f78334b384d7baa67f5bd3c6e932418f58c521ac84b2f98062c615613"
+    },
+    "merged_profile": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/merged.db",
+      "bytes": 15779,
+      "sha256": "3fb5ca7bbb901d89f07d965cf58befa097a5bf90cef6344f5feee20ad439ec20"
+    },
+    "collect_log": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/collect.log",
+      "bytes": 300,
+      "sha256": "1c649c432e305f2d5f6cab2ee940c9c17a6600d38ab617ddee3dbae5cee17487"
+    },
+    "worker_log": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/gx.log",
+      "bytes": 46507,
+      "sha256": "af4dbc738c9f9375a52b9ed1b5712a62437dcd36828a6f2e89063b6d78d0d549"
+    },
+    "gx_launch_trace": {
+      "path": "/home/ubuntu/GX/NEX/build/experiments/fastvideo-cpu81-ipc-1789610640997916465/host-0/kernel_profile_gx/chrome_trace_339.json",
+      "bytes": 156021192,
+      "sha256": "2265f0b5a862d511d5bc465c0389ee016ab7dc011c0923730e20b394fdb90a13"
+    },
+    "native_gpu_db": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-gpu/fastvideo-metadata-cpuout-gpu-01.rank0.pid5793.sqlite",
+      "bytes": 339968,
+      "sha256": "cdc9f22dc01a7b72b6421ef30fe622dbda2ecd2e18ef20055db976a1d5b5dfba"
+    },
+    "native_gpu_report": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-gpu/metadata-cpuout-gpu-report.json",
+      "bytes": 158073,
+      "sha256": "eb146c44263d1b67e01b03b8089d01eb3d4ffe90256e3cdb74aea45a7de88330"
+    },
+    "diagnostic_inventory": {
+      "path": "/home/ubuntu/drperf/out/causal-video/fastvideo-cpu81-ipc/inventory-diagnostic.json",
+      "bytes": 1739,
+      "sha256": "d21b0e7147b8b00edb812f03a82eb9987fc44fd62e1d3bf5e7861293634a0575"
+    }
+  },
+  "diagnostic_worker_launch_inventory": {
+    "prediction_events": 106333,
+    "regular_kernel_events": 97423,
+    "cublas_surrogate_events": 8910,
+    "projected_signatures": 396,
+    "prediction_status": "disabled",
+    "role": "cpu-profile"
+  },
+  "diagnostic_native_comparison": {
+    "native_launches": 106333,
+    "gx_cpu_profile_launches": 106333,
+    "projected_signatures_each": 396,
+    "unmatched_gx_cudnn_launches": 21,
+    "count_difference_signatures": 2,
+    "config_differences": [
+      "worker.torch_interop_threads",
+      "environment.LD_LIBRARY_PATH"
+    ],
+    "not_partial_acceptance": true
+  }
+}
