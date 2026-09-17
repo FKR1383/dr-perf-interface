@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-parser.cc
++++ b/src/regexp/regexp-parser.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-parser.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/base/logging.h"
+ #include "src/execution/isolate.h"
+@@ -2467,6 +2468,7 @@
+ template <class CharT, ParseMode mode>
+ bool ParserImpl<CharT, mode>::ParsePropertyClassName(ZoneVector<char>* name_1,
+                                                      ZoneVector<char>* name_2) {
++  DRPERF_BENCH_REGION("v8-regexp-012");
+   DCHECK(name_1->empty());
+   DCHECK(name_2->empty());
+   // Parse the property class as follows:

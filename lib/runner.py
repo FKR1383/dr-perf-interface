@@ -48,6 +48,13 @@ def run(cmd, out, timeout=None):
     env["DRPERF_LATE"] = "1"
     env["DYNAMORIO_OPTIONS"] = "-code_api -client_lib '%s;0;%s'" % (
         CLIENT, " ".join(["-o", path, "-blocks"]))
+    excluded = env.get("DRPERF_EXCLUDE_CUDA_MODULE", "")
+    if excluded:
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{1,127}", excluded):
+            raise ValueError("DRPERF_EXCLUDE_CUDA_MODULE must be a module basename")
+        env["DYNAMORIO_OPTIONS"] = env["DYNAMORIO_OPTIONS"][:-1] + " -exclude_cuda_module " + excluded + "'"
+    if env.get("DRPERF_FOLLOW_THREADS", "1") == "0":
+        env["DYNAMORIO_OPTIONS"] = env["DYNAMORIO_OPTIONS"][:-1] + " -no_follow_threads'"
     pre = env.get("LD_PRELOAD", "")
     env["LD_PRELOAD"] = (ATTACH + " " + pre).strip()
     prefix = ["setarch", "-R"] if shutil.which("setarch") else []
@@ -64,6 +71,8 @@ def validity(rs):
     out = []
     for run in rs["runs"]:
         d = run["data"].get("drperf", {})
+        if d.get("excluded_cuda_module") and not d.get("excluded_cuda_exports"):
+            out.append("requested CUDA exclusion matched no exports: " + d["excluded_cuda_module"])
         if d.get("slots_overflow"):
             out.append("%s basic blocks did not fit the counter table of %s slots: their counts "
                        "were merged into one slot" % (fmt_int(d["slots_overflow"]), fmt_int(d.get("max_slots", 0))))

@@ -1,0 +1,35 @@
+derive make_request_output   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: kind=1 x370, kind=2 x2
+  fewer than 3 state points: no relation claimed
+
+derive process_outputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_outputs=1,num_active=1 x5, num_outputs=2,num_active=2 x5, num_outputs=3,num_active=3 x8, num_outputs=4,num_active=4 x7, num_outputs=5,num_active=5 x9, num_outputs=6,num_active=6 x7, num_outputs=7,num_active=7 x9, num_outputs=8,num_active=8 x4, num_outputs=8,num_active=12 x1, num_outputs=9,num_active=9 x4, num_outputs=10,num_active=10 x1, num_outputs=11,num_active=11 x3, num_outputs=12,num_active=12 x3
+  cost(num_outputs, num_active) = 36,946.6*num_outputs + 12,591.6*num_active + 895.6        [all num_outputs, num_active]   blocks: 2346 affine, 1481 constant, 271 irregular (27.0% of cost)
+    marker cost subtracted from the constant: 9,267 per call (calibrated)
+    irregular blocks, per call: 18,553.1 .. 725,155.9
+    per-num_outputs coefficient by function:
+            16,604.2  _PyEval_EvalFrameDefault  [python3.12]
+            -3,553.6  _int_malloc  [libc.so.6]
+             2,620.7  PyEval_EvalCode+?  [python3.12]
+             2,238.9  PyDict_SetItem  [python3.12]
+             1,873.9  _PyErr_ChainStackItem+?  [python3.12]
+             1,240.4  _PyObject_Call_Prepend  [python3.12]
+    per-num_active coefficient by function:
+             3,656.1  _int_malloc  [libc.so.6]
+             1,079.4  __realloc  [libc.so.6]
+               793.9  _int_free_merge_chunk  [libc.so.6]
+               717.7  _int_realloc  [libc.so.6]
+               702.9  _PyEval_EvalFrameDefault  [python3.12]
+                 695  __memcpy_avx_unaligned_erms  [libc.so.6]
+    constant by function:
+               785.8  PyEval_EvalCode+?  [python3.12]
+               756.5  _PyEval_EvalFrameDefault  [python3.12]
+               531.1  PyType_GenericNew+?  [python3.12]
+               440.4  PyUnicode_FromString+?  [python3.12]
+                -380  _int_malloc  [libc.so.6]
+               342.8  _PyObject_Call_Prepend  [python3.12]
+    irregular by function:
+            26,875.6  _$LT$core..iter..adapters..flatten..FlatMap$LT$I$C$U$C$F$GT$$u20$as$u2  [tokenizers.abi3.so]
+            13,805.2  _int_free  [libc.so.6]
+               9,523  _PyEval_EvalFrameDefault  [python3.12]
+

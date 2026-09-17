@@ -1,0 +1,202 @@
+libcst 1.9.0: make the left-recursive expression rules iterative.
+Chains of binary operators, attributes and calls parse in linear time instead of quadratic.
+1600-link chain: 4505ms -> 44ms (102x). Real 562-file corpus: 14.560s -> 11.912s (-18.2%).
+Upstream suite 1160 passed; 562 real files produce identical CSTs. From oss/fix_libcst.py.
+
+--- a/native/libcst/src/parser/grammar.rs
++++ b/native/libcst/src/parser/grammar.rs
+@@ -969,65 +969,53 @@
+                     .map_err(|_| "comparison")
+             }
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule bitwise_or() -> Expression<'input, 'a>
+-            = a:bitwise_or() op:lit("|") b:bitwise_xor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected bitwise_or")
++            = a:bitwise_xor() rest:(op:lit("|") b:bitwise_xor() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected bitwise_or")
+             }
+-            / bitwise_xor()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule bitwise_xor() -> Expression<'input, 'a>
+-            = a:bitwise_xor() op:lit("^") b:bitwise_and() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected bitwise_xor")
++            = a:bitwise_and() rest:(op:lit("^") b:bitwise_and() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected bitwise_xor")
+             }
+-            / bitwise_and()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule bitwise_and() -> Expression<'input, 'a>
+-            = a:bitwise_and() op:lit("&") b:shift_expr() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected bitwise_and")
++            = a:shift_expr() rest:(op:lit("&") b:shift_expr() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected bitwise_and")
+             }
+-            / shift_expr()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule shift_expr() -> Expression<'input, 'a>
+-            = a:shift_expr() op:lit("<<") b:sum() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected shift_expr")
+-            }
+-            / a:shift_expr() op:lit(">>") b:sum() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected shift_expr")
++            = a:sum() rest:(op:(lit("<<") / lit(">>")) b:sum() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected shift_expr")
+             }
+-            / sum()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule sum() -> Expression<'input, 'a>
+-            = a:sum() op:lit("+") b:term() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected sum")
++            = a:term() rest:(op:(lit("+") / lit("-")) b:term() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected sum")
+             }
+-            / a:sum() op:lit("-") b:term() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected sum")
+-            }
+-            / term()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule term() -> Expression<'input, 'a>
+-            = a:term() op:lit("*") b:factor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected term")
+-            }
+-            / a:term() op:lit("/") b:factor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected term")
+-            }
+-            / a:term() op:lit("//") b:factor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected term")
+-            }
+-            / a:term() op:lit("%") b:factor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected term")
+-            }
+-            / a:term() op:lit("@") b:factor() {?
+-                make_binary_op(a, op, b).map_err(|e| "expected term")
++            = a:factor() rest:(op:(lit("*") / lit("/") / lit("//") / lit("%") / lit("@")) b:factor() { (op, b) })* {?
++                rest.into_iter()
++                    .try_fold(a, |acc, (op, b)| make_binary_op(acc, op, b))
++                    .map_err(|e| "expected term")
+             }
+-            / factor()
+ 
+         #[cache]
+         rule factor() -> Expression<'input, 'a>
+@@ -1056,21 +1044,21 @@
+             }
+             / primary()
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule primary() -> Expression<'input, 'a>
+-            = v:primary() dot:lit(".") attr:name() {
+-                Expression::Attribute(Box::new(make_attribute(v, dot, attr)))
+-            }
+-            / a:primary() b:genexp() {
+-                Expression::Call(Box::new(make_genexp_call(a, b)))
++            = a:atom() rest:(primary_tail())* {
++                rest.into_iter().fold(a, apply_primary_tail)
+             }
+-            / f:primary() lpar:lit("(") arg:arguments()? rpar:lit(")") {
+-                Expression::Call(Box::new(make_call(f, lpar, arg.unwrap_or_default(), rpar)))
++
++        rule primary_tail() -> PrimaryTail<'input, 'a>
++            = dot:lit(".") attr:name() { PrimaryTail::Attribute(dot, attr) }
++            / b:genexp() { PrimaryTail::GenExp(b) }
++            / lpar:lit("(") arg:arguments()? rpar:lit(")") {
++                PrimaryTail::Call(lpar, arg.unwrap_or_default(), rpar)
+             }
+-            / v:primary() lbrak:lbrak() s:slices() rbrak:rbrak() {
+-                Expression::Subscript(Box::new(make_subscript(v, lbrak, s, rbrak)))
++            / lbrak:lbrak() s:slices() rbrak:rbrak() {
++                PrimaryTail::Subscript(lbrak, s, rbrak)
+             }
+-            / atom()
+ 
+         rule slices() -> Vec<SubscriptElement<'input, 'a>>
+             = s:slice() !lit(",") { vec![SubscriptElement { slice: s, comma: None }] }
+@@ -1441,21 +1429,11 @@
+             }
+ 
+ 
+-        #[cache_left_rec]
++        #[cache]
+         rule t_primary() -> Expression<'input, 'a>
+-            = value:t_primary() dot:lit(".") attr:name() &t_lookahead() {
+-                Expression::Attribute(Box::new(make_attribute(value, dot, attr)))
+-            }
+-            / v:t_primary() l:lbrak() s:slices() r:rbrak() &t_lookahead() {
+-                Expression::Subscript(Box::new(make_subscript(v, l, s, r)))
+-            }
+-            / f:t_primary() gen:genexp() &t_lookahead() {
+-                Expression::Call(Box::new(make_genexp_call(f, gen)))
++            = a:atom() &t_lookahead() rest:(t:primary_tail() &t_lookahead() { t })* {
++                rest.into_iter().fold(a, apply_primary_tail)
+             }
+-            / f:t_primary() lpar:lit("(") arg:arguments()? rpar:lit(")") &t_lookahead() {
+-                Expression::Call(Box::new(make_call(f, lpar, arg.unwrap_or_default(), rpar)))
+-            }
+-            / a:atom() &t_lookahead() {a}
+ 
+         rule t_lookahead() -> ()
+             = (lit("(") / lit("[") / lit(".")) {}
+@@ -2145,6 +2123,40 @@
+     }
+ }
+ 
++/// One suffix in a `primary` chain: `.attr`, `(...)`, a generator-expression call,
++/// or `[...]`. Collecting these and folding left replaces the left-recursive rule,
++/// whose seed growing re-cloned the whole expression once per link.
++enum PrimaryTail<'input, 'a> {
++    Attribute(TokenRef<'input, 'a>, Name<'input, 'a>),
++    GenExp(GeneratorExp<'input, 'a>),
++    Call(TokenRef<'input, 'a>, Vec<Arg<'input, 'a>>, TokenRef<'input, 'a>),
++    Subscript(
++        LeftSquareBracket<'input, 'a>,
++        Vec<SubscriptElement<'input, 'a>>,
++        RightSquareBracket<'input, 'a>,
++    ),
++}
++
++fn apply_primary_tail<'input, 'a>(
++    value: Expression<'input, 'a>,
++    tail: PrimaryTail<'input, 'a>,
++) -> Expression<'input, 'a> {
++    match tail {
++        PrimaryTail::Attribute(dot, attr) => {
++            Expression::Attribute(Box::new(make_attribute(value, dot, attr)))
++        }
++        PrimaryTail::GenExp(genexp) => {
++            Expression::Call(Box::new(make_genexp_call(value, genexp)))
++        }
++        PrimaryTail::Call(lpar, args, rpar) => {
++            Expression::Call(Box::new(make_call(value, lpar, args, rpar)))
++        }
++        PrimaryTail::Subscript(lbrak, slices, rbrak) => {
++            Expression::Subscript(Box::new(make_subscript(value, lbrak, slices, rbrak)))
++        }
++    }
++}
++
+ fn make_attribute<'input, 'a>(
+     value: Expression<'input, 'a>,
+     dot: TokenRef<'input, 'a>,

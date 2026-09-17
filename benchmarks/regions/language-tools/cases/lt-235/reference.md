@@ -1,0 +1,3 @@
+# Selection evidence
+
+Pinned upstream: [Cython/Compiler/Builtin.py](https://github.com/cython/cython/blob/dbbbdbb97f116c46495b5ab88ba0195a277016f9/Cython/Compiler/Builtin.py) at `dbbbdbb97f116c46495b5ab88ba0195a277016f9`. The function scored 111 in a structural scan for loops, comprehensions, calls, branches, and collection construction. This is provenance and an optimization lead, not ground truth. Nested scans, repeated tree conversion, cache misses, and intermediate allocation are plausible sources of several-fold improvement and must be measured.

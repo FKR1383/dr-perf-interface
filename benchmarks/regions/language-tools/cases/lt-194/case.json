@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-194",
+  "title": "pyparsing srange body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pyparsing/pyparsing",
+    "revision": "efd56db4e59f36b1673ce0eb0823e3afaa9d1201",
+    "path": "pyparsing/core.py",
+    "snapshot": "../../upstream/pyparsing/pyparsing/core.py",
+    "sha256": "74c9a1dfaf63168d91ce97c37a5779f10bfe87bf7d7274aacf5cabfc2f4dd9ea"
+  },
+  "region": {
+    "symbol": "srange",
+    "start_line": 6852,
+    "end_line": 6863,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-194",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise srange with bounded, varied pyparsing inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "pyparsing:pyparsing/core.py:srange",
+  "citations": [
+    "https://github.com/pyparsing/pyparsing/blob/efd56db4e59f36b1673ce0eb0823e3afaa9d1201/pyparsing/core.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

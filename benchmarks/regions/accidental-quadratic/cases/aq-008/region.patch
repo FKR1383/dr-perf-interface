@@ -1,0 +1,153 @@
+diff --git a/Lib/csv.py b/Lib/csv.py
+--- a/Lib/csv.py
++++ b/Lib/csv.py
+@@ -62,6 +62,7 @@
+         and when writing, each quote character embedded in the data is
+         written as two quotes
+ """
++import perfmark
+ 
+ import types
+ from _csv import Error, writer, reader, register_dialect, \
+@@ -284,74 +285,75 @@
+         If there is no quotechar the delimiter can't be determined
+         this way.
+         """
+-        import re
+-
+-        matches = []
+-        for restr in (r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?P=delim)',   # ,".*?",
+-                      r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?P<delim>[^\w\n"\'])(?P<space> ?)',     #  ".*?",
+-                      r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?:$|\r|\n)',  # ,".*?"
+-                      r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?:$|\r|\n)'):                           #  ".*?" (no delim, no space)
+-            regexp = re.compile(restr, re.DOTALL | re.MULTILINE)
+-            matches = regexp.findall(data)
+-            if matches:
+-                break
+-
+-        if not matches:
+-            # (quotechar, doublequote, delimiter, skipinitialspace)
+-            return ('', False, None, 0)
+-        quotes = {}
+-        delims = {}
+-        spaces = 0
+-        groupindex = regexp.groupindex
+-        for m in matches:
+-            n = groupindex['quote'] - 1
+-            key = m[n]
+-            if key:
+-                quotes[key] = quotes.get(key, 0) + 1
+-            try:
+-                n = groupindex['delim'] - 1
++        with perfmark.region('aq-008'):
++            import re
++
++            matches = []
++            for restr in (r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?P=delim)',   # ,".*?",
++                          r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?P<delim>[^\w\n"\'])(?P<space> ?)',     #  ".*?",
++                          r'(?P<delim>[^\w\n"\'])(?P<space> ?)(?P<quote>["\']).*?(?P=quote)(?:$|\r|\n)',  # ,".*?"
++                          r'(?:^|\n)(?P<quote>["\']).*?(?P=quote)(?:$|\r|\n)'):                           #  ".*?" (no delim, no space)
++                regexp = re.compile(restr, re.DOTALL | re.MULTILINE)
++                matches = regexp.findall(data)
++                if matches:
++                    break
++
++            if not matches:
++                # (quotechar, doublequote, delimiter, skipinitialspace)
++                return ('', False, None, 0)
++            quotes = {}
++            delims = {}
++            spaces = 0
++            groupindex = regexp.groupindex
++            for m in matches:
++                n = groupindex['quote'] - 1
+                 key = m[n]
+-            except KeyError:
+-                continue
+-            if key and (delimiters is None or key in delimiters):
+-                delims[key] = delims.get(key, 0) + 1
+-            try:
+-                n = groupindex['space'] - 1
+-            except KeyError:
+-                continue
+-            if m[n]:
+-                spaces += 1
+-
+-        quotechar = max(quotes, key=quotes.get)
+-
+-        if delims:
+-            delim = max(delims, key=delims.get)
+-            skipinitialspace = delims[delim] == spaces
+-            if delim == '\n': # most likely a file with a single column
++                if key:
++                    quotes[key] = quotes.get(key, 0) + 1
++                try:
++                    n = groupindex['delim'] - 1
++                    key = m[n]
++                except KeyError:
++                    continue
++                if key and (delimiters is None or key in delimiters):
++                    delims[key] = delims.get(key, 0) + 1
++                try:
++                    n = groupindex['space'] - 1
++                except KeyError:
++                    continue
++                if m[n]:
++                    spaces += 1
++
++            quotechar = max(quotes, key=quotes.get)
++
++            if delims:
++                delim = max(delims, key=delims.get)
++                skipinitialspace = delims[delim] == spaces
++                if delim == '\n': # most likely a file with a single column
++                    delim = ''
++            else:
++                # there is *no* delimiter, it's a single column of quoted data
+                 delim = ''
+-        else:
+-            # there is *no* delimiter, it's a single column of quoted data
+-            delim = ''
+-            skipinitialspace = 0
+-
+-        # A doubled quote character inside a quoted field means
+-        # a double quoted format.  Match whole fields, so that a match
+-        # cannot slide across field boundaries.
+-        doublequote = False
+-        if delim:
+-            dq_regexp = re.compile(
+-                    r"(?:(?<=%(delim)s)|^)%(space)s%(quote)s"     # ,"
+-                    r"((?:%(quote)s%(quote)s|[^%(quote)s]++)*+)"  # the body
+-                    r"%(quote)s(?:%(delim)s|$)"                   # ",
+-                    % {'delim': re.escape(delim), 'quote': quotechar,
+-                       # Skipping spaces after a space rescans them.
+-                       'space': ' *+' if delim != ' ' else ''},
+-                    re.MULTILINE)
+-            dquotechar = quotechar * 2
+-            doublequote = any(dquotechar in m[1]
+-                              for m in dq_regexp.finditer(data))
+-
+-        return (quotechar, doublequote, delim, skipinitialspace)
++                skipinitialspace = 0
++
++            # A doubled quote character inside a quoted field means
++            # a double quoted format.  Match whole fields, so that a match
++            # cannot slide across field boundaries.
++            doublequote = False
++            if delim:
++                dq_regexp = re.compile(
++                        r"(?:(?<=%(delim)s)|^)%(space)s%(quote)s"     # ,"
++                        r"((?:%(quote)s%(quote)s|[^%(quote)s]++)*+)"  # the body
++                        r"%(quote)s(?:%(delim)s|$)"                   # ",
++                        % {'delim': re.escape(delim), 'quote': quotechar,
++                           # Skipping spaces after a space rescans them.
++                           'space': ' *+' if delim != ' ' else ''},
++                        re.MULTILINE)
++                dquotechar = quotechar * 2
++                doublequote = any(dquotechar in m[1]
++                                  for m in dq_regexp.finditer(data))
++
++            return (quotechar, doublequote, delim, skipinitialspace)
+ 
+ 
+     def _guess_delimiter(self, data, delimiters):

@@ -1,0 +1,12 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -174,8 +174,7 @@
+         Note: In a priority queue, there is no concept of prepending to the
+         front. Requests are ordered by (priority, arrival_time)."""
+         with perfmark.region("vllm-024", incoming_count=len(requests)):
+-            for request in requests:
+-                self.add_request(request)
++            self._heap.extend(requests)
++            heapq.heapify(self._heap)
+
+     def remove_request(self, request: Request) -> None:

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-123",
+  "title": "FrontendAction::BeginSourceFile compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Frontend/FrontendAction.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Frontend/FrontendAction.cpp",
+    "sha256": "4617e9d901e2762cf9137b528be59ab36ec38a55fbcc5c549255ce13c8d54b50"
+  },
+  "region": {
+    "symbol": "FrontendAction::BeginSourceFile",
+    "start_line": 585,
+    "end_line": 1068,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-123",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Frontend/FrontendAction.cpp:FrontendAction::BeginSourceFile",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Frontend/FrontendAction.cpp#L585-L1068"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "862f1abca12a5e269cb6d82d965d9db960ed5606bdd35103ac578cf6effd27cf",
+      "patch_sha256": "e8a79e9e2e892ae76a160db5d47a16bac96dbbc7a1f01abf6efa05b94bfd0f40"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

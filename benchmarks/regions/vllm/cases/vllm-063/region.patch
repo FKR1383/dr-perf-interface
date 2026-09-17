@@ -1,0 +1,49 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ # Datastructures defining a GPU input batch
+ 
++import perfmark
+ from dataclasses import dataclass
+ from typing import cast
+ 
+@@ -840,22 +841,23 @@
+     def refresh_metadata(self):
+         """Apply any batch updates to sampling metadata."""
+ 
+-        if self.is_pooling_model:
+-            batch_changed = self.batch_update_builder.reset()
+-            if batch_changed:
++        with perfmark.region("vllm-063"):
++            if self.is_pooling_model:
++                batch_changed = self.batch_update_builder.reset()
++                if batch_changed:
++                    self.sampling_metadata = self._make_sampling_metadata()
++                return
++
++            # For non-pooling models - generate and apply logitsprocs update;
++            # reset batch update tracking.
++            # Update sampling metadata if batch state is changed.
++            batch_update = self.batch_update_builder.get_and_reset(self.num_reqs)
++            if self.thinking_budget_state_holder is not None and batch_update:
++                self.thinking_budget_state_holder.sync_batch(batch_update)
++            for logit_proc in self.logitsprocs.all:
++                logit_proc.update_state(batch_update)
++            if batch_update:
+                 self.sampling_metadata = self._make_sampling_metadata()
+-            return
+-
+-        # For non-pooling models - generate and apply logitsprocs update;
+-        # reset batch update tracking.
+-        # Update sampling metadata if batch state is changed.
+-        batch_update = self.batch_update_builder.get_and_reset(self.num_reqs)
+-        if self.thinking_budget_state_holder is not None and batch_update:
+-            self.thinking_budget_state_holder.sync_batch(batch_update)
+-        for logit_proc in self.logitsprocs.all:
+-            logit_proc.update_state(batch_update)
+-        if batch_update:
+-            self.sampling_metadata = self._make_sampling_metadata()
+ 
+     def _make_sampling_metadata(self) -> SamplingMetadata:
+         num_reqs = self.num_reqs

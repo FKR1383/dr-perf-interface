@@ -1,0 +1,73 @@
+--- a/lark/load_grammar.py
++++ b/lark/load_grammar.py
+@@ -1,5 +1,6 @@
+ """Parses and compiles Lark grammars into an internal representation.
+ """
++import perfmark
+ 
+ import hashlib
+ import os.path
+@@ -872,34 +873,35 @@
+ def resolve_term_references(term_dict):
+     # TODO Solve with transitive closure (maybe)
+ 
+-    while True:
+-        changed = False
+-        for name, token_tree in term_dict.items():
+-            if token_tree is None:  # Terminal added through %declare
+-                continue
+-            for exp in token_tree.find_data('value'):
+-                item ,= exp.children
+-                if isinstance(item, NonTerminal):
+-                    raise GrammarError("Rules aren't allowed inside terminals (%s in %s)" % (item, name))
+-                elif isinstance(item, Terminal):
+-                    try:
+-                        term_value = term_dict[item.name]
+-                    except KeyError:
+-                        raise GrammarError("Terminal used but not defined: %s" % item.name)
+-                    assert term_value is not None
+-                    exp.children[0] = term_value
+-                    changed = True
+-                else:
+-                    assert isinstance(item, Tree)
+-        if not changed:
+-            break
+-
+-    for name, term in term_dict.items():
+-        if term:    # Not just declared
+-            for child in term.children:
+-                ids = [id(x) for x in child.iter_subtrees()]
+-                if id(term) in ids:
+-                    raise GrammarError("Recursion in terminal '%s' (recursion is only allowed in rules, not terminals)" % name)
++    with perfmark.region("lt-208"):
++        while True:
++            changed = False
++            for name, token_tree in term_dict.items():
++                if token_tree is None:  # Terminal added through %declare
++                    continue
++                for exp in token_tree.find_data('value'):
++                    item ,= exp.children
++                    if isinstance(item, NonTerminal):
++                        raise GrammarError("Rules aren't allowed inside terminals (%s in %s)" % (item, name))
++                    elif isinstance(item, Terminal):
++                        try:
++                            term_value = term_dict[item.name]
++                        except KeyError:
++                            raise GrammarError("Terminal used but not defined: %s" % item.name)
++                        assert term_value is not None
++                        exp.children[0] = term_value
++                        changed = True
++                    else:
++                        assert isinstance(item, Tree)
++            if not changed:
++                break
++
++        for name, term in term_dict.items():
++            if term:    # Not just declared
++                for child in term.children:
++                    ids = [id(x) for x in child.iter_subtrees()]
++                    if id(term) in ids:
++                        raise GrammarError("Recursion in terminal '%s' (recursion is only allowed in rules, not terminals)" % name)
+ 
+ 
+ 

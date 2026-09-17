@@ -1,0 +1,19 @@
+{
+  "case": "vllm_b",
+  "factors": [
+    {
+      "id": "f1",
+      "criterion": "prompt token count and per-request constant"
+    },
+    {
+      "id": "f2",
+      "criterion": "full hash block count (128-token staircase in the archived configuration)"
+    },
+    {
+      "id": "f3",
+      "criterion": "input validation scans and request parameter deepcopy"
+    }
+  ],
+  "grading": "Semantic review against the record and code, not keyword matching. Equivalent expressions and well-supported alternative decompositions count. Historical coefficients are not acceptance thresholds.",
+  "scope": "Observed historical workloads, not an all-input guarantee. Read shared follow-up records for measurement corrections and GPU limits."
+}

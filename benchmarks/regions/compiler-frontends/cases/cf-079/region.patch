@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -4766,6 +4767,7 @@
+                                              uint64_t &VisibleBlockOffset,
+                                              uint64_t &ModuleLocalBlockOffset,
+                                              uint64_t &TULocalBlockOffset) {
++                                               DRPERF_BENCH_REGION("cf-079");
+   assert(VisibleBlockOffset == 0);
+   assert(ModuleLocalBlockOffset == 0);
+   assert(TULocalBlockOffset == 0);

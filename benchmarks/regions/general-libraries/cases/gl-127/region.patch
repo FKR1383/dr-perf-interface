@@ -1,0 +1,31 @@
+--- a/numpy/lib/_shape_base_impl.py
++++ b/numpy/lib/_shape_base_impl.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import functools
+ 
+ import numpy as np
+@@ -1227,14 +1228,15 @@
+     except TypeError:
+         tup = (reps,)
+     d = len(tup)
+-    if all(x == 1 for x in tup) and isinstance(A, _nx.ndarray):
+-        # Fixes the problem that the function does not make a copy if A is a
+-        # numpy array and the repetitions are 1 in all dimensions
+-        return _nx.array(A, copy=True, subok=True, ndmin=d)
+-    else:
+-        # Note that no copy of zero-sized arrays is made. However since they
+-        # have no data there is no risk of an inadvertent overwrite.
+-        c = _nx.array(A, copy=None, subok=True, ndmin=d)
++    with perfmark.region("gl-127"):
++        if all(x == 1 for x in tup) and isinstance(A, _nx.ndarray):
++            # Fixes the problem that the function does not make a copy if A is a
++            # numpy array and the repetitions are 1 in all dimensions
++            return _nx.array(A, copy=True, subok=True, ndmin=d)
++        else:
++            # Note that no copy of zero-sized arrays is made. However since they
++            # have no data there is no risk of an inadvertent overwrite.
++            c = _nx.array(A, copy=None, subok=True, ndmin=d)
+     if (d < c.ndim):
+         tup = (1,) * (c.ndim - d) + tup
+     shape_out = tuple(s * t for s, t in zip(c.shape, tup))

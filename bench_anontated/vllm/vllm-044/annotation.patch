@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/input_processor.py
++++ b/vllm/v1/engine/input_processor.py
+@@ -268,7 +268,7 @@
+         resumable: bool = False,
+         session_id: str | None = None,
+     ) -> EngineCoreRequest:
+-        with perfmark.region("vllm-044"):
++        with perfmark.region("vllm-044", supported_task_count=len(supported_tasks), dict_prompt=int(isinstance(prompt, dict))):
+             self._validate_params(params, supported_tasks)
+             self._validate_lora(lora_request)
+ 

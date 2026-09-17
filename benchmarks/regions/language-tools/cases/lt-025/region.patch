@@ -1,0 +1,81 @@
+--- a/sympy/core/basic.py
++++ b/sympy/core/basic.py
+@@ -1,5 +1,6 @@
+ """Base class for all the objects in SymPy"""
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import Counter
+ from collections.abc import Mapping, Iterable
+@@ -1514,38 +1515,39 @@
+ 
+     def _has(self, iterargs, *patterns):
+         # separate out types and unhashable objects
+-        type_set = set()  # only types
+-        p_set = set()  # hashable non-types
+-        for p in patterns:
+-            if isinstance(p, type) and issubclass(p, Basic):
+-                type_set.add(p)
+-                continue
+-            if not isinstance(p, Basic):
+-                try:
+-                    p = _sympify(p)
+-                except SympifyError:
+-                    continue  # Basic won't have this in it
+-            p_set.add(p)  # fails if object defines __eq__ but
+-                          # doesn't define __hash__
+-        types = tuple(type_set)   #
+-        for i in iterargs(self):  #
+-            if i in p_set:        # <--- here, too
+-                return True
+-            if isinstance(i, types):
+-                return True
+-
+-        # use matcher if defined, e.g. operations defines
+-        # matcher that checks for exact subset containment,
+-        # (x + y + 1).has(x + 1) -> True
+-        for i in p_set - type_set:  # types don't have matchers
+-            if not hasattr(i, '_has_matcher'):
+-                continue
+-            match = i._has_matcher()
+-            if any(match(arg) for arg in iterargs(self)):
+-                return True
+-
+-        # no success
+-        return False
++        with perfmark.region("lt-025"):
++            type_set = set()  # only types
++            p_set = set()  # hashable non-types
++            for p in patterns:
++                if isinstance(p, type) and issubclass(p, Basic):
++                    type_set.add(p)
++                    continue
++                if not isinstance(p, Basic):
++                    try:
++                        p = _sympify(p)
++                    except SympifyError:
++                        continue  # Basic won't have this in it
++                p_set.add(p)  # fails if object defines __eq__ but
++                              # doesn't define __hash__
++            types = tuple(type_set)   #
++            for i in iterargs(self):  #
++                if i in p_set:        # <--- here, too
++                    return True
++                if isinstance(i, types):
++                    return True
++
++            # use matcher if defined, e.g. operations defines
++            # matcher that checks for exact subset containment,
++            # (x + y + 1).has(x + 1) -> True
++            for i in p_set - type_set:  # types don't have matchers
++                if not hasattr(i, '_has_matcher'):
++                    continue
++                match = i._has_matcher()
++                if any(match(arg) for arg in iterargs(self)):
++                    return True
++
++            # no success
++            return False
+ 
+     def replace(self, query, value, map=False, simultaneous=True, exact=None) -> Basic:
+         """

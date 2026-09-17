@@ -1,0 +1,33 @@
+{
+  "case": "aq-003",
+  "status": "annotation-qualified",
+  "attempts": 3,
+  "pcvs": [
+    "input_len",
+    "input_pairs"
+  ],
+  "pcv_expressions": "input_len=0 if str is None else len(str), input_pairs=0 if str is None else len(str) * len(str)",
+  "gate_pass": true,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 7,
+    "required_states": 4,
+    "max_unexplained_share": 0.0,
+    "reasons": [],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round3/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json",
+    "evidence/round3/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "accepted",
+    "result": "../../../bench_optimized/accidental-quadratic/aq-003/result.json"
+  }
+}

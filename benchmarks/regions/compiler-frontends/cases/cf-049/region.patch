@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExpr.cpp
++++ b/clang/lib/Parse/ParseExpr.cpp
+@@ -20,6 +20,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Availability.h"
+ #include "clang/AST/ExprCXX.h"
+@@ -3062,6 +3063,7 @@
+ Parser::ParseParenExpression(ParenParseOption &ExprType, bool stopIfCastExpr,
+                              bool isTypeCast, ParsedType &CastTy,
+                              SourceLocation &RParenLoc) {
++                               DRPERF_BENCH_REGION("cf-049");
+   assert(Tok.is(tok::l_paren) && "Not a paren expr!");
+   ColonProtectionRAIIObject ColonProtection(*this, false);
+   BalancedDelimiterTracker T(*this, tok::l_paren);

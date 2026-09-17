@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-compiler.cc
++++ b/src/regexp/regexp-compiler.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-compiler.h"
++#include "drperf_bench_region.h"
+ 
+ #include <algorithm>
+ #include <optional>
+@@ -1951,6 +1952,7 @@
+                           QuickCheckDetails* details,
+                           bool fall_through_on_failure,
+                           ChoiceNode* predecessor) {
++  DRPERF_BENCH_REGION("v8-regexp-023");
+   DCHECK_NOT_NULL(predecessor);
+   if (details->characters() == 0) {
+     TRACE("* No QuickCheck characters found");

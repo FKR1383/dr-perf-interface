@@ -1,0 +1,553 @@
+derive attention   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_tokens=4,kv_tokens=230 x12, num_tokens=8,kv_tokens=565 x12, num_tokens=8,kv_tokens=573 x12, num_tokens=12,kv_tokens=775 x12, num_tokens=16,kv_tokens=1,086 x12, num_tokens=16,kv_tokens=1,102 x12, num_tokens=20,kv_tokens=1,276 x12, num_tokens=24,kv_tokens=1,554 x12, num_tokens=24,kv_tokens=1,578 x12, num_tokens=32,kv_tokens=1,870 x12, num_tokens=32,kv_tokens=1,902 x12, num_tokens=32,kv_tokens=1,934 x12, num_tokens=32,kv_tokens=1,966 x12, num_tokens=32,kv_tokens=1,998 x12, num_tokens=32,kv_tokens=2,030 x12, num_tokens=46,kv_tokens=1,838 x12, num_tokens=1,024,kv_tokens=1,792 x12
+  cost(num_tokens, kv_tokens) = 4,420.3*num_tokens + 7*kv_tokens + 92,517.8        [all num_tokens, kv_tokens]   blocks: 97 affine, 4255 constant, 91 irregular (97.9% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,443,640 .. 228,027,780
+    OpenMP runtime waiting, per call (excluded): 336,747.3 .. 5,197,519.4
+    per-num_tokens coefficient by function:
+             2,816.3  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+             1,356.2  cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax  [_C_AVX2.abi3.so]
+                 108  __expf_fma  [libm.so.6]
+                  60  xflowf  [libm.so.6]
+                  36  with_errnof  [libm.so.6]
+                  36  __math_uflowf  [libm.so.6]
+                   7  cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>  [_C_AVX2.abi3.so]
+               0.339  ___pthread_cond_broadcast  [libc.so.6]
+               0.221  epoll_wait  [libc.so.6]
+               0.118  __GI___pthread_enable_asynccancel  [libc.so.6]
+    per-kv_tokens coefficient by function:
+                   7  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+    constant by function:
+             4,867.7  _PyEval_EvalFrameDefault  [python3.12]
+               2,800  PyDict_SetItem  [python3.12]
+               2,592  _PyObject_GenericGetAttrWithDict  [python3.12]
+               2,397  PyCMethod_New+?  [python3.12]
+               1,948  _PyTuple_Resize+?  [python3.12]
+               1,824  PyEval_EvalCode+?  [python3.12]
+               1,781  PyDescr_IsData+?  [python3.12]
+               1,746  PyType_IsSubtype  [python3.12]
+               1,692  __tls_get_addr  [ld-linux-x86-64.so.2]
+             1,566.4  PyDict_Contains+?  [python3.12]
+    irregular by function:
+        14,575,043.3  cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>  [_C_AVX2.abi3.so]
+         5,322,669.2  __expf_fma  [libm.so.6]
+         1,435,009.4  cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax  [_C_AVX2.abi3.so]
+
+derive engine_step   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: unfinished=1 x1, unfinished=2 x2, unfinished=3 x1, unfinished=4 x2, unfinished=5 x1, unfinished=6 x2, unfinished=8 x8
+  cost(unfinished) = 696,303,309.5*unfinished + 15,275,831.8        [unfinished <= 4]   blocks: 3406 affine, 22195 constant, 221 irregular (3.0% of cost)
+    marker cost subtracted from the constant: 34,851.8 per call (calibrated)
+    irregular blocks, per call: 19,836,294 .. 90,056,747.5
+    OpenMP runtime waiting, per call (excluded): 62,773,640 .. 79,008,702
+    per-unfinished coefficient by function:
+         671,933,952  at::native::AVX2::bf16_dot_with_fp32_arith  [libtorch_cpu.so]
+          18,181,632  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+         2,815,437.8  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+         1,633,867.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+             323,325  void at::internal::invoke_parallel<at::parallel_for<at::native::(anony  [libtorch_cpu.so]
+           285,609.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+           227,836.8  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+             194,400  void at::native::AVX2::vectorized_loop<at::native::(anonymous namespac  [libtorch_cpu.so]
+             157,824  cpu_attention::AttentionImpl<>::reshape_and_cache  [_C_AVX2.abi3.so]
+             136,600  at::native::AVX2::RowwiseMomentsImpl<>  [libtorch_cpu.so]
+    constant by function:
+           2,561,896  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+         1,655,882.9  _PyEval_EvalFrameDefault  [python3.12]
+           511,475.9  PyDict_Contains+?  [python3.12]
+             368,291  _PyObject_GenericGetAttrWithDict  [python3.12]
+           272,192.8  PyEval_EvalCode+?  [python3.12]
+           267,764.5  _PyType_Lookup  [python3.12]
+           252,532.1  PyType_GetSlot+?  [python3.12]
+             239,388  __tls_get_addr  [ld-linux-x86-64.so.2]
+             227,634  PyObject_Free  [python3.12]
+           212,315.5  _PyTuple_Resize+?  [python3.12]
+    irregular by function:
+          32,107,410  cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>  [_C_AVX2.abi3.so]
+          11,729,376  __expf_fma  [libm.so.6]
+           5,996,160  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+  cost(unfinished) = 5,129,905*unfinished + 28,125,217.6        [unfinished >= 5]   blocks: 1501 affine, 25174 constant, 975 irregular (99.4% of cost)   (3 points: weak)
+    marker cost subtracted from the constant: 34,851.8 per call (calibrated)
+    irregular blocks, per call: 3,552,285,872 .. 20,720,522,663.2
+    OpenMP runtime waiting, per call (excluded): 83,007,109 .. 262,771,124.2
+    per-unfinished coefficient by function:
+         1,966,898.7  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+         1,686,980.6  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+           997,279.1  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+           241,868.3  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+            81,261.4  _PyEval_EvalFrameDefault  [python3.12]
+              39,478  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+            26,031.9  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+             7,839.1  _PyErr_ChainStackItem+?  [python3.12]
+             5,683.8  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+             5,658.6  PyObject_Free  [python3.12]
+    constant by function:
+         6,490,997.7  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+         4,582,887.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+         3,438,194.5  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+         1,693,256.8  _PyEval_EvalFrameDefault  [python3.12]
+           817,939.1  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+           532,992.8  PyDict_Contains+?  [python3.12]
+           371,056.2  _PyObject_GenericGetAttrWithDict  [python3.12]
+           281,250.4  _PyType_Lookup  [python3.12]
+           274,975.4  PyEval_EvalCode+?  [python3.12]
+             261,890  __tls_get_addr  [ld-linux-x86-64.so.2]
+    irregular by function:
+       9,003,976,656  at::native::AVX2::bf16_dot_with_fp32_arith  [libtorch_cpu.so]
+         257,257,728  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+         153,071,256  cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>  [_C_AVX2.abi3.so]
+
+derive execute_model   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_tokens=4,num_reqs=1 x1, num_tokens=8,num_reqs=2 x2, num_tokens=12,num_reqs=3 x1, num_tokens=16,num_reqs=4 x2, num_tokens=20,num_reqs=5 x1, num_tokens=24,num_reqs=6 x2, num_tokens=32,num_reqs=8 x6, num_tokens=46,num_reqs=8 x1, num_tokens=1,024,num_reqs=8 x1
+  cost(num_tokens, num_reqs) = 117,196,521.7*num_tokens + 65,453.5*num_reqs + 1,106,068,074.3        [all num_tokens, num_reqs]   blocks: 1926 affine, 19912 constant, 630 irregular (2.3% of cost)
+    marker cost subtracted from the constant: 22,448.5 per call (calibrated)
+    irregular blocks, per call: 20,126,340 .. 2,739,606,934
+    OpenMP runtime waiting, per call (excluded): 40,977,341 .. 888,445,429
+    per-num_tokens coefficient by function:
+       113,473,071.2  at::native::AVX2::bf16_dot_with_fp32_arith  [libtorch_cpu.so]
+         3,372,636.4  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+              80,825  void at::internal::invoke_parallel<at::parallel_for<at::native::(anony  [libtorch_cpu.so]
+            71,421.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              48,600  void at::native::AVX2::vectorized_loop<at::native::(anonymous namespac  [libtorch_cpu.so]
+              39,456  cpu_attention::AttentionImpl<>::reshape_and_cache  [_C_AVX2.abi3.so]
+            37,240.4  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+              34,150  at::native::AVX2::RowwiseMomentsImpl<>  [libtorch_cpu.so]
+            18,095.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+            17,194.6  cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax  [_C_AVX2.abi3.so]
+    per-num_reqs coefficient by function:
+            56,227.7  cpu_attention::AttentionMainLoop<>::operator()  [_C_AVX2.abi3.so]
+             2,703.2  __tls_get_addr  [ld-linux-x86-64.so.2]
+             1,439.7  _PyEval_EvalFrameDefault  [python3.12]
+               415.1  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               318.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               232.9  PyArray_Repeat  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               220.8  array_assign_subscript  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               215.7  __memcpy_avx_unaligned_erms  [libc.so.6]
+               175.1  _init  [libtorch_cpu.so]
+               169.2  at::native::Indexer::get  [libtorch_cpu.so]
+    constant by function:
+      1,068,827,163.3  at::native::AVX2::bf16_dot_with_fp32_arith  [libtorch_cpu.so]
+        26,118,367.9  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpubla  [libtorch_cpu.so]
+         1,318,971.5  _PyEval_EvalFrameDefault  [python3.12]
+           475,240.9  PyDict_Contains+?  [python3.12]
+             345,712  _PyObject_GenericGetAttrWithDict  [python3.12]
+           249,886.9  PyType_GetSlot+?  [python3.12]
+           245,057.9  _PyType_Lookup  [python3.12]
+           228,527.1  __tls_get_addr  [ld-linux-x86-64.so.2]
+           221,712.6  PyEval_EvalCode+?  [python3.12]
+           190,168.3  PyObject_Free  [python3.12]
+    irregular by function:
+         260,190,096  cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>  [_C_AVX2.abi3.so]
+          95,184,256  __expf_fma  [libm.so.6]
+          25,587,936  cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax  [_C_AVX2.abi3.so]
+
+derive generate_loop: only 1 state point(s) observed; need at least 3
+derive ngram_gather   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,num_valid=1,tag=9,004 x1, num_reqs=2,num_valid=2,tag=9,004 x2, num_reqs=3,num_valid=3,tag=9,004 x1, num_reqs=4,num_valid=4,tag=9,004 x2, num_reqs=5,num_valid=5,tag=9,004 x1, num_reqs=6,num_valid=6,tag=9,004 x2, num_reqs=8,num_valid=7,tag=9,004 x1, num_reqs=8,num_valid=8,tag=9,004 x7
+  cost(num_reqs, num_valid, tag) = 1,830.8*num_reqs + 3,248.8*num_valid + 0*tag + 65.6        [all num_reqs, num_valid, tag]   blocks: 658 affine, 257 constant, 2 irregular (2.1% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 42 .. 1,120
+    OpenMP runtime waiting, per call (excluded): 0 .. 628,965
+    per-num_reqs coefficient by function:
+               423.1  _PyEval_EvalFrameDefault  [python3.12]
+               340.1  _PyObject_GC_New  [python3.12]
+               338.3  PyObject_RichCompareBool  [python3.12]
+               176.8  PyLong_AsSsize_t+?  [python3.12]
+               152.7  PyList_GetItem+?  [python3.12]
+               140.7  _PyOS_URandom+?  [python3.12]
+                95.5  PyObject_Malloc  [python3.12]
+                88.6  _PyType_Lookup  [python3.12]
+                  45  PyList_SetItem+?  [python3.12]
+                30.5  ___pthread_cond_broadcast  [libc.so.6]
+    per-num_valid coefficient by function:
+               487.6  _PyEval_EvalFrameDefault  [python3.12]
+                 386  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+              -334.4  _PyObject_GC_New  [python3.12]
+                 260  array_subscript  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               236.2  PyLong_FromLong  [python3.12]
+               185.7  PyObject_Free  [python3.12]
+                 137  PyArray_NewFromDescr_int  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+              -136.1  _PyOS_URandom+?  [python3.12]
+                 130  PyArray_Scalar  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                 126  get_view_from_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+    constant by function:
+              -485.3  PyObject_RichCompareBool  [python3.12]
+               438.1  _PyEval_EvalFrameDefault  [python3.12]
+              -233.1  PyList_GetItem+?  [python3.12]
+              -231.7  PyLong_AsSsize_t+?  [python3.12]
+               225.6  PyObject_Free  [python3.12]
+               196.3  PyObject_Malloc  [python3.12]
+                 192  _PyMem_Strdup+?  [python3.12]
+               -89.2  PyLong_FromLong  [python3.12]
+                  72  PyCMethod_New+?  [python3.12]
+                70.5  PyList_Append+?  [python3.12]
+    irregular by function:
+               285.2  PyObject_RichCompareBool  [python3.12]
+               222.2  PyLong_AsSsize_t+?  [python3.12]
+
+derive ngram_propose   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,k=3,ctx=231,tag=9,002 x1, num_reqs=2,k=3,ctx=567,tag=9,002 x1, num_reqs=2,k=3,ctx=575,tag=9,002 x1, num_reqs=3,k=3,ctx=778,tag=9,002 x1, num_reqs=4,k=3,ctx=1,090,tag=9,002 x1, num_reqs=4,k=3,ctx=1,106,tag=9,002 x1, num_reqs=5,k=3,ctx=1,281,tag=9,002 x1, num_reqs=6,k=3,ctx=1,560,tag=9,002 x1, num_reqs=6,k=3,ctx=1,584,tag=9,002 x1, num_reqs=8,k=3,ctx=1,817,tag=9,002 x1, num_reqs=8,k=3,ctx=1,846,tag=9,002 x1, num_reqs=8,k=3,ctx=1,878,tag=9,002 x1, num_reqs=8,k=3,ctx=1,910,tag=9,002 x1, num_reqs=8,k=3,ctx=1,942,tag=9,002 x1, num_reqs=8,k=3,ctx=1,974,tag=9,002 x1, num_reqs=8,k=3,ctx=2,006,tag=9,002 x1, num_reqs=8,k=3,ctx=2,038,tag=9,002 x1
+  cost(num_reqs, k, ctx, tag) = 7,813.6*num_reqs + 0*k + 7*ctx + 0*tag + 210,978.2        [all num_reqs, k, ctx, tag]   blocks: 431 affine, 6003 constant, 39 irregular (14.4% of cost)
+    note: k is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 3,705.7 per call (calibrated)
+    irregular blocks, per call: 14,339 .. 61,263.3
+    OpenMP runtime waiting, per call (excluded): 7,230 .. 8,498,223
+    per-num_reqs coefficient by function:
+             2,569.5  _PyEval_EvalFrameDefault  [python3.12]
+               643.4  PyObject_RichCompareBool  [python3.12]
+               298.2  _PyTuple_Resize+?  [python3.12]
+               238.5  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               236.6  PyLong_AsSsize_t+?  [python3.12]
+               195.6  PyEval_EvalCode+?  [python3.12]
+               187.6  _PyErr_ChainStackItem+?  [python3.12]
+               176.6  PyList_GetItem+?  [python3.12]
+               174.9  _PyOS_URandom+?  [python3.12]
+               172.6  PyObject_Free  [python3.12]
+    per-ctx coefficient by function:
+                 2.9  _PyEval_EvalFrameDefault  [python3.12]
+              -0.761  PyObject_RichCompareBool  [python3.12]
+               0.718  PyObject_Free  [python3.12]
+               0.685  PyObject_Malloc  [python3.12]
+              -0.681  _PyOS_URandom+?  [python3.12]
+               0.677  _PyTuple_Resize+?  [python3.12]
+               0.465  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               0.429  PyLong_FromLong  [python3.12]
+              -0.394  PyDict_Contains+?  [python3.12]
+               0.392  PyEval_EvalCode+?  [python3.12]
+    constant by function:
+            46,004.5  _PyEval_EvalFrameDefault  [python3.12]
+             7,719.5  PyEval_EvalCode+?  [python3.12]
+             5,410.1  _PyTuple_Resize+?  [python3.12]
+             5,259.9  PyObject_Free  [python3.12]
+             4,740.8  _PyErr_ChainStackItem+?  [python3.12]
+             3,949.7  PyObject_Malloc  [python3.12]
+             3,882.5  PyCMethod_New+?  [python3.12]
+             3,682.9  PyType_GenericNew+?  [python3.12]
+               2,903  PyType_IsSubtype  [python3.12]
+               2,863  _PyObject_GenericGetAttrWithDict  [python3.12]
+    irregular by function:
+            33,968.1  <no module>  [<no module>]
+             4,230.2  _PyEval_EvalFrameDefault  [python3.12]
+             2,126.1  _PyObject_GC_New  [python3.12]
+
+derive ngram_scan   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_valid=1,ctx=231,k=3,tag=9,003 x1, num_valid=2,ctx=567,k=3,tag=9,003 x1, num_valid=2,ctx=575,k=3,tag=9,003 x1, num_valid=3,ctx=778,k=3,tag=9,003 x1, num_valid=4,ctx=1,090,k=3,tag=9,003 x1, num_valid=4,ctx=1,106,k=3,tag=9,003 x1, num_valid=5,ctx=1,281,k=3,tag=9,003 x1, num_valid=6,ctx=1,560,k=3,tag=9,003 x1, num_valid=6,ctx=1,584,k=3,tag=9,003 x1, num_valid=7,ctx=1,535,k=3,tag=9,003 x1, num_valid=8,ctx=1,846,k=3,tag=9,003 x1, num_valid=8,ctx=1,878,k=3,tag=9,003 x1, num_valid=8,ctx=1,910,k=3,tag=9,003 x1, num_valid=8,ctx=1,942,k=3,tag=9,003 x1, num_valid=8,ctx=1,974,k=3,tag=9,003 x1, num_valid=8,ctx=2,006,k=3,tag=9,003 x1, num_valid=8,ctx=2,038,k=3,tag=9,003 x1
+  cost(num_valid, ctx, k, tag) = 9,840.2*num_valid + 13.9*ctx + 0*k + 0*tag + 25,293.7        [all num_valid, ctx, k, tag]   blocks: 1006 affine, 1410 constant, 30 irregular (13.2% of cost)
+    note: k is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 2,734 .. 22,456
+    OpenMP runtime waiting, per call (excluded): 7,230 .. 3,867,426
+    per-num_valid coefficient by function:
+               3,622  _PyEval_EvalFrameDefault  [python3.12]
+                 587  PyEval_EvalCode+?  [python3.12]
+                 491  _PyTuple_Resize+?  [python3.12]
+                 475  _PyErr_ChainStackItem+?  [python3.12]
+               385.3  <no module>  [<no module>]
+                 217  PyInterpreterState_Get+?  [python3.12]
+                 213  PyType_FromModuleAndSpec+?  [python3.12]
+                 192  _PyObject_MakeTpCall  [python3.12]
+                 183  PyDict_Update+?  [python3.12]
+               182.1  _PyLong_Format+?  [python3.12]
+    per-ctx coefficient by function:
+                14.5  <no module>  [<no module>]
+              -0.238  _init  [libtorch_cpu.so]
+              -0.134  _int_free  [libc.so.6]
+              -0.119  __GI___pthread_disable_asynccancel  [libc.so.6]
+               0.102  PyObject_Malloc  [python3.12]
+             -0.0881  _PyType_Lookup  [python3.12]
+             -0.0514  PyDict_Contains+?  [python3.12]
+             -0.0445  _int_malloc  [libc.so.6]
+              0.0397  PyObject_Free  [python3.12]
+             -0.0382  NRT_MemInfo_alloc_aligned  [_nrt_python.cpython-312-x86_64-linux-gnu.so]
+    constant by function:
+             4,292.1  _PyEval_EvalFrameDefault  [python3.12]
+             1,032.4  PyDict_Contains+?  [python3.12]
+               837.2  PyObject_Free  [python3.12]
+                 826  ___pthread_getspecific  [libc.so.6]
+               814.7  _int_free  [libc.so.6]
+                 793  _PyTuple_Resize+?  [python3.12]
+               720.4  __GI___libc_malloc  [libc.so.6]
+                 587  PyEval_EvalCode+?  [python3.12]
+               503.5  PyObject_Malloc  [python3.12]
+                 475  _PyErr_ChainStackItem+?  [python3.12]
+    irregular by function:
+            14,290.4  <no module>  [<no module>]
+               225.5  epoll_wait  [libc.so.6]
+               192.1  ___pthread_cond_broadcast  [libc.so.6]
+
+derive prepare_inputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,num_tokens=4,num_draft=3,tag=9,007 x1, num_reqs=2,num_tokens=8,num_draft=6,tag=9,007 x2, num_reqs=3,num_tokens=12,num_draft=9,tag=9,007 x1, num_reqs=4,num_tokens=16,num_draft=12,tag=9,007 x2, num_reqs=5,num_tokens=20,num_draft=15,tag=9,007 x1, num_reqs=6,num_tokens=24,num_draft=18,tag=9,007 x2, num_reqs=8,num_tokens=32,num_draft=24,tag=9,007 x6, num_reqs=8,num_tokens=46,num_draft=21,tag=9,007 x1, num_reqs=8,num_tokens=1,024,num_draft=0,tag=9,007 x1
+  cost(num_reqs, num_tokens, num_draft, tag) = 13,380*num_reqs + -190.5*num_tokens + -2,236.2*num_draft + 0*tag + 797,314.5        [all num_reqs, num_tokens, num_draft, tag]   blocks: 8273 affine, 4491 constant, 23 irregular (1.0% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 4,635 .. 11,030
+    OpenMP runtime waiting, per call (excluded): 3,892,350.5 .. 14,845,563
+    per-num_reqs coefficient by function:
+             1,918.2  _PyEval_EvalFrameDefault  [python3.12]
+             1,311.6  _PyOS_URandom+?  [python3.12]
+            -1,025.5  _int_malloc  [libc.so.6]
+             1,024.3  _PyType_Lookup  [python3.12]
+               949.3  PyDict_Contains+?  [python3.12]
+               744.8  epoll_wait  [libc.so.6]
+               634.4  ___pthread_cond_broadcast  [libc.so.6]
+               496.5  __GI___pthread_enable_asynccancel  [libc.so.6]
+               413.8  __GI___pthread_disable_asynccancel  [libc.so.6]
+                 331  gloo::transport::tcp::Loop::run  [libtorch_cpu.so]
+    per-num_tokens coefficient by function:
+                43.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               -29.4  _PyEval_EvalFrameDefault  [python3.12]
+                  15  mapiter_trivial_get  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               -13.8  PyDict_Contains+?  [python3.12]
+               -11.8  ufunc_generic_fastcall  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+                11.1  compute_slot_mapping_kernel_impl  [_C_AVX2.abi3.so]
+                  11  at::native::index_select_out_cpu_(at::Tensor const&, long, at::Tensor   [libtorch_cpu.so]
+               -10.2  _PyOS_URandom+?  [python3.12]
+                -9.3  _PyType_Lookup  [python3.12]
+                 8.4  _int_malloc  [libc.so.6]
+    per-num_draft coefficient by function:
+              -394.4  _PyOS_URandom+?  [python3.12]
+              -315.6  _PyType_Lookup  [python3.12]
+               309.9  _int_malloc  [libc.so.6]
+              -245.5  PyDict_Contains+?  [python3.12]
+              -235.3  epoll_wait  [libc.so.6]
+              -200.4  ___pthread_cond_broadcast  [libc.so.6]
+              -156.9  __GI___pthread_enable_asynccancel  [libc.so.6]
+              -130.7  __GI___pthread_disable_asynccancel  [libc.so.6]
+               108.7  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+              -104.6  gloo::transport::tcp::Loop::run  [libtorch_cpu.so]
+    constant by function:
+            52,812.3  _PyEval_EvalFrameDefault  [python3.12]
+              16,016  ufunc_generic_fastcall  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+              15,396  __tls_get_addr  [ld-linux-x86-64.so.2]
+            13,902.4  PyDict_Contains+?  [python3.12]
+              10,725  _PyObject_GenericGetAttrWithDict  [python3.12]
+              10,692  ___pthread_mutex_lock  [libc.so.6]
+              10,304  PyEval_EvalCode+?  [python3.12]
+              10,205  PyArray_NewFromDescr_int  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             9,608.6  _int_free  [libc.so.6]
+               9,604  _PyArg_ParseStack+?  [python3.12]
+
+derive reject_sample   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,num_draft=3,max_spec=3,tag=9,005 x1, num_reqs=2,num_draft=6,max_spec=3,tag=9,005 x2, num_reqs=3,num_draft=9,max_spec=3,tag=9,005 x1, num_reqs=4,num_draft=12,max_spec=3,tag=9,005 x2, num_reqs=5,num_draft=15,max_spec=3,tag=9,005 x1, num_reqs=6,num_draft=18,max_spec=3,tag=9,005 x2, num_reqs=8,num_draft=21,max_spec=3,tag=9,005 x1, num_reqs=8,num_draft=24,max_spec=3,tag=9,005 x6
+  cost(num_reqs, num_draft, max_spec, tag) = 1,105,302.5*num_reqs + 1,128,820.8*num_draft + 0*max_spec + 0*tag + 414,975.6        [all num_reqs, num_draft, max_spec, tag]   blocks: 320 affine, 8094 constant, 68 irregular (8.0% of cost)
+    note: max_spec is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 2,143.8 per call (calibrated)
+    irregular blocks, per call: 415,131 .. 3,092,716.1
+    OpenMP runtime waiting, per call (excluded): 6,334,755.5 .. 28,758,900
+    per-num_reqs coefficient by function:
+           703,860.3  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+             402,179  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              -901.5  _int_malloc  [libc.so.6]
+              -363.6  _int_free_merge_chunk  [libc.so.6]
+               334.8  epoll_wait  [libc.so.6]
+              -284.4  PyObject_Free  [python3.12]
+               223.2  __GI___pthread_enable_asynccancel  [libc.so.6]
+               213.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              -199.5  __tls_get_addr  [ld-linux-x86-64.so.2]
+                 186  __GI___pthread_disable_asynccancel  [libc.so.6]
+    per-num_draft coefficient by function:
+           703,812.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+           402,204.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+            21,920.6  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                 354  _int_malloc  [libc.so.6]
+               153.7  __tls_get_addr  [ld-linux-x86-64.so.2]
+               135.3  _int_free_merge_chunk  [libc.so.6]
+              -103.6  epoll_wait  [libc.so.6]
+                87.5  PyObject_Free  [python3.12]
+                71.1  _PyOS_URandom+?  [python3.12]
+               -69.1  __GI___pthread_enable_asynccancel  [libc.so.6]
+    constant by function:
+            48,549.8  _PyEval_EvalFrameDefault  [python3.12]
+            11,869.3  __tls_get_addr  [ld-linux-x86-64.so.2]
+             9,685.5  _PyObject_GenericGetAttrWithDict  [python3.12]
+             6,968.7  PyUnicode_FromFormatV  [python3.12]
+             6,675.5  PyDict_Contains+?  [python3.12]
+             6,495.5  PyEval_EvalCode+?  [python3.12]
+               5,450  PyDict_SetItem  [python3.12]
+             5,383.8  PyObject_Free  [python3.12]
+             5,140.8  _PyTuple_Resize+?  [python3.12]
+             5,065.9  ___pthread_mutex_lock  [libc.so.6]
+    irregular by function:
+         1,767,885.6  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+             5,946.8  _PyType_Lookup  [python3.12]
+             5,054.6  PyDict_Contains+?  [python3.12]
+
+derive sample   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,tag=9,001 x1, num_reqs=2,tag=9,001 x2, num_reqs=3,tag=9,001 x1, num_reqs=4,tag=9,001 x2, num_reqs=5,tag=9,001 x1, num_reqs=6,tag=9,001 x2, num_reqs=8,tag=9,001 x8
+  cost(num_reqs, tag) = 704,435.3*num_reqs + 0*tag + 92,035.7        [all num_reqs, tag]   blocks: 64 affine, 4982 constant, 18 irregular (17.6% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 161,456 .. 1,183,935.9
+    OpenMP runtime waiting, per call (excluded): 2,035,983 .. 6,022,781
+    per-num_reqs coefficient by function:
+           703,896.5  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               153.5  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+                95.2  at::internal::serial_for_each  [libtorch_cpu.so]
+                  47  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+                  38  at::DimCounter::DimCounter  [libtorch_cpu.so]
+                37.4  at::internal::set_thread_num  [libtorch_cpu.so]
+                30.2  __tls_get_addr  [ld-linux-x86-64.so.2]
+                29.3  c10::ParallelGuard::ParallelGuard  [libc10.so]
+                  22  _PyOS_URandom+?  [python3.12]
+                21.3  c10::ParallelGuard::~ParallelGuard  [libc10.so]
+    constant by function:
+             7,384.6  _PyEval_EvalFrameDefault  [python3.12]
+             2,317.1  PyUnicode_FromFormatV  [python3.12]
+             2,125.9  _PyObject_GenericGetAttrWithDict  [python3.12]
+             2,101.4  torch::FunctionSignature::parse  [libtorch_python.so]
+             1,506.2  ___pthread_mutex_lock  [libc.so.6]
+             1,406.1  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+             1,366.7  _PyArg_ParseStack+?  [python3.12]
+               1,172  _PyTuple_Resize+?  [python3.12]
+             1,166.5  c10::impl::OperatorEntry::lookup  [libtorch_cpu.so]
+             1,148.3  PyDict_Contains+?  [python3.12]
+    irregular by function:
+           639,849.6  void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::  [libtorch_cpu.so]
+             2,975.9  __tls_get_addr  [ld-linux-x86-64.so.2]
+             1,009.3  _PyType_Lookup  [python3.12]
+
+derive schedule   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: running=0,waiting=8 x1, running=1,waiting=0 x1, running=2,waiting=0 x2, running=3,waiting=0 x1, running=4,waiting=0 x2, running=5,waiting=0 x1, running=6,waiting=0 x2, running=8,waiting=0 x7
+  cost(running, waiting) = 65,945.8*running + 187,801.5*waiting + 81,694        [all running, waiting]   blocks: 3982 affine, 584 constant, 5 irregular (0.9% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,776 .. 11,523
+    OpenMP runtime waiting, per call (excluded): 0 .. 1,647,191
+    per-running coefficient by function:
+              29,136  _PyEval_EvalFrameDefault  [python3.12]
+             2,744.2  _PyTuple_Resize+?  [python3.12]
+               2,671  PyEval_EvalCode+?  [python3.12]
+             2,606.4  _PyErr_ChainStackItem+?  [python3.12]
+             2,519.1  PyObject_Free  [python3.12]
+             1,893.2  PyObject_Malloc  [python3.12]
+             1,497.6  _PyWeakref_ClearRef+?  [python3.12]
+               1,326  _PyObject_GC_New  [python3.12]
+             1,077.9  PyDict_Contains+?  [python3.12]
+               1,071  _PyArg_ParseTupleAndKeywords_SizeT  [python3.12]
+    per-waiting coefficient by function:
+            78,104.8  _PyEval_EvalFrameDefault  [python3.12]
+             8,399.5  PyEval_EvalCode+?  [python3.12]
+             7,459.5  _PyErr_ChainStackItem+?  [python3.12]
+             6,529.9  _PyTuple_Resize+?  [python3.12]
+             5,414.7  PyObject_Free  [python3.12]
+             4,565.4  PyObject_Malloc  [python3.12]
+             4,389.2  PyDict_Contains+?  [python3.12]
+             3,248.4  _PyObject_GC_New  [python3.12]
+             2,664.4  _PyWeakref_ClearRef+?  [python3.12]
+             2,361.2  PyInterpreterState_Get+?  [python3.12]
+    constant by function:
+              30,603  _PyEval_EvalFrameDefault  [python3.12]
+               4,882  PyEval_EvalCode+?  [python3.12]
+             3,602.4  PyDict_Contains+?  [python3.12]
+             3,238.2  PyDict_SetItem  [python3.12]
+             2,834.5  _PyErr_ChainStackItem+?  [python3.12]
+               1,768  _PyTuple_Resize+?  [python3.12]
+               1,513  PyObject_Free  [python3.12]
+               1,404  _PyObject_GC_New  [python3.12]
+               1,382  _PyDictView_New+?  [python3.12]
+             1,345.7  PyObject_Malloc  [python3.12]
+
+derive update_from_output   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: running=1,num_draft=3,num_accepted=3,tag=9,008 x1, running=2,num_draft=6,num_accepted=6,tag=9,008 x2, running=3,num_draft=9,num_accepted=9,tag=9,008 x1, running=4,num_draft=12,num_accepted=12,tag=9,008 x2, running=5,num_draft=15,num_accepted=15,tag=9,008 x1, running=6,num_draft=18,num_accepted=18,tag=9,008 x2, running=8,num_draft=0,num_accepted=0,tag=9,008 x1, running=8,num_draft=21,num_accepted=21,tag=9,008 x1, running=8,num_draft=24,num_accepted=24,tag=9,008 x6
+  cost(running, num_draft, num_accepted, tag) = 24,540.6*running + 3,069.3*num_draft + 0*num_accepted + 0*tag + 43,443.7        [all running, num_draft, num_accepted, tag]   blocks: 972 affine, 2518 constant, 65 irregular (25.6% of cost)
+    note: num_accepted is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 21,928 .. 113,858.3
+    OpenMP runtime waiting, per call (excluded): 0 .. 995,187
+    per-running coefficient by function:
+            11,350.5  _PyEval_EvalFrameDefault  [python3.12]
+             1,220.7  _PyTuple_Resize+?  [python3.12]
+             1,129.8  _PyErr_ChainStackItem+?  [python3.12]
+               859.8  Struct_vectorcall  [_core.cpython-312-x86_64-linux-gnu.so]
+               843.9  PyObject_Free  [python3.12]
+               702.5  PyObject_Malloc  [python3.12]
+                 411  _PyArg_ParseTupleAndKeywords_SizeT  [python3.12]
+               406.1  _PyWeakref_ClearRef+?  [python3.12]
+               393.2  PyTuple_New+?  [python3.12]
+               308.9  PyObject_GC_Del  [python3.12]
+    per-num_draft coefficient by function:
+               3,267  _PyEval_EvalFrameDefault  [python3.12]
+               408.7  _PyErr_ChainStackItem+?  [python3.12]
+              -316.8  _PyTuple_Resize+?  [python3.12]
+               193.3  PyLong_FromSsize_t  [python3.12]
+               156.1  _PyObject_GetMethod  [python3.12]
+              -112.5  PyObject_Free  [python3.12]
+              -107.9  PyTuple_New+?  [python3.12]
+              -101.2  _PyWeakref_ClearRef+?  [python3.12]
+               -99.5  PyObject_Malloc  [python3.12]
+               -99.4  _PyArg_ParseTupleAndKeywords_SizeT  [python3.12]
+    constant by function:
+            15,320.6  _PyEval_EvalFrameDefault  [python3.12]
+             1,787.1  PyEval_EvalCode+?  [python3.12]
+             1,194.8  PyType_GenericNew+?  [python3.12]
+               1,080  _PyErr_ChainStackItem+?  [python3.12]
+             1,016.1  _PyDictView_New+?  [python3.12]
+                 961  PyObject_Malloc  [python3.12]
+                 792  PyType_GenericAlloc+?  [python3.12]
+               767.8  Struct_vectorcall  [_core.cpython-312-x86_64-linux-gnu.so]
+               717.2  PyObject_Free  [python3.12]
+               702.8  _PyType_Lookup  [python3.12]
+    irregular by function:
+            50,597.7  _PyEval_EvalFrameDefault  [python3.12]
+             4,967.8  PyDict_Contains+?  [python3.12]
+             2,634.3  _PyErr_ChainStackItem+?  [python3.12]
+
+derive update_states   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_reqs=1,num_new=0,num_draft=3,tag=9,006 x1, num_reqs=2,num_new=0,num_draft=6,tag=9,006 x2, num_reqs=3,num_new=0,num_draft=9,tag=9,006 x1, num_reqs=4,num_new=0,num_draft=12,tag=9,006 x2, num_reqs=5,num_new=0,num_draft=15,tag=9,006 x1, num_reqs=6,num_new=0,num_draft=18,tag=9,006 x2, num_reqs=8,num_new=0,num_draft=21,tag=9,006 x1, num_reqs=8,num_new=0,num_draft=24,tag=9,006 x6, num_reqs=8,num_new=8,num_draft=0,tag=9,006 x1
+  cost(num_reqs, num_new, num_draft, tag) = -13,159.7*num_reqs + 152,665.1*num_new + 6,410.5*num_draft + 0*tag + 88,831.6        [all num_reqs, num_new, num_draft, tag]   blocks: 2840 affine, 3218 constant, 105 irregular (18.7% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 26,562.5 .. 197,163
+    per-num_reqs coefficient by function:
+            -2,009.4  _PyEval_EvalFrameDefault  [python3.12]
+              -733.7  PyObject_Free  [python3.12]
+              -672.3  PyMem_Free  [python3.12]
+               670.2  _PyOS_URandom+?  [python3.12]
+              -482.2  PyEval_EvalCode+?  [python3.12]
+                -420  PyDict_SetItem  [python3.12]
+              -383.2  PyLong_AsLongAndOverflow  [python3.12]
+              -375.6  _PyTuple_Resize+?  [python3.12]
+              -366.5  PyObject_Malloc  [python3.12]
+              -356.9  PyList_SetSlice+?  [python3.12]
+    per-num_new coefficient by function:
+            20,112.3  PyArray_DiscoverDTypeAndShape_Recursive  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+            16,826.2  PyArray_Pack  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+            16,717.5  _PyEval_EvalFrameDefault  [python3.12]
+            14,349.6  INT_setitem  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             8,436.1  signed_integers_is_known_scalar_types  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             5,736.7  PyLong_AsLong  [python3.12]
+             5,466.3  PyNumber_Long+?  [python3.12]
+               4,725  PyArray_AssignFromCache_Recursive  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             2,738.8  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             2,229.8  PyObject_Free  [python3.12]
+    per-num_draft coefficient by function:
+               1,125  _PyEval_EvalFrameDefault  [python3.12]
+               305.8  PyObject_Free  [python3.12]
+               230.1  PyMem_Free  [python3.12]
+               212.8  prepare_index  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+              -209.8  _PyOS_URandom+?  [python3.12]
+               189.4  PyObject_Malloc  [python3.12]
+               152.1  PyArray_NewFromDescr_int  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+               151.9  PyLong_AsLongAndOverflow  [python3.12]
+                 140  _PyTuple_Resize+?  [python3.12]
+               129.3  PyList_SetSlice+?  [python3.12]
+    constant by function:
+            19,164.3  _PyEval_EvalFrameDefault  [python3.12]
+             2,035.2  _PyErr_ChainStackItem+?  [python3.12]
+             1,808.8  _PyTuple_Resize+?  [python3.12]
+             1,797.7  PyEval_EvalCode+?  [python3.12]
+             1,648.5  PyDict_SetItem  [python3.12]
+               1,569  PyObject_Malloc  [python3.12]
+             1,481.2  PyArray_Pack  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             1,257.4  PyArray_DiscoverDTypeAndShape_Recursive  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             1,202.2  INT_setitem  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+             1,069.2  _PyDictView_New+?  [python3.12]
+    irregular by function:
+            30,478.5  _PyEval_EvalFrameDefault  [python3.12]
+             5,854.2  PyDict_Contains+?  [python3.12]
+               4,565  PyObject_Free  [python3.12]
+
+derive vllm_attach: only 1 state point(s) observed; need at least 3

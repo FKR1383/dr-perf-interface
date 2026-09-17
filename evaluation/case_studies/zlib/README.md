@@ -71,9 +71,10 @@ python3 evaluation/case_studies/zlib/validate.py \
 This creates disposable copies, instruments each agent's selected expressions
 at the original boundary, rebuilds, and measures both workloads. It supplies no
 feedback to either agent and checks that the frozen workload files are unchanged.
-If an answer needs unavailable bindings, non-integer values, or more than four
-states, validation reports the limitation rather than substituting different
-features. In particular, the pointer `input` does not summarize the buffer's
+If an answer needs unavailable bindings, non-integer values, or more distinct
+state combinations than the workload supplies, validation reports the limitation
+rather than substituting different features. In particular, the pointer `input`
+does not summarize the buffer's
 contents; casting its address to an integer would not measure that dependency.
 
 `validation.json` contains discovery and validation irregularity for each answer.

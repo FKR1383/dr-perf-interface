@@ -1,0 +1,55 @@
+derive ftl_handle_alloc_rows_create   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=0,rows=8,name_bytes=13,rehash=0 x25, handles=1,rows=8,name_bytes=13,rehash=0 x20, handles=2,rows=8,name_bytes=13,rehash=0 x15, handles=3,rows=8,name_bytes=13,rehash=9 x15, handles=4,rows=8,name_bytes=13,rehash=0 x10, handles=5,rows=8,name_bytes=13,rehash=0 x10, handles=6,rows=8,name_bytes=13,rehash=0 x10, handles=7,rows=8,name_bytes=13,rehash=21 x10, handles=8,rows=8,name_bytes=13,rehash=0 x5, handles=9,rows=8,name_bytes=13,rehash=0 x5, handles=10,rows=8,name_bytes=13,rehash=0 x5, handles=11,rows=8,name_bytes=13,rehash=0 x5, handles=12,rows=8,name_bytes=13,rehash=0 x5, handles=13,rows=8,name_bytes=13,rehash=0 x5, handles=14,rows=8,name_bytes=13,rehash=42 x5, handles=15,rows=8,name_bytes=13,rehash=0 x5
+  cost(handles, rows, name_bytes, rehash) = 0*handles + 0*rows + 0*name_bytes + 189*rehash + 2,165        [all handles, rows, name_bytes, rehash]   blocks: 24 affine, 320 constant, 0 irregular (0.0% of cost)
+    note: rows is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: name_bytes is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    per-rehash coefficient by function:
+                  86  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                  56  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                  15  <hashbrown::raw::RawTable<(u64, _ditto_ftl_core::handle_manager::Recor  [_ditto_ftl_core.abi3.so]
+                13.7  <hashbrown::raw::RawTable<(u64, alloc::vec::Vec<u8>)>>::reserve_rehash  [_ditto_ftl_core.abi3.so]
+                13.7  <hashbrown::raw::RawTable<(u64, _ditto_ftl_core::handle_manager::Handl  [_ditto_ftl_core.abi3.so]
+                   3  _int_malloc  [libc.so.6]
+    constant by function:
+               411.7  _int_free  [libc.so.6]
+                 258  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+               249.2  _int_malloc  [libc.so.6]
+               234.4  __free  [libc.so.6]
+                 168  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+               125.9  __GI___libc_malloc  [libc.so.6]
+
+derive ftl_handle_alloc_rows_validate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=0 x25, handles=1 x20, handles=2 x15, handles=3 x15, handles=4 x10, handles=5 x10, handles=6 x10, handles=7 x10, handles=8 x5, handles=9 x5, handles=10 x5, handles=11 x5, handles=12 x5, handles=13 x5, handles=14 x5, handles=15 x5
+  cost(handles) = 39.7*handles + 152        [all handles]   blocks: 10 affine, 64 constant, 0 irregular (0.0% of cost)
+    per-handles coefficient by function:
+                20.7  __memcmp_avx2_movbe  [libc.so.6]
+                  19  <_ditto_ftl_core::handle_manager::FreshAllocator>::allocate  [_ditto_ftl_core.abi3.so]
+    constant by function:
+                  54  _int_free  [libc.so.6]
+                  31  __free  [libc.so.6]
+                  29  <_ditto_ftl_core::handle_manager::FreshAllocator>::allocate  [_ditto_ftl_core.abi3.so]
+                  16  <perfmark::Region>::new  [_ditto_ftl_core.abi3.so]
+                12.5  __memcmp_avx2_movbe  [libc.so.6]
+                   2  <perfmark::Region as core::ops::drop::Drop>::drop  [_ditto_ftl_core.abi3.so]
+
+derive ftl_handle_stats   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=1 x5, handles=2 x5, handles=4 x5, handles=8 x5, handles=16 x5
+  cost(handles) = 513.3*handles + 10,557.1        [all handles]   blocks: 41 affine, 356 constant, 4 irregular (4.0% of cost)
+    irregular blocks, per call: 569.4 .. 571
+    per-handles coefficient by function:
+                 172  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                 137  <_ditto_ftl_core::handle_manager::HandleManager>::stats  [_ditto_ftl_core.abi3.so]
+                 112  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                81.3  _RINvMsi_NtCsgQfI1edjipl_9hashbrown3rawINtB6_12RawIterRangeTyNtNtCsgQJ  [_ditto_ftl_core.abi3.so]
+                  11  <_ditto_ftl_core::handle_manager::Record>::representation  [_ditto_ftl_core.abi3.so]
+    constant by function:
+               2,346  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+               2,232  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+             2,169.2  <hashbrown::map::HashMap<alloc::string::String, usize, std::hash::rand  [_ditto_ftl_core.abi3.so]
+               883.4  __GI___libc_malloc  [libc.so.6]
+               869.1  _int_malloc  [libc.so.6]
+                 596  <hashbrown::map::HashMap<alloc::string::String, usize, std::hash::rand  [_ditto_ftl_core.abi3.so]
+    irregular by function:
+               333.6  _int_malloc  [libc.so.6]
+               237.1  __GI___libc_malloc  [libc.so.6]
+

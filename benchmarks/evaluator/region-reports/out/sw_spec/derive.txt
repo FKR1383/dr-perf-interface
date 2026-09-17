@@ -1,0 +1,20 @@
+derive vllm_spec_layer_buffer_meta   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: layers=1 x24, layers=2 x24, layers=4 x24, layers=8 x24, layers=16 x24, layers=32 x24
+  cost(layers) = 18,564.4*layers + 3,698.6        [all layers]   blocks: 833 affine, 1140 constant, 1 irregular (1.8% of cost)
+    marker cost subtracted from the constant: 571.9 per call (calibrated)
+    irregular blocks, per call: 553 .. 10,864
+    per-layers coefficient by function:
+             6,591.7  _PyEval_EvalFrameDefault  [python3.12]
+             1,213.4  _PyTuple_Resize+?  [python3.12]
+               769.5  _PyObject_GenericGetAttrWithDict  [python3.12]
+               767.7  _PyObject_MakeTpCall  [python3.12]
+               763.2  PyDict_Contains+?  [python3.12]
+               736.7  PyTuple_New+?  [python3.12]
+    constant by function:
+             1,208.4  _PyEval_EvalFrameDefault  [python3.12]
+               382.1  PyDict_SetItem  [python3.12]
+               223.2  PyDict_Contains+?  [python3.12]
+               201.6  PyTuple_GetSlice  [python3.12]
+               171.5  _PyObject_GenericGetAttrWithDict  [python3.12]
+               170.9  PyObject_Malloc  [python3.12]
+

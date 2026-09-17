@@ -1,0 +1,19 @@
+derive vllm_compaction_trigger   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: keys=1 x24, keys=2 x24, keys=4 x24, keys=8 x24, keys=16 x24, keys=32 x24
+  cost(keys) = 10,493.5*keys + 993.9        [all keys]   blocks: 939 affine, 562 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-keys coefficient by function:
+             3,608.8  _PyEval_EvalFrameDefault  [python3.12]
+               786.6  PyDict_Contains+?  [python3.12]
+                 471  _PyTuple_Resize+?  [python3.12]
+               470.8  _PyObject_GenericGetAttrWithDict  [python3.12]
+               291.4  PyObject_Free  [python3.12]
+                 282  PyObject_Malloc  [python3.12]
+    constant by function:
+               365.5  _PyEval_EvalFrameDefault  [python3.12]
+               193.8  PyDict_SetItem+?  [python3.12]
+               132.4  PyObject_Malloc  [python3.12]
+               101.9  PyObject_Free  [python3.12]
+                91.6  PyTuple_New+?  [python3.12]
+                86.4  _PyObject_GetMethod  [python3.12]
+

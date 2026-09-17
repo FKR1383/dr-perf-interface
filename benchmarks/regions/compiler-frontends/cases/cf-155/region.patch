@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/CFG.cpp
++++ b/clang/lib/Analysis/CFG.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/CFG.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Attr.h"
+@@ -3503,6 +3504,7 @@
+ }
+ 
+ CFGBlock *CFGBuilder::VisitForStmt(ForStmt *F) {
++  DRPERF_BENCH_REGION("cf-155");
+   CFGBlock *LoopSuccessor = nullptr;
+ 
+   // Save local scope position because in case of condition variable ScopePos

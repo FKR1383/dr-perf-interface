@@ -1,0 +1,31 @@
+{
+  "case": "cf-153",
+  "phase": "preprocessing",
+  "scenario": "preprocessor-expression-evaluation",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "#define MUL_153(x) ((x)*(x))\n#if MUL_153(2) > 3\nint value = MUL_153(3);\n#endif\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "#if (0+3)*2 > 1\nint value_0=0;\n#endif\n#if (1+3)*2 > 1\nint value_1=1;\n#endif\n#if (2+3)*2 > 1\nint value_2=2;\n#endif\n#if (3+3)*2 > 1\nint value_3=3;\n#endif\n"
+    },
+    {
+      "size": 16,
+      "source": "#if (0+3)*2 > 1\nint value_0=0;\n#endif\n#if (1+3)*2 > 1\nint value_1=1;\n#endif\n#if (2+3)*2 > 1\nint value_2=2;\n#endif\n#if (3+3)*2 > 1\nint value_3=3;\n#endif\n#if (4+3)*2 > 1\nint value_4=4;\n#endif\n#if (5+3)*2 > 1\nint value_5=5;\n#endif\n#if (6+3)*2 > 1\nint value_6=6;\n#endif\n#if (7+3)*2 > 1\nint value_7=7;\n#endif\n#if (8+3)*2 > 1\nint value_8=8;\n#endif\n#if (9+3)*2 > 1\nint value_9=9;\n#endif\n#if (10+3)*2 > 1\nint value_10=10;\n#endif\n#if (11+3)*2 > 1\nint value_11=11;\n#endif\n#if (12+3)*2 > 1\nint value_12=12;\n#endif\n#if (13+3)*2 > 1\nint value_13=13;\n#endif\n#if (14+3)*2 > 1\nint value_14=14;\n#endif\n#if (15+3)*2 > 1\nint value_15=15;\n#endif\n"
+    },
+    {
+      "size": 64,
+      "source": "#if (0+3)*2 > 1\nint value_0=0;\n#endif\n#if (1+3)*2 > 1\nint value_1=1;\n#endif\n#if (2+3)*2 > 1\nint value_2=2;\n#endif\n#if (3+3)*2 > 1\nint value_3=3;\n#endif\n#if (4+3)*2 > 1\nint value_4=4;\n#endif\n#if (5+3)*2 > 1\nint value_5=5;\n#endif\n#if (6+3)*2 > 1\nint value_6=6;\n#endif\n#if (7+3)*2 > 1\nint value_7=7;\n#endif\n#if (8+3)*2 > 1\nint value_8=8;\n#endif\n#if (9+3)*2 > 1\nint value_9=9;\n#endif\n#if (10+3)*2 > 1\nint value_10=10;\n#endif\n#if (11+3)*2 > 1\nint value_11=11;\n#endif\n#if (12+3)*2 > 1\nint value_12=12;\n#endif\n#if (13+3)*2 > 1\nint value_13=13;\n#endif\n#if (14+3)*2 > 1\nint value_14=14;\n#endif\n#if (15+3)*2 > 1\nint value_15=15;\n#endif\n#if (16+3)*2 > 1\nint value_16=16;\n#endif\n#if (17+3)*2 > 1\nint value_17=17;\n#endif\n#if (18+3)*2 > 1\nint value_18=18;\n#endif\n#if (19+3)*2 > 1\nint value_19=19;\n#endif\n#if (20+3)*2 > 1\nint value_20=20;\n#endif\n#if (21+3)*2 > 1\nint value_21=21;\n#endif\n#if (22+3)*2 > 1\nint value_22=22;\n#endif\n#if (23+3)*2 > 1\nint value_23=23;\n#endif\n#if (24+3)*2 > 1\nint value_24=24;\n#endif\n#if (25+3)*2 > 1\nint value_25=25;\n#endif\n#if (26+3)*2 > 1\nint value_26=26;\n#endif\n#if (27+3)*2 > 1\nint value_27=27;\n#endif\n#if (28+3)*2 > 1\nint value_28=28;\n#endif\n#if (29+3)*2 > 1\nint value_29=29;\n#endif\n#if (30+3)*2 > 1\nint value_30=30;\n#endif\n#if (31+3)*2 > 1\nint value_31=31;\n#endif\n#if (32+3)*2 > 1\nint value_32=32;\n#endif\n#if (33+3)*2 > 1\nint value_33=33;\n#endif\n#if (34+3)*2 > 1\nint value_34=34;\n#endif\n#if (35+3)*2 > 1\nint value_35=35;\n#endif\n#if (36+3)*2 > 1\nint value_36=36;\n#endif\n#if (37+3)*2 > 1\nint value_37=37;\n#endif\n#if (38+3)*2 > 1\nint value_38=38;\n#endif\n#if (39+3)*2 > 1\nint value_39=39;\n#endif\n#if (40+3)*2 > 1\nint value_40=40;\n#endif\n#if (41+3)*2 > 1\nint value_41=41;\n#endif\n#if (42+3)*2 > 1\nint value_42=42;\n#endif\n#if (43+3)*2 > 1\nint value_43=43;\n#endif\n#if (44+3)*2 > 1\nint value_44=44;\n#endif\n#if (45+3)*2 > 1\nint value_45=45;\n#endif\n#if (46+3)*2 > 1\nint value_46=46;\n#endif\n#if (47+3)*2 > 1\nint value_47=47;\n#endif\n#if (48+3)*2 > 1\nint value_48=48;\n#endif\n#if (49+3)*2 > 1\nint value_49=49;\n#endif\n#if (50+3)*2 > 1\nint value_50=50;\n#endif\n#if (51+3)*2 > 1\nint value_51=51;\n#endif\n#if (52+3)*2 > 1\nint value_52=52;\n#endif\n#if (53+3)*2 > 1\nint value_53=53;\n#endif\n#if (54+3)*2 > 1\nint value_54=54;\n#endif\n#if (55+3)*2 > 1\nint value_55=55;\n#endif\n#if (56+3)*2 > 1\nint value_56=56;\n#endif\n#if (57+3)*2 > 1\nint value_57=57;\n#endif\n#if (58+3)*2 > 1\nint value_58=58;\n#endif\n#if (59+3)*2 > 1\nint value_59=59;\n#endif\n#if (60+3)*2 > 1\nint value_60=60;\n#endif\n#if (61+3)*2 > 1\nint value_61=61;\n#endif\n#if (62+3)*2 > 1\nint value_62=62;\n#endif\n#if (63+3)*2 > 1\nint value_63=63;\n#endif\n"
+    }
+  ],
+  "target_symbol": "EvaluateValue",
+  "target_source": "clang/lib/Lex/PPExpressions.cpp",
+  "mapping_note": "The preprocessor-expression-evaluation construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGRecordLayoutBuilder.cpp
++++ b/clang/lib/CodeGen/CGRecordLayoutBuilder.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ABIInfoImpl.h"
+ #include "CGCXXABI.h"
+ #include "CGRecordLayout.h"
+@@ -1085,6 +1086,7 @@
+ 
+ std::unique_ptr<CGRecordLayout>
+ CodeGenTypes::ComputeRecordLayout(const RecordDecl *D, llvm::StructType *Ty) {
++  DRPERF_BENCH_REGION("cf-024");
+   CGRecordLowering Builder(*this, D, /*Packed=*/false);
+ 
+   Builder.lower(/*NonVirtualBaseType=*/false);

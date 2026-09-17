@@ -1,0 +1,17 @@
+--- a/numpy/lib/_shape_base_impl.py
++++ b/numpy/lib/_shape_base_impl.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import functools
+ 
+ import numpy as np
+@@ -376,7 +377,8 @@
+     # compute indices for the iteration axes, and append a trailing ellipsis to
+     # prevent 0d arrays decaying to scalars, which fixes gh-8642
+     inds = ndindex(inarr_view.shape[:-1])
+-    inds = (ind + (Ellipsis,) for ind in inds)
++    with perfmark.region("gl-131"):
++        inds = (ind + (Ellipsis,) for ind in inds)
+ 
+     # invoke the function on the first item
+     try:

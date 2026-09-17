@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -239,6 +240,7 @@
+         \return A new Pointer with appended token.
+     */
+     GenericPointer Append(const Token& token, Allocator* allocator = 0) const {
++        DRPERF_BENCH_REGION("nl-028");
+         GenericPointer r;
+         r.allocator_ = allocator;
+         Ch *p = r.CopyFromRaw(*this, 1, token.length + 1);

@@ -1,0 +1,63 @@
+--- a/networkx/algorithms/bipartite/cluster.py
++++ b/networkx/algorithms/bipartite/cluster.py
+@@ -1,4 +1,5 @@
+ """Functions for computing clustering of pairs"""
++import perfmark
+ 
+ from collections import defaultdict
+ 
+@@ -398,30 +399,31 @@
+ 
+     _bt = dict.fromkeys(G, 0)
+ 
+-    for u in G:
+-        pu = priority[u]
+-        wedge_count = defaultdict(int)
+-        wedge_mid = defaultdict(list)
+-
+-        for v in sorted_nbrs[u]:
+-            if priority[v] >= pu:
+-                break
+-            for w in sorted_nbrs[v]:
+-                if priority[w] >= pu:
++    with perfmark.region("gl-027"):
++        for u in G:
++            pu = priority[u]
++            wedge_count = defaultdict(int)
++            wedge_mid = defaultdict(list)
++    
++            for v in sorted_nbrs[u]:
++                if priority[v] >= pu:
+                     break
+-                wedge_count[w] += 1
+-                wedge_mid[w].append(v)
+-
+-        for w, k in wedge_count.items():
+-            if k < 2:
+-                continue
+-            # C(k, 2) butterflies for pair (u, w)
+-            bf = k * (k - 1) // 2
+-            _bt[u] += bf
+-            _bt[w] += bf
+-            for v in wedge_mid[w]:
+-                # each middle node pairs with k-1 others
+-                _bt[v] += k - 1
++                for w in sorted_nbrs[v]:
++                    if priority[w] >= pu:
++                        break
++                    wedge_count[w] += 1
++                    wedge_mid[w].append(v)
++    
++            for w, k in wedge_count.items():
++                if k < 2:
++                    continue
++                # C(k, 2) butterflies for pair (u, w)
++                bf = k * (k - 1) // 2
++                _bt[u] += bf
++                _bt[w] += bf
++                for v in wedge_mid[w]:
++                    # each middle node pairs with k-1 others
++                    _bt[v] += k - 1
+     if nodes is None:
+         return _bt
+     return {v: _bt[v] for v in G.nbunch_iter(nodes)}

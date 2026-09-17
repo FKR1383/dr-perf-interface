@@ -1,0 +1,17 @@
+wan-018 = -12.083821*context_length + 363503.31 + unexplained
+  unexplained 14180 instr/call: mkl_blas_def_sgemm_kernel_0_zen [libtorch_cpu.so]
+  unexplained 5496.8889 instr/call: _int_malloc [libc.so.6]
+  unexplained 4560.5 instr/call: _PyType_Lookup [python3.12]
+  unexplained 3179.3333 instr/call: at::native::(anonymous namespace)::vectorized_inner_sum<> [libtorch_cpu.so]
+  unexplained 2427 instr/call: mkl_blas_def_sgemm_scopy_right4_bdz [libtorch_cpu.so]
+  unexplained 2251 instr/call: void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::mul_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#14}::operator()() const::{lambda(float, float)#1}, at::native::(anonymous namespace)::mul_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#14}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>, at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long) [libtorch_cpu.so]
+  unexplained 1596.5 instr/call: _int_free_merge_chunk [libc.so.6]
+  unexplained 1398 instr/call: void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(float)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long) [libtorch_cpu.so]
+  unexplained 1337.3333 instr/call: __GI___libc_malloc [libc.so.6]
+  unexplained 1105.3333 instr/call: _int_free_maybe_consolidate [libc.so.6]
+  unexplained 1019.7778 instr/call: _int_free [libc.so.6]
+  unexplained 822.61111 instr/call: unlink_chunk [libc.so.6]
+  unexplained 735 instr/call: void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::pow_tensor_scalar_optimized_kernel<float, double, double>(at::TensorIteratorBase&, double)::{lambda(float)#1}, at::native::AVX2::pow_tensor_scalar_optimized_kernel<float, double, double>(at::TensorIteratorBase&, double)::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long) [libtorch_cpu.so]
+  unexplained 200.5 instr/call: _int_memalign [libc.so.6]
+  context_length coefficient -12.083821: _int_malloc [libc.so.6]
+gate: unexplained share exceeds 5% at an observed state

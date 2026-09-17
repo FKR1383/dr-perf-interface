@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -749,7 +749,7 @@
+         if not preempted_reqs and self._pause_state == PauseState.UNPAUSED:
+             step_skipped_waiting = create_request_queue(self.policy)
+ 
+-            with perfmark.region("vllm-035"):
++            with perfmark.region("vllm-035", running_count=len(self.running), waiting_count=len(self.waiting)):
+                 while (self.waiting or self.skipped_waiting) and token_budget > 0:
+                     if input_budget <= draft_slots:
+                         break

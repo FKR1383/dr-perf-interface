@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -1851,6 +1852,7 @@
+                                           const llvm::Triple &T,
+                                           const std::string &OutputFile,
+                                           const LangOptions &LangOptsRef) {
++                                            DRPERF_BENCH_REGION("cf-214");
+   unsigned NumErrorsBefore = Diags.getNumErrors();
+ 
+   unsigned OptimizationLevel = getOptimizationLevel(Args, IK, Diags);

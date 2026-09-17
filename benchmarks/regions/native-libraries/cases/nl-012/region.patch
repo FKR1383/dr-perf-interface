@@ -1,0 +1,18 @@
+--- a/include/rapidjson/document.h
++++ b/include/rapidjson/document.h
+@@ -17,6 +17,7 @@
+ 
+ /*! \file document.h */
+ 
++#include "drperf_bench_region.h"
+ #include "reader.h"
+ #include "internal/meta.h"
+ #include "internal/strfunc.h"
+@@ -1766,6 +1767,7 @@
+         \note Constant time complexity.
+     */
+     GenericValue& PopBack() {
++        DRPERF_BENCH_REGION("nl-012");
+         RAPIDJSON_ASSERT(IsArray());
+         RAPIDJSON_ASSERT(!Empty());
+         GetElementsPointer()[--data_.a.size].~GenericValue();

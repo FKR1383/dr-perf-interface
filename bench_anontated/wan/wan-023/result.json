@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-023",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 1,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "frame_count",
+      "expression": "int(hidden_states.shape[2])"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-023",
+      "validity_warnings": [],
+      "pcv_names": [
+        "frame_count"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "frame_count": 1
+          },
+          "calls": 3,
+          "instructions_per_call": 4021007.6666666665,
+          "unexplained_instructions_per_call": 583259.3333333336,
+          "unexplained_share": 0.14505302692368247
+        },
+        {
+          "state": {
+            "frame_count": 2
+          },
+          "calls": 3,
+          "instructions_per_call": 4518106.0,
+          "unexplained_instructions_per_call": 1107050.0000000005,
+          "unexplained_share": 0.2450252384516876
+        },
+        {
+          "state": {
+            "frame_count": 3
+          },
+          "calls": 3,
+          "instructions_per_call": 5019021.333333333,
+          "unexplained_instructions_per_call": 1565556.0000000002,
+          "unexplained_share": 0.311924555809818
+        }
+      ],
+      "max_unexplained_share": 0.311924555809818,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "frame_count": 15059.500000000042
+        },
+        "constant": 3403970.888888879,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 16.268170436960645,
+      "raw_files": [
+        "run.3200178.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-023\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-023\"}\n",
+    "correctness_seconds": 5.094,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "Feedback and source were reviewed for a second PCV; final source retains the measured first-round marker. The full transformer forward region mixes patch-token count, text length, and attention/FFN work; a one-scalar refinement would hide independent axes.",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict measurement gate within the bounded run budget."
+  }
+}

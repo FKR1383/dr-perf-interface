@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-009",
+  "title": "ScalarExprEmitter::EmitScalarPrePostIncDec compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/CodeGen/CGExprScalar.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/CodeGen/CGExprScalar.cpp",
+    "sha256": "82d32c399608e0ebc805e930e72a4f4cb007a873327313646cc1cde1a80a9760"
+  },
+  "region": {
+    "symbol": "ScalarExprEmitter::EmitScalarPrePostIncDec",
+    "start_line": 2867,
+    "end_line": 3216,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-009",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-generation",
+  "workload": {
+    "description": "Run the bounded scalar-incdec-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/CodeGen/CGExprScalar.cpp:ScalarExprEmitter::EmitScalarPrePostIncDec",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/CodeGen/CGExprScalar.cpp#L2867-L3216"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "39f01592c55371727f5a474d170d2071b40457f4da24eff55362b72b3e1af793",
+      "patch_sha256": "16e2e7abb13abaf95ba18bf605ee03392c5356e134a7a5974985b9ec6538d7fb"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

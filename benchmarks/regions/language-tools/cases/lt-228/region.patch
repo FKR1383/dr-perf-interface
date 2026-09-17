@@ -1,0 +1,47 @@
+--- a/Cython/Plex/Regexps.py
++++ b/Cython/Plex/Regexps.py
+@@ -3,6 +3,7 @@
+ 
+ Regular Expressions
+ """
++import perfmark
+ 
+ import types
+ 
+@@ -31,21 +32,22 @@
+     [code1a, code1b, code2a, code2b,...] which cover all
+     the characters in |s|.
+     """
+-    char_list = list(s)
+-    char_list.sort()
+-    i = 0
+-    n = len(char_list)
+-    result = []
+-    while i < n:
+-        code1 = ord(char_list[i])
+-        code2 = code1 + 1
+-        i += 1
+-        while i < n and code2 >= ord(char_list[i]):
+-            code2 += 1
++    with perfmark.region("lt-228"):
++        char_list = list(s)
++        char_list.sort()
++        i = 0
++        n = len(char_list)
++        result = []
++        while i < n:
++            code1 = ord(char_list[i])
++            code2 = code1 + 1
+             i += 1
+-        result.append(code1)
+-        result.append(code2)
+-    return result
++            while i < n and code2 >= ord(char_list[i]):
++                code2 += 1
++                i += 1
++            result.append(code1)
++            result.append(code2)
++        return result
+ 
+ 
+ def uppercase_range(code1, code2):

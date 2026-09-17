@@ -1,0 +1,82 @@
+{
+  "hardware": "A100-PCIE-40GB GPU1",
+  "capture": "Nsight Systems 2025.3.2, CUDA profiler API measured-generation range after full warmup",
+  "duration_units": "seconds",
+  "byte_units": "decimal GB except optimized H2D in bytes",
+  "inferix_host_kv": {
+    "gpu_event_span": 41.296567491,
+    "kernel_memop_union": 40.744477797,
+    "kernel_duration_sum": 14.610161832,
+    "h2d": {
+      "calls": 5333,
+      "bytes": 211435745184,
+      "duration_sum": 16.157309071
+    },
+    "d2h": {
+      "calls": 2167,
+      "bytes": 121162752000,
+      "duration_sum": 9.225887749
+    },
+    "cuda_stream_synchronize": {
+      "calls": 3300,
+      "duration_sum": 31.344312087
+    },
+    "gpu_profile": {
+      "sampled_signatures": 327,
+      "observed_signatures": 327,
+      "measured_samples": 961,
+      "skipped_launches": 0,
+      "database": "out/causal-video/inferix-gpu-fresh/inferix-gpu-baseline-fresh-20260917.pid4371.sqlite"
+    },
+    "nsys": "out/causal-video/inferix-nsys/inferix-nsys-offload-api-20260917.trace.nsys-rep",
+    "sqlite": "out/causal-video/inferix-nsys/inferix-nsys-offload-api-20260917.trace.sqlite",
+    "native_report": "out/causal-video/inferix-nsys/native-report.json"
+  },
+  "inferix_gpu_kv_combined": {
+    "gpu_event_span": 12.501253255,
+    "kernel_memop_union": 12.277462489,
+    "kernel_duration_sum": 11.230358068,
+    "h2d": {
+      "calls": 4251,
+      "bytes": 61280,
+      "duration_sum": 0.006119303
+    },
+    "d2h": {
+      "calls": 7,
+      "bytes": 301916160,
+      "duration_sum": 0.132006958
+    },
+    "nsys": "out/causal-video/inferix-nsys-optimized/inferix-nsys-optimized-gpukv-20260917.trace.nsys-rep",
+    "sqlite": "out/causal-video/inferix-nsys-optimized/inferix-nsys-optimized-gpukv-20260917.trace.sqlite",
+    "native_report": "out/causal-video/inferix-nsys-optimized/native-report.json"
+  },
+  "fastvideo_metadata": {
+    "gpu_event_span": 15.313285563,
+    "kernel_memop_union": 15.002546482,
+    "kernel_duration_sum": 14.631859553,
+    "h2d": {
+      "calls": 29594,
+      "bytes": 97877743344,
+      "duration_sum": 7.427914272
+    },
+    "d2h": {
+      "calls": 4,
+      "bytes": 485226401,
+      "duration_sum": 0.070845036
+    },
+    "gpu_profile": {
+      "sampled_signatures": 396,
+      "observed_signatures": 396,
+      "measured_samples": 1045,
+      "skipped_launches": 0,
+      "database": "out/causal-video/fastvideo-gpu/fastvideo-cpuout-interop1-gpu-final.rank0.pid6105.sqlite",
+      "report": "out/causal-video/fastvideo-gpu/cpuout-interop1-gpu-final-report.json",
+      "worker_cpu_output": true,
+      "worker_interop_threads": 1
+    },
+    "nsys": "out/causal-video/fastvideo-nsys/fastvideo-nsys-metadata-20260917.trace.nsys-rep",
+    "sqlite": "out/causal-video/fastvideo-nsys/fastvideo-nsys-metadata-20260917.trace.sqlite",
+    "native_report": "out/causal-video/fastvideo-nsys/native-report.json",
+    "trace_scope": "Nsight trace predates worker CPU output adaptation; transfer totals characterize layerwise model offload."
+  }
+}

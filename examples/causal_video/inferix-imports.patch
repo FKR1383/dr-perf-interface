@@ -1,0 +1,28 @@
+--- a/inferix/core/media/__init__.py
++++ b/inferix/core/media/__init__.py
+@@ -12,10 +12,6 @@
+     StreamingBackend,
+     create_streaming_backend
+ )
+-from inferix.core.media.gradio_streaming import GradioStreamingBackend
+-from inferix.core.media.webrtc_streaming import WebRTCStreamingBackend
+-from inferix.core.media.rtmp_streaming import RTMPStreamingBackend
+-from inferix.core.media.interactive_gradio import InteractiveGradioBackend
+ 
+ __all__ = [
+     'StreamingBackend',
+@@ -24,4 +20,14 @@
+     'WebRTCStreamingBackend',
+     'RTMPStreamingBackend',
+     'InteractiveGradioBackend',
+-]+]
++
++_OPTIONAL_BACKENDS = {'GradioStreamingBackend': 'gradio_streaming', 'WebRTCStreamingBackend': 'webrtc_streaming', 'RTMPStreamingBackend': 'rtmp_streaming', 'InteractiveGradioBackend': 'interactive_gradio'}
++
++def __getattr__(name):
++    if name not in _OPTIONAL_BACKENDS:
++        raise AttributeError(name)
++    import importlib
++    value = getattr(importlib.import_module('.' + _OPTIONAL_BACKENDS[name], __name__), name)
++    globals()[name] = value
++    return value

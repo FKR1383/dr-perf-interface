@@ -1,0 +1,28 @@
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import itertools
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+@@ -504,11 +505,12 @@
+         # Free on the processed-token basis: in-flight steps' attention windows
+         # still read blocks below the optimistic boundary, and rejected spec
+         # tokens can roll it back.
+-        self.coordinator.remove_skipped_blocks(
+-            request.request_id,
+-            max(0, total_computed_tokens - request.num_in_flight_tokens),
+-            num_prompt_tokens=request.num_prompt_tokens,
+-        )
++        with perfmark.region("vllm-007"):
++            self.coordinator.remove_skipped_blocks(
++                request.request_id,
++                max(0, total_computed_tokens - request.num_in_flight_tokens),
++                num_prompt_tokens=request.num_prompt_tokens,
++            )
+ 
+         num_blocks_to_allocate = self.coordinator.get_num_blocks_to_allocate(
+             request_id=request.request_id,

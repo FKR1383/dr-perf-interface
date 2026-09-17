@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "nl-025",
+  "title": "RapidJSON: string escaping with quotes and backslashes",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/Tencent/rapidjson",
+    "revision": "24b5e7a8b27f42fa16b96fc70aade9106cf7102f",
+    "path": "include/rapidjson/writer.h",
+    "snapshot": "../../upstream/rapidjson/include/rapidjson/writer.h",
+    "sha256": "0bac1e1cb55726baeca7e3c3cc35108b66e870e8e9881d5d51ba801a65af9e45"
+  },
+  "region": {
+    "symbol": "bool WriteString(const Ch* str,",
+    "start_line": 383,
+    "end_line": 455,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "nl-025",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "built",
+  "workload": {
+    "description": "string escaping with quotes and backslashes; sizes 1, 2, 7, 16, 65 with semantic assertions and target marker reachability at every size.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "rapidjson:writer.h:383",
+  "tests": {
+    "files": [
+      "tests/case.cpp"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "0009c9e185f9670320662666e1a9e0252a020ffdd6ec263d61a78abda92283ea"
+      },
+      {
+        "source": "../../test-support/headers.tar.gz",
+        "destination": "tests/headers.tar.gz",
+        "sha256": "8651a20b5eb7fe701f61b8ae3aaa6382f16ac72ed7b500abebb18b11485db084"
+      },
+      {
+        "source": "../../test-support/perfmark.h",
+        "destination": "tests/perfmark.h",
+        "sha256": "c9fcc12c54a784c6f978365e859a17812f15ef558a2f4b1920b58f8841cf03b2"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Compiled pinned RapidJSON headers with this case patch using c++ -std=c++11 -O2. Concrete behavior assertions and balanced target marker entry pass at each of five sizes; native observer only, not drperf counts."
+    }
+  }
+}

@@ -1,0 +1,38 @@
+derive ftl_directory_bind_batch   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4,blocks=0,superblocks=0 x2, requests=4,blocks=4,superblocks=1 x2, requests=4,blocks=8,superblocks=2 x2, requests=4,blocks=12,superblocks=3 x2, requests=4,blocks=16,superblocks=4 x2, requests=4,blocks=20,superblocks=5 x2, requests=4,blocks=24,superblocks=6 x2, requests=4,blocks=28,superblocks=7 x2, requests=4,blocks=32,superblocks=8 x2, requests=4,blocks=36,superblocks=9 x2, requests=4,blocks=40,superblocks=10 x2, requests=4,blocks=44,superblocks=11 x2, requests=4,blocks=48,superblocks=12 x2, requests=4,blocks=52,superblocks=13 x2, requests=4,blocks=56,superblocks=14 x2, requests=4,blocks=60,superblocks=15 x2, requests=4,blocks=64,superblocks=16 x2, requests=4,blocks=68,superblocks=17 x2, requests=4,blocks=72,superblocks=18 x2, requests=4,blocks=76,superblocks=19 x2, requests=4,blocks=80,superblocks=20 x2, requests=4,blocks=84,superblocks=21 x2, requests=4,blocks=88,superblocks=22 x2, requests=4,blocks=92,superblocks=23 x2, requests=16,blocks=96,superblocks=24 x2, requests=16,blocks=112,superblocks=25 x2, requests=16,blocks=128,superblocks=26 x2, requests=16,blocks=144,superblocks=27 x2, requests=16,blocks=160,superblocks=28 x2, requests=16,blocks=176,superblocks=29 x2, requests=16,blocks=192,superblocks=30 x2, requests=16,blocks=208,superblocks=31 x2, requests=16,blocks=224,superblocks=32 x2, requests=16,blocks=240,superblocks=33 x2, requests=16,blocks=256,superblocks=34 x2, requests=16,blocks=272,superblocks=35 x2, requests=16,blocks=288,superblocks=36 x2, requests=16,blocks=304,superblocks=37 x2, requests=16,blocks=320,superblocks=38 x2, requests=16,blocks=336,superblocks=39 x2, requests=16,blocks=352,superblocks=40 x2, requests=16,blocks=368,superblocks=41 x2, requests=16,blocks=384,superblocks=42 x2, requests=16,blocks=400,superblocks=43 x2, requests=16,blocks=416,superblocks=44 x2, requests=16,blocks=432,superblocks=45 x2, requests=16,blocks=448,superblocks=46 x2, requests=16,blocks=464,superblocks=47 x2
+  cost(requests, blocks, superblocks) = 1,898.6*requests + 329.7*blocks + 946.6*superblocks + 6,788.1        [all requests, blocks, superblocks]   blocks: 424 affine, 1073 constant, 147 irregular (41.7% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 5,676 .. 227,813
+    per-requests coefficient by function:
+                 234  <_ditto_ftl_core::directory::Directory>::bind_batch::<<_ditto_ftl_core  [_ditto_ftl_core.abi3.so]
+                 164  alloc::fmt::format::format_inner  [_ditto_ftl_core.abi3.so]
+                 147  core::fmt::write  [_ditto_ftl_core.abi3.so]
+                 146  <alloc::string::String as core::fmt::Write>::write_str  [_ditto_ftl_core.abi3.so]
+                 114  <core::fmt::Formatter>::pad_integral  [_ditto_ftl_core.abi3.so]
+                93.2  _RINvXs4_NtNtCscdodAO9FK5_5alloc3vec9into_iterINtB6_8IntoIterTNtNtBa_6  [_ditto_ftl_core.abi3.so]
+    per-blocks coefficient by function:
+                83.5  _int_free  [libc.so.6]
+                  36  __free  [libc.so.6]
+                  34  <hashbrown::raw::RawTable<(i64, (alloc::string::String, usize))> as co  [_ditto_ftl_core.abi3.so]
+                  33  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                29.6  __GI___libc_malloc  [libc.so.6]
+                22.2  <alloc::collections::btree::map::BTreeMap<_, _, _> as core::clone::Clo  [_ditto_ftl_core.abi3.so]
+    per-superblocks coefficient by function:
+               244.2  _int_free  [libc.so.6]
+               109.1  __free  [libc.so.6]
+                  99  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                87.5  __GI___libc_malloc  [libc.so.6]
+                72.6  <alloc::collections::btree::map::BTreeMap<_, _, _> as core::clone::Clo  [_ditto_ftl_core.abi3.so]
+                44.2  <alloc::collections::btree::map::IntoIter<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+    constant by function:
+               981.2  _int_free  [libc.so.6]
+               735.4  __free  [libc.so.6]
+               393.1  _PyEval_EvalFrameDefault  [python3.12]
+               344.7  __GI___libc_malloc  [libc.so.6]
+               337.3  <_ditto_ftl_core::directory::Directory>::bind_batch::<<_ditto_ftl_core  [_ditto_ftl_core.abi3.so]
+               197.3  PyUnicode_FromString+?  [python3.12]
+    irregular by function:
+            35,898.8  _int_malloc  [libc.so.6]
+             7,806.8  __memcmp_avx2_movbe  [libc.so.6]
+             5,807.3  __GI___libc_malloc  [libc.so.6]
+

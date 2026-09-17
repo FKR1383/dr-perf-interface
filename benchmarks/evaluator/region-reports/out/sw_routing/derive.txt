@@ -1,0 +1,39 @@
+derive vllm_routing_card_group   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: groups=1 x24, groups=2 x24, groups=4 x24, groups=8 x24, groups=16 x24
+  cost(groups) = 1,345.2*groups + 14,456.5        [all groups]   blocks: 179 affine, 4114 constant, 2 irregular (1.5% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 206 .. 560.4
+    per-groups coefficient by function:
+               248.3  _PyEval_EvalFrameDefault  [python3.12]
+                 163  _PyMem_Strdup+?  [python3.12]
+                 150  _PySet_NextEntry+?  [python3.12]
+                92.2  PyObject_Free  [python3.12]
+                79.1  PySet_Contains+?  [python3.12]
+                72.9  PyObject_Malloc  [python3.12]
+    constant by function:
+               4,051  _PyEval_EvalFrameDefault  [python3.12]
+               973.1  _PyErr_CheckSignalsTstate+?  [python3.12]
+               649.9  _PyObject_GenericGetAttrWithDict  [python3.12]
+               550.6  PyDict_Contains+?  [python3.12]
+               527.9  PyObject_Free  [python3.12]
+               483.3  _PyTuple_Resize+?  [python3.12]
+
+derive vllm_routing_check_compressors   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: groups=1 x24, groups=2 x24, groups=4 x24, groups=8 x24, groups=16 x24
+  cost(groups) = 516.3*groups + 822.8        [all groups]   blocks: 79 affine, 270 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-groups coefficient by function:
+               229.2  _PyEval_EvalFrameDefault  [python3.12]
+                  78  _PyObject_GenericGetAttrWithDict  [python3.12]
+                57.8  PyDict_Contains+?  [python3.12]
+                  50  PyFrozenSet_New+?  [python3.12]
+                34.3  _PyType_Lookup  [python3.12]
+                  29  PyObject_GetAttr  [python3.12]
+    constant by function:
+                 370  _PyEval_EvalFrameDefault  [python3.12]
+               144.7  PyDict_Contains+?  [python3.12]
+               114.5  PyObject_Free  [python3.12]
+                  79  _PyObject_GenericGetAttrWithDict  [python3.12]
+                  72  PyCMethod_New+?  [python3.12]
+                  70  PyTuple_New+?  [python3.12]
+

@@ -1,0 +1,50 @@
+--- a/networkx/algorithms/approximation/treewidth.py
++++ b/networkx/algorithms/approximation/treewidth.py
+@@ -28,6 +28,7 @@
+       https://web.archive.org/web/20210507025929/http://web.eecs.utk.edu/~cphill25/cs594_spring2015_projects/treewidth.pdf
+ 
+ """
++import perfmark
+ 
+ import itertools
+ import sys
+@@ -203,22 +204,23 @@
+ 
+     # get first node from heuristic
+     elim_node = heuristic(graph_dict)
+-    while elim_node is not None:
+-        # connect all neighbors with each other
+-        nbrs = graph_dict[elim_node]
+-        for u, v in itertools.permutations(nbrs, 2):
+-            if v not in graph_dict[u]:
+-                graph_dict[u].add(v)
+-
+-        # push node and its current neighbors on stack
+-        node_stack.append((elim_node, nbrs))
+-
+-        # remove node from graph_dict
+-        for u in graph_dict[elim_node]:
+-            graph_dict[u].remove(elim_node)
+-
+-        del graph_dict[elim_node]
+-        elim_node = heuristic(graph_dict)
++    with perfmark.region("gl-071"):
++        while elim_node is not None:
++            # connect all neighbors with each other
++            nbrs = graph_dict[elim_node]
++            for u, v in itertools.permutations(nbrs, 2):
++                if v not in graph_dict[u]:
++                    graph_dict[u].add(v)
++    
++            # push node and its current neighbors on stack
++            node_stack.append((elim_node, nbrs))
++    
++            # remove node from graph_dict
++            for u in graph_dict[elim_node]:
++                graph_dict[u].remove(elim_node)
++    
++            del graph_dict[elim_node]
++            elim_node = heuristic(graph_dict)
+ 
+     # the abort condition is met; put all remaining nodes into one bag
+     decomp = nx.Graph()

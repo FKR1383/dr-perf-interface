@@ -1,0 +1,87 @@
+--- a/libcst/_nodes/statement.py
++++ b/libcst/_nodes/statement.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -2204,42 +2205,43 @@
+         )
+ 
+     def _codegen_impl(self, state: CodegenState) -> None:  # noqa: C901
+-        for ll in self.leading_lines:
+-            ll._codegen(state)
+-        for decorator in self.decorators:
+-            decorator._codegen(state)
+-        for lad in self.lines_after_decorators:
+-            lad._codegen(state)
+-        state.add_indent_tokens()
+-
+-        with state.record_syntactic_position(self, end_node=self.body):
+-            state.add_token("class")
+-            self.whitespace_after_class._codegen(state)
+-            self.name._codegen(state)
+-            self.whitespace_after_name._codegen(state)
+-            type_params = self.type_parameters
+-            if type_params is not None:
+-                type_params._codegen(state)
+-            self.whitespace_after_type_parameters._codegen(state)
+-            lpar = self.lpar
+-            if isinstance(lpar, MaybeSentinel):
+-                if self.bases or self.keywords:
+-                    state.add_token("(")
+-            elif isinstance(lpar, LeftParen):
+-                lpar._codegen(state)
+-            args = [*self.bases, *self.keywords]
+-            last_arg = len(args) - 1
+-            for i, arg in enumerate(args):
+-                arg._codegen(state, default_comma=(i != last_arg))
+-            rpar = self.rpar
+-            if isinstance(rpar, MaybeSentinel):
+-                if self.bases or self.keywords:
+-                    state.add_token(")")
+-            elif isinstance(rpar, RightParen):
+-                rpar._codegen(state)
+-            self.whitespace_before_colon._codegen(state)
+-            state.add_token(":")
+-            self.body._codegen(state)
++        with perfmark.region("lt-085"):
++            for ll in self.leading_lines:
++                ll._codegen(state)
++            for decorator in self.decorators:
++                decorator._codegen(state)
++            for lad in self.lines_after_decorators:
++                lad._codegen(state)
++            state.add_indent_tokens()
++
++            with state.record_syntactic_position(self, end_node=self.body):
++                state.add_token("class")
++                self.whitespace_after_class._codegen(state)
++                self.name._codegen(state)
++                self.whitespace_after_name._codegen(state)
++                type_params = self.type_parameters
++                if type_params is not None:
++                    type_params._codegen(state)
++                self.whitespace_after_type_parameters._codegen(state)
++                lpar = self.lpar
++                if isinstance(lpar, MaybeSentinel):
++                    if self.bases or self.keywords:
++                        state.add_token("(")
++                elif isinstance(lpar, LeftParen):
++                    lpar._codegen(state)
++                args = [*self.bases, *self.keywords]
++                last_arg = len(args) - 1
++                for i, arg in enumerate(args):
++                    arg._codegen(state, default_comma=(i != last_arg))
++                rpar = self.rpar
++                if isinstance(rpar, MaybeSentinel):
++                    if self.bases or self.keywords:
++                        state.add_token(")")
++                elif isinstance(rpar, RightParen):
++                    rpar._codegen(state)
++                self.whitespace_before_colon._codegen(state)
++                state.add_token(":")
++                self.body._codegen(state)
+ 
+     def get_docstring(self, clean: bool = True) -> Optional[str]:
+         """

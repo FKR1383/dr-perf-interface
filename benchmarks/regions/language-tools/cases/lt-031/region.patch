@@ -1,0 +1,26 @@
+--- a/sympy/core/decorators.py
++++ b/sympy/core/decorators.py
+@@ -6,6 +6,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import TYPE_CHECKING
+ 
+@@ -187,10 +188,11 @@
+     # Extract the wrapped methods from each of the wrapper objects created by
+     # the sympify_return decorator. Doing this here allows us to provide the
+     # cls argument which is used for forward string referencing.
+-    for attrname, obj in cls.__dict__.items():
+-        if isinstance(obj, _SympifyWrapper):
+-            setattr(cls, attrname, obj.make_wrapped(cls))
+-    return cls
++    with perfmark.region("lt-031"):
++        for attrname, obj in cls.__dict__.items():
++            if isinstance(obj, _SympifyWrapper):
++                setattr(cls, attrname, obj.make_wrapped(cls))
++        return cls
+ 
+ 
+ def sympify_return(*args

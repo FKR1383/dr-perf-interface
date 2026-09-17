@@ -1,0 +1,18 @@
+--- a/include/rapidjson/allocators.h
++++ b/include/rapidjson/allocators.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_ALLOCATORS_H_
+ #define RAPIDJSON_ALLOCATORS_H_
+ 
++#include "drperf_bench_region.h"
+ #include "rapidjson.h"
+ #include "internal/meta.h"
+ 
+@@ -335,6 +336,7 @@
+ 
+     //! Resizes a memory block (concept Allocator)
+     void* Realloc(void* originalPtr, size_t originalSize, size_t newSize) {
++        DRPERF_BENCH_REGION("nl-042");
+         if (originalPtr == 0)
+             return Malloc(newSize);
+ 

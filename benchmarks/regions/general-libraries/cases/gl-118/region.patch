@@ -1,0 +1,46 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -691,20 +692,21 @@
+         names = [names, ]
+         data = [data, ]
+     #
+-    if dtypes is None:
+-        data = [np.array(a, copy=None, subok=True) for a in data]
+-        data = [a.view([(name, a.dtype)]) for (name, a) in zip(names, data)]
+-    else:
+-        if not isinstance(dtypes, (tuple, list)):
+-            dtypes = [dtypes, ]
+-        if len(data) != len(dtypes):
+-            if len(dtypes) == 1:
+-                dtypes = dtypes * len(data)
+-            else:
+-                msg = "The dtypes argument must be None, a dtype, or a list."
+-                raise ValueError(msg)
+-        data = [np.array(a, copy=None, subok=True, dtype=d).view([(n, d)])
+-                for (a, n, d) in zip(data, names, dtypes)]
++    with perfmark.region("gl-118"):
++        if dtypes is None:
++            data = [np.array(a, copy=None, subok=True) for a in data]
++            data = [a.view([(name, a.dtype)]) for (name, a) in zip(names, data)]
++        else:
++            if not isinstance(dtypes, (tuple, list)):
++                dtypes = [dtypes, ]
++            if len(data) != len(dtypes):
++                if len(dtypes) == 1:
++                    dtypes = dtypes * len(data)
++                else:
++                    msg = "The dtypes argument must be None, a dtype, or a list."
++                    raise ValueError(msg)
++            data = [np.array(a, copy=None, subok=True, dtype=d).view([(n, d)])
++                    for (a, n, d) in zip(data, names, dtypes)]
+     #
+     base = merge_arrays(base, usemask=usemask, fill_value=fill_value)
+     if len(data) > 1:

@@ -1,0 +1,449 @@
+# Host-tax reductions for the Wan 2.1 denoising loop (case "Wan 2.1, the constant").
+#
+# Baseline is videogen/wan-src -- the diffusers checkout c5469b7 with the four
+# fixes of the previous round (wan_rope, wan_text_embed, wan_vae_cat, wan_misc)
+# and the 20 perfmark regions of mark_wan.py -- so the hunks below carry the
+# marker indentation.  Applied to produce videogen/wan-tax:
+#
+#     cp -a videogen/wan-src videogen/wan-tax
+#     patch -p1 -d videogen/wan-tax < videogen/patches/wan_tax.patch    # a/b = <tree>/diffusers/...
+#
+# Latents and decoded video are byte-identical to wan-src at all five points of
+# videogen/equiv_wan.py (sha256).  Every change is a memoisation on tensor
+# identity + `_version` (bypassed under autograd) or the removal of a call that
+# is provably the identity.
+--- a/diffusers/models/transformers/transformer_wan.py
++++ b/diffusers/models/transformers/transformer_wan.py
+@@ -38,23 +38,55 @@
+ logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+ 
+ 
++def _kv_projections(attn: "WanAttention", encoder_hidden_states: torch.Tensor):
++    if attn.fused_projections:
++        # In cross-attention layers, we can only fuse the KV projections into a single linear
++        return attn.to_kv(encoder_hidden_states).chunk(2, dim=-1)
++    return attn.to_k(encoder_hidden_states), attn.to_v(encoder_hidden_states)
++
++
++def _cached_kv_projections(attn: "WanAttention", encoder_hidden_states: torch.Tensor):
++    """`_kv_projections`, memoised on the input tensor.
++
++    In cross-attention `encoder_hidden_states` is the projected prompt, which is
++    fixed for a whole pipeline call, but this runs once per layer, per denoising
++    step and per classifier-free-guidance branch: at 30 layers and 50 steps with
++    CFG the same two projections of the same 512 text tokens are recomputed 100
++    times per layer.  Key the result on the identity of the input tensor (plus
++    its `_version`, so an in-place edit invalidates it); at most the two live
++    branches (cond / uncond) are kept and the sources are held weakly.
++    """
++    version = encoder_hidden_states._version
++    live, hit = [], None
++    for ref, cached_version, cached in attn._cross_kv_cache:
++        src = ref()
++        if src is None:
++            continue
++        live.append((ref, cached_version, cached))
++        if src is encoder_hidden_states and cached_version == version:
++            hit = cached
++    if hit is not None:
++        attn._cross_kv_cache = live
++        return hit
++
++    kv = _kv_projections(attn, encoder_hidden_states)
++    attn._cross_kv_cache = [(weakref.ref(encoder_hidden_states), version, kv)] + live[:1]
++    return kv
++
++
+ def _get_qkv_projections(attn: "WanAttention", hidden_states: torch.Tensor, encoder_hidden_states: torch.Tensor):
+     # encoder_hidden_states is only passed for cross-attention
+-    if encoder_hidden_states is None:
+-        encoder_hidden_states = hidden_states
++    if attn.fused_projections and not attn.is_cross_attention:
++        # In self-attention layers, we can fuse the entire QKV projection into a single linear
++        return attn.to_qkv(hidden_states).chunk(3, dim=-1)
+ 
+-    if attn.fused_projections:
+-        if not attn.is_cross_attention:
+-            # In self-attention layers, we can fuse the entire QKV projection into a single linear
+-            query, key, value = attn.to_qkv(hidden_states).chunk(3, dim=-1)
+-        else:
+-            # In cross-attention layers, we can only fuse the KV projections into a single linear
+-            query = attn.to_q(hidden_states)
+-            key, value = attn.to_kv(encoder_hidden_states).chunk(2, dim=-1)
++    query = attn.to_q(hidden_states)
++    if encoder_hidden_states is None:
++        key, value = _kv_projections(attn, hidden_states)
++    elif torch.is_grad_enabled():
++        key, value = _kv_projections(attn, encoder_hidden_states)
+     else:
+-        query = attn.to_q(hidden_states)
+-        key = attn.to_k(encoder_hidden_states)
+-        value = attn.to_v(encoder_hidden_states)
++        key, value = _cached_kv_projections(attn, encoder_hidden_states)
+     return query, key, value
+ 
+ 
+@@ -103,22 +135,23 @@
+             value = value.unflatten(2, (attn.heads, -1))
+ 
+             if rotary_emb is not None:
++                # The two half-tables depend only on the (cached) rotary tables, so
++                # slicing them inside the helper computed them once for the query and
++                # again for the key, on every attention of every layer and step.
++                cos = rotary_emb[0][..., 0::2]
++                sin = rotary_emb[1][..., 1::2]
+ 
+-                def apply_rotary_emb(
+-                    hidden_states: torch.Tensor,
+-                    freqs_cos: torch.Tensor,
+-                    freqs_sin: torch.Tensor,
+-                ):
++                def apply_rotary_emb(hidden_states: torch.Tensor):
+                     x1, x2 = hidden_states.unflatten(-1, (-1, 2)).unbind(-1)
+-                    cos = freqs_cos[..., 0::2]
+-                    sin = freqs_sin[..., 1::2]
+                     out = torch.empty_like(hidden_states)
+                     out[..., 0::2] = x1 * cos - x2 * sin
+                     out[..., 1::2] = x1 * sin + x2 * cos
+-                    return out.type_as(hidden_states)
++                    # `out` is `empty_like(hidden_states)`, so the `type_as` that
++                    # used to close this function was always the identity.
++                    return out
+ 
+-                query = apply_rotary_emb(query, *rotary_emb)
+-                key = apply_rotary_emb(key, *rotary_emb)
++                query = apply_rotary_emb(query)
++                key = apply_rotary_emb(key)
+ 
+             # I2V task
+             hidden_states_img = None
+@@ -161,7 +194,12 @@
+                 hidden_states = hidden_states + hidden_states_img
+ 
+             hidden_states = attn.to_out[0](hidden_states)
+-            hidden_states = attn.to_out[1](hidden_states)
++            # `to_out[1]` is a Dropout; with p == 0 it returns its input unchanged
++            # in train and eval alike, so the module call and the ATen dispatch
++            # behind it buy nothing.
++            dropout = attn.to_out[1]
++            if getattr(dropout, "p", None) != 0.0:
++                hidden_states = dropout(hidden_states)
+             return hidden_states
+ 
+ 
+@@ -211,6 +249,11 @@
+         self.norm_q = torch.nn.RMSNorm(dim_head * heads, eps=eps, elementwise_affine=True)
+         self.norm_k = torch.nn.RMSNorm(dim_head * heads, eps=eps, elementwise_affine=True)
+ 
++        # (prompt tensor -> its key/value projection) for the live CFG branches;
++        # see `_cached_kv_projections`.  Held weakly, so it never keeps a prompt
++        # embedding alive.
++        self._cross_kv_cache = []
++
+         self.add_k_proj = self.add_v_proj = None
+         if added_kv_proj_dim is not None:
+             self.add_k_proj = torch.nn.Linear(added_kv_proj_dim, self.inner_dim, bias=True)
+@@ -228,6 +271,8 @@
+         if getattr(self, "fused_projections", False):
+             return
+ 
++        self._cross_kv_cache = []       # the fused weights replace what it holds
++
+         if not self.is_cross_attention:
+             concatenated_weights = torch.cat([self.to_q.weight.data, self.to_k.weight.data, self.to_v.weight.data])
+             concatenated_bias = torch.cat([self.to_q.bias.data, self.to_k.bias.data, self.to_v.bias.data])
+@@ -272,6 +317,7 @@
+             delattr(self, "to_added_kv")
+ 
+         self.fused_projections = False
++        self._cross_kv_cache = []
+ 
+     def forward(
+         self,
+@@ -334,6 +380,9 @@
+         # `_project_text`.  Held weakly, so it never keeps a prompt embedding alive.
+         self._text_proj_cache = []
+ 
++        # (timestep tensor -> (temb, timestep_proj)); see `_time_embeddings`.
++        self._time_embed_cache = []
++
+     def _project_text(self, encoder_hidden_states: torch.Tensor) -> torch.Tensor:
+         """`self.text_embedder(encoder_hidden_states)`, memoised on the input tensor.
+ 
+@@ -364,6 +413,48 @@
+         self._text_proj_cache = [(weakref.ref(encoder_hidden_states), version, projected)] + live[:3]
+         return projected
+ 
++    def _compute_time_embeddings(self, timestep, encoder_hidden_states, timestep_seq_len):
++        timestep = self.timesteps_proj(timestep)
++        if timestep_seq_len is not None:
++            timestep = timestep.unflatten(0, (-1, timestep_seq_len))
++
++        time_embedder_dtype = next(iter(self.time_embedder.parameters())).dtype
++        if timestep.dtype != time_embedder_dtype and time_embedder_dtype != torch.int8:
++            timestep = timestep.to(time_embedder_dtype)
++        temb = self.time_embedder(timestep).type_as(encoder_hidden_states)
++        timestep_proj = self.time_proj(self.act_fn(temb))
++        return temb, timestep_proj
++
++    def _time_embeddings(self, timestep, encoder_hidden_states, timestep_seq_len):
++        """`_compute_time_embeddings`, memoised on the timestep tensor.
++
++        The denoising loop builds one `timestep` tensor per step and hands that
++        same tensor to both classifier-free-guidance branches, so the sinusoidal
++        projection and the two MLPs below run twice per step on identical input.
++        Key on the identity of the tensor (plus `_version`), on `timestep_seq_len`
++        and on the type `temb` is cast to.
++        """
++        if torch.is_grad_enabled():
++            return self._compute_time_embeddings(timestep, encoder_hidden_states, timestep_seq_len)
++
++        key = (timestep._version, timestep_seq_len,
++               encoder_hidden_states.dtype, encoder_hidden_states.device)
++        live, hit = [], None
++        for ref, cached_key, cached in self._time_embed_cache:
++            src = ref()
++            if src is None:
++                continue
++            live.append((ref, cached_key, cached))
++            if src is timestep and cached_key == key:
++                hit = cached
++        if hit is not None:
++            self._time_embed_cache = live
++            return hit
++
++        embeddings = self._compute_time_embeddings(timestep, encoder_hidden_states, timestep_seq_len)
++        self._time_embed_cache = [(weakref.ref(timestep), key, embeddings)] + live[:1]
++        return embeddings
++
+     def forward(
+         self,
+         timestep: torch.Tensor,
+@@ -372,15 +463,7 @@
+         timestep_seq_len: int | None = None,
+     ):
+         with perfmark.region("cond_embed", batch=timestep.shape[0], text_len=encoder_hidden_states.shape[1]):
+-            timestep = self.timesteps_proj(timestep)
+-            if timestep_seq_len is not None:
+-                timestep = timestep.unflatten(0, (-1, timestep_seq_len))
+-
+-            time_embedder_dtype = next(iter(self.time_embedder.parameters())).dtype
+-            if timestep.dtype != time_embedder_dtype and time_embedder_dtype != torch.int8:
+-                timestep = timestep.to(time_embedder_dtype)
+-            temb = self.time_embedder(timestep).type_as(encoder_hidden_states)
+-            timestep_proj = self.time_proj(self.act_fn(temb))
++            temb, timestep_proj = self._time_embeddings(timestep, encoder_hidden_states, timestep_seq_len)
+ 
+             encoder_hidden_states = self._project_text(encoder_hidden_states)
+             if encoder_hidden_states_image is not None:
+@@ -512,6 +595,41 @@
+ 
+         self.scale_shift_table = nn.Parameter(torch.randn(1, 6, dim) / dim**0.5)
+ 
++        # (temb -> the six modulation tensors); see `_modulation`.
++        self._mod_cache = []
++
++    def _compute_modulation(self, temb: torch.Tensor):
++        if temb.ndim == 4:
++            # temb: batch_size, seq_len, 6, inner_dim (wan2.2 ti2v)
++            shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = (
++                self.scale_shift_table.unsqueeze(0) + temb.float()
++            ).chunk(6, dim=2)
++            # batch_size, seq_len, 1, inner_dim
++            return (shift_msa.squeeze(2), scale_msa.squeeze(2), gate_msa.squeeze(2),
++                    c_shift_msa.squeeze(2), c_scale_msa.squeeze(2), c_gate_msa.squeeze(2))
++        # temb: batch_size, 6, inner_dim (wan2.1/wan2.2 14B)
++        return (self.scale_shift_table + temb.float()).chunk(6, dim=1)
++
++    def _modulation(self, temb: torch.Tensor):
++        """`_compute_modulation`, memoised on `temb`.
++
++        `scale_shift_table` is per block, so nothing here can be shared between
++        layers, but `temb` is the timestep projection: one tensor per denoising
++        step, handed to both classifier-free-guidance branches, so the second
++        branch of every step re-derives exactly what the first one produced --
++        an upcast, an add and a six-way `chunk` per layer, 30 layers deep.
++        """
++        if torch.is_grad_enabled():
++            return self._compute_modulation(temb)
++
++        version = temb._version
++        for ref, cached_version, cached in self._mod_cache:
++            if ref() is temb and cached_version == version:
++                return cached
++        modulation = self._compute_modulation(temb)
++        self._mod_cache = [(weakref.ref(temb), version, modulation)]
++        return modulation
++
+     def forward(
+         self,
+         hidden_states: torch.Tensor,
+@@ -520,23 +638,7 @@
+         rotary_emb: torch.Tensor,
+     ) -> torch.Tensor:
+         with perfmark.region("block", batch=hidden_states.shape[0], seq_len=hidden_states.shape[1], text_len=encoder_hidden_states.shape[1]):
+-            if temb.ndim == 4:
+-                # temb: batch_size, seq_len, 6, inner_dim (wan2.2 ti2v)
+-                shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = (
+-                    self.scale_shift_table.unsqueeze(0) + temb.float()
+-                ).chunk(6, dim=2)
+-                # batch_size, seq_len, 1, inner_dim
+-                shift_msa = shift_msa.squeeze(2)
+-                scale_msa = scale_msa.squeeze(2)
+-                gate_msa = gate_msa.squeeze(2)
+-                c_shift_msa = c_shift_msa.squeeze(2)
+-                c_scale_msa = c_scale_msa.squeeze(2)
+-                c_gate_msa = c_gate_msa.squeeze(2)
+-            else:
+-                # temb: batch_size, 6, inner_dim (wan2.1/wan2.2 14B)
+-                shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = (
+-                    self.scale_shift_table + temb.float()
+-                ).chunk(6, dim=1)
++            shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = self._modulation(temb)
+ 
+             # 1. Self-attention
+             norm_hidden_states = (self.norm1(hidden_states.float()) * (1 + scale_msa) + shift_msa).type_as(hidden_states)
+@@ -679,6 +781,75 @@
+ 
+         self.gradient_checkpointing = False
+ 
++        # (temb -> (shift, scale)); see `_out_modulation`.
++        self._out_mod_cache = []
++
++        # (timestep_proj -> its 6-way view); see `_modulation_view`.
++        self._proj_view_cache = []
++
++    def _modulation_view(self, timestep_proj: torch.Tensor, ts_seq_len):
++        """`timestep_proj.unflatten(...)`, memoised on `timestep_proj`.
++
++        `condition_embedder` now returns the same `timestep_proj` for both
++        classifier-free-guidance branches of a step, but re-viewing it produced a
++        fresh tensor object each time, and that view is the `temb` every block's
++        modulation cache keys on.  Memoising the view is what lets those 30
++        caches hit on the second branch.
++        """
++        if torch.is_grad_enabled():
++            return self._compute_modulation_view(timestep_proj, ts_seq_len)
++
++        key = (timestep_proj._version, ts_seq_len)
++        for ref, cached_key, cached in self._proj_view_cache:
++            if ref() is timestep_proj and cached_key == key:
++                return cached
++        view = self._compute_modulation_view(timestep_proj, ts_seq_len)
++        self._proj_view_cache = [(weakref.ref(timestep_proj), key, view)]
++        return view
++
++    @staticmethod
++    def _compute_modulation_view(timestep_proj: torch.Tensor, ts_seq_len):
++        if ts_seq_len is not None:
++            # batch_size, seq_len, 6, inner_dim
++            return timestep_proj.unflatten(2, (6, -1))
++        # batch_size, 6, inner_dim
++        return timestep_proj.unflatten(1, (6, -1))
++
++    def _compute_out_modulation(self, temb: torch.Tensor, device: torch.device):
++        if temb.ndim == 3:
++            # batch_size, seq_len, inner_dim (wan 2.2 ti2v)
++            shift, scale = (self.scale_shift_table.unsqueeze(0).to(temb.device) + temb.unsqueeze(2)).chunk(2, dim=2)
++            shift = shift.squeeze(2)
++            scale = scale.squeeze(2)
++        else:
++            # batch_size, inner_dim
++            shift, scale = (self.scale_shift_table.to(temb.device) + temb.unsqueeze(1)).chunk(2, dim=1)
++
++        # Move the shift and scale tensors to the same device as hidden_states.
++        # When using multi-GPU inference via accelerate these will be on the
++        # first device rather than the last device, which hidden_states ends up
++        # on.
++        return shift.to(device), scale.to(device)
++
++    def _out_modulation(self, temb: torch.Tensor, device: torch.device):
++        """`_compute_out_modulation`, memoised on `temb`.
++
++        The same redundancy as `WanTransformerBlock._modulation`: `temb` is one
++        tensor per denoising step, shared by both classifier-free-guidance
++        branches, so the second branch repeats the add, the two-way `chunk` and
++        the three already-satisfied `.to(device)` calls of the first.
++        """
++        if torch.is_grad_enabled():
++            return self._compute_out_modulation(temb, device)
++
++        version = temb._version
++        for ref, cached_key, cached in self._out_mod_cache:
++            if ref() is temb and cached_key == (version, device):
++                return cached
++        modulation = self._compute_out_modulation(temb, device)
++        self._out_mod_cache = [(weakref.ref(temb), (version, device), modulation)]
++        return modulation
++
+     @apply_lora_scale("attention_kwargs")
+     def forward(
+         self,
+@@ -738,12 +909,7 @@
+             temb, timestep_proj, encoder_hidden_states, encoder_hidden_states_image = self.condition_embedder(
+                 timestep, encoder_hidden_states, encoder_hidden_states_image, timestep_seq_len=ts_seq_len
+             )
+-            if ts_seq_len is not None:
+-                # batch_size, seq_len, 6, inner_dim
+-                timestep_proj = timestep_proj.unflatten(2, (6, -1))
+-            else:
+-                # batch_size, 6, inner_dim
+-                timestep_proj = timestep_proj.unflatten(1, (6, -1))
++            timestep_proj = self._modulation_view(timestep_proj, ts_seq_len)
+ 
+             if encoder_hidden_states_image is not None:
+                 encoder_hidden_states = torch.concat([encoder_hidden_states_image, encoder_hidden_states], dim=1)
+@@ -759,21 +925,7 @@
+                     hidden_states = block(hidden_states, encoder_hidden_states, timestep_proj, rotary_emb)
+ 
+             # 5. Output norm, projection & unpatchify
+-            if temb.ndim == 3:
+-                # batch_size, seq_len, inner_dim (wan 2.2 ti2v)
+-                shift, scale = (self.scale_shift_table.unsqueeze(0).to(temb.device) + temb.unsqueeze(2)).chunk(2, dim=2)
+-                shift = shift.squeeze(2)
+-                scale = scale.squeeze(2)
+-            else:
+-                # batch_size, inner_dim
+-                shift, scale = (self.scale_shift_table.to(temb.device) + temb.unsqueeze(1)).chunk(2, dim=1)
+-
+-            # Move the shift and scale tensors to the same device as hidden_states.
+-            # When using multi-GPU inference via accelerate these will be on the
+-            # first device rather than the last device, which hidden_states ends up
+-            # on.
+-            shift = shift.to(hidden_states.device)
+-            scale = scale.to(hidden_states.device)
++            shift, scale = self._out_modulation(temb, hidden_states.device)
+ 
+             hidden_states = (self.norm_out(hidden_states.float()) * (1 + scale) + shift).type_as(hidden_states)
+             hidden_states = self.proj_out(hidden_states)
+--- a/diffusers/models/normalization.py
++++ b/diffusers/models/normalization.py
+@@ -83,14 +83,21 @@
+ 
+ class FP32LayerNorm(nn.LayerNorm):
+     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
++        # `.float()` on a float32 tensor and `.to(dtype)` on a tensor that already
++        # has that dtype both return `self`, but each is still a dispatch, and a
++        # Wan block runs three of these norms per layer per forward on an input
++        # its caller has already upcast.  Skip the casts that cannot change the
++        # value; what remains is byte-for-byte the same layer norm.
+         origin_dtype = inputs.dtype
+-        return F.layer_norm(
+-            inputs.float(),
+-            self.normalized_shape,
+-            self.weight.float() if self.weight is not None else None,
+-            self.bias.float() if self.bias is not None else None,
+-            self.eps,
+-        ).to(origin_dtype)
++        weight, bias = self.weight, self.bias
++        if origin_dtype != torch.float32:
++            inputs = inputs.float()
++        if weight is not None and weight.dtype != torch.float32:
++            weight = weight.float()
++        if bias is not None and bias.dtype != torch.float32:
++            bias = bias.float()
++        out = F.layer_norm(inputs, self.normalized_shape, weight, bias, self.eps)
++        return out if origin_dtype == torch.float32 else out.to(origin_dtype)
+ 
+ 
+ class SD35AdaLayerNormZeroX(nn.Module):

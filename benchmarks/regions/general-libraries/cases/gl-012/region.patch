@@ -1,0 +1,20 @@
+--- a/networkx/generators/social.py
++++ b/networkx/generators/social.py
+@@ -1,6 +1,7 @@
+ """
+ Famous social networks.
+ """
++import perfmark
+ 
+ import networkx as nx
+ 
+@@ -296,7 +297,8 @@
+        The Stanford GraphBase: a platform for combinatorial computing,
+        pp. 74-87. New York: AcM Press.
+     """
+-    G = nx.Graph()
++    with perfmark.region("gl-012"):
++        G = nx.Graph()
+     G.add_edge("Napoleon", "Myriel", weight=1)
+     G.add_edge("MlleBaptistine", "Myriel", weight=8)
+     G.add_edge("MmeMagloire", "Myriel", weight=10)

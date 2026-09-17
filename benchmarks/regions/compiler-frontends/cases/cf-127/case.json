@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-127",
+  "title": "IsStructurallyEquivalent compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/AST/ASTStructuralEquivalence.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/AST/ASTStructuralEquivalence.cpp",
+    "sha256": "3d0a7c74923e21c1e68e068b718511e9bed7842d970a7fc9704373cd28c77880"
+  },
+  "region": {
+    "symbol": "IsStructurallyEquivalent",
+    "start_line": 1631,
+    "end_line": 1872,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-127",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ast-processing",
+  "workload": {
+    "description": "Run the bounded ast-structural-equivalence fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/AST/ASTStructuralEquivalence.cpp:IsStructurallyEquivalent",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/AST/ASTStructuralEquivalence.cpp#L1631-L1872"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "bd952814f2812382cf11bcf4518ef683508d9f7620a9055a1fb206b8788fd722",
+      "spec_sha256": "3fbee7c3a9eec0359e6d9871b5b13fd14a644da8a7b1b86a60088efa76b5fe63",
+      "patch_sha256": "701625907ef9f0c49bf210e550eeadbb3d8db1867719d36b9346133909b9cea6"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

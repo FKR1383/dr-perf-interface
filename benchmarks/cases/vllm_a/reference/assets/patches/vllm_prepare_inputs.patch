@@ -1,0 +1,257 @@
+--- a/vllm/v1/utils.py
++++ b/vllm/v1/utils.py
+@@ -137,16 +137,43 @@
+             self.np = self.cpu.numpy()
+ 
+     def copy_to_gpu(self, n: int | None = None) -> torch.Tensor:
++        gpu = self.gpu
++        if gpu is self.cpu:
++            # Host device (CPUModelRunner._postprocess_tensors sets
++            # ``buffer.gpu = buffer.cpu``): this is a tensor copied onto
++            # itself, so the bytes are already where they need to be.  Doing
++            # it anyway costs a full dispatch (slice, slice, copy_) for no
++            # effect.
++            return gpu if n is None else gpu[:n]
+         if n is None:
+-            return self.gpu.copy_(self.cpu, non_blocking=True)
+-        return self.gpu[:n].copy_(self.cpu[:n], non_blocking=True)
++            return gpu.copy_(self.cpu, non_blocking=True)
++        return gpu[:n].copy_(self.cpu[:n], non_blocking=True)
++
++    def sync_to_gpu(self, n: int | None = None) -> None:
++        """``copy_to_gpu`` for callers that ignore the returned view.
++
++        The view costs a dispatched ``slice`` op (~5k instructions) that is
++        pure waste when the copy itself is a no-op, which it is whenever the
++        device tensor is the host tensor (CPU backend).
++        """
++        gpu = self.gpu
++        if gpu is self.cpu:
++            return
++        if n is None:
++            gpu.copy_(self.cpu, non_blocking=True)
++        else:
++            gpu[:n].copy_(self.cpu[:n], non_blocking=True)
+ 
+     def copy_to_cpu(self, n: int | None = None) -> torch.Tensor:
+         """NOTE: Because this method is non-blocking, explicit synchronization
+         is needed to ensure the data is copied to CPU."""
++        cpu = self.cpu
++        if cpu is self.gpu:
++            # Host device: see copy_to_gpu.
++            return cpu if n is None else cpu[:n]
+         if n is None:
+-            return self.cpu.copy_(self.gpu, non_blocking=True)
+-        return self.cpu[:n].copy_(self.gpu[:n], non_blocking=True)
++            return cpu.copy_(self.gpu, non_blocking=True)
++        return cpu[:n].copy_(self.gpu[:n], non_blocking=True)
+ 
+ 
+ def get_engine_client_zmq_addr(
+--- a/vllm/v1/worker/block_table.py
++++ b/vllm/v1/worker/block_table.py
+@@ -211,7 +211,7 @@
+         )
+ 
+     def commit_block_table(self, num_reqs: int) -> None:
+-        self.block_table.copy_to_gpu(num_reqs)
++        self.block_table.sync_to_gpu(num_reqs)
+ 
+     def clear(self) -> None:
+         self.block_table.gpu.fill_(0)
+--- a/vllm/v1/worker/gpu_model_runner.py
++++ b/vllm/v1/worker/gpu_model_runner.py
+@@ -894,6 +894,20 @@
+         self.query_pos = self._make_buffer(arange_size, dtype=torch.int64)
+         self._arange_scratch = np.empty(arange_size, dtype=np.int64)
+ 
++        # OPTIMIZATION: numpy views of the per-step tensors that live in host
++        # memory.  Every tiny torch op in _prepare_inputs costs ~5k
++        # instructions of dispatch (operator lookup, TLS, GIL-adjacent locks)
++        # regardless of how few elements it touches, and on the CPU backend the
++        # "device" tensors below are host tensors, so the same stores can go
++        # through numpy instead.  These tensors are allocated once here and
++        # never replaced, so the views stay valid for the runner's lifetime.
++        self._host_device = self.device.type == "cpu"
++        self._optimistic_seq_lens_np = self.optimistic_seq_lens_cpu.numpy()
++        if self._host_device:
++            self._positions_np = self.positions.numpy()
++            self._seq_lens_np = self.seq_lens.numpy()
++            self._num_computed_tokens_np = self.num_computed_tokens.numpy()
++
+         # Layer pairings for cross-layer KV sharing.
+         # If an Attention layer `layer_name` is in the keys of this dict, it
+         # means this layer will perform attention using the keys and values
+@@ -1856,7 +1870,7 @@
+ 
+         if self.input_batch.prev_sampled_token_ids is None:
+             # Normal scheduling case
+-            self.input_ids.copy_to_gpu(total_num_scheduled_tokens)
++            self.input_ids.sync_to_gpu(total_num_scheduled_tokens)
+             if self.enable_prompt_embeds:
+                 self.inputs_embeds.copy_to_gpu(total_num_scheduled_tokens)
+                 self.is_token_ids.copy_to_gpu(total_num_scheduled_tokens)
+@@ -1914,7 +1928,7 @@
+         if num_common_tokens < total_without_spec:
+             # If not all requests are decodes from the last iteration,
+             # we need to copy the input_ids_cpu to the GPU first.
+-            self.input_ids.copy_to_gpu(total_num_scheduled_tokens)
++            self.input_ids.sync_to_gpu(total_num_scheduled_tokens)
+             if self.enable_prompt_embeds:
+                 self.inputs_embeds.copy_to_gpu(total_num_scheduled_tokens)
+         if num_common_tokens == 0:
+@@ -2133,19 +2147,24 @@
+             # Note: pad query_start_loc to be non-decreasing, as kernels
+             # like FlashAttention requires that
+             self.query_start_loc.np[num_reqs + 1 :].fill(cu_num_tokens[-1])
+-            self.query_start_loc.copy_to_gpu()
++            self.query_start_loc.sync_to_gpu()
+             query_start_loc = self.query_start_loc.gpu[: num_reqs + 1]
+ 
+             # Compute optimistic seq_lens (assumes all draft tokens from previous
+             # iteration accepted). Store in optimistic_seq_lens_cpu for use by
+             # _build_attention_metadata (max_seq_len) and discard_request_mask.
+             # seq_lens (GPU) will be computed later using the same optimistic values.
+-            torch.add(
+-                self.input_batch.num_computed_tokens_cpu_tensor[:num_reqs],
+-                torch.from_numpy(num_scheduled_tokens),
+-                out=self.optimistic_seq_lens_cpu[:num_reqs],
++            # Same arithmetic as before through the numpy views of the very
++            # same (host) memory: optimistic_seq_lens_cpu is a CPU tensor and
++            # num_computed_tokens_cpu is the numpy view of
++            # num_computed_tokens_cpu_tensor.
++            optimistic_seq_lens_np = self._optimistic_seq_lens_np
++            np.add(
++                self.input_batch.num_computed_tokens_cpu[:num_reqs],
++                num_scheduled_tokens,
++                out=optimistic_seq_lens_np[:num_reqs],
+             )
+-            self.optimistic_seq_lens_cpu[num_reqs:].fill_(0)
++            optimistic_seq_lens_np[num_reqs:] = 0
+ 
+             # Build prev_positions mapping: current pos -> prev pos (-1 if new).
+             # Used for gathering from previous iteration's GPU tensors.
+@@ -2158,9 +2177,9 @@
+             # Record which requests should not be sampled,
+             # so that we could clear the sampled tokens before returning
+             self.discard_request_mask.np[:num_reqs] = (
+-                self.optimistic_seq_lens_cpu[:num_reqs].numpy() < num_tokens_np
++                optimistic_seq_lens_np[:num_reqs] < num_tokens_np
+             )
+-            self.discard_request_mask.copy_to_gpu(num_reqs)
++            self.discard_request_mask.sync_to_gpu(num_reqs)
+ 
+             # Sync num_accepted_tokens from CPU (set by
+             # _update_states_after_model_execute for hybrid models).
+@@ -2191,12 +2210,13 @@
+                         self.input_batch.num_accepted_tokens_cpu[:num_reqs]
+                     )
+                 self.num_accepted_tokens.np[num_reqs:].fill(1)
+-                self.num_accepted_tokens.copy_to_gpu()
++                self.num_accepted_tokens.sync_to_gpu()
+             else:
+                 # Default to 1; update_num_computed_tokens_for_batch_change below
+                 # corrects rows that had drafts from valid_sampled_token_count.
+                 self.num_accepted_tokens.np.fill(1)
+-                self.num_accepted_tokens.gpu.fill_(1)
++                if self.num_accepted_tokens.gpu is not self.num_accepted_tokens.cpu:
++                    self.num_accepted_tokens.gpu.fill_(1)
+ 
+             if self.mamba_prev_last_scheduled_idx is not None:
+                 mamba_utils.preprocess_mamba_all_specdec(
+@@ -2229,28 +2249,47 @@
+                     self.prev_num_draft_tokens.gpu,
+                     cpu_values,
+                 )
++                num_computed_tokens_from_cpu = False
++            elif self._host_device:
++                self._num_computed_tokens_np[:num_reqs] = (
++                    self.input_batch.num_computed_tokens_cpu[:num_reqs]
++                )
++                num_computed_tokens_from_cpu = True
+             else:
+                 self.num_computed_tokens[:num_reqs].copy_(
+                     self.input_batch.num_computed_tokens_cpu_tensor[:num_reqs],
+                     non_blocking=True,
+                 )
++                num_computed_tokens_from_cpu = True
+ 
+             self.req_indices.np[:total_num_scheduled_tokens] = req_indices
+-            self.req_indices.copy_to_gpu(total_num_scheduled_tokens)
+-            req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
++            self.req_indices.sync_to_gpu(total_num_scheduled_tokens)
+ 
+-            self.query_pos.copy_to_gpu(total_num_scheduled_tokens)
++            self.query_pos.sync_to_gpu(total_num_scheduled_tokens)
+             self.num_scheduled_tokens.np[:num_reqs] = num_scheduled_tokens
+-            self.num_scheduled_tokens.copy_to_gpu(num_reqs)
+-            num_scheduled_tokens_gpu = self.num_scheduled_tokens.gpu[:num_reqs]
+-            self.positions[:total_num_scheduled_tokens] = (
+-                self.num_computed_tokens[req_indices_gpu].to(torch.int64)
+-                + self.query_pos.gpu[:total_num_scheduled_tokens]
+-            )
+-            self.seq_lens[:num_reqs] = (
+-                self.num_computed_tokens[:num_reqs] + num_scheduled_tokens_gpu
+-            )
+-            self.seq_lens[num_reqs:].fill_(0)
++            self.num_scheduled_tokens.sync_to_gpu(num_reqs)
++            req_indices_gpu = None
++            if self._host_device and num_computed_tokens_from_cpu:
++                # num_computed_tokens holds exactly num_computed_tokens_cpu (it
++                # was just filled from it), so the gather below reproduces
++                # positions_np and the add reproduces the optimistic seq lens
++                # computed above.  Store them straight into the host tensors
++                # instead of re-deriving them with ~8 device ops.
++                self._positions_np[:total_num_scheduled_tokens] = positions_np
++                seq_lens_np = self._seq_lens_np
++                seq_lens_np[:num_reqs] = optimistic_seq_lens_np[:num_reqs]
++                seq_lens_np[num_reqs:] = 0
++            else:
++                req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
++                num_scheduled_tokens_gpu = self.num_scheduled_tokens.gpu[:num_reqs]
++                self.positions[:total_num_scheduled_tokens] = (
++                    self.num_computed_tokens[req_indices_gpu].to(torch.int64)
++                    + self.query_pos.gpu[:total_num_scheduled_tokens]
++                )
++                self.seq_lens[:num_reqs] = (
++                    self.num_computed_tokens[:num_reqs] + num_scheduled_tokens_gpu
++                )
++                self.seq_lens[num_reqs:].fill_(0)
+ 
+             self.input_batch.block_table.compute_slot_mapping(
+                 num_reqs,
+@@ -2289,6 +2328,8 @@
+                     non_blocking=True,
+                 )
+             if self.use_async_spec_decode and (self.uses_mrope or self.uses_xdrope_dim > 0):
++                if req_indices_gpu is None:
++                    req_indices_gpu = self.req_indices.gpu[:total_num_scheduled_tokens]
+                 drift = self.num_computed_tokens[req_indices_gpu].to(
+                     torch.int64
+                 ) - self.input_batch.num_computed_tokens_cpu_tensor[req_indices].to(
+@@ -2304,7 +2345,15 @@
+                 # from these partial requests, we do so for simplicity.
+                 # We will ignore the sampled tokens from the partial requests.
+                 # TODO: Support prompt logprobs.
+-                logits_indices = query_start_loc[1:] - 1
++                if self._host_device:
++                    # query_start_loc is a host tensor; subtracting through
++                    # numpy produces the identical int32 CPU tensor for two
++                    # cheap numpy calls instead of two dispatched device ops.
++                    logits_indices = torch.from_numpy(
++                        self.query_start_loc.np[1 : num_reqs + 1] - 1
++                    )
++                else:
++                    logits_indices = query_start_loc[1:] - 1
+                 spec_decode_metadata = None
+                 num_sampled_tokens = np.ones(num_reqs, dtype=np.int32)
+             else:
+@@ -2388,7 +2437,7 @@
+             # window size when capturing to make sure the correct kernel is selected.
+             max_seq_len = self.max_model_len
+         else:
+-            max_seq_len = self.optimistic_seq_lens_cpu.numpy()[:num_reqs].max().item()
++            max_seq_len = self._optimistic_seq_lens_np[:num_reqs].max().item()
+ 
+         kv_cache_groups = self.kv_cache_config.kv_cache_groups
+ 

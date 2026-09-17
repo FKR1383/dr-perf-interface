@@ -1,0 +1,31 @@
+{
+  "case": "cf-169",
+  "phase": "ast-processing",
+  "scenario": "ast-parent-mapping",
+  "compiler": "clang",
+  "flags": [
+    "--analyze",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_169(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_169 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_169(2)==14);\nint main() { Item_169 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Node_169_0{int x; int get()const{return x+0;}};\nstruct Node_169_1{int x; int get()const{return x+1;}};\nstruct Node_169_2{int x; int get()const{return x+2;}};\nstruct Node_169_3{int x; int get()const{return x+3;}};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Node_169_0{int x; int get()const{return x+0;}};\nstruct Node_169_1{int x; int get()const{return x+1;}};\nstruct Node_169_2{int x; int get()const{return x+2;}};\nstruct Node_169_3{int x; int get()const{return x+3;}};\nstruct Node_169_4{int x; int get()const{return x+4;}};\nstruct Node_169_5{int x; int get()const{return x+5;}};\nstruct Node_169_6{int x; int get()const{return x+6;}};\nstruct Node_169_7{int x; int get()const{return x+7;}};\nstruct Node_169_8{int x; int get()const{return x+8;}};\nstruct Node_169_9{int x; int get()const{return x+9;}};\nstruct Node_169_10{int x; int get()const{return x+10;}};\nstruct Node_169_11{int x; int get()const{return x+11;}};\nstruct Node_169_12{int x; int get()const{return x+12;}};\nstruct Node_169_13{int x; int get()const{return x+13;}};\nstruct Node_169_14{int x; int get()const{return x+14;}};\nstruct Node_169_15{int x; int get()const{return x+15;}};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Node_169_0{int x; int get()const{return x+0;}};\nstruct Node_169_1{int x; int get()const{return x+1;}};\nstruct Node_169_2{int x; int get()const{return x+2;}};\nstruct Node_169_3{int x; int get()const{return x+3;}};\nstruct Node_169_4{int x; int get()const{return x+4;}};\nstruct Node_169_5{int x; int get()const{return x+5;}};\nstruct Node_169_6{int x; int get()const{return x+6;}};\nstruct Node_169_7{int x; int get()const{return x+7;}};\nstruct Node_169_8{int x; int get()const{return x+8;}};\nstruct Node_169_9{int x; int get()const{return x+9;}};\nstruct Node_169_10{int x; int get()const{return x+10;}};\nstruct Node_169_11{int x; int get()const{return x+11;}};\nstruct Node_169_12{int x; int get()const{return x+12;}};\nstruct Node_169_13{int x; int get()const{return x+13;}};\nstruct Node_169_14{int x; int get()const{return x+14;}};\nstruct Node_169_15{int x; int get()const{return x+15;}};\nstruct Node_169_16{int x; int get()const{return x+16;}};\nstruct Node_169_17{int x; int get()const{return x+17;}};\nstruct Node_169_18{int x; int get()const{return x+18;}};\nstruct Node_169_19{int x; int get()const{return x+19;}};\nstruct Node_169_20{int x; int get()const{return x+20;}};\nstruct Node_169_21{int x; int get()const{return x+21;}};\nstruct Node_169_22{int x; int get()const{return x+22;}};\nstruct Node_169_23{int x; int get()const{return x+23;}};\nstruct Node_169_24{int x; int get()const{return x+24;}};\nstruct Node_169_25{int x; int get()const{return x+25;}};\nstruct Node_169_26{int x; int get()const{return x+26;}};\nstruct Node_169_27{int x; int get()const{return x+27;}};\nstruct Node_169_28{int x; int get()const{return x+28;}};\nstruct Node_169_29{int x; int get()const{return x+29;}};\nstruct Node_169_30{int x; int get()const{return x+30;}};\nstruct Node_169_31{int x; int get()const{return x+31;}};\nstruct Node_169_32{int x; int get()const{return x+32;}};\nstruct Node_169_33{int x; int get()const{return x+33;}};\nstruct Node_169_34{int x; int get()const{return x+34;}};\nstruct Node_169_35{int x; int get()const{return x+35;}};\nstruct Node_169_36{int x; int get()const{return x+36;}};\nstruct Node_169_37{int x; int get()const{return x+37;}};\nstruct Node_169_38{int x; int get()const{return x+38;}};\nstruct Node_169_39{int x; int get()const{return x+39;}};\nstruct Node_169_40{int x; int get()const{return x+40;}};\nstruct Node_169_41{int x; int get()const{return x+41;}};\nstruct Node_169_42{int x; int get()const{return x+42;}};\nstruct Node_169_43{int x; int get()const{return x+43;}};\nstruct Node_169_44{int x; int get()const{return x+44;}};\nstruct Node_169_45{int x; int get()const{return x+45;}};\nstruct Node_169_46{int x; int get()const{return x+46;}};\nstruct Node_169_47{int x; int get()const{return x+47;}};\nstruct Node_169_48{int x; int get()const{return x+48;}};\nstruct Node_169_49{int x; int get()const{return x+49;}};\nstruct Node_169_50{int x; int get()const{return x+50;}};\nstruct Node_169_51{int x; int get()const{return x+51;}};\nstruct Node_169_52{int x; int get()const{return x+52;}};\nstruct Node_169_53{int x; int get()const{return x+53;}};\nstruct Node_169_54{int x; int get()const{return x+54;}};\nstruct Node_169_55{int x; int get()const{return x+55;}};\nstruct Node_169_56{int x; int get()const{return x+56;}};\nstruct Node_169_57{int x; int get()const{return x+57;}};\nstruct Node_169_58{int x; int get()const{return x+58;}};\nstruct Node_169_59{int x; int get()const{return x+59;}};\nstruct Node_169_60{int x; int get()const{return x+60;}};\nstruct Node_169_61{int x; int get()const{return x+61;}};\nstruct Node_169_62{int x; int get()const{return x+62;}};\nstruct Node_169_63{int x; int get()const{return x+63;}};\n"
+    }
+  ],
+  "target_symbol": "BuildParentMap",
+  "target_source": "clang/lib/AST/ParentMap.cpp",
+  "mapping_note": "The ast-parent-mapping construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

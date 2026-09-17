@@ -1,0 +1,36 @@
+--- a/src/packaging/utils.py
++++ b/src/packaging/utils.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from typing import NewType, cast
+@@ -338,15 +339,16 @@
+ 
+     .. _Source distribution format: https://packaging.python.org/specifications/source-distribution-format/#source-distribution-file-name
+     """
+-    if filename.endswith(".tar.gz"):
+-        file_stem = filename[: -len(".tar.gz")]
+-    elif filename.endswith(".zip"):
+-        file_stem = filename[: -len(".zip")]
+-    else:
+-        raise InvalidSdistFilename(
+-            f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):"
+-            f" {filename!r}"
+-        )
++    with perfmark.region("gl-212"):
++        if filename.endswith(".tar.gz"):
++            file_stem = filename[: -len(".tar.gz")]
++        elif filename.endswith(".zip"):
++            file_stem = filename[: -len(".zip")]
++        else:
++            raise InvalidSdistFilename(
++                f"Invalid sdist filename (extension must be '.tar.gz' or '.zip'):"
++                f" {filename!r}"
++            )
+ 
+     # We are requiring a PEP 440 version, which cannot contain dashes,
+     # so we split on the last dash.

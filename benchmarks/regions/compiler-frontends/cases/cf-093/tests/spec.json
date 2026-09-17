@@ -1,0 +1,35 @@
+{
+  "case": "cf-093",
+  "phase": "ir-generation",
+  "scenario": "complex-division-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_93{int n; X_93(int v):n(v){}}; int main(){X_93 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "_Complex double f(_Complex double x){_Complex double y=x;\ny = y / (1.0 + 0.0i);\ny = y / (1.0 + 1.0i);\ny = y / (1.0 + 2.0i);\ny = y / (1.0 + 3.0i);\nreturn y;}\n"
+    },
+    {
+      "size": 16,
+      "source": "_Complex double f(_Complex double x){_Complex double y=x;\ny = y / (1.0 + 0.0i);\ny = y / (1.0 + 1.0i);\ny = y / (1.0 + 2.0i);\ny = y / (1.0 + 3.0i);\ny = y / (1.0 + 4.0i);\ny = y / (1.0 + 5.0i);\ny = y / (1.0 + 6.0i);\ny = y / (1.0 + 7.0i);\ny = y / (1.0 + 8.0i);\ny = y / (1.0 + 9.0i);\ny = y / (1.0 + 10.0i);\ny = y / (1.0 + 11.0i);\ny = y / (1.0 + 12.0i);\ny = y / (1.0 + 13.0i);\ny = y / (1.0 + 14.0i);\ny = y / (1.0 + 15.0i);\nreturn y;}\n"
+    },
+    {
+      "size": 64,
+      "source": "_Complex double f(_Complex double x){_Complex double y=x;\ny = y / (1.0 + 0.0i);\ny = y / (1.0 + 1.0i);\ny = y / (1.0 + 2.0i);\ny = y / (1.0 + 3.0i);\ny = y / (1.0 + 4.0i);\ny = y / (1.0 + 5.0i);\ny = y / (1.0 + 6.0i);\ny = y / (1.0 + 7.0i);\ny = y / (1.0 + 8.0i);\ny = y / (1.0 + 9.0i);\ny = y / (1.0 + 10.0i);\ny = y / (1.0 + 11.0i);\ny = y / (1.0 + 12.0i);\ny = y / (1.0 + 13.0i);\ny = y / (1.0 + 14.0i);\ny = y / (1.0 + 15.0i);\ny = y / (1.0 + 16.0i);\ny = y / (1.0 + 17.0i);\ny = y / (1.0 + 18.0i);\ny = y / (1.0 + 19.0i);\ny = y / (1.0 + 20.0i);\ny = y / (1.0 + 21.0i);\ny = y / (1.0 + 22.0i);\ny = y / (1.0 + 23.0i);\ny = y / (1.0 + 24.0i);\ny = y / (1.0 + 25.0i);\ny = y / (1.0 + 26.0i);\ny = y / (1.0 + 27.0i);\ny = y / (1.0 + 28.0i);\ny = y / (1.0 + 29.0i);\ny = y / (1.0 + 30.0i);\ny = y / (1.0 + 31.0i);\ny = y / (1.0 + 32.0i);\ny = y / (1.0 + 33.0i);\ny = y / (1.0 + 34.0i);\ny = y / (1.0 + 35.0i);\ny = y / (1.0 + 36.0i);\ny = y / (1.0 + 37.0i);\ny = y / (1.0 + 38.0i);\ny = y / (1.0 + 39.0i);\ny = y / (1.0 + 40.0i);\ny = y / (1.0 + 41.0i);\ny = y / (1.0 + 42.0i);\ny = y / (1.0 + 43.0i);\ny = y / (1.0 + 44.0i);\ny = y / (1.0 + 45.0i);\ny = y / (1.0 + 46.0i);\ny = y / (1.0 + 47.0i);\ny = y / (1.0 + 48.0i);\ny = y / (1.0 + 49.0i);\ny = y / (1.0 + 50.0i);\ny = y / (1.0 + 51.0i);\ny = y / (1.0 + 52.0i);\ny = y / (1.0 + 53.0i);\ny = y / (1.0 + 54.0i);\ny = y / (1.0 + 55.0i);\ny = y / (1.0 + 56.0i);\ny = y / (1.0 + 57.0i);\ny = y / (1.0 + 58.0i);\ny = y / (1.0 + 59.0i);\ny = y / (1.0 + 60.0i);\ny = y / (1.0 + 61.0i);\ny = y / (1.0 + 62.0i);\ny = y / (1.0 + 63.0i);\nreturn y;}\n"
+    }
+  ],
+  "target_symbol": "ComplexExprEmitter::EmitBinDiv",
+  "target_source": "clang/lib/CodeGen/CGExprComplex.cpp",
+  "mapping_note": "The complex-division-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

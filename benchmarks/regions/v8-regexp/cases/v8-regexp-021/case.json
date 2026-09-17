@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "v8-regexp-021",
+  "title": "Generate character-range branches",
+  "language": "cpp",
+  "source": {
+    "repository": "https://chromium.googlesource.com/v8/v8.git",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/regexp/regexp-compiler.cc",
+    "snapshot": "../../upstream/src/regexp/regexp-compiler.cc",
+    "sha256": "c75163c3539519a85f9e97ec20e1e897c6b6db9d4da7a7e8029f7693b29e7ce5"
+  },
+  "region": {
+    "symbol": "v8::internal::regexp::GenerateBranches",
+    "start_line": 1244,
+    "end_line": 1354
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-regexp-021",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Generate character-range branches for a bounded character class.",
+    "command": [
+      "{d8}",
+      "--regexp-jit-all",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://chromium.googlesource.com/v8/v8.git/+/736a2cbec441e85b68c742215d15318abfeae707/src/regexp/regexp-compiler.cc"
+  ],
+  "phase": "regexp-compilation",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "--regexp-jit-all",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Assertions passed under Node.js v18.19.1 as a JavaScript behavior check only; this does not verify V8 revision, d8 flags, or marked-region reachability."
+    },
+    "coverage_note": "The flag requests immediate classic RegExp native compilation. Pattern shape is a candidate for the marked compiler path; exact entry remains unverified until the instrumented d8 build is run."
+  }
+}

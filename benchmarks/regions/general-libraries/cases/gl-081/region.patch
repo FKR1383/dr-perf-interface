@@ -1,0 +1,26 @@
+--- a/networkx/algorithms/threshold.py
++++ b/networkx/algorithms/threshold.py
+@@ -1,6 +1,7 @@
+ """
+ Threshold Graphs - Creation, manipulation and identification.
+ """
++import perfmark
+ 
+ from math import sqrt
+ 
+@@ -97,10 +98,11 @@
+         raise ValueError("compact sequences cannot be labeled")
+ 
+     # make an indexed copy
+-    if isinstance(degree_sequence, dict):  # labeled degree sequence
+-        ds = [[degree, label] for (label, degree) in degree_sequence.items()]
+-    else:
+-        ds = [[d, i] for i, d in enumerate(degree_sequence)]
++    with perfmark.region("gl-081"):
++        if isinstance(degree_sequence, dict):  # labeled degree sequence
++            ds = [[degree, label] for (label, degree) in degree_sequence.items()]
++        else:
++            ds = [[d, i] for i, d in enumerate(degree_sequence)]
+     ds.sort()
+     cs = []  # creation sequence
+     while ds:

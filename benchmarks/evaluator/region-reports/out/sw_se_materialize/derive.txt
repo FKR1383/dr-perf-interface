@@ -1,0 +1,26 @@
+derive vllm_store_materialize   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: placements=1,handles=1 x30, placements=2,handles=1 x30, placements=3,handles=1 x30, placements=4,handles=1 x30, placements=6,handles=1 x30, placements=8,handles=1 x30, placements=12,handles=1 x30, placements=12,handles=2 x30, placements=12,handles=3 x30, placements=12,handles=4 x30, placements=12,handles=6 x30, placements=12,handles=8 x30
+  cost(placements, handles) = 6,794.4*placements + 2,131.1*handles + 2,811.9        [all placements, handles]   blocks: 469 affine, 327 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 571.9 per call (calibrated)
+    per-placements coefficient by function:
+             2,623.1  _PyEval_EvalFrameDefault  [python3.12]
+               482.4  _PyTuple_Resize+?  [python3.12]
+                 384  _PyObject_MakeTpCall  [python3.12]
+               332.8  PyTuple_New+?  [python3.12]
+                 288  PyType_IsSubtype  [python3.12]
+                 229  _PyObject_GenericGetAttrWithDict  [python3.12]
+    per-handles coefficient by function:
+             1,157.2  _PyEval_EvalFrameDefault  [python3.12]
+                 121  PyDict_Contains+?  [python3.12]
+                 110  PyDict_SetItem+?  [python3.12]
+                  94  _PyErr_ChainStackItem+?  [python3.12]
+                  66  _PyTuple_Resize+?  [python3.12]
+                  64  _PyObject_MakeTpCall  [python3.12]
+    constant by function:
+               685.6  _PyEval_EvalFrameDefault  [python3.12]
+               439.8  PyObject_Free  [python3.12]
+               308.7  PyObject_Malloc  [python3.12]
+                 220  _PyObject_GC_New  [python3.12]
+               130.7  PyLong_AsLongAndOverflow  [python3.12]
+               130.2  PyLong_FromLongLong+?  [python3.12]
+

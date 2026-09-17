@@ -1,0 +1,18 @@
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Driver/Driver.h"
+ #include "ToolChains/AIX.h"
+ #include "ToolChains/AMDGPU.h"
+@@ -858,6 +859,7 @@
+ 
+ void Driver::CreateOffloadingDeviceToolChains(Compilation &C,
+                                               InputList &Inputs) {
++                                                DRPERF_BENCH_REGION("cf-222");
+ 
+   //
+   // CUDA/HIP

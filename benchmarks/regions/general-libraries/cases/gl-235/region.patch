@@ -1,0 +1,70 @@
+--- a/src/attr/_next_gen.py
++++ b/src/attr/_next_gen.py
+@@ -4,6 +4,7 @@
+ These are keyword-only APIs that call `attr.s` and `attr.ib` with different
+ default values.
+ """
++import perfmark
+ 
+ from functools import partial
+ 
+@@ -359,32 +360,33 @@
+ 
+     """
+ 
+-    def do_it(cls, auto_attribs):
+-        return attrs(
+-            maybe_cls=cls,
+-            these=these,
+-            repr=repr,
+-            hash=hash,
+-            unsafe_hash=unsafe_hash,
+-            init=init,
+-            slots=slots,
+-            frozen=frozen,
+-            weakref_slot=weakref_slot,
+-            str=str,
+-            auto_attribs=auto_attribs,
+-            kw_only=kw_only,
+-            cache_hash=cache_hash,
+-            auto_exc=auto_exc,
+-            eq=eq,
+-            order=order,
+-            auto_detect=auto_detect,
+-            collect_by_mro=True,
+-            getstate_setstate=getstate_setstate,
+-            on_setattr=on_setattr,
+-            field_transformer=field_transformer,
+-            match_args=match_args,
+-            force_kw_only=force_kw_only,
+-        )
++    with perfmark.region("gl-235"):
++        def do_it(cls, auto_attribs):
++            return attrs(
++                maybe_cls=cls,
++                these=these,
++                repr=repr,
++                hash=hash,
++                unsafe_hash=unsafe_hash,
++                init=init,
++                slots=slots,
++                frozen=frozen,
++                weakref_slot=weakref_slot,
++                str=str,
++                auto_attribs=auto_attribs,
++                kw_only=kw_only,
++                cache_hash=cache_hash,
++                auto_exc=auto_exc,
++                eq=eq,
++                order=order,
++                auto_detect=auto_detect,
++                collect_by_mro=True,
++                getstate_setstate=getstate_setstate,
++                on_setattr=on_setattr,
++                field_transformer=field_transformer,
++                match_args=match_args,
++                force_kw_only=force_kw_only,
++            )
+ 
+     def wrap(cls):
+         """

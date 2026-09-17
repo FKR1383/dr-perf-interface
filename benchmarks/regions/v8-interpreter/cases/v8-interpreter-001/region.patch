@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -67,6 +68,7 @@
+                              Handle<String> name, Handle<Object> value,
+                              PropertyAttributes attr, bool is_var,
+                              RedeclarationType redeclaration_type) {
++  DRPERF_BENCH_REGION("v8-interpreter-001");
+   DirectHandle<ScriptContextTable> script_contexts(
+       global->native_context()->script_context_table(), isolate);
+   VariableLookupResult lookup;

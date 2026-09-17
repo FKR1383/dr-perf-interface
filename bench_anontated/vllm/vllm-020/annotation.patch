@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -144,7 +144,7 @@
+ 
+     def add_request(self, request: Request) -> None:
+         """Add a request to the queue according to priority policy."""
+-        with perfmark.region("vllm-020"):
++        with perfmark.region("vllm-020", queue_len=len(self._heap)):
+             heapq.heappush(self._heap, request)
+ 
+     def pop_request(self) -> Request:

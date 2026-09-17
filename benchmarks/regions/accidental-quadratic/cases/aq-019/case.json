@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "aq-019",
+  "title": "MIME parameter discovery",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "5ab66a882d1b5e44ec50b25df116ab209d65863f",
+    "path": "Lib/email/_header_value_parser.py",
+    "snapshot": "../../upstream/cpython-5ab66a88/Lib/email/_header_value_parser.py",
+    "sha256": "f63e90ce5f1d418cce74cd036e224f226f0ccd1ec94e2b771899a4199581e2d4"
+  },
+  "region": {
+    "symbol": "_find_mime_parameters",
+    "start_line": 2635,
+    "end_line": 2649
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-019",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Scan a long token sequence for MIME parameters.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "citations": [
+    "https://github.com/python/cpython/issues/136063",
+    "https://github.com/python/cpython/pull/152521"
+  ],
+  "source_family": "https://github.com/python/cpython/issues/136063",
+  "phase": "python-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises _find_mime_parameters with bounded input, and verifies entry into the empty region marker."
+  }
+}

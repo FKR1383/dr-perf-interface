@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-067",
+  "title": "Selected block in networkx.onion_layers",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/networkx/networkx",
+    "revision": "4e74880b0da01977da79915167c64e5c2af38b47",
+    "path": "networkx/algorithms/core.py",
+    "snapshot": "../../upstream/networkx/networkx/algorithms/core.py",
+    "sha256": "e923b95b3f8b4a4c7ab760d2ab418f98ebc500b19ed2056c5ddb2f9e8f45963b"
+  },
+  "region": {
+    "symbol": "onion_layers",
+    "start_line": 565,
+    "end_line": 586,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-067",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise onion_layers with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "networkx:networkx/algorithms/core.py:onion_layers",
+  "citations": [
+    "https://github.com/networkx/networkx/blob/4e74880b0da01977da79915167c64e5c2af38b47/networkx/algorithms/core.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/networkx/networkx/algorithms/core.py",
+        "destination": "tests/original.py",
+        "sha256": "e923b95b3f8b4a4c7ab760d2ab418f98ebc500b19ed2056c5ddb2f9e8f45963b"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls networkx.algorithms.core.onion_layers on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

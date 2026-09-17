@@ -1,0 +1,32 @@
+{
+  "case": "cf-221",
+  "phase": "source-tooling",
+  "scenario": "diagnostic-fixit",
+  "compiler": "clang-check",
+  "flags": [
+    "-fsyntax-only",
+    "-Wall",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_221(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_221 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_221(2)==14);\nint main() { Item_221 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_221_0 { int value[1]; };\nstruct Scale_221_1 { int value[2]; };\nstruct Scale_221_2 { int value[3]; };\nstruct Scale_221_3 { int value[4]; };\ntemplate<class T> constexpr T fold_221(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_221 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_221(2)==14);\nint main() { Item_221 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_221_0 { int value[1]; };\nstruct Scale_221_1 { int value[2]; };\nstruct Scale_221_2 { int value[3]; };\nstruct Scale_221_3 { int value[4]; };\nstruct Scale_221_4 { int value[1]; };\nstruct Scale_221_5 { int value[2]; };\nstruct Scale_221_6 { int value[3]; };\nstruct Scale_221_7 { int value[4]; };\nstruct Scale_221_8 { int value[1]; };\nstruct Scale_221_9 { int value[2]; };\nstruct Scale_221_10 { int value[3]; };\nstruct Scale_221_11 { int value[4]; };\nstruct Scale_221_12 { int value[1]; };\nstruct Scale_221_13 { int value[2]; };\nstruct Scale_221_14 { int value[3]; };\nstruct Scale_221_15 { int value[4]; };\ntemplate<class T> constexpr T fold_221(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_221 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_221(2)==14);\nint main() { Item_221 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_221_0 { int value[1]; };\nstruct Scale_221_1 { int value[2]; };\nstruct Scale_221_2 { int value[3]; };\nstruct Scale_221_3 { int value[4]; };\nstruct Scale_221_4 { int value[1]; };\nstruct Scale_221_5 { int value[2]; };\nstruct Scale_221_6 { int value[3]; };\nstruct Scale_221_7 { int value[4]; };\nstruct Scale_221_8 { int value[1]; };\nstruct Scale_221_9 { int value[2]; };\nstruct Scale_221_10 { int value[3]; };\nstruct Scale_221_11 { int value[4]; };\nstruct Scale_221_12 { int value[1]; };\nstruct Scale_221_13 { int value[2]; };\nstruct Scale_221_14 { int value[3]; };\nstruct Scale_221_15 { int value[4]; };\nstruct Scale_221_16 { int value[1]; };\nstruct Scale_221_17 { int value[2]; };\nstruct Scale_221_18 { int value[3]; };\nstruct Scale_221_19 { int value[4]; };\nstruct Scale_221_20 { int value[1]; };\nstruct Scale_221_21 { int value[2]; };\nstruct Scale_221_22 { int value[3]; };\nstruct Scale_221_23 { int value[4]; };\nstruct Scale_221_24 { int value[1]; };\nstruct Scale_221_25 { int value[2]; };\nstruct Scale_221_26 { int value[3]; };\nstruct Scale_221_27 { int value[4]; };\nstruct Scale_221_28 { int value[1]; };\nstruct Scale_221_29 { int value[2]; };\nstruct Scale_221_30 { int value[3]; };\nstruct Scale_221_31 { int value[4]; };\nstruct Scale_221_32 { int value[1]; };\nstruct Scale_221_33 { int value[2]; };\nstruct Scale_221_34 { int value[3]; };\nstruct Scale_221_35 { int value[4]; };\nstruct Scale_221_36 { int value[1]; };\nstruct Scale_221_37 { int value[2]; };\nstruct Scale_221_38 { int value[3]; };\nstruct Scale_221_39 { int value[4]; };\nstruct Scale_221_40 { int value[1]; };\nstruct Scale_221_41 { int value[2]; };\nstruct Scale_221_42 { int value[3]; };\nstruct Scale_221_43 { int value[4]; };\nstruct Scale_221_44 { int value[1]; };\nstruct Scale_221_45 { int value[2]; };\nstruct Scale_221_46 { int value[3]; };\nstruct Scale_221_47 { int value[4]; };\nstruct Scale_221_48 { int value[1]; };\nstruct Scale_221_49 { int value[2]; };\nstruct Scale_221_50 { int value[3]; };\nstruct Scale_221_51 { int value[4]; };\nstruct Scale_221_52 { int value[1]; };\nstruct Scale_221_53 { int value[2]; };\nstruct Scale_221_54 { int value[3]; };\nstruct Scale_221_55 { int value[4]; };\nstruct Scale_221_56 { int value[1]; };\nstruct Scale_221_57 { int value[2]; };\nstruct Scale_221_58 { int value[3]; };\nstruct Scale_221_59 { int value[4]; };\nstruct Scale_221_60 { int value[1]; };\nstruct Scale_221_61 { int value[2]; };\nstruct Scale_221_62 { int value[3]; };\nstruct Scale_221_63 { int value[4]; };\ntemplate<class T> constexpr T fold_221(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_221 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_221(2)==14);\nint main() { Item_221 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "ClangTool::run",
+  "target_source": "clang/lib/Tooling/Tooling.cpp",
+  "mapping_note": "The diagnostic-fixit construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

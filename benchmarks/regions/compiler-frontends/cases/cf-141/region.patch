@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ASTImporter.cpp
++++ b/clang/lib/AST/ASTImporter.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTImporter.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTDiagnostic.h"
+@@ -3077,6 +3078,7 @@
+ }
+ 
+ ExpectedDecl ASTNodeImporter::VisitRecordDecl(RecordDecl *D) {
++  DRPERF_BENCH_REGION("cf-141");
+   bool IsFriendTemplate = false;
+   if (auto *DCXX = dyn_cast<CXXRecordDecl>(D)) {
+     IsFriendTemplate =

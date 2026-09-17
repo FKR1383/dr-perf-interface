@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -16646,6 +16647,7 @@
+ }
+ 
+ void Sema::AddKnownFunctionAttributes(FunctionDecl *FD) {
++  DRPERF_BENCH_REGION("cf-026");
+   if (FD->isInvalidDecl())
+     return;
+ 

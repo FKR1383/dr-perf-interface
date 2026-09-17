@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-parser.cc
++++ b/src/regexp/regexp-parser.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-parser.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/base/logging.h"
+ #include "src/execution/isolate.h"
+@@ -3389,6 +3390,7 @@
+ template <class CharT, ParseMode mode>
+ ClassSetResult<mode> ParserImpl<CharT, mode>::ParseCharacterClass(
+     const Builder<mode>* builder) {
++  DRPERF_BENCH_REGION("v8-regexp-018");
+   DCHECK_EQ(current(), '[');
+   Advance();
+   bool is_negated = false;

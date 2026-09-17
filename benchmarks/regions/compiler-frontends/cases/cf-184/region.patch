@@ -1,0 +1,18 @@
+--- a/clang/lib/APINotes/APINotesManager.cpp
++++ b/clang/lib/APINotes/APINotesManager.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/APINotes/APINotesManager.h"
+ #include "clang/APINotes/APINotesReader.h"
+ #include "clang/APINotes/APINotesYAMLCompiler.h"
+@@ -330,6 +331,7 @@
+ 
+ llvm::SmallVector<APINotesReader *, 2>
+ APINotesManager::findAPINotes(SourceLocation Loc) {
++  DRPERF_BENCH_REGION("cf-184");
+   llvm::SmallVector<APINotesReader *, 2> Results;
+ 
+   // If there are readers for the current module, return them.

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-003",
+  "title": "Quoted value decoding",
+  "language": "python",
+  "region": {
+    "symbol": "_unquote",
+    "start_line": 190,
+    "end_line": 231
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-003",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Decode one quoted cookie value containing many escaped characters.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "c13e7d98fb8581014a225b900b1b88ccbfc28097",
+    "path": "Lib/http/cookies.py",
+    "sha256": "3edef8fdcb98b916174fbc03c6c62dd60dd0ccf4fecde5bfdfffd96401c0eb55"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises _unquote with bounded input, and verifies entry into the empty region marker."
+  }
+}

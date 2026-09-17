@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -168,7 +168,7 @@
+         dtype = dtype or self.text_encoder.dtype
+ 
+         prompt = [prompt] if isinstance(prompt, str) else prompt
+-        with perfmark.region("wan-032"):
++        with perfmark.region("wan-032", prompt_chars=sum(len(u) for u in ([prompt] if isinstance(prompt, str) else prompt))):
+             prompt = [prompt_clean(u) for u in prompt]
+         batch_size = len(prompt)
+ 

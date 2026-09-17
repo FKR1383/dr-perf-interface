@@ -1,0 +1,112 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -446,53 +447,54 @@
+     seqdata = []
+     seqmask = []
+     # If we expect some kind of MaskedArray, make a special loop.
+-    if usemask:
+-        for (a, n) in zip(seqarrays, sizes):
+-            nbmissing = (maxlength - n)
+-            # Get the data and mask
+-            data = a.ravel().__array__()
+-            mask = ma.getmaskarray(a).ravel()
+-            # Get the filling value (if needed)
+-            if nbmissing:
+-                fval = mrec._check_fill_value(fill_value, a.dtype)
+-                if isinstance(fval, (np.ndarray, np.void)):
+-                    if len(fval.dtype) == 1:
+-                        fval = fval.item()[0]
+-                        fmsk = True
+-                    else:
+-                        fval = np.array(fval, dtype=a.dtype, ndmin=1)
+-                        fmsk = np.ones((1,), dtype=mask.dtype)
+-            else:
+-                fval = None
+-                fmsk = True
+-            # Store an iterator padding the input to the expected length
+-            seqdata.append(itertools.chain(data, [fval] * nbmissing))
+-            seqmask.append(itertools.chain(mask, [fmsk] * nbmissing))
+-        # Create an iterator for the data
+-        data = tuple(_izip_records(seqdata, flatten=flatten))
+-        output = ma.array(np.fromiter(data, dtype=newdtype, count=maxlength),
+-                          mask=list(_izip_records(seqmask, flatten=flatten)))
+-        if asrecarray:
+-            output = output.view(mrec.MaskedRecords)
+-    else:
+-        # Same as before, without the mask we don't need...
+-        for (a, n) in zip(seqarrays, sizes):
+-            nbmissing = (maxlength - n)
+-            data = a.ravel().__array__()
+-            if nbmissing:
+-                fval = mrec._check_fill_value(fill_value, a.dtype)
+-                if isinstance(fval, (np.ndarray, np.void)):
+-                    if len(fval.dtype) == 1:
+-                        fval = fval.item()[0]
+-                    else:
+-                        fval = np.array(fval, dtype=a.dtype, ndmin=1)
+-            else:
+-                fval = None
+-            seqdata.append(itertools.chain(data, [fval] * nbmissing))
+-        output = np.fromiter(tuple(_izip_records(seqdata, flatten=flatten)),
+-                             dtype=newdtype, count=maxlength)
+-        if asrecarray:
+-            output = output.view(np.recarray)
++    with perfmark.region("gl-106"):
++        if usemask:
++            for (a, n) in zip(seqarrays, sizes):
++                nbmissing = (maxlength - n)
++                # Get the data and mask
++                data = a.ravel().__array__()
++                mask = ma.getmaskarray(a).ravel()
++                # Get the filling value (if needed)
++                if nbmissing:
++                    fval = mrec._check_fill_value(fill_value, a.dtype)
++                    if isinstance(fval, (np.ndarray, np.void)):
++                        if len(fval.dtype) == 1:
++                            fval = fval.item()[0]
++                            fmsk = True
++                        else:
++                            fval = np.array(fval, dtype=a.dtype, ndmin=1)
++                            fmsk = np.ones((1,), dtype=mask.dtype)
++                else:
++                    fval = None
++                    fmsk = True
++                # Store an iterator padding the input to the expected length
++                seqdata.append(itertools.chain(data, [fval] * nbmissing))
++                seqmask.append(itertools.chain(mask, [fmsk] * nbmissing))
++            # Create an iterator for the data
++            data = tuple(_izip_records(seqdata, flatten=flatten))
++            output = ma.array(np.fromiter(data, dtype=newdtype, count=maxlength),
++                              mask=list(_izip_records(seqmask, flatten=flatten)))
++            if asrecarray:
++                output = output.view(mrec.MaskedRecords)
++        else:
++            # Same as before, without the mask we don't need...
++            for (a, n) in zip(seqarrays, sizes):
++                nbmissing = (maxlength - n)
++                data = a.ravel().__array__()
++                if nbmissing:
++                    fval = mrec._check_fill_value(fill_value, a.dtype)
++                    if isinstance(fval, (np.ndarray, np.void)):
++                        if len(fval.dtype) == 1:
++                            fval = fval.item()[0]
++                        else:
++                            fval = np.array(fval, dtype=a.dtype, ndmin=1)
++                else:
++                    fval = None
++                seqdata.append(itertools.chain(data, [fval] * nbmissing))
++            output = np.fromiter(tuple(_izip_records(seqdata, flatten=flatten)),
++                                 dtype=newdtype, count=maxlength)
++            if asrecarray:
++                output = output.view(np.recarray)
+     # And we're done...
+     return output
+ 

@@ -1,0 +1,19 @@
+derive case_drop_key   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: digests=32 x10, digests=64 x10, digests=128 x10, digests=256 x10, digests=512 x10, digests=1,024 x10, digests=2,048 x10, digests=4,096 x10
+  cost(digests) = 288.4*digests + 7,395.3        [all digests]   blocks: 57 affine, 1165 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-digests coefficient by function:
+                 211  _PyEval_EvalFrameDefault  [python3.12]
+                  47  PyDict_Clear+?  [python3.12]
+                  11  PySequence_Tuple  [python3.12]
+                  11  _PyTuple_Resize+?  [python3.12]
+                   8  _PyUnicode_Equal  [python3.12]
+               0.438  __memset_avx2_unaligned_erms  [libc.so.6]
+    constant by function:
+               3,030  _PyEval_EvalFrameDefault  [python3.12]
+               405.3  PyObject_Free  [python3.12]
+               327.2  _PyDictView_New+?  [python3.12]
+               299.4  _PyUnicode_Equal  [python3.12]
+               288.3  PyDict_Contains+?  [python3.12]
+               261.4  _PyTuple_Resize+?  [python3.12]
+

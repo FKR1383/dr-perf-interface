@@ -1,0 +1,42 @@
+--- a/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
++++ b/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ from dataclasses import dataclass
+ from typing import Literal, Optional, Union
+@@ -399,18 +400,19 @@
+             `int`:
+                 The index of the timestep.
+         """
+-        if schedule_timesteps is None:
+-            schedule_timesteps = self.timesteps
+-
+-        indices = (schedule_timesteps == timestep).nonzero()
+-
+-        # The sigma index that is taken for the **very** first `step`
+-        # is always the second index (or the last index if there is only 1)
+-        # This way we can ensure we don't accidentally skip a sigma in
+-        # case we start in the middle of the denoising schedule (e.g. for image-to-image)
+-        pos = 1 if len(indices) > 1 else 0
+-
+-        return indices[pos].item()
++        with perfmark.region("wan-037"):
++            if schedule_timesteps is None:
++                schedule_timesteps = self.timesteps
++
++            indices = (schedule_timesteps == timestep).nonzero()
++
++            # The sigma index that is taken for the **very** first `step`
++            # is always the second index (or the last index if there is only 1)
++            # This way we can ensure we don't accidentally skip a sigma in
++            # case we start in the middle of the denoising schedule (e.g. for image-to-image)
++            pos = 1 if len(indices) > 1 else 0
++
++            return indices[pos].item()
+ 
+     def _init_step_index(self, timestep: Union[float, torch.FloatTensor]) -> None:
+         if self.begin_index is None:

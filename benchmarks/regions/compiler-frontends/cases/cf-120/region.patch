@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseTemplate.cpp
++++ b/clang/lib/Parse/ParseTemplate.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/ExprCXX.h"
+@@ -193,6 +194,7 @@
+     DeclaratorContext Context, ParsedTemplateInfo &TemplateInfo,
+     ParsingDeclRAIIObject &DiagsFromTParams, SourceLocation &DeclEnd,
+     ParsedAttributes &AccessAttrs, AccessSpecifier AS) {
++      DRPERF_BENCH_REGION("cf-120");
+   assert(TemplateInfo.Kind != ParsedTemplateInfo::NonTemplate &&
+          "Template information required");
+ 

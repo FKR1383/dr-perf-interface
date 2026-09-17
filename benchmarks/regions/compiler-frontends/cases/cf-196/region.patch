@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ExprConstant.cpp
++++ b/clang/lib/AST/ExprConstant.cpp
+@@ -32,6 +32,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ByteCode/Context.h"
+ #include "ByteCode/Frame.h"
+ #include "ByteCode/State.h"
+@@ -9604,6 +9605,7 @@
+ }
+ 
+ bool PointerExprEvaluator::VisitCastExpr(const CastExpr *E) {
++  DRPERF_BENCH_REGION("cf-196");
+   const Expr *SubExpr = E->getSubExpr();
+ 
+   switch (E->getCastKind()) {

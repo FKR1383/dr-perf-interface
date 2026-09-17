@@ -1,0 +1,18 @@
+--- a/clang/lib/Driver/XRayArgs.cpp
++++ b/clang/lib/Driver/XRayArgs.cpp
+@@ -5,6 +5,7 @@
+ // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+ //
+ //===----------------------------------------------------------------------===//
++#include "drperf_bench_region.h"
+ #include "clang/Driver/XRayArgs.h"
+ #include "ToolChains/CommonArgs.h"
+ #include "clang/Driver/Driver.h"
+@@ -22,6 +23,7 @@
+ constexpr const char *XRaySupportedModes[] = {"xray-fdr", "xray-basic"};
+ 
+ XRayArgs::XRayArgs(const ToolChain &TC, const ArgList &Args) {
++  DRPERF_BENCH_REGION("cf-233");
+   const Driver &D = TC.getDriver();
+   const llvm::Triple &Triple = TC.getTriple();
+   if (!Args.hasFlag(options::OPT_fxray_instrument,

@@ -1,0 +1,23 @@
+--- a/networkx/algorithms/community/kclique.py
++++ b/networkx/algorithms/community/kclique.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from collections import defaultdict
+ 
+ import networkx as nx
+@@ -59,10 +60,11 @@
+     # For each clique, see which adjacent cliques percolate
+     perc_graph = nx.Graph()
+     perc_graph.add_nodes_from(cliques)
+-    for clique in cliques:
+-        for adj_clique in _get_adjacent_cliques(clique, membership_dict):
+-            if len(clique.intersection(adj_clique)) >= (k - 1):
+-                perc_graph.add_edge(clique, adj_clique)
++    with perfmark.region("gl-095"):
++        for clique in cliques:
++            for adj_clique in _get_adjacent_cliques(clique, membership_dict):
++                if len(clique.intersection(adj_clique)) >= (k - 1):
++                    perc_graph.add_edge(clique, adj_clique)
+ 
+     # Connected components of clique graph with perc edges
+     # are the percolated cliques

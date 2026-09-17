@@ -1,0 +1,11 @@
+--- a/Lib/http/cookies.py
++++ b/Lib/http/cookies.py
+@@ -191,7 +191,7 @@
+ def _unquote(str):
+     # If there aren't any doublequotes,
+     # then there can't be any special characters.  See RFC 2109.
+-    with perfmark.region('aq-003'):
++    with perfmark.region('aq-003', input_len=0 if str is None else len(str), input_pairs=0 if str is None else len(str) * len(str), quoted=int(str is not None and len(str) >= 2 and str[0] == '"' and str[-1] == '"'), uncached_indices=0 if str is None else max(0, (len(str)-2)//3 - 85)):
+         if str is None or len(str) < 2:
+             return str
+         if str[0] != '"' or str[-1] != '"':

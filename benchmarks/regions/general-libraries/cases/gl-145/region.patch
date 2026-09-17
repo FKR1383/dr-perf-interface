@@ -1,0 +1,71 @@
+--- a/pandas/core/reshape/encoding.py
++++ b/pandas/core/reshape/encoding.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import defaultdict
+ from collections.abc import (
+@@ -588,35 +589,36 @@
+             )
+ 
+     cat_data = {}
+-    for prefix, prefix_slice in variables_slice.items():
+-        if sep is None:
+-            cats = prefix_slice.copy()
+-        else:
+-            cats = [col[len(prefix + sep) :] for col in prefix_slice]
+-        assigned = data_to_decode.loc[:, prefix_slice].sum(axis=1)
+-        if any(assigned > 1):
+-            raise ValueError(
+-                "Dummy DataFrame contains multi-assignment(s); "
+-                f"First instance in row: {assigned.idxmax()}"
+-            )
+-        if any(assigned == 0):
+-            if isinstance(default_category, dict):
+-                cats.append(default_category[prefix])
++    with perfmark.region("gl-145"):
++        for prefix, prefix_slice in variables_slice.items():
++            if sep is None:
++                cats = prefix_slice.copy()
+             else:
++                cats = [col[len(prefix + sep) :] for col in prefix_slice]
++            assigned = data_to_decode.loc[:, prefix_slice].sum(axis=1)
++            if any(assigned > 1):
+                 raise ValueError(
+-                    "Dummy DataFrame contains unassigned value(s); "
+-                    f"First instance in row: {assigned.idxmin()}"
++                    "Dummy DataFrame contains multi-assignment(s); "
++                    f"First instance in row: {assigned.idxmax()}"
+                 )
+-            data_slice = concat(
+-                (data_to_decode.loc[:, prefix_slice], assigned == 0), axis=1
+-            )
+-        else:
+-            data_slice = data_to_decode.loc[:, prefix_slice]
+-        cats_array = data._constructor_sliced(cats, dtype=data.columns.dtype)
+-        # get indices of True entries along axis=1
+-        true_values = data_slice.idxmax(axis=1)
+-        indexer = data_slice.columns.get_indexer_for(true_values)
+-        cat_data[prefix] = cats_array.take(indexer).set_axis(data.index)
++            if any(assigned == 0):
++                if isinstance(default_category, dict):
++                    cats.append(default_category[prefix])
++                else:
++                    raise ValueError(
++                        "Dummy DataFrame contains unassigned value(s); "
++                        f"First instance in row: {assigned.idxmin()}"
++                    )
++                data_slice = concat(
++                    (data_to_decode.loc[:, prefix_slice], assigned == 0), axis=1
++                )
++            else:
++                data_slice = data_to_decode.loc[:, prefix_slice]
++            cats_array = data._constructor_sliced(cats, dtype=data.columns.dtype)
++            # get indices of True entries along axis=1
++            true_values = data_slice.idxmax(axis=1)
++            indexer = data_slice.columns.get_indexer_for(true_values)
++            cat_data[prefix] = cats_array.take(indexer).set_axis(data.index)
+ 
+     result = DataFrame(cat_data)
+     if sep is not None:

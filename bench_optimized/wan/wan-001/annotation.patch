@@ -1,0 +1,11 @@
+--- a/src/diffusers/image_processor.py
++++ b/src/diffusers/image_processor.py
+@@ -758,7 +758,7 @@
+             `PIL.Image.Image`, `np.ndarray` or `torch.Tensor`:
+                 The postprocessed image.
+         """
+-        with perfmark.region("wan-001"):
++        with perfmark.region("wan-001", height=int(image.shape[-2])):
+             if not isinstance(image, torch.Tensor):
+                 raise ValueError(
+                     f"Input for postprocessing is in incorrect format: {type(image)}. We only support pytorch tensor"

@@ -1,0 +1,44 @@
+--- a/networkx/algorithms/clique.py
++++ b/networkx/algorithms/clique.py
+@@ -7,6 +7,7 @@
+ .. _clique_wiki: https://en.wikipedia.org/wiki/Clique_problem
+ 
+ """
++import perfmark
+ 
+ from collections import Counter, defaultdict, deque
+ from itertools import chain, combinations, islice
+@@ -551,19 +552,20 @@
+         The search for the cliques is optimized for `nodes`.
+     number_of_cliques
+     """
+-    if cliques is None:
+-        if nodes is not None:
+-            # Use ego_graph to decrease size of graph
+-            # check for single node
+-            if nodes in G:
+-                return max(len(c) for c in find_cliques(nx.ego_graph(G, nodes)))
+-            # handle multiple nodes
+-            return {
+-                n: max(len(c) for c in find_cliques(nx.ego_graph(G, n))) for n in nodes
+-            }
+-
+-        # nodes is None--find all cliques
+-        cliques = list(find_cliques(G))
++    with perfmark.region("gl-050"):
++        if cliques is None:
++            if nodes is not None:
++                # Use ego_graph to decrease size of graph
++                # check for single node
++                if nodes in G:
++                    return max(len(c) for c in find_cliques(nx.ego_graph(G, nodes)))
++                # handle multiple nodes
++                return {
++                    n: max(len(c) for c in find_cliques(nx.ego_graph(G, n))) for n in nodes
++                }
++    
++            # nodes is None--find all cliques
++            cliques = list(find_cliques(G))
+ 
+     # single node requested
+     if nodes in G:

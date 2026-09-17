@@ -1,0 +1,35 @@
+{
+  "case": "cf-078",
+  "phase": "ir-generation",
+  "scenario": "inline-asm-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "int main(){int x=3; asm(\"\" : \"+r\"(x)); return x!=3;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    }
+  ],
+  "target_symbol": "CodeGenFunction::EmitAsmStmt",
+  "target_source": "clang/lib/CodeGen/CGStmt.cpp",
+  "mapping_note": "The inline-asm-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

@@ -1,0 +1,24 @@
+--- a/networkx/drawing/nx_latex.py
++++ b/networkx/drawing/nx_latex.py
+@@ -255,6 +255,7 @@
+ 
+ TikZ options details:   https://tikz.dev/tikz-actions
+ """
++import perfmark
+ 
+ import networkx as nx
+ 
+@@ -343,9 +344,10 @@
+     # TODO allow pos to be None and use a nice TikZ default
+     if not isinstance(pos, dict):
+         pos = nx.get_node_attributes(G, pos)
+-    if not pos:
+-        # circular layout with radius 2
+-        pos = {n: f"({round(360.0 * i / len(G), 3)}:2)" for i, n in enumerate(G)}
++    with perfmark.region("gl-091"):
++        if not pos:
++            # circular layout with radius 2
++            pos = {n: f"({round(360.0 * i / len(G), 3)}:2)" for i, n in enumerate(G)}
+     for node in G:
+         if node not in pos:
+             raise nx.NetworkXError(f"node {node} has no specified pos {pos}")

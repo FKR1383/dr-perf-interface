@@ -1,0 +1,11 @@
+--- a/src/diffusers/image_processor.py
++++ b/src/diffusers/image_processor.py
+@@ -773,7 +773,7 @@
+         if output_type == "latent":
+             return image
+ 
+-        with perfmark.region("wan-002"):
++        with perfmark.region("wan-002", height=int(image.shape[-2])):
+             image = self._denormalize_conditionally(image, do_denormalize)
+ 
+         if output_type == "pt":

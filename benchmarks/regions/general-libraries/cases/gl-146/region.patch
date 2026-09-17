@@ -1,0 +1,32 @@
+--- a/pandas/core/dtypes/cast.py
++++ b/pandas/core/dtypes/cast.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime as dt
+ import functools
+@@ -1345,13 +1346,14 @@
+     # get unique types (dict.fromkeys is used as order-preserving set())
+     types = list(dict.fromkeys(types).keys())
+ 
+-    if any(isinstance(t, ExtensionDtype) for t in types):
+-        for t in types:
+-            if isinstance(t, ExtensionDtype):
+-                res = t._get_common_dtype(types)
+-                if res is not None:
+-                    return res
+-        return np.dtype("object")
++    with perfmark.region("gl-146"):
++        if any(isinstance(t, ExtensionDtype) for t in types):
++            for t in types:
++                if isinstance(t, ExtensionDtype):
++                    res = t._get_common_dtype(types)
++                    if res is not None:
++                        return res
++            return np.dtype("object")
+ 
+     # At this point, all types are np.dtype (ExtensionDtype was handled above)
+     np_types = cast("list[np.dtype]", types)

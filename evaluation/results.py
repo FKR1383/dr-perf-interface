@@ -71,8 +71,8 @@ def validate_result(value, competitor, max_attempts=MAX_ATTEMPTS):
         raise EvaluationError("experiment limit exceeded")
     for index, attempt in enumerate(value["attempts"], 1):
         attempt["variables"] = variables(attempt["variables"])
-        if attempt["attempt"] != index or len(attempt["variables"]) > 4:
-            raise EvaluationError("attempts must be consecutive and declare at most four states")
+        if attempt["attempt"] != index:
+            raise EvaluationError("attempts must be consecutive")
         if attempt["status"] == "ok":
             if not attempt["formula"] or attempt["irregularity"] is None:
                 raise EvaluationError("successful measurement requires a formula and irregularity")

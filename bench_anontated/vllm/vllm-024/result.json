@@ -1,0 +1,27 @@
+{
+  "case": "vllm-024",
+  "status": "model-rejected",
+  "pcvs": [
+    "incoming_count"
+  ],
+  "gate_pass": false,
+  "final_measurement": "rounds/round-2/metrics.json",
+  "attempts": [
+    {
+      "measurement": "rounds/round-1/metrics.json",
+      "gate_pass": true,
+      "max_unexplained_share": 0.016110803324099723,
+      "gate_reasons": []
+    },
+    {
+      "measurement": "rounds/round-2/metrics.json",
+      "gate_pass": false,
+      "max_unexplained_share": 0.254218936862361,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ]
+    }
+  ],
+  "evidence": "Expanded final test matrix produced nonlinear instruction behavior above the 5% unexplained threshold.",
+  "optimization_review": "No optimization attempted."
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -864,6 +865,7 @@
+                                             SourceLocation NameLoc,
+                                             const Token &NextToken,
+                                             CorrectionCandidateCallback *CCC) {
++                                              DRPERF_BENCH_REGION("cf-041");
+   DeclarationNameInfo NameInfo(Name, NameLoc);
+   ObjCMethodDecl *CurMethod = getCurMethodDecl();
+ 

@@ -1,0 +1,33 @@
+{
+  "case": "cf-198",
+  "phase": "ast-processing",
+  "scenario": "derived-records",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "template<class T> constexpr T fold_198(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_198 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_198(2)==14);\nint main() { Item_198 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Base{virtual ~Base()=default;};\nstruct Derived0:Base{int x0;};\nstruct Derived1:Base{int x1;};\nstruct Derived2:Base{int x2;};\nstruct Derived3:Base{int x3;};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Base{virtual ~Base()=default;};\nstruct Derived0:Base{int x0;};\nstruct Derived1:Base{int x1;};\nstruct Derived2:Base{int x2;};\nstruct Derived3:Base{int x3;};\nstruct Derived4:Base{int x4;};\nstruct Derived5:Base{int x5;};\nstruct Derived6:Base{int x6;};\nstruct Derived7:Base{int x7;};\nstruct Derived8:Base{int x8;};\nstruct Derived9:Base{int x9;};\nstruct Derived10:Base{int x10;};\nstruct Derived11:Base{int x11;};\nstruct Derived12:Base{int x12;};\nstruct Derived13:Base{int x13;};\nstruct Derived14:Base{int x14;};\nstruct Derived15:Base{int x15;};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Base{virtual ~Base()=default;};\nstruct Derived0:Base{int x0;};\nstruct Derived1:Base{int x1;};\nstruct Derived2:Base{int x2;};\nstruct Derived3:Base{int x3;};\nstruct Derived4:Base{int x4;};\nstruct Derived5:Base{int x5;};\nstruct Derived6:Base{int x6;};\nstruct Derived7:Base{int x7;};\nstruct Derived8:Base{int x8;};\nstruct Derived9:Base{int x9;};\nstruct Derived10:Base{int x10;};\nstruct Derived11:Base{int x11;};\nstruct Derived12:Base{int x12;};\nstruct Derived13:Base{int x13;};\nstruct Derived14:Base{int x14;};\nstruct Derived15:Base{int x15;};\nstruct Derived16:Base{int x16;};\nstruct Derived17:Base{int x17;};\nstruct Derived18:Base{int x18;};\nstruct Derived19:Base{int x19;};\nstruct Derived20:Base{int x20;};\nstruct Derived21:Base{int x21;};\nstruct Derived22:Base{int x22;};\nstruct Derived23:Base{int x23;};\nstruct Derived24:Base{int x24;};\nstruct Derived25:Base{int x25;};\nstruct Derived26:Base{int x26;};\nstruct Derived27:Base{int x27;};\nstruct Derived28:Base{int x28;};\nstruct Derived29:Base{int x29;};\nstruct Derived30:Base{int x30;};\nstruct Derived31:Base{int x31;};\nstruct Derived32:Base{int x32;};\nstruct Derived33:Base{int x33;};\nstruct Derived34:Base{int x34;};\nstruct Derived35:Base{int x35;};\nstruct Derived36:Base{int x36;};\nstruct Derived37:Base{int x37;};\nstruct Derived38:Base{int x38;};\nstruct Derived39:Base{int x39;};\nstruct Derived40:Base{int x40;};\nstruct Derived41:Base{int x41;};\nstruct Derived42:Base{int x42;};\nstruct Derived43:Base{int x43;};\nstruct Derived44:Base{int x44;};\nstruct Derived45:Base{int x45;};\nstruct Derived46:Base{int x46;};\nstruct Derived47:Base{int x47;};\nstruct Derived48:Base{int x48;};\nstruct Derived49:Base{int x49;};\nstruct Derived50:Base{int x50;};\nstruct Derived51:Base{int x51;};\nstruct Derived52:Base{int x52;};\nstruct Derived53:Base{int x53;};\nstruct Derived54:Base{int x54;};\nstruct Derived55:Base{int x55;};\nstruct Derived56:Base{int x56;};\nstruct Derived57:Base{int x57;};\nstruct Derived58:Base{int x58;};\nstruct Derived59:Base{int x59;};\nstruct Derived60:Base{int x60;};\nstruct Derived61:Base{int x61;};\nstruct Derived62:Base{int x62;};\nstruct Derived63:Base{int x63;};\n"
+    }
+  ],
+  "target_symbol": "CXXRecordDecl::setBases",
+  "target_source": "clang/lib/AST/DeclCXX.cpp",
+  "mapping_note": "The derived-records construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

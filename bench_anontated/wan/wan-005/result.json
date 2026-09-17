@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-005",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "latent_elements",
+      "expression": "int(z.numel())"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-005",
+      "validity_warnings": [],
+      "pcv_names": [
+        "latent_elements"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "latent_elements": 64
+          },
+          "calls": 3,
+          "instructions_per_call": 26351370.0,
+          "unexplained_instructions_per_call": 25573851.33333336,
+          "unexplained_share": 0.9704941842998431
+        },
+        {
+          "state": {
+            "latent_elements": 512
+          },
+          "calls": 3,
+          "instructions_per_call": 172458354.33333334,
+          "unexplained_instructions_per_call": 170377170.00000006,
+          "unexplained_share": 0.9879322498386439
+        },
+        {
+          "state": {
+            "latent_elements": 1728
+          },
+          "calls": 3,
+          "instructions_per_call": 592580951.6666666,
+          "unexplained_instructions_per_call": 588438829.0000007,
+          "unexplained_share": 0.9930100306886073
+        }
+      ],
+      "max_unexplained_share": 0.9930100306886073,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "latent_elements": 1821.4661746086902
+        },
+        "constant": 934722.5334561256,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 27.79572971991729,
+      "raw_files": [
+        "run.3224658.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-005\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-005\"}\n",
+    "correctness_seconds": 5.463,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-005\", latent_elements=int(z.numel())):",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Refined annotation still did not pass the strict 5% gate."
+  }
+}

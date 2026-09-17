@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaCoroutine.cpp
++++ b/clang/lib/Sema/SemaCoroutine.cpp
+@@ -13,6 +13,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CoroutineStmtBuilder.h"
+ #include "clang/AST/ASTLambda.h"
+ #include "clang/AST/Decl.h"
+@@ -1360,6 +1361,7 @@
+ }
+ 
+ bool CoroutineStmtBuilder::makeNewAndDeleteExpr() {
++  DRPERF_BENCH_REGION("cf-099");
+   // Form and check allocation and deallocation calls.
+   assert(!IsPromiseDependentType &&
+          "cannot make statement while the promise type is dependent");

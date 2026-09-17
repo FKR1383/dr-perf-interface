@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/LLVMContextImpl.cpp
++++ b/llvm/lib/IR/LLVMContextImpl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "LLVMContextImpl.h"
+ #include "AttributeImpl.h"
+ #include "llvm/ADT/SetVector.h"
+@@ -42,6 +43,7 @@
+       Int64Ty(C, 64), Int128Ty(C, 128) {}
+ 
+ LLVMContextImpl::~LLVMContextImpl() {
++  DRPERF_BENCH_REGION("cf-140");
+ #ifndef NDEBUG
+   // Check that any variable location records that fell off the end of a block
+   // when it's terminator was removed were eventually replaced. This assertion

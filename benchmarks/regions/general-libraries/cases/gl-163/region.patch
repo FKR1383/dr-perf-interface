@@ -1,0 +1,109 @@
+--- a/pandas/core/methods/select.py
++++ b/pandas/core/methods/select.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import (
+     TYPE_CHECKING,
+@@ -91,53 +92,54 @@
+             loc = int(loc.argmax())
+         chunks.append(data.iloc[:, loc : loc + 1])
+ 
+-    for item in items:
+-        if isinstance(item, Expression):
+-            flush_labels()
+-            result = item._eval_expression(data)
+-            if isinstance(result, ABCSeries):
+-                if result.name is None:
++    with perfmark.region("gl-163"):
++        for item in items:
++            if isinstance(item, Expression):
++                flush_labels()
++                result = item._eval_expression(data)
++                if isinstance(result, ABCSeries):
++                    if result.name is None:
++                        raise TypeError(
++                            f"expression {item!r} evaluated to an unnamed "
++                            "Series; use .rename(...) to name it or pass it "
++                            "as a keyword argument"
++                        )
++                    if nlevels > 1 and (
++                        not isinstance(result.name, tuple) or len(result.name) != nlevels
++                    ):
++                        raise TypeError(
++                            f"expression {item!r} evaluated to a Series "
++                            f"named {result.name!r}, but the DataFrame's "
++                            f"columns have {nlevels} levels; use "
++                            f".rename(...) with a tuple of length {nlevels}"
++                        )
++                    set_column(result.name, result)
++                elif isinstance(result, ABCDataFrame):
++                    if result.columns.nlevels != nlevels:
++                        raise TypeError(
++                            f"expression {item!r} evaluated to a DataFrame "
++                            f"whose columns have {result.columns.nlevels} "
++                            f"levels, but the DataFrame's columns have "
++                            f"{nlevels} levels"
++                        )
++                    for i, name in enumerate(result.columns):
++                        set_column(name, result.iloc[:, i])
++                else:
+                     raise TypeError(
+-                        f"expression {item!r} evaluated to an unnamed "
+-                        "Series; use .rename(...) to name it or pass it "
+-                        "as a keyword argument"
++                        f"expression {item!r} evaluated to an object of type "
++                        f"{type(result).__name__}, expected a Series or "
++                        "DataFrame; pass it as a keyword argument instead"
+                     )
+-                if nlevels > 1 and (
+-                    not isinstance(result.name, tuple) or len(result.name) != nlevels
++            else:
++                if (
++                    nlevels > 1
++                    and labels
++                    and isinstance(item, tuple) != isinstance(labels[-1], tuple)
+                 ):
+-                    raise TypeError(
+-                        f"expression {item!r} evaluated to a Series "
+-                        f"named {result.name!r}, but the DataFrame's "
+-                        f"columns have {nlevels} levels; use "
+-                        f".rename(...) with a tuple of length {nlevels}"
+-                    )
+-                set_column(result.name, result)
+-            elif isinstance(result, ABCDataFrame):
+-                if result.columns.nlevels != nlevels:
+-                    raise TypeError(
+-                        f"expression {item!r} evaluated to a DataFrame "
+-                        f"whose columns have {result.columns.nlevels} "
+-                        f"levels, but the DataFrame's columns have "
+-                        f"{nlevels} levels"
+-                    )
+-                for i, name in enumerate(result.columns):
+-                    set_column(name, result.iloc[:, i])
+-            else:
+-                raise TypeError(
+-                    f"expression {item!r} evaluated to an object of type "
+-                    f"{type(result).__name__}, expected a Series or "
+-                    "DataFrame; pass it as a keyword argument instead"
+-                )
+-        else:
+-            if (
+-                nlevels > 1
+-                and labels
+-                and isinstance(item, tuple) != isinstance(labels[-1], tuple)
+-            ):
+-                # on a MultiIndex, single-level keys and full tuples
+-                # cannot be resolved in one indexer batch
+-                flush_labels()
+-            labels.append(item)
++                    # on a MultiIndex, single-level keys and full tuples
++                    # cannot be resolved in one indexer batch
++                    flush_labels()
++                labels.append(item)
+     flush_labels()
+ 
+     for key, value in select_kwargs.items():

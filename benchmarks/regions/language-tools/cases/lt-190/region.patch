@@ -1,0 +1,84 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -4511,40 +4512,41 @@
+         savelist: bool = True,
+     ) -> None:
+         # instantiate exprs as a list, converting strs to ParserElements
+-        exprs: list[ParserElement] = [
+-            self._literalStringClass(e) if isinstance(e, str) else e for e in exprs_arg
+-        ]
+-
+-        # convert any Ellipsis elements to SkipTo
+-        if Ellipsis in exprs:
+-
+-            # Ellipsis cannot be the last element
+-            if exprs[-1] is Ellipsis:
+-                raise Exception("cannot construct And with sequence ending in ...")
+-
+-            tmp: list[ParserElement] = []
+-            for cur_expr, next_expr in zip(exprs, exprs[1:]):
+-                if cur_expr is Ellipsis:
+-                    tmp.append(SkipTo(next_expr)("_skipped*"))
++        with perfmark.region("lt-190"):
++            exprs: list[ParserElement] = [
++                self._literalStringClass(e) if isinstance(e, str) else e for e in exprs_arg
++            ]
++
++            # convert any Ellipsis elements to SkipTo
++            if Ellipsis in exprs:
++
++                # Ellipsis cannot be the last element
++                if exprs[-1] is Ellipsis:
++                    raise Exception("cannot construct And with sequence ending in ...")
++
++                tmp: list[ParserElement] = []
++                for cur_expr, next_expr in zip(exprs, exprs[1:]):
++                    if cur_expr is Ellipsis:
++                        tmp.append(SkipTo(next_expr)("_skipped*"))
++                    else:
++                        tmp.append(cur_expr)
++
++                exprs[:-1] = tmp
++
++            super().__init__(exprs, savelist)
++            if self.exprs:
++                self._may_return_empty = all(e.mayReturnEmpty for e in self.exprs)
++                if not isinstance(self.exprs[0], White):
++                    self.set_whitespace_chars(
++                        self.exprs[0].whiteChars,
++                        copy_defaults=self.exprs[0].copyDefaultWhiteChars,
++                    )
++                    self.skipWhitespace = self.exprs[0].skipWhitespace
+                 else:
+-                    tmp.append(cur_expr)
+-
+-            exprs[:-1] = tmp
+-
+-        super().__init__(exprs, savelist)
+-        if self.exprs:
+-            self._may_return_empty = all(e.mayReturnEmpty for e in self.exprs)
+-            if not isinstance(self.exprs[0], White):
+-                self.set_whitespace_chars(
+-                    self.exprs[0].whiteChars,
+-                    copy_defaults=self.exprs[0].copyDefaultWhiteChars,
+-                )
+-                self.skipWhitespace = self.exprs[0].skipWhitespace
++                    self.skipWhitespace = False
+             else:
+-                self.skipWhitespace = False
+-        else:
+-            self._may_return_empty = True
+-        self.callPreparse = True
++                self._may_return_empty = True
++            self.callPreparse = True
+ 
+     def streamline(self) -> ParserElement:
+         """

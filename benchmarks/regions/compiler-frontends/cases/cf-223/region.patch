@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -8176,6 +8177,7 @@
+ /// [C++11] direct-declarator '[' constant-expression[opt] ']'
+ ///                           attribute-specifier-seq[opt]
+ void Parser::ParseBracketDeclarator(Declarator &D) {
++  DRPERF_BENCH_REGION("cf-223");
+   if (CheckProhibitedCXX11Attribute())
+     return;
+ 

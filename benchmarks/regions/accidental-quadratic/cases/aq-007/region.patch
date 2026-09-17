@@ -1,0 +1,51 @@
+diff --git a/Lib/email/message.py b/Lib/email/message.py
+--- a/Lib/email/message.py
++++ b/Lib/email/message.py
+@@ -3,6 +3,7 @@
+ # Contact: email-sig@python.org
+ 
+ """Basic message object for the email package object model."""
++import perfmark
+ 
+ __all__ = ['Message', 'EmailMessage']
+ 
+@@ -72,22 +73,23 @@
+ 
+ def _parseparam(s):
+     # RDM This might be a Header, so for now stringify it.
+-    s = ';' + str(s)
+-    plist = []
+-    while s[:1] == ';':
+-        s = s[1:]
+-        end = s.find(';')
+-        while end > 0 and (s.count('"', 0, end) - s.count('\\"', 0, end)) % 2:
+-            end = s.find(';', end + 1)
+-        if end < 0:
+-            end = len(s)
+-        f = s[:end]
+-        if '=' in f:
+-            i = f.index('=')
+-            f = f[:i].strip().lower() + '=' + f[i+1:].strip()
+-        plist.append(f.strip())
+-        s = s[end:]
+-    return plist
++    with perfmark.region('aq-007'):
++        s = ';' + str(s)
++        plist = []
++        while s[:1] == ';':
++            s = s[1:]
++            end = s.find(';')
++            while end > 0 and (s.count('"', 0, end) - s.count('\\"', 0, end)) % 2:
++                end = s.find(';', end + 1)
++            if end < 0:
++                end = len(s)
++            f = s[:end]
++            if '=' in f:
++                i = f.index('=')
++                f = f[:i].strip().lower() + '=' + f[i+1:].strip()
++            plist.append(f.strip())
++            s = s[end:]
++        return plist
+ 
+ 
+ def _unquotevalue(value):

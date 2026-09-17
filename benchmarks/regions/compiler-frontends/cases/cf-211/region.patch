@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -10076,6 +10077,7 @@
+ 
+ bool Sema::SpecialMemberIsTrivial(CXXMethodDecl *MD, CXXSpecialMemberKind CSM,
+                                   TrivialABIHandling TAH, bool Diagnose) {
++                                    DRPERF_BENCH_REGION("cf-211");
+   assert(!MD->isUserProvided() && CSM != CXXSpecialMemberKind::Invalid &&
+          "not special enough");
+ 

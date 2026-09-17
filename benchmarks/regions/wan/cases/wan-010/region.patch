@@ -1,0 +1,36 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+@@ -1230,15 +1231,16 @@
+                 If return_dict is True, a [`~models.vae.DecoderOutput`] is returned, otherwise a plain `tuple` is
+                 returned.
+         """
+-        if self.use_slicing and z.shape[0] > 1:
+-            decoded_slices = [self._decode(z_slice).sample for z_slice in z.split(1)]
+-            decoded = torch.cat(decoded_slices)
+-        else:
+-            decoded = self._decode(z).sample
+-
+-        if not return_dict:
+-            return (decoded,)
+-        return DecoderOutput(sample=decoded)
++        with perfmark.region("wan-010"):
++            if self.use_slicing and z.shape[0] > 1:
++                decoded_slices = [self._decode(z_slice).sample for z_slice in z.split(1)]
++                decoded = torch.cat(decoded_slices)
++            else:
++                decoded = self._decode(z).sample
++
++            if not return_dict:
++                return (decoded,)
++            return DecoderOutput(sample=decoded)
+ 
+     def blend_v(self, a: torch.Tensor, b: torch.Tensor, blend_extent: int) -> torch.Tensor:
+         blend_extent = min(a.shape[-2], b.shape[-2], blend_extent)

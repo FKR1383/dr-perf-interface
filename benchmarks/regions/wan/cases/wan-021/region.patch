@@ -1,0 +1,60 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import math
+ from typing import Any
+ 
+@@ -393,27 +394,28 @@
+         self.register_buffer("freqs_sin", torch.cat(freqs_sin, dim=1), persistent=False)
+ 
+     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+-        batch_size, num_channels, num_frames, height, width = hidden_states.shape
+-        p_t, p_h, p_w = self.patch_size
+-        ppf, pph, ppw = num_frames // p_t, height // p_h, width // p_w
+-
+-        split_sizes = [self.t_dim, self.h_dim, self.w_dim]
+-
+-        freqs_cos = self.freqs_cos.split(split_sizes, dim=1)
+-        freqs_sin = self.freqs_sin.split(split_sizes, dim=1)
+-
+-        freqs_cos_f = freqs_cos[0][:ppf].view(ppf, 1, 1, -1).expand(ppf, pph, ppw, -1)
+-        freqs_cos_h = freqs_cos[1][:pph].view(1, pph, 1, -1).expand(ppf, pph, ppw, -1)
+-        freqs_cos_w = freqs_cos[2][:ppw].view(1, 1, ppw, -1).expand(ppf, pph, ppw, -1)
+-
+-        freqs_sin_f = freqs_sin[0][:ppf].view(ppf, 1, 1, -1).expand(ppf, pph, ppw, -1)
+-        freqs_sin_h = freqs_sin[1][:pph].view(1, pph, 1, -1).expand(ppf, pph, ppw, -1)
+-        freqs_sin_w = freqs_sin[2][:ppw].view(1, 1, ppw, -1).expand(ppf, pph, ppw, -1)
+-
+-        freqs_cos = torch.cat([freqs_cos_f, freqs_cos_h, freqs_cos_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
+-        freqs_sin = torch.cat([freqs_sin_f, freqs_sin_h, freqs_sin_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
+-
+-        return freqs_cos, freqs_sin
++        with perfmark.region("wan-021"):
++            batch_size, num_channels, num_frames, height, width = hidden_states.shape
++            p_t, p_h, p_w = self.patch_size
++            ppf, pph, ppw = num_frames // p_t, height // p_h, width // p_w
++
++            split_sizes = [self.t_dim, self.h_dim, self.w_dim]
++
++            freqs_cos = self.freqs_cos.split(split_sizes, dim=1)
++            freqs_sin = self.freqs_sin.split(split_sizes, dim=1)
++
++            freqs_cos_f = freqs_cos[0][:ppf].view(ppf, 1, 1, -1).expand(ppf, pph, ppw, -1)
++            freqs_cos_h = freqs_cos[1][:pph].view(1, pph, 1, -1).expand(ppf, pph, ppw, -1)
++            freqs_cos_w = freqs_cos[2][:ppw].view(1, 1, ppw, -1).expand(ppf, pph, ppw, -1)
++
++            freqs_sin_f = freqs_sin[0][:ppf].view(ppf, 1, 1, -1).expand(ppf, pph, ppw, -1)
++            freqs_sin_h = freqs_sin[1][:pph].view(1, pph, 1, -1).expand(ppf, pph, ppw, -1)
++            freqs_sin_w = freqs_sin[2][:ppw].view(1, 1, ppw, -1).expand(ppf, pph, ppw, -1)
++
++            freqs_cos = torch.cat([freqs_cos_f, freqs_cos_h, freqs_cos_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
++            freqs_sin = torch.cat([freqs_sin_f, freqs_sin_h, freqs_sin_w], dim=-1).reshape(1, ppf * pph * ppw, 1, -1)
++
++            return freqs_cos, freqs_sin
+ 
+ 
+ @maybe_allow_in_graph

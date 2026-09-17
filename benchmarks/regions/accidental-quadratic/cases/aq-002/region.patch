@@ -1,0 +1,69 @@
+diff --git a/Cython/Compiler/ModuleNode.py b/Cython/Compiler/ModuleNode.py
+--- a/Cython/Compiler/ModuleNode.py
++++ b/Cython/Compiler/ModuleNode.py
+@@ -3,6 +3,7 @@
+ #
+ 
+ from __future__ import absolute_import
++import perfmark
+ 
+ import cython
+ cython.declare(Naming=object, Options=object, PyrexTypes=object, TypeSlots=object,
+@@ -613,31 +614,32 @@
+     def sort_types_by_inheritance(self, type_dict, type_order, getkey):
+         # copy the types into a list moving each parent type before
+         # its first child
+-        type_list = []
+-        for i, key in enumerate(type_order):
+-            new_entry = type_dict[key]
+-
+-            # collect all base classes to check for children
+-            hierarchy = set()
+-            base = new_entry
+-            while base:
+-                base_type = base.type.base_type
+-                if not base_type:
+-                    break
+-                base_key = getkey(base_type)
+-                hierarchy.add(base_key)
+-                base = type_dict.get(base_key)
+-            new_entry.base_keys = hierarchy
+-
+-            # find the first (sub-)subclass and insert before that
+-            for j in range(i):
+-                entry = type_list[j]
+-                if key in entry.base_keys:
+-                    type_list.insert(j, new_entry)
+-                    break
+-            else:
+-                type_list.append(new_entry)
+-        return type_list
++        with perfmark.region('aq-002'):
++            type_list = []
++            for i, key in enumerate(type_order):
++                new_entry = type_dict[key]
++
++                # collect all base classes to check for children
++                hierarchy = set()
++                base = new_entry
++                while base:
++                    base_type = base.type.base_type
++                    if not base_type:
++                        break
++                    base_key = getkey(base_type)
++                    hierarchy.add(base_key)
++                    base = type_dict.get(base_key)
++                new_entry.base_keys = hierarchy
++
++                # find the first (sub-)subclass and insert before that
++                for j in range(i):
++                    entry = type_list[j]
++                    if key in entry.base_keys:
++                        type_list.insert(j, new_entry)
++                        break
++                else:
++                    type_list.append(new_entry)
++            return type_list
+ 
+     def sort_type_hierarchy(self, module_list, env):
+         # poor developer's OrderedDict

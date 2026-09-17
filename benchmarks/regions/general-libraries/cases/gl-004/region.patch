@@ -1,0 +1,123 @@
+--- a/networkx/drawing/nx_pylab.py
++++ b/networkx/drawing/nx_pylab.py
+@@ -16,6 +16,7 @@
+  - :func:`matplotlib.pyplot.scatter`
+  - :obj:`matplotlib.patches.FancyArrowPatch`
+ """
++import perfmark
+ 
+ import collections
+ import itertools
+@@ -857,60 +858,61 @@
+ 
+     # Each shape requires a new scatter object since they can't have different
+     # shapes.
+-    if len(visible_nodes) > 0:
+-        node_shape = kwargs.get("node_shape", "shape")
+-        for shape in Counter(
+-            nx.get_node_attributes(
+-                node_subgraph, node_shape, defaults["node_shape"]
+-            ).values()
+-        ):
+-            # Filter position just on this shape.
+-            nodes_with_shape = [
+-                n
+-                for n, s in node_subgraph.nodes(data=node_shape)
+-                if s == shape or (s is None and shape == defaults["node_shape"])
+-            ]
+-            # There are two property sequences to create before hand.
+-            # 1. position, since it is used for x and y parameters to scatter
+-            # 2. edgecolor, since the spaeical 'face' parameter value can only be
+-            #    be passed in as the sole string, not part of a list of strings.
+-            position = np.asarray(node_property_sequence(nodes_with_shape, "pos"))
+-            color = np.asarray(
+-                [
+-                    compute_colors(c, a)
+-                    for c, a in zip(
+-                        node_property_sequence(nodes_with_shape, "color"),
+-                        node_property_sequence(nodes_with_shape, "alpha"),
+-                    )
++    with perfmark.region("gl-004"):
++        if len(visible_nodes) > 0:
++            node_shape = kwargs.get("node_shape", "shape")
++            for shape in Counter(
++                nx.get_node_attributes(
++                    node_subgraph, node_shape, defaults["node_shape"]
++                ).values()
++            ):
++                # Filter position just on this shape.
++                nodes_with_shape = [
++                    n
++                    for n, s in node_subgraph.nodes(data=node_shape)
++                    if s == shape or (s is None and shape == defaults["node_shape"])
+                 ]
+-            )
+-            border_color = np.asarray(
+-                [
+-                    (
+-                        c
+-                        if (
+-                            c := get_node_attr(
+-                                n,
+-                                "border_color",
+-                                False,
++                # There are two property sequences to create before hand.
++                # 1. position, since it is used for x and y parameters to scatter
++                # 2. edgecolor, since the spaeical 'face' parameter value can only be
++                #    be passed in as the sole string, not part of a list of strings.
++                position = np.asarray(node_property_sequence(nodes_with_shape, "pos"))
++                color = np.asarray(
++                    [
++                        compute_colors(c, a)
++                        for c, a in zip(
++                            node_property_sequence(nodes_with_shape, "color"),
++                            node_property_sequence(nodes_with_shape, "alpha"),
++                        )
++                    ]
++                )
++                border_color = np.asarray(
++                    [
++                        (
++                            c
++                            if (
++                                c := get_node_attr(
++                                    n,
++                                    "border_color",
++                                    False,
++                                )
+                             )
++                            != "face"
++                            else color[i]
+                         )
+-                        != "face"
+-                        else color[i]
+-                    )
+-                    for i, n in enumerate(nodes_with_shape)
+-                ]
+-            )
+-            canvas.scatter(
+-                position[:, 0],
+-                position[:, 1],
+-                s=node_property_sequence(nodes_with_shape, "size"),
+-                c=color,
+-                marker=shape,
+-                linewidths=node_property_sequence(nodes_with_shape, "border_width"),
+-                edgecolors=border_color,
+-                zorder=2,
+-            )
++                        for i, n in enumerate(nodes_with_shape)
++                    ]
++                )
++                canvas.scatter(
++                    position[:, 0],
++                    position[:, 1],
++                    s=node_property_sequence(nodes_with_shape, "size"),
++                    c=color,
++                    marker=shape,
++                    linewidths=node_property_sequence(nodes_with_shape, "border_width"),
++                    edgecolors=border_color,
++                    zorder=2,
++                )
+ 
+     ### Draw node labels
+     node_label = kwargs.get("node_label", "label")

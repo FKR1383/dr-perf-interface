@@ -1,0 +1,16 @@
+wan-021 = 1809.1667*frame_count + 315965.44 + unexplained
+  unexplained 5993.3333 instr/call: void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(float)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long) [libtorch_cpu.so]
+  unexplained 3162.6667 instr/call: at::internal::serial_for_each [libtorch_cpu.so]
+  unexplained 2985.5556 instr/call: _PyType_Lookup [python3.12]
+  unexplained 1544.7778 instr/call: _PyEval_EvalFrameDefault [python3.12]
+  unexplained 1347.1111 instr/call: PyDict_Contains+? [python3.12]
+  unexplained 342.88889 instr/call: _PyOS_URandom+? [python3.12]
+  frame_count coefficient 1266: at::internal::serial_for_each [libtorch_cpu.so]
+  frame_count coefficient 920: at::DimCounter::increment [libtorch_cpu.so]
+  frame_count coefficient 731: void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(float)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long) [libtorch_cpu.so]
+  frame_count coefficient -263.83333: PyDict_Contains+? [python3.12]
+  frame_count coefficient -163: std::_Hash_bytes [libstdc++.so.6.0.33]
+  frame_count coefficient -151.33333: __GI___libc_malloc [libc.so.6]
+  frame_count coefficient -110.83333: std::__cxx11::basic_string<>::substr [libtorch_python.so]
+  frame_count coefficient 87.5: __memcpy_avx_unaligned_erms [libc.so.6]
+gate: unexplained share exceeds 5% at an observed state

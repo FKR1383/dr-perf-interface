@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-004",
+  "title": "sympy _denest_pow body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/sympy/sympy",
+    "revision": "117eaf45237de39c9d4518a3b7c715f0484ccea9",
+    "path": "sympy/simplify/powsimp.py",
+    "snapshot": "../../upstream/sympy/sympy/simplify/powsimp.py",
+    "sha256": "64760c7f1cd54387a114157b1ef8999856177366d90d8bd0da0b4c7a545dabb6"
+  },
+  "region": {
+    "symbol": "_denest_pow",
+    "start_line": 638,
+    "end_line": 732,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-004",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise _denest_pow with bounded, varied sympy inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "sympy:sympy/simplify/powsimp.py:_denest_pow",
+  "citations": [
+    "https://github.com/sympy/sympy/blob/117eaf45237de39c9d4518a3b7c715f0484ccea9/sympy/simplify/powsimp.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

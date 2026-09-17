@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/Parser.cpp
++++ b/clang/lib/Parse/Parser.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Parse/Parser.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -1133,6 +1134,7 @@
+ Parser::DeclGroupPtrTy Parser::ParseDeclOrFunctionDefInternal(
+     ParsedAttributes &Attrs, ParsedAttributes &DeclSpecAttrs,
+     ParsingDeclSpec &DS, AccessSpecifier AS) {
++      DRPERF_BENCH_REGION("cf-124");
+   // Because we assume that the DeclSpec has not yet been initialised, we simply
+   // overwrite the source range and attribute the provided leading declspec
+   // attributes.

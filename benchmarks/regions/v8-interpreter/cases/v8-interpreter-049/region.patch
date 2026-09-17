@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -20,6 +20,7 @@
+ #include "src/objects/property-details.h"
+ #include "src/objects/swiss-name-dictionary-inl.h"
+ #include "src/runtime/runtime.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -800,6 +801,7 @@
+ 
+ // ES6 section 12.9.3, operator in.
+ RUNTIME_FUNCTION(Runtime_HasProperty) {
++  DRPERF_BENCH_REGION("v8-interpreter-049");
+   HandleScope scope(isolate);
+   DCHECK_EQ(2, args.length());
+   DirectHandle<Object> object = args.at(0);

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExprScalar.cpp
++++ b/clang/lib/CodeGen/CGExprScalar.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+ #include "CGDebugInfo.h"
+@@ -3602,6 +3603,7 @@
+                                               const CompoundAssignOperator *E,
+                         Value *(ScalarExprEmitter::*Func)(const BinOpInfo &),
+                                                    Value *&Result) {
++                                                     DRPERF_BENCH_REGION("cf-037");
+   QualType LHSTy = E->getLHS()->getType();
+   BinOpInfo OpInfo;
+ 

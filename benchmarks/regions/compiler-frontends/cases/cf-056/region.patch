@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaType.cpp
++++ b/clang/lib/Sema/SemaType.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -9298,6 +9299,7 @@
+ bool Sema::RequireCompleteTypeImpl(SourceLocation Loc, QualType T,
+                                    CompleteTypeKind Kind,
+                                    TypeDiagnoser *Diagnoser) {
++                                     DRPERF_BENCH_REGION("cf-056");
+   // FIXME: Add this assertion to make sure we always get instantiation points.
+   //  assert(!Loc.isInvalid() && "Invalid location in RequireCompleteType");
+   // FIXME: Add this assertion to help us flush out problems with

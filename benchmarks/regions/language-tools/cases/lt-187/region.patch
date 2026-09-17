@@ -1,0 +1,41 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -798,18 +799,19 @@
+             Traceback (most recent call last):
+             ParseException: invalid date given, found '1999' ...
+         """
+-        callDuringTry: bool = deprecate_argument(kwargs, "callDuringTry", False)
+-
+-        if list(fns) == [None]:
+-            self.parseAction.clear()
++        with perfmark.region("lt-187"):
++            callDuringTry: bool = deprecate_argument(kwargs, "callDuringTry", False)
++
++            if list(fns) == [None]:
++                self.parseAction.clear()
++                return self
++
++            if not all(callable(fn) for fn in fns):
++                raise TypeError("parse actions must be callable")
++            self.parseAction[:] = [_trim_arity(fn) for fn in fns]
++            self.callDuringTry = self.callDuringTry or call_during_try or callDuringTry
++
+             return self
+-
+-        if not all(callable(fn) for fn in fns):
+-            raise TypeError("parse actions must be callable")
+-        self.parseAction[:] = [_trim_arity(fn) for fn in fns]
+-        self.callDuringTry = self.callDuringTry or call_during_try or callDuringTry
+-
+-        return self
+ 
+     def add_parse_action(
+         self, *fns: ParseAction, call_during_try: bool = False, **kwargs: Any

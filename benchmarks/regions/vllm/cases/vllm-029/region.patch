@@ -1,0 +1,95 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import itertools
+ import time
+ from collections import defaultdict, deque
+@@ -1386,45 +1387,46 @@
+         #    scheduling step.
+         # 3. If some tokens (e.g. spec tokens) are rejected later, the number of
+         #    computed tokens will be adjusted in update_from_output.
+-        num_scheduled_tokens = scheduler_output.num_scheduled_tokens
+-        for req_id, num_scheduled_token in num_scheduled_tokens.items():
+-            request = self.requests[req_id]
+-            request.num_computed_tokens += num_scheduled_token
+-            request.num_in_flight_tokens += num_scheduled_token
+-            if self.defer_block_free:
+-                # Record the in-flight step, to fence deferred block freeing.
+-                request.last_sched_seq = self.sched_step_seq
+-            request.is_prefill_chunk = request.num_computed_tokens < (
+-                request.num_tokens + request.num_output_placeholders
+-            )
+-            scheduler_output.has_structured_output_requests |= (
+-                request.use_structured_output and not request.is_prefill_chunk
+-            )
+-            # Drop from the in-flight-prefill set once it's no longer prefilling.
+-            if not request.is_prefill_chunk:
+-                self._inflight_prefills.discard(request)
+-
+-        # Snapshot block IDs for routed experts before forward starts.
+-        # A concurrent schedule() may preempt requests and free blocks
+-        # before update_from_output runs; the snapshot survives that.
+-        # Use update() to preserve entries from the previous step that
+-        # have not yet been consumed by update_from_output (async
+-        # scheduling may call _update_after_schedule again before the
+-        # prior update_from_output runs).
+-        if self.enable_return_routed_experts:
+-            gid = self.routed_experts_mgr.attn_gid
+-            self._re_block_ids.update(
+-                {
+-                    rid: self.kv_cache_manager.get_blocks(rid).get_block_ids()[gid]
+-                    for rid in num_scheduled_tokens
+-                }
+-            )
+-
+-        # Clear the finished and preempted request IDs.
+-        # NOTE: We shouldn't just clear() here because it will also affect
+-        # the scheduler output.
+-        self.finished_req_ids = set()
+-        self.reset_preempted_req_ids = set()
++        with perfmark.region("vllm-029"):
++            num_scheduled_tokens = scheduler_output.num_scheduled_tokens
++            for req_id, num_scheduled_token in num_scheduled_tokens.items():
++                request = self.requests[req_id]
++                request.num_computed_tokens += num_scheduled_token
++                request.num_in_flight_tokens += num_scheduled_token
++                if self.defer_block_free:
++                    # Record the in-flight step, to fence deferred block freeing.
++                    request.last_sched_seq = self.sched_step_seq
++                request.is_prefill_chunk = request.num_computed_tokens < (
++                    request.num_tokens + request.num_output_placeholders
++                )
++                scheduler_output.has_structured_output_requests |= (
++                    request.use_structured_output and not request.is_prefill_chunk
++                )
++                # Drop from the in-flight-prefill set once it's no longer prefilling.
++                if not request.is_prefill_chunk:
++                    self._inflight_prefills.discard(request)
++
++            # Snapshot block IDs for routed experts before forward starts.
++            # A concurrent schedule() may preempt requests and free blocks
++            # before update_from_output runs; the snapshot survives that.
++            # Use update() to preserve entries from the previous step that
++            # have not yet been consumed by update_from_output (async
++            # scheduling may call _update_after_schedule again before the
++            # prior update_from_output runs).
++            if self.enable_return_routed_experts:
++                gid = self.routed_experts_mgr.attn_gid
++                self._re_block_ids.update(
++                    {
++                        rid: self.kv_cache_manager.get_blocks(rid).get_block_ids()[gid]
++                        for rid in num_scheduled_tokens
++                    }
++                )
++
++            # Clear the finished and preempted request IDs.
++            # NOTE: We shouldn't just clear() here because it will also affect
++            # the scheduler output.
++            self.finished_req_ids = set()
++            self.reset_preempted_req_ids = set()
+ 
+     def _update_request_as_session(
+         self, session: Request, update: StreamingUpdate

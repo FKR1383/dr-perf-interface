@@ -1,0 +1,166 @@
+--- a/src/jinja2/compiler.py
++++ b/src/jinja2/compiler.py
+@@ -1,4 +1,5 @@
+ """Compiles nodes from the parser into Python code."""
++import perfmark
+ 
+ import typing as t
+ from contextlib import contextmanager
+@@ -1496,82 +1497,83 @@
+ 
+     def visit_Output(self, node: nodes.Output, frame: Frame) -> None:
+         # If an extends is active, don't render outside a block.
+-        if frame.require_output_check:
+-            # A top-level extends is known to exist at compile time.
+-            if self.has_known_extends:
+-                return
+-
+-            self.writeline("if parent_template is None:")
+-            self.indent()
+-
+-        finalize = self._make_finalize()
+-        body: list[list[t.Any] | nodes.Expr] = []
+-
+-        # Evaluate constants at compile time if possible. Each item in
+-        # body will be either a list of static data or a node to be
+-        # evaluated at runtime.
+-        for child in node.nodes:
+-            try:
+-                if not (
+-                    # If the finalize function requires runtime context,
+-                    # constants can't be evaluated at compile time.
+-                    finalize.const
+-                    # Unless it's basic template data that won't be
+-                    # finalized anyway.
+-                    or isinstance(child, nodes.TemplateData)
+-                ):
+-                    raise nodes.Impossible()
+-
+-                const = self._output_child_to_const(child, frame, finalize)
+-            except (nodes.Impossible, Exception):
+-                # The node was not constant and needs to be evaluated at
+-                # runtime. Or another error was raised, which is easier
+-                # to debug at runtime.
+-                body.append(child)
+-                continue
+-
+-            if body and isinstance(body[-1], list):
+-                body[-1].append(const)
+-            else:
+-                body.append([const])
+-
+-        if frame.buffer is not None:
+-            if len(body) == 1:
+-                self.writeline(f"{frame.buffer}.append(")
+-            else:
+-                self.writeline(f"{frame.buffer}.extend((")
+-
+-            self.indent()
+-
+-        for item in body:
+-            if isinstance(item, list):
+-                # A group of constant data to join and output.
+-                val = self._output_const_repr(item)
+-
+-                if frame.buffer is None:
+-                    self.writeline("yield " + val)
++        with perfmark.region("lt-163"):
++            if frame.require_output_check:
++                # A top-level extends is known to exist at compile time.
++                if self.has_known_extends:
++                    return
++
++                self.writeline("if parent_template is None:")
++                self.indent()
++
++            finalize = self._make_finalize()
++            body: list[list[t.Any] | nodes.Expr] = []
++
++            # Evaluate constants at compile time if possible. Each item in
++            # body will be either a list of static data or a node to be
++            # evaluated at runtime.
++            for child in node.nodes:
++                try:
++                    if not (
++                        # If the finalize function requires runtime context,
++                        # constants can't be evaluated at compile time.
++                        finalize.const
++                        # Unless it's basic template data that won't be
++                        # finalized anyway.
++                        or isinstance(child, nodes.TemplateData)
++                    ):
++                        raise nodes.Impossible()
++
++                    const = self._output_child_to_const(child, frame, finalize)
++                except (nodes.Impossible, Exception):
++                    # The node was not constant and needs to be evaluated at
++                    # runtime. Or another error was raised, which is easier
++                    # to debug at runtime.
++                    body.append(child)
++                    continue
++
++                if body and isinstance(body[-1], list):
++                    body[-1].append(const)
+                 else:
+-                    self.writeline(val + ",")
+-            else:
+-                if frame.buffer is None:
+-                    self.writeline("yield ", item)
++                    body.append([const])
++
++            if frame.buffer is not None:
++                if len(body) == 1:
++                    self.writeline(f"{frame.buffer}.append(")
+                 else:
+-                    self.newline(item)
+-
+-                # A node to be evaluated at runtime.
+-                self._output_child_pre(item, frame, finalize)
+-                self.visit(item, frame)
+-                self._output_child_post(item, frame, finalize)
+-
+-                if frame.buffer is not None:
+-                    self.write(",")
+-
+-        if frame.buffer is not None:
+-            self.outdent()
+-            self.writeline(")" if len(body) == 1 else "))")
+-
+-        if frame.require_output_check:
+-            self.outdent()
++                    self.writeline(f"{frame.buffer}.extend((")
++
++                self.indent()
++
++            for item in body:
++                if isinstance(item, list):
++                    # A group of constant data to join and output.
++                    val = self._output_const_repr(item)
++
++                    if frame.buffer is None:
++                        self.writeline("yield " + val)
++                    else:
++                        self.writeline(val + ",")
++                else:
++                    if frame.buffer is None:
++                        self.writeline("yield ", item)
++                    else:
++                        self.newline(item)
++
++                    # A node to be evaluated at runtime.
++                    self._output_child_pre(item, frame, finalize)
++                    self.visit(item, frame)
++                    self._output_child_post(item, frame, finalize)
++
++                    if frame.buffer is not None:
++                        self.write(",")
++
++            if frame.buffer is not None:
++                self.outdent()
++                self.writeline(")" if len(body) == 1 else "))")
++
++            if frame.require_output_check:
++                self.outdent()
+ 
+     def visit_Assign(self, node: nodes.Assign, frame: Frame) -> None:
+         self.push_assign_tracking()

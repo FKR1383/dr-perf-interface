@@ -1,0 +1,94 @@
+--- a/src/jinja2/environment.py
++++ b/src/jinja2/environment.py
+@@ -1,6 +1,7 @@
+ """Classes for managing templates and their runtime and compile time
+ options.
+ """
++import perfmark
+ 
+ import os
+ import typing
+@@ -329,44 +330,45 @@
+         #   existing already.
+ 
+         # lexer / parser information
+-        self.block_start_string = block_start_string
+-        self.block_end_string = block_end_string
+-        self.variable_start_string = variable_start_string
+-        self.variable_end_string = variable_end_string
+-        self.comment_start_string = comment_start_string
+-        self.comment_end_string = comment_end_string
+-        self.line_statement_prefix = line_statement_prefix
+-        self.line_comment_prefix = line_comment_prefix
+-        self.trim_blocks = trim_blocks
+-        self.lstrip_blocks = lstrip_blocks
+-        self.newline_sequence = newline_sequence
+-        self.keep_trailing_newline = keep_trailing_newline
+-
+-        # runtime information
+-        self.undefined: type[Undefined] = undefined
+-        self.optimized = optimized
+-        self.finalize = finalize
+-        self.autoescape = autoescape
+-
+-        # defaults
+-        self.filters = DEFAULT_FILTERS.copy()
+-        self.tests = DEFAULT_TESTS.copy()
+-        self.globals = DEFAULT_NAMESPACE.copy()
+-
+-        # set the loader provided
+-        self.loader = loader
+-        self.cache = create_cache(cache_size)
+-        self.bytecode_cache = bytecode_cache
+-        self.auto_reload = auto_reload
+-
+-        # configurable policies
+-        self.policies = DEFAULT_POLICIES.copy()
+-
+-        # load extensions
+-        self.extensions = load_extensions(self, extensions)
+-
+-        self.is_async = enable_async
+-        _environment_config_check(self)
++        with perfmark.region("lt-166"):
++            self.block_start_string = block_start_string
++            self.block_end_string = block_end_string
++            self.variable_start_string = variable_start_string
++            self.variable_end_string = variable_end_string
++            self.comment_start_string = comment_start_string
++            self.comment_end_string = comment_end_string
++            self.line_statement_prefix = line_statement_prefix
++            self.line_comment_prefix = line_comment_prefix
++            self.trim_blocks = trim_blocks
++            self.lstrip_blocks = lstrip_blocks
++            self.newline_sequence = newline_sequence
++            self.keep_trailing_newline = keep_trailing_newline
++
++            # runtime information
++            self.undefined: type[Undefined] = undefined
++            self.optimized = optimized
++            self.finalize = finalize
++            self.autoescape = autoescape
++
++            # defaults
++            self.filters = DEFAULT_FILTERS.copy()
++            self.tests = DEFAULT_TESTS.copy()
++            self.globals = DEFAULT_NAMESPACE.copy()
++
++            # set the loader provided
++            self.loader = loader
++            self.cache = create_cache(cache_size)
++            self.bytecode_cache = bytecode_cache
++            self.auto_reload = auto_reload
++
++            # configurable policies
++            self.policies = DEFAULT_POLICIES.copy()
++
++            # load extensions
++            self.extensions = load_extensions(self, extensions)
++
++            self.is_async = enable_async
++            _environment_config_check(self)
+ 
+     def add_extension(self, extension: str | type["Extension"]) -> None:
+         """Adds an extension after the environment was created.

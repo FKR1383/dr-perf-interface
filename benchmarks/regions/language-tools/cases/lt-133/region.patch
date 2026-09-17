@@ -1,0 +1,42 @@
+--- a/astroid/nodes/node_ng.py
++++ b/astroid/nodes/node_ng.py
+@@ -3,6 +3,7 @@
+ # Copyright (c) https://github.com/pylint-dev/astroid/blob/main/CONTRIBUTORS.txt
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import sys
+ from collections.abc import Generator, Iterator
+@@ -514,19 +515,20 @@
+ 
+         :returns: The node of the given types.
+         """
+-        if isinstance(self, klass):
+-            yield self
+-
+-        if skip_klass is None:
++        with perfmark.region("lt-133"):
++            if isinstance(self, klass):
++                yield self
++
++            if skip_klass is None:
++                for child_node in self.get_children():
++                    yield from child_node.nodes_of_class(klass, skip_klass)
++
++                return
++
+             for child_node in self.get_children():
++                if isinstance(child_node, skip_klass):
++                    continue
+                 yield from child_node.nodes_of_class(klass, skip_klass)
+-
+-            return
+-
+-        for child_node in self.get_children():
+-            if isinstance(child_node, skip_klass):
+-                continue
+-            yield from child_node.nodes_of_class(klass, skip_klass)
+ 
+     @cached_property
+     def _assign_nodes_in_scope(self) -> list[nodes.Assign]:

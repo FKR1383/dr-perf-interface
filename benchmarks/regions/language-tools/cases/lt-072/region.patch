@@ -1,0 +1,140 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -4930,69 +4931,70 @@
+         wildcard: bool = False,
+         fast: bool = False,
+     ) -> exp.Table | exp.Dot | None:
+-        if fast:
+-            return self._parse_table_parts_fast()
+-
+-        catalog: exp.Expr | str | None = None
+-        db: exp.Expr | str | None = None
+-        table: exp.Expr | str | None = self._parse_table_part(schema=schema)
+-
+-        while self._match(TokenType.DOT):
+-            if catalog:
+-                # This allows nesting the table in arbitrarily many dot expressions if needed
+-                table = self.expression(
+-                    exp.Dot(this=table, expression=self._parse_table_part(schema=schema))
+-                )
+-            else:
++        with perfmark.region("lt-072"):
++            if fast:
++                return self._parse_table_parts_fast()
++
++            catalog: exp.Expr | str | None = None
++            db: exp.Expr | str | None = None
++            table: exp.Expr | str | None = self._parse_table_part(schema=schema)
++
++            while self._match(TokenType.DOT):
++                if catalog:
++                    # This allows nesting the table in arbitrarily many dot expressions if needed
++                    table = self.expression(
++                        exp.Dot(this=table, expression=self._parse_table_part(schema=schema))
++                    )
++                else:
++                    catalog = db
++                    db = table
++                    # "" used for tsql FROM a..b case
++                    table = self._parse_table_part(schema=schema) or ""
++
++            if (
++                wildcard
++                and self._is_connected()
++                and (isinstance(table, exp.Identifier) or not table)
++                and self._match(TokenType.STAR)
++            ):
++                if isinstance(table, exp.Identifier):
++                    table.args["this"] += "*"
++                else:
++                    table = exp.Identifier(this="*")
++
++            if is_db_reference:
+                 catalog = db
+                 db = table
+-                # "" used for tsql FROM a..b case
+-                table = self._parse_table_part(schema=schema) or ""
+-
+-        if (
+-            wildcard
+-            and self._is_connected()
+-            and (isinstance(table, exp.Identifier) or not table)
+-            and self._match(TokenType.STAR)
+-        ):
+-            if isinstance(table, exp.Identifier):
+-                table.args["this"] += "*"
+-            else:
+-                table = exp.Identifier(this="*")
+-
+-        if is_db_reference:
+-            catalog = db
+-            db = table
+-            table = None
+-
+-        if not table and not is_db_reference:
+-            self.raise_error(f"Expected table name but got {self._curr}")
+-        if not db and is_db_reference:
+-            self.raise_error(f"Expected database name but got {self._curr}")
+-
+-        table = self.expression(exp.Table(this=table, db=db, catalog=catalog))
+-
+-        # Bubble up comments from identifier parts to the Table
+-        comments = []
+-        for part in table.parts:
+-            if part_comments := part.pop_comments():
+-                comments.extend(part_comments)
+-        if comments:
+-            table.add_comments(comments)
+-
+-        changes = self._parse_changes()
+-        if changes:
+-            table.set("changes", changes)
+-
+-        at_before = self._parse_historical_data()
+-        if at_before:
+-            table.set("when", at_before)
+-
+-        pivots = self._parse_pivots()
+-        if pivots:
+-            table.set("pivots", pivots)
+-
+-        return table
++                table = None
++
++            if not table and not is_db_reference:
++                self.raise_error(f"Expected table name but got {self._curr}")
++            if not db and is_db_reference:
++                self.raise_error(f"Expected database name but got {self._curr}")
++
++            table = self.expression(exp.Table(this=table, db=db, catalog=catalog))
++
++            # Bubble up comments from identifier parts to the Table
++            comments = []
++            for part in table.parts:
++                if part_comments := part.pop_comments():
++                    comments.extend(part_comments)
++            if comments:
++                table.add_comments(comments)
++
++            changes = self._parse_changes()
++            if changes:
++                table.set("changes", changes)
++
++            at_before = self._parse_historical_data()
++            if at_before:
++                table.set("when", at_before)
++
++            pivots = self._parse_pivots()
++            if pivots:
++                table.set("pivots", pivots)
++
++            return table
+ 
+     def _parse_table(
+         self,

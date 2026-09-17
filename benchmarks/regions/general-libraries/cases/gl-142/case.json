@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-142",
+  "title": "Selected block in pandas.get_handle",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pandas-dev/pandas",
+    "revision": "a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee",
+    "path": "pandas/io/common.py",
+    "snapshot": "../../upstream/pandas/pandas/io/common.py",
+    "sha256": "d3e7250bc4d1cab5188e3ea3345e2481f640e9b8a8e18bdbd634cdc0021844c4"
+  },
+  "region": {
+    "symbol": "get_handle",
+    "start_line": 788,
+    "end_line": 1001,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-142",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise get_handle with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "pandas:pandas/io/common.py:get_handle",
+  "citations": [
+    "https://github.com/pandas-dev/pandas/blob/a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee/pandas/io/common.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/pandas/pandas/io/common.py",
+        "destination": "tests/original.py",
+        "sha256": "d3e7250bc4d1cab5188e3ea3345e2481f640e9b8a8e18bdbd634cdc0021844c4"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls pandas.io.common.get_handle on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

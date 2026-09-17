@@ -1,0 +1,40 @@
+--- a/astroid/brain/brain_qt.py
++++ b/astroid/brain/brain_qt.py
+@@ -3,6 +3,7 @@
+ # Copyright (c) https://github.com/pylint-dev/astroid/blob/main/CONTRIBUTORS.txt
+ 
+ """Astroid hooks for the PyQT library."""
++import perfmark
+ 
+ from astroid import nodes
+ from astroid.brain.helpers import register_module_extender
+@@ -14,17 +15,18 @@
+     node: nodes.FunctionDef, signal_name: str = "pyqtSignal"
+ ) -> bool:
+     """Detect a Signal node."""
+-    klasses = node.instance_attrs.get("__class__", [])
+-    # On PySide2 or PySide6 (since  Qt 5.15.2) the Signal class changed locations
+-    if node.qname().partition(".")[0] in {"PySide2", "PySide6"}:
+-        return any(cls.qname() == "Signal" for cls in klasses)  # pragma: no cover
+-    if klasses:
+-        try:
+-            return klasses[0].name == signal_name
+-        except AttributeError:  # pragma: no cover
+-            # return False if the cls does not have a name attribute
+-            pass
+-    return False
++    with perfmark.region("lt-125"):
++        klasses = node.instance_attrs.get("__class__", [])
++        # On PySide2 or PySide6 (since  Qt 5.15.2) the Signal class changed locations
++        if node.qname().partition(".")[0] in {"PySide2", "PySide6"}:
++            return any(cls.qname() == "Signal" for cls in klasses)  # pragma: no cover
++        if klasses:
++            try:
++                return klasses[0].name == signal_name
++            except AttributeError:  # pragma: no cover
++                # return False if the cls does not have a name attribute
++                pass
++        return False
+ 
+ 
+ def transform_pyqt_signal(node: nodes.FunctionDef) -> None:

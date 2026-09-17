@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaTemplate.cpp
++++ b/clang/lib/Sema/SemaTemplate.cpp
+@@ -8,6 +8,7 @@
+ //  This file implements semantic analysis for C++ templates.
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TreeTransform.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -3760,6 +3761,7 @@
+     ASTTemplateArgsPtr TemplateArgsIn, SourceLocation RAngleLoc,
+     bool IsCtorOrDtorName, bool IsClassName,
+     ImplicitTypenameContext AllowImplicitTypename) {
++      DRPERF_BENCH_REGION("cf-157");
+   if (SS.isInvalid())
+     return true;
+ 

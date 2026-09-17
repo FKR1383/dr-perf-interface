@@ -38,9 +38,9 @@ the region as features.
 2. Choose candidate variables and derived expressions yourself. The empty set
    is allowed. Keep the underlying source identifiers exact and the meaning of
    derived expressions unambiguous. Do not invent presentation aliases.
-3. Temporarily instrument ONLY the selected perfmark region. At most four
-   declared integer states are supported. Use the chosen feature expression as
-   the state name and implement its value in the program's syntax. Keep state
+3. Temporarily instrument ONLY the selected perfmark region. There is no fixed
+   limit on the number of declared integer states. Use the chosen feature
+   expression as the state name and implement its value in the program's syntax. Keep state
    names identical in the instrumentation, helper requests, and returned
    results. Extra trace-only states from perfmark.state do not participate in a
    fitted formula.
@@ -82,6 +82,8 @@ copy. Read the perfmark APIs under the Dr. Perf repository if needed.
 Dr. Perf measures a region's own instructions, excluding nested marked regions.
 It needs at least max(3, number of states + 2) distinct state points. In
 particular, an empty candidate set cannot currently yield a fitted model.
+The collector retains at most 128 distinct state combinations per region and
+has a bounded counter allocation; exceeding either invalidates the measurement.
 Fixed or correlated states cannot be identified independently. Inspect the
 helper's model details; a small irregularity alone is not proof of causality.
 Calls with the same declared states are averaged. Removing a state can hide

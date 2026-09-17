@@ -1,0 +1,20 @@
+--- a/networkx/algorithms/cluster.py
++++ b/networkx/algorithms/cluster.py
+@@ -1,4 +1,5 @@
+ """Algorithms to characterize the number of triangles in a graph."""
++import perfmark
+ 
+ from collections import Counter
+ from itertools import chain
+@@ -78,8 +79,9 @@
+     later_nbrs = {}
+ 
+     # iterate over the nodes in a graph
+-    for node, neighbors in G.adjacency():
+-        later_nbrs[node] = {n for n in neighbors if n not in later_nbrs and n != node}
++    with perfmark.region("gl-096"):
++        for node, neighbors in G.adjacency():
++            later_nbrs[node] = {n for n in neighbors if n not in later_nbrs and n != node}
+ 
+     # instantiate Counter for each node to include isolated nodes
+     # add 1 to the count if a nodes neighbor's neighbor is also a neighbor

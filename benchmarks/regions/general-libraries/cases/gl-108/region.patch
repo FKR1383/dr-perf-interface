@@ -1,0 +1,109 @@
+--- a/numpy/ma/extras.py
++++ b/numpy/ma/extras.py
+@@ -7,6 +7,7 @@
+ :contact: pierregm_at_uga_dot_edu
+ 
+ """
++import perfmark
+ __all__ = [
+     'apply_along_axis', 'apply_over_axes', 'atleast_1d', 'atleast_2d',
+     'atleast_3d', 'average', 'clump_masked', 'clump_unmasked', 'column_stack',
+@@ -403,53 +404,54 @@
+     # so we force the type to object, and build a list of dtypes.  We'll
+     # just take the largest, to avoid some downcasting
+     dtypes = []
+-    if asscalar:
+-        dtypes.append(np.asarray(res).dtype)
+-        outarr = zeros(outshape, object)
+-        outarr[tuple(ind)] = res
+-        Ntot = np.prod(outshape)
+-        k = 1
+-        while k < Ntot:
+-            # increment the index
+-            ind[-1] += 1
+-            n = -1
+-            while (ind[n] >= outshape[n]) and (n > (1 - nd)):
+-                ind[n - 1] += 1
+-                ind[n] = 0
+-                n -= 1
+-            i.put(indlist, ind)
+-            res = func1d(arr[tuple(i.tolist())], *args, **kwargs)
++    with perfmark.region("gl-108"):
++        if asscalar:
++            dtypes.append(np.asarray(res).dtype)
++            outarr = zeros(outshape, object)
+             outarr[tuple(ind)] = res
++            Ntot = np.prod(outshape)
++            k = 1
++            while k < Ntot:
++                # increment the index
++                ind[-1] += 1
++                n = -1
++                while (ind[n] >= outshape[n]) and (n > (1 - nd)):
++                    ind[n - 1] += 1
++                    ind[n] = 0
++                    n -= 1
++                i.put(indlist, ind)
++                res = func1d(arr[tuple(i.tolist())], *args, **kwargs)
++                outarr[tuple(ind)] = res
++                dtypes.append(asarray(res).dtype)
++                k += 1
++        else:
++            res = array(res, copy=False, subok=True)
++            j = i.copy()
++            j[axis] = ([slice(None, None)] * res.ndim)
++            j.put(indlist, ind)
++            Ntot = np.prod(outshape)
++            holdshape = outshape
++            outshape = list(arr.shape)
++            outshape[axis] = res.shape
+             dtypes.append(asarray(res).dtype)
+-            k += 1
+-    else:
+-        res = array(res, copy=False, subok=True)
+-        j = i.copy()
+-        j[axis] = ([slice(None, None)] * res.ndim)
+-        j.put(indlist, ind)
+-        Ntot = np.prod(outshape)
+-        holdshape = outshape
+-        outshape = list(arr.shape)
+-        outshape[axis] = res.shape
+-        dtypes.append(asarray(res).dtype)
+-        outshape = flatten_inplace(outshape)
+-        outarr = zeros(outshape, object)
+-        outarr[tuple(flatten_inplace(j.tolist()))] = res
+-        k = 1
+-        while k < Ntot:
+-            # increment the index
+-            ind[-1] += 1
+-            n = -1
+-            while (ind[n] >= holdshape[n]) and (n > (1 - nd)):
+-                ind[n - 1] += 1
+-                ind[n] = 0
+-                n -= 1
+-            i.put(indlist, ind)
+-            j.put(indlist, ind)
+-            res = func1d(arr[tuple(i.tolist())], *args, **kwargs)
++            outshape = flatten_inplace(outshape)
++            outarr = zeros(outshape, object)
+             outarr[tuple(flatten_inplace(j.tolist()))] = res
+-            dtypes.append(asarray(res).dtype)
+-            k += 1
++            k = 1
++            while k < Ntot:
++                # increment the index
++                ind[-1] += 1
++                n = -1
++                while (ind[n] >= holdshape[n]) and (n > (1 - nd)):
++                    ind[n - 1] += 1
++                    ind[n] = 0
++                    n -= 1
++                i.put(indlist, ind)
++                j.put(indlist, ind)
++                res = func1d(arr[tuple(i.tolist())], *args, **kwargs)
++                outarr[tuple(flatten_inplace(j.tolist()))] = res
++                dtypes.append(asarray(res).dtype)
++                k += 1
+     max_dtypes = np.dtype(np.asarray(dtypes).max())
+     if not hasattr(arr, '_mask'):
+         result = np.asarray(outarr, dtype=max_dtypes)

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-184",
+  "title": "APINotesManager::findAPINotes compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/APINotes/APINotesManager.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/APINotes/APINotesManager.cpp",
+    "sha256": "f4f0411119d23b133e61b2211599a4aa1999d461f9aaad634dc6d9c347d0a127"
+  },
+  "region": {
+    "symbol": "APINotesManager::findAPINotes",
+    "start_line": 331,
+    "end_line": 464,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-184",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded record-layout fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/APINotes/APINotesManager.cpp:APINotesManager::findAPINotes",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/APINotes/APINotesManager.cpp#L331-L464"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "9abe26528cc4e276bfa81da50d7e9b0e21f79a61eecc479975c240257c6d09df",
+      "patch_sha256": "27223d6816a8e7c26746367cd15fb8322921341ec55bbb9cba1a592158dd0dc5"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

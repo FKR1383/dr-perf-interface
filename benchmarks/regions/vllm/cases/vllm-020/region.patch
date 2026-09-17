@@ -1,0 +1,20 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import heapq
+ from abc import ABC, abstractmethod
+ from collections import deque
+@@ -143,7 +144,8 @@
+ 
+     def add_request(self, request: Request) -> None:
+         """Add a request to the queue according to priority policy."""
+-        heapq.heappush(self._heap, request)
++        with perfmark.region("vllm-020"):
++            heapq.heappush(self._heap, request)
+ 
+     def pop_request(self) -> Request:
+         """Pop a request from the queue according to priority policy."""

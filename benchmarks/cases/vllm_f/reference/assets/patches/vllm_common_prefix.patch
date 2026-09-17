@@ -1,0 +1,108 @@
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -196,6 +196,17 @@
+ 
+         self.metrics_collector = metrics_collector
+ 
++        # Bumped whenever the ref_cnt of a block that some request already holds
++        # can change, i.e. by `touch` (prefix-cache hit), by `free_blocks`, and
++        # by the two copy-on-write sites in single_type_kv_cache_manager.  It is
++        # NOT bumped by `get_new_blocks`: that path only takes blocks off the
++        # free queue, which asserts `ref_cnt == 0`, so no block already in a
++        # request's list can be touched by it -- it can only *append* to such a
++        # list, and the readers of this counter also key on the list's length.
++        # Used by FullAttentionManager.get_num_common_prefix_blocks to skip its
++        # per-step rescan of the shared prefix.
++        self.ref_cnt_epoch = 0
++
+     def get_cached_block(
+         self, block_hash: BlockHash, kv_cache_group_ids: list[int]
+     ) -> list[KVCacheBlock] | None:
+@@ -709,6 +720,7 @@
+         Args:
+             blocks: A list of blocks to touch.
+         """
++        self.ref_cnt_epoch += 1
+         for block in blocks:
+             # ref_cnt=0 means this block is in the free list (i.e. eviction
+             # candidate), so remove it.
+@@ -727,6 +739,7 @@
+                 priority.
+         """
+         # Identify blocks with hash (LRU cache) and without it (never match APC)
++        self.ref_cnt_epoch += 1
+         blocks_to_evict_last = []
+         blocks_to_evict_first = []
+         for block in ordered_blocks:
+--- a/vllm/v1/core/single_type_kv_cache_manager.py
++++ b/vllm/v1/core/single_type_kv_cache_manager.py
+@@ -94,6 +94,11 @@
+         # is finished.
+         self.req_to_blocks: defaultdict[str, list[KVCacheBlock]] = defaultdict(list)
+ 
++        # Memo for get_num_common_prefix_blocks (FullAttentionManager and its
++        # subclasses): ((request_id, num_reqs, num_blocks, ref_cnt_epoch),
++        # answer).  See that method for why those four keys are sufficient.
++        self._common_prefix_cache: tuple[tuple[str, int, int, int], int] | None = None
++
+         # {req_id: The number of cached blocks for this given request}
+         # This is used to track the number of cached blocks for each request.
+         # This is only used to track the RUNNING requests, we do not track the
+@@ -421,6 +426,7 @@
+         req_blocks[block_idx] = cow_block
+         self._pending_cow_copies.append((source_block, cow_block))
+         cow_block.ref_cnt += 1
++        self.block_pool.ref_cnt_epoch += 1
+ 
+     def cache_blocks(
+         self,
+@@ -823,13 +829,39 @@
+ 
+     def get_num_common_prefix_blocks(self, running_request_id: str) -> int:
+         with perfmark.region("kv_common_prefix_blocks", num_running=len(self.req_to_blocks), num_blocks=len(self.req_to_blocks.get(running_request_id, ()))):
+-            blocks = self.req_to_blocks[running_request_id]
++            req_to_blocks = self.req_to_blocks
++            # NOTE: `req_to_blocks` is a defaultdict, so this can insert an
++            # empty list; the length below is read after it, as before.
++            blocks = req_to_blocks[running_request_id]
++            num_reqs = len(req_to_blocks)
++            epoch = self.block_pool.ref_cnt_epoch
++            # OPTIMIZATION: this runs once per scheduler step and walks the
++            # shared prefix every time, ~580 instructions per block scanned.
++            # The answer can only change if (a) another request joined or left
++            # this manager (num_reqs), (b) this request's block list grew or
++            # shrank (num_blocks), (c) some already-held block's ref_cnt moved,
++            # which BlockPool.ref_cnt_epoch tracks, or (d) we are asked about a
++            # different request.  Nothing else the loop reads can move.
++            num_blocks = len(blocks)
++            cached = self._common_prefix_cache
++            if cached is not None and cached[0] == (
++                running_request_id,
++                num_reqs,
++                num_blocks,
++                epoch,
++            ):
++                return cached[1]
++            # `len(self.req_to_blocks)` was re-evaluated on every iteration.
+             num_common_blocks = 0
+             for block in blocks:
+-                if block.ref_cnt == len(self.req_to_blocks):
++                if block.ref_cnt == num_reqs:
+                     num_common_blocks += 1
+                 else:
+                     break
++            self._common_prefix_cache = (
++                (running_request_id, num_reqs, num_blocks, epoch),
++                num_common_blocks,
++            )
+             return num_common_blocks
+ 
+ 
+@@ -1640,6 +1672,7 @@
+                         self.block_pool.move_block_hashes(source_block, cow_block)
+                         self._pending_cow_copies.append((source_block, cow_block))
+                         source_block.ref_cnt += 1
++                        self.block_pool.ref_cnt_epoch += 1
+                         boundary_tokens = self._producer_partial_tail_reqs.pop(
+                             request_id, None
+                         )

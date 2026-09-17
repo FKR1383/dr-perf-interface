@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "v8-regexp-028",
+  "title": "Find matches with experimental interpreter",
+  "language": "cpp",
+  "source": {
+    "repository": "https://chromium.googlesource.com/v8/v8.git",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/regexp/experimental/experimental-interpreter.cc",
+    "snapshot": "../../upstream/src/regexp/experimental/experimental-interpreter.cc",
+    "sha256": "6de3371493980e04fe6372fde44e2279bbcdb4b20f16778555e8806f121630db"
+  },
+  "region": {
+    "symbol": "v8::internal::regexp::ExperimentalRegExpInterpreter::FindMatches",
+    "start_line": 1583,
+    "end_line": 1603
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-regexp-028",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Find matches for a bounded subject with the experimental regexp interpreter.",
+    "command": [
+      "{d8}",
+      "--enable-experimental-regexp-engine",
+      "--default-to-experimental-regexp-engine",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://chromium.googlesource.com/v8/v8.git/+/736a2cbec441e85b68c742215d15318abfeae707/src/regexp/experimental/experimental-interpreter.cc"
+  ],
+  "phase": "regexp-execution",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "--enable-experimental-regexp-engine",
+      "--default-to-experimental-regexp-engine",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Assertions passed under Node.js v18.19.1 as a JavaScript behavior check only; this does not verify V8 revision, d8 flags, or marked-region reachability."
+    },
+    "coverage_note": "The flags select the experimental engine for supported patterns. Exact entry into the marked internal function remains unverified until the instrumented d8 build is run."
+  }
+}

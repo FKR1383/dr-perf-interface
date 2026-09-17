@@ -1,0 +1,77 @@
+--- a/lark/load_grammar.py
++++ b/lark/load_grammar.py
+@@ -1,5 +1,6 @@
+ """Parses and compiles Lark grammars into an internal representation.
+ """
++import perfmark
+ 
+ import hashlib
+ import os.path
+@@ -1345,36 +1346,37 @@
+ 
+ 
+     def validate(self) -> None:
+-        for name, d in self._definitions.items():
+-            params = d.params
+-            exp = d.tree
+-
+-            for i, p in enumerate(params):
+-                if p in self._definitions:
+-                    raise GrammarError("Template Parameter conflicts with rule %s (in template %s)" % (p, name))
+-                if p in params[:i]:
+-                    raise GrammarError("Duplicate Template Parameter %s (in template %s)" % (p, name))
+-
+-            if exp is None: # Remaining checks don't apply to abstract rules/terminals (created with %declare)
+-                continue
+-
+-            for temp in exp.find_data('template_usage'):
+-                sym = temp.children[0].name
+-                args = temp.children[1:]
+-                if sym not in params:
+-                    if sym not in self._definitions:
+-                        self._grammar_error(d.is_term, "Template '%s' used but not defined (in {type} {name})" % sym, name)
+-                    if len(args) != len(self._definitions[sym].params):
+-                        expected, actual = len(self._definitions[sym].params), len(args)
+-                        self._grammar_error(d.is_term, "Wrong number of template arguments used for {name} "
+-                                            "(expected %s, got %s) (in {type2} {name2})" % (expected, actual), sym, name)
+-
+-            for sym in _find_used_symbols(exp):
+-                if sym not in self._definitions and sym not in params:
+-                    self._grammar_error(d.is_term, "{Type} '{name}' used but not defined (in {type2} {name2})", sym, name)
+-
+-        if not set(self._definitions).issuperset(self._ignore_names):
+-            raise GrammarError("Terminals %s were marked to ignore but were not defined!" % (set(self._ignore_names) - set(self._definitions)))
++        with perfmark.region("lt-215"):
++            for name, d in self._definitions.items():
++                params = d.params
++                exp = d.tree
++
++                for i, p in enumerate(params):
++                    if p in self._definitions:
++                        raise GrammarError("Template Parameter conflicts with rule %s (in template %s)" % (p, name))
++                    if p in params[:i]:
++                        raise GrammarError("Duplicate Template Parameter %s (in template %s)" % (p, name))
++
++                if exp is None: # Remaining checks don't apply to abstract rules/terminals (created with %declare)
++                    continue
++
++                for temp in exp.find_data('template_usage'):
++                    sym = temp.children[0].name
++                    args = temp.children[1:]
++                    if sym not in params:
++                        if sym not in self._definitions:
++                            self._grammar_error(d.is_term, "Template '%s' used but not defined (in {type} {name})" % sym, name)
++                        if len(args) != len(self._definitions[sym].params):
++                            expected, actual = len(self._definitions[sym].params), len(args)
++                            self._grammar_error(d.is_term, "Wrong number of template arguments used for {name} "
++                                                "(expected %s, got %s) (in {type2} {name2})" % (expected, actual), sym, name)
++
++                for sym in _find_used_symbols(exp):
++                    if sym not in self._definitions and sym not in params:
++                        self._grammar_error(d.is_term, "{Type} '{name}' used but not defined (in {type2} {name2})", sym, name)
++
++            if not set(self._definitions).issuperset(self._ignore_names):
++                raise GrammarError("Terminals %s were marked to ignore but were not defined!" % (set(self._ignore_names) - set(self._definitions)))
+ 
+     def build(self) -> Grammar:
+         self.validate()

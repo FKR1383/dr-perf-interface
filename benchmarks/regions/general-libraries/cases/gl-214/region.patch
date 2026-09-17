@@ -1,0 +1,32 @@
+--- a/src/packaging/_ranges.py
++++ b/src/packaging/_ranges.py
+@@ -4,6 +4,7 @@
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import enum
+ import functools
+@@ -795,13 +796,14 @@
+     specifier can revive it. Callers must pass at least one specifier.
+     """
+     result: Sequence[Interval] | None = None
+-    for sub in per_specifier_ranges:
+-        if result is None:
+-            result = sub
+-        else:
+-            result = intersect_ranges(result, sub)
+-            if not result:
+-                break
++    with perfmark.region("gl-214"):
++        for sub in per_specifier_ranges:
++            if result is None:
++                result = sub
++            else:
++                result = intersect_ranges(result, sub)
++                if not result:
++                    break
+ 
+     if result is None:  # pragma: no cover - callers guard non-empty input
+         raise RuntimeError("intersect_specifier_bounds called with no specifiers")

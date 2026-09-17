@@ -1,0 +1,43 @@
+derive case_bind_trigger   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: fill=8 x10, fill=16 x10, fill=32 x10, fill=64 x10, fill=128 x10, fill=256 x10
+  cost(fill) = 0*fill + -26,148.8        [all fill]   blocks: 0 affine, 2347 constant, 0 irregular (-0.0% of cost)
+    marker cost subtracted from the constant: 65,695 per call (calibrated)
+    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation
+    constant by function:
+               4,160  _int_free  [libc.so.6]
+             3,158.4  __GI___libc_malloc  [libc.so.6]
+               2,232  __free  [libc.so.6]
+               1,719  <&str as <alloc::ffi::c_str::CString>::new::SpecNewImpl>::spec_new_imp  [_ditto_ftl_core.abi3.so]
+             1,114.3  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               1,004  <perfmark::Region>::new_v  [_ditto_ftl_core.abi3.so]
+
+derive case_invalidate_validate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: fill=8 x10, fill=16 x10, fill=32 x10, fill=64 x10, fill=128 x10, fill=256 x10
+  cost(fill) = 0*fill + -11,387.3        [all fill]   blocks: 0 affine, 1138 constant, 0 irregular (-0.0% of cost)
+    marker cost subtracted from the constant: 24,434.2 per call (calibrated)
+    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation
+    constant by function:
+               1,140  _int_free  [libc.so.6]
+               924.1  _PyEval_EvalFrameDefault  [python3.12]
+                 794  __GI___libc_malloc  [libc.so.6]
+                 713  <no symbol>  [_ctypes.cpython-312-x86_64-linux-gnu.so]
+                 688  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                 558  __free  [libc.so.6]
+
+derive case_plan_load   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: fill=8 x10, fill=16 x10, fill=32 x10, fill=64 x10, fill=128 x10, fill=256 x10
+  cost(fill) = 0*fill + 877.3        [all fill]   blocks: 0 affine, 1960 constant, 51 irregular (77.9% of cost)
+    marker cost subtracted from the constant: 24,434.2 per call (calibrated)
+    irregular blocks, per call: 1,032 .. 13,317.4
+    constant by function:
+             1,730.1  _int_free  [libc.so.6]
+               1,394  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+             1,392.6  __GI___libc_malloc  [libc.so.6]
+               1,376  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                 993  __free  [libc.so.6]
+               990.5  _PyEval_EvalFrameDefault  [python3.12]
+    irregular by function:
+               987.7  PyObject_Free  [python3.12]
+               392.4  __tls_get_addr  [ld-linux-x86-64.so.2]
+               362.5  _Py_DecRef  [python3.12]
+

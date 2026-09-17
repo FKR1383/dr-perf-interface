@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-201",
+  "title": "FormatTokenLexer::getNextToken compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/FormatTokenLexer.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/FormatTokenLexer.cpp",
+    "sha256": "dcf887195086992bb58142ebc7603a1ea5d4f17349586f280cf42bd6c06da062"
+  },
+  "region": {
+    "symbol": "FormatTokenLexer::getNextToken",
+    "start_line": 1175,
+    "end_line": 1425,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-201",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "formatting",
+  "workload": {
+    "description": "Run the bounded format-token-classification fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Format/FormatTokenLexer.cpp:FormatTokenLexer::getNextToken",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Format/FormatTokenLexer.cpp#L1175-L1425"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+      "spec_sha256": "aa2e2f0f503ac74daa7a5b8eaa1842ee0c5cfcf5087b412c3044b77d54473ad4",
+      "patch_sha256": "ff2305f00ddd1590fe148b354e7c167a278ae7bfa644a620b6365c38b371b584"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

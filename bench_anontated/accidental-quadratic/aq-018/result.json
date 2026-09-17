@@ -1,0 +1,32 @@
+{
+  "case": "aq-018",
+  "status": "annotation-qualified",
+  "attempts": 2,
+  "pcvs": [
+    "input_len",
+    "input_pairs"
+  ],
+  "pcv_expressions": "input_len=len(value), input_pairs=len(value) * len(value)",
+  "gate_pass": true,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 5,
+    "required_states": 4,
+    "max_unexplained_share": 0.00047659898961014205,
+    "reasons": [],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round2b/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "reviewed-no-safe-candidate",
+    "reason": "Parameter parsing repeatedly delegates to attribute, section, CFWS, quoted-string, and value parsers whose public internal contract is (token, remaining_string). Eliminating suffix copies needs a cross-parser cursor representation, too broad for a semantics-preserving region-local change."
+  }
+}

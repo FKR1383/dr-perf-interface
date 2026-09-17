@@ -1,0 +1,31 @@
+{
+  "case": "cf-085",
+  "phase": "semantic-analysis",
+  "scenario": "objective-c-expression-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "objective-c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_85(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_85 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_85(2)==14);\nint main() { Item_85 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "@interface Obj\n-(int)m0;\n-(int)m1;\n-(int)m2;\n-(int)m3;\n@end\n"
+    },
+    {
+      "size": 16,
+      "source": "@interface Obj\n-(int)m0;\n-(int)m1;\n-(int)m2;\n-(int)m3;\n-(int)m4;\n-(int)m5;\n-(int)m6;\n-(int)m7;\n-(int)m8;\n-(int)m9;\n-(int)m10;\n-(int)m11;\n-(int)m12;\n-(int)m13;\n-(int)m14;\n-(int)m15;\n@end\n"
+    },
+    {
+      "size": 64,
+      "source": "@interface Obj\n-(int)m0;\n-(int)m1;\n-(int)m2;\n-(int)m3;\n-(int)m4;\n-(int)m5;\n-(int)m6;\n-(int)m7;\n-(int)m8;\n-(int)m9;\n-(int)m10;\n-(int)m11;\n-(int)m12;\n-(int)m13;\n-(int)m14;\n-(int)m15;\n-(int)m16;\n-(int)m17;\n-(int)m18;\n-(int)m19;\n-(int)m20;\n-(int)m21;\n-(int)m22;\n-(int)m23;\n-(int)m24;\n-(int)m25;\n-(int)m26;\n-(int)m27;\n-(int)m28;\n-(int)m29;\n-(int)m30;\n-(int)m31;\n-(int)m32;\n-(int)m33;\n-(int)m34;\n-(int)m35;\n-(int)m36;\n-(int)m37;\n-(int)m38;\n-(int)m39;\n-(int)m40;\n-(int)m41;\n-(int)m42;\n-(int)m43;\n-(int)m44;\n-(int)m45;\n-(int)m46;\n-(int)m47;\n-(int)m48;\n-(int)m49;\n-(int)m50;\n-(int)m51;\n-(int)m52;\n-(int)m53;\n-(int)m54;\n-(int)m55;\n-(int)m56;\n-(int)m57;\n-(int)m58;\n-(int)m59;\n-(int)m60;\n-(int)m61;\n-(int)m62;\n-(int)m63;\n@end\n"
+    }
+  ],
+  "target_symbol": "SemaObjC::ActOnAtEnd",
+  "target_source": "clang/lib/Sema/SemaDeclObjC.cpp",
+  "mapping_note": "The objective-c-expression-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

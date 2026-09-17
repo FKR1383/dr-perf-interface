@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -15956,6 +15957,7 @@
+ 
+ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
+                                     bool IsInstantiation) {
++                                      DRPERF_BENCH_REGION("cf-205");
+   FunctionScopeInfo *FSI = getCurFunction();
+   FunctionDecl *FD = dcl ? dcl->getAsFunction() : nullptr;
+ 

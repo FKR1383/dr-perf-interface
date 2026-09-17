@@ -1,0 +1,31 @@
+{
+  "case": "cf-100",
+  "phase": "semantic-analysis",
+  "scenario": "member-call-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_100(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_100 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_100(2)==14);\nint main() { Item_100 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct M{int call(int x){return x;}}; int f(M&m){return m.call(0)+m.call(1)+m.call(2)+m.call(3);}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct M{int call(int x){return x;}}; int f(M&m){return m.call(0)+m.call(1)+m.call(2)+m.call(3)+m.call(4)+m.call(5)+m.call(6)+m.call(7)+m.call(8)+m.call(9)+m.call(10)+m.call(11)+m.call(12)+m.call(13)+m.call(14)+m.call(15);}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct M{int call(int x){return x;}}; int f(M&m){return m.call(0)+m.call(1)+m.call(2)+m.call(3)+m.call(4)+m.call(5)+m.call(6)+m.call(7)+m.call(8)+m.call(9)+m.call(10)+m.call(11)+m.call(12)+m.call(13)+m.call(14)+m.call(15)+m.call(16)+m.call(17)+m.call(18)+m.call(19)+m.call(20)+m.call(21)+m.call(22)+m.call(23)+m.call(24)+m.call(25)+m.call(26)+m.call(27)+m.call(28)+m.call(29)+m.call(30)+m.call(31)+m.call(32)+m.call(33)+m.call(34)+m.call(35)+m.call(36)+m.call(37)+m.call(38)+m.call(39)+m.call(40)+m.call(41)+m.call(42)+m.call(43)+m.call(44)+m.call(45)+m.call(46)+m.call(47)+m.call(48)+m.call(49)+m.call(50)+m.call(51)+m.call(52)+m.call(53)+m.call(54)+m.call(55)+m.call(56)+m.call(57)+m.call(58)+m.call(59)+m.call(60)+m.call(61)+m.call(62)+m.call(63);}\n"
+    }
+  ],
+  "target_symbol": "Sema::BuildCallToMemberFunction",
+  "target_source": "clang/lib/Sema/SemaOverload.cpp",
+  "mapping_note": "The member-call-semantics construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

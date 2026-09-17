@@ -1,0 +1,20 @@
+--- a/numpy/lib/_stride_tricks_impl.py
++++ b/numpy/lib/_stride_tricks_impl.py
+@@ -4,6 +4,7 @@
+ An explanation of strides can be found in the :ref:`arrays.ndarray`.
+ 
+ """
++import perfmark
+ import numpy as np
+ from numpy._core.numeric import normalize_axis_tuple
+ from numpy._core.overrides import array_function_dispatch, set_module
+@@ -430,7 +431,8 @@
+                              f'axis; got {len(window_shape)} window_shape '
+                              f'elements and {len(axis)} axes elements.')
+ 
+-    out_strides = x.strides + tuple(x.strides[ax] for ax in axis)
++    with perfmark.region("gl-121"):
++        out_strides = x.strides + tuple(x.strides[ax] for ax in axis)
+ 
+     # note: same axis can be windowed repeatedly
+     x_shape_trimmed = list(x.shape)

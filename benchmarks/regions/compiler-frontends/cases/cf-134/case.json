@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-134",
+  "title": "ToolInvocation::run compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Tooling/Tooling.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Tooling/Tooling.cpp",
+    "sha256": "851ee9b8bbf5998a419bb0a620f44b1b8b1df9899b533d584815a1b8b38bd597"
+  },
+  "region": {
+    "symbol": "ToolInvocation::run",
+    "start_line": 372,
+    "end_line": 428,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-134",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "source-tooling",
+  "workload": {
+    "description": "Run the bounded diagnostic-fixit fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Tooling/Tooling.cpp:ToolInvocation::run",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Tooling/Tooling.cpp#L372-L428"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "79442151ed0aea8bfe2ac3ac7213eccee3b3f5ff8b2faa1b925aa19c3618a7cd",
+      "spec_sha256": "ccdadde6631020a035cbcd433ad625d62132a660f735727f82bd606dec69f0b2",
+      "patch_sha256": "392931925d383992947d3ec840face70ba79d8a81bb939d3c9c40d74b3516776"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

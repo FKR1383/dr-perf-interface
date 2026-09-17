@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExpr.cpp
++++ b/clang/lib/Sema/SemaExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TreeTransform.h"
+ #include "UsedDeclVisitor.h"
+@@ -2678,6 +2679,7 @@
+                         bool HasTrailingLParen, bool IsAddressOfOperand,
+                         CorrectionCandidateCallback *CCC,
+                         bool IsInlineAsmIdentifier, Token *KeywordReplacement) {
++                          DRPERF_BENCH_REGION("cf-059");
+   assert(!(IsAddressOfOperand && HasTrailingLParen) &&
+          "cannot be direct & operand and have a trailing lparen");
+   if (SS.isInvalid())

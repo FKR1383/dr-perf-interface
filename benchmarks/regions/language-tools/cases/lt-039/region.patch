@@ -1,0 +1,50 @@
+--- a/sympy/physics/units/prefixes.py
++++ b/sympy/physics/units/prefixes.py
+@@ -5,6 +5,7 @@
+ BIN_PREFIXES.
+ """
+ from __future__ import annotations
++import perfmark
+ from sympy.core.expr import Expr
+ from sympy.core.symbol import Symbol
+ from sympy.core.sympify import sympify
+@@ -146,22 +147,23 @@
+         [millimeter, centimeter, decimeter]
+     """
+ 
+-    from sympy.physics.units.quantities import Quantity
+-    from sympy.physics.units import UnitSystem
+-
+-    prefixed_units = []
+-
+-    for prefix in prefixes.values():
+-        quantity = Quantity(
+-                "%s%s" % (prefix.name, unit.name),
+-                abbrev=("%s%s" % (prefix.abbrev, unit.abbrev)),
+-                is_prefixed=True,
+-           )
+-        UnitSystem._quantity_dimensional_equivalence_map_global[quantity] = unit
+-        UnitSystem._quantity_scale_factors_global[quantity] = (prefix.scale_factor, unit)
+-        prefixed_units.append(quantity)
+-
+-    return prefixed_units
++    with perfmark.region("lt-039"):
++        from sympy.physics.units.quantities import Quantity
++        from sympy.physics.units import UnitSystem
++
++        prefixed_units = []
++
++        for prefix in prefixes.values():
++            quantity = Quantity(
++                    "%s%s" % (prefix.name, unit.name),
++                    abbrev=("%s%s" % (prefix.abbrev, unit.abbrev)),
++                    is_prefixed=True,
++               )
++            UnitSystem._quantity_dimensional_equivalence_map_global[quantity] = unit
++            UnitSystem._quantity_scale_factors_global[quantity] = (prefix.scale_factor, unit)
++            prefixed_units.append(quantity)
++
++        return prefixed_units
+ 
+ 
+ yotta = Prefix('yotta', 'Y', 24)

@@ -1,0 +1,64 @@
+diff --git a/socketsecurity/core/__init__.py b/socketsecurity/core/__init__.py
+--- a/socketsecurity/core/__init__.py
++++ b/socketsecurity/core/__init__.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import logging
+ from pathlib import PurePath
+ 
+@@ -401,30 +402,31 @@
+         :param files: override finding the manifest files using the glob matcher
+         :return:
+         """
+-        log.debug("Starting Find Files")
+-        start_time = time.time()
+-        files = []
+-        for ecosystem in socket_globs:
+-            patterns = socket_globs[ecosystem]
+-            for file_name in patterns:
+-                pattern = patterns[file_name]["pattern"]
+-                file_path = f"{path}/**/{pattern}"
+-
+-                log.debug(f"Globbing {file_path}")
+-                glob_start = time.time()
+-                glob_files = glob(file_path, recursive=True)
+-                for glob_file in glob_files:
+-                    if glob_file not in files:
+-                        files.append(glob_file)
+-                glob_end = time.time()
+-                glob_total_time = glob_end - glob_start
+-                log.debug(f"Glob for pattern {file_path} took {glob_total_time:.2f} seconds")
+-
+-        log.debug("Finished Find Files")
+-        end_time = time.time()
+-        total_time = end_time - start_time
+-        log.info(f"Found {len(files)} in {total_time:.2f} seconds")
+-        return files
++        with perfmark.region('aq-010'):
++            log.debug("Starting Find Files")
++            start_time = time.time()
++            files = []
++            for ecosystem in socket_globs:
++                patterns = socket_globs[ecosystem]
++                for file_name in patterns:
++                    pattern = patterns[file_name]["pattern"]
++                    file_path = f"{path}/**/{pattern}"
++
++                    log.debug(f"Globbing {file_path}")
++                    glob_start = time.time()
++                    glob_files = glob(file_path, recursive=True)
++                    for glob_file in glob_files:
++                        if glob_file not in files:
++                            files.append(glob_file)
++                    glob_end = time.time()
++                    glob_total_time = glob_end - glob_start
++                    log.debug(f"Glob for pattern {file_path} took {glob_total_time:.2f} seconds")
++
++            log.debug("Finished Find Files")
++            end_time = time.time()
++            total_time = end_time - start_time
++            log.info(f"Found {len(files)} in {total_time:.2f} seconds")
++            return files
+ 
+     @staticmethod
+     def create_full_scan(files: list, params: FullScanParams, workspace: str) -> FullScan:

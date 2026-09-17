@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-171",
+  "title": "Driver::HandleImmediateArgs compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Driver/Driver.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Driver/Driver.cpp",
+    "sha256": "d3265329cc452c1ab5d6e6828be6a074fc100776a4c46956ed9c0d677d5dd5cf"
+  },
+  "region": {
+    "symbol": "Driver::HandleImmediateArgs",
+    "start_line": 2378,
+    "end_line": 2589,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-171",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Driver/Driver.cpp:Driver::HandleImmediateArgs",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Driver/Driver.cpp#L2378-L2589"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "e8c5c881bef49e6bf3ac3f1224330e76e5ce1eda838918e9a325e9b7b493ed02",
+      "patch_sha256": "9f0de33eba14897bfe4c44bdd53e94a6d10eace985cb6b3e687f69367557011a"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

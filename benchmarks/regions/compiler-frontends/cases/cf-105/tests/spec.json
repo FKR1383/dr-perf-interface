@@ -1,0 +1,36 @@
+{
+  "case": "cf-105",
+  "phase": "ir-generation",
+  "scenario": "auto-var-init-ir",
+  "compiler": "clang",
+  "flags": [
+    "-ftrivial-auto-var-init=zero",
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_105{int n; X_105(int v):n(v){}}; int main(){X_105 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(){int values[4]; return values[0];}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(){int values[16]; return values[0];}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(){int values[64]; return values[0];}\n"
+    }
+  ],
+  "target_symbol": "CodeGenFunction::emitZeroOrPatternForAutoVarInit",
+  "target_source": "clang/lib/CodeGen/CGDecl.cpp",
+  "mapping_note": "The auto-var-init-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

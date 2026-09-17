@@ -1,0 +1,33 @@
+{
+  "case": "cf-207",
+  "phase": "ast-processing",
+  "scenario": "ast-dump",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "template<class T> constexpr T fold_207(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_207 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_207(2)==14);\nint main() { Item_207 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Node_207_0{int x; int get()const{return x+0;}};\nstruct Node_207_1{int x; int get()const{return x+1;}};\nstruct Node_207_2{int x; int get()const{return x+2;}};\nstruct Node_207_3{int x; int get()const{return x+3;}};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Node_207_0{int x; int get()const{return x+0;}};\nstruct Node_207_1{int x; int get()const{return x+1;}};\nstruct Node_207_2{int x; int get()const{return x+2;}};\nstruct Node_207_3{int x; int get()const{return x+3;}};\nstruct Node_207_4{int x; int get()const{return x+4;}};\nstruct Node_207_5{int x; int get()const{return x+5;}};\nstruct Node_207_6{int x; int get()const{return x+6;}};\nstruct Node_207_7{int x; int get()const{return x+7;}};\nstruct Node_207_8{int x; int get()const{return x+8;}};\nstruct Node_207_9{int x; int get()const{return x+9;}};\nstruct Node_207_10{int x; int get()const{return x+10;}};\nstruct Node_207_11{int x; int get()const{return x+11;}};\nstruct Node_207_12{int x; int get()const{return x+12;}};\nstruct Node_207_13{int x; int get()const{return x+13;}};\nstruct Node_207_14{int x; int get()const{return x+14;}};\nstruct Node_207_15{int x; int get()const{return x+15;}};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Node_207_0{int x; int get()const{return x+0;}};\nstruct Node_207_1{int x; int get()const{return x+1;}};\nstruct Node_207_2{int x; int get()const{return x+2;}};\nstruct Node_207_3{int x; int get()const{return x+3;}};\nstruct Node_207_4{int x; int get()const{return x+4;}};\nstruct Node_207_5{int x; int get()const{return x+5;}};\nstruct Node_207_6{int x; int get()const{return x+6;}};\nstruct Node_207_7{int x; int get()const{return x+7;}};\nstruct Node_207_8{int x; int get()const{return x+8;}};\nstruct Node_207_9{int x; int get()const{return x+9;}};\nstruct Node_207_10{int x; int get()const{return x+10;}};\nstruct Node_207_11{int x; int get()const{return x+11;}};\nstruct Node_207_12{int x; int get()const{return x+12;}};\nstruct Node_207_13{int x; int get()const{return x+13;}};\nstruct Node_207_14{int x; int get()const{return x+14;}};\nstruct Node_207_15{int x; int get()const{return x+15;}};\nstruct Node_207_16{int x; int get()const{return x+16;}};\nstruct Node_207_17{int x; int get()const{return x+17;}};\nstruct Node_207_18{int x; int get()const{return x+18;}};\nstruct Node_207_19{int x; int get()const{return x+19;}};\nstruct Node_207_20{int x; int get()const{return x+20;}};\nstruct Node_207_21{int x; int get()const{return x+21;}};\nstruct Node_207_22{int x; int get()const{return x+22;}};\nstruct Node_207_23{int x; int get()const{return x+23;}};\nstruct Node_207_24{int x; int get()const{return x+24;}};\nstruct Node_207_25{int x; int get()const{return x+25;}};\nstruct Node_207_26{int x; int get()const{return x+26;}};\nstruct Node_207_27{int x; int get()const{return x+27;}};\nstruct Node_207_28{int x; int get()const{return x+28;}};\nstruct Node_207_29{int x; int get()const{return x+29;}};\nstruct Node_207_30{int x; int get()const{return x+30;}};\nstruct Node_207_31{int x; int get()const{return x+31;}};\nstruct Node_207_32{int x; int get()const{return x+32;}};\nstruct Node_207_33{int x; int get()const{return x+33;}};\nstruct Node_207_34{int x; int get()const{return x+34;}};\nstruct Node_207_35{int x; int get()const{return x+35;}};\nstruct Node_207_36{int x; int get()const{return x+36;}};\nstruct Node_207_37{int x; int get()const{return x+37;}};\nstruct Node_207_38{int x; int get()const{return x+38;}};\nstruct Node_207_39{int x; int get()const{return x+39;}};\nstruct Node_207_40{int x; int get()const{return x+40;}};\nstruct Node_207_41{int x; int get()const{return x+41;}};\nstruct Node_207_42{int x; int get()const{return x+42;}};\nstruct Node_207_43{int x; int get()const{return x+43;}};\nstruct Node_207_44{int x; int get()const{return x+44;}};\nstruct Node_207_45{int x; int get()const{return x+45;}};\nstruct Node_207_46{int x; int get()const{return x+46;}};\nstruct Node_207_47{int x; int get()const{return x+47;}};\nstruct Node_207_48{int x; int get()const{return x+48;}};\nstruct Node_207_49{int x; int get()const{return x+49;}};\nstruct Node_207_50{int x; int get()const{return x+50;}};\nstruct Node_207_51{int x; int get()const{return x+51;}};\nstruct Node_207_52{int x; int get()const{return x+52;}};\nstruct Node_207_53{int x; int get()const{return x+53;}};\nstruct Node_207_54{int x; int get()const{return x+54;}};\nstruct Node_207_55{int x; int get()const{return x+55;}};\nstruct Node_207_56{int x; int get()const{return x+56;}};\nstruct Node_207_57{int x; int get()const{return x+57;}};\nstruct Node_207_58{int x; int get()const{return x+58;}};\nstruct Node_207_59{int x; int get()const{return x+59;}};\nstruct Node_207_60{int x; int get()const{return x+60;}};\nstruct Node_207_61{int x; int get()const{return x+61;}};\nstruct Node_207_62{int x; int get()const{return x+62;}};\nstruct Node_207_63{int x; int get()const{return x+63;}};\n"
+    }
+  ],
+  "target_symbol": "DeclContext::buildLookup",
+  "target_source": "clang/lib/AST/DeclBase.cpp",
+  "mapping_note": "The ast-dump construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

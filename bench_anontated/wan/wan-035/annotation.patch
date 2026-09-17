@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -235,7 +235,7 @@
+             dtype: (`torch.dtype`, *optional*):
+                 torch dtype
+         """
+-        with perfmark.region("wan-035"):
++        with perfmark.region("wan-035", max_sequence_length=int(max_sequence_length)):
+             device = device or self._execution_device
+ 
+             prompt = [prompt] if isinstance(prompt, str) else prompt

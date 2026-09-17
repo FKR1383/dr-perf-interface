@@ -1,0 +1,37 @@
+--- a/jsonschema/_legacy_keywords.py
++++ b/jsonschema/_legacy_keywords.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import re
+ 
+ from referencing.jsonschema import lookup_recursive_ref
+@@ -424,17 +425,18 @@
+         validator, instance, schema,
+     )
+     unevaluated_keys = []
+-    for property in instance:
+-        if property not in evaluated_keys:
+-            for _ in validator.descend(
+-                instance[property],
+-                uP,
+-                path=property,
+-                schema_path=property,
+-            ):
+-                # FIXME: Include context for each unevaluated property
+-                #        indicating why it's invalid under the subschema.
+-                unevaluated_keys.append(property)  # noqa: PERF401
++    with perfmark.region("gl-227"):
++        for property in instance:
++            if property not in evaluated_keys:
++                for _ in validator.descend(
++                    instance[property],
++                    uP,
++                    path=property,
++                    schema_path=property,
++                ):
++                    # FIXME: Include context for each unevaluated property
++                    #        indicating why it's invalid under the subschema.
++                    unevaluated_keys.append(property)  # noqa: PERF401
+ 
+     if unevaluated_keys:
+         if uP is False:

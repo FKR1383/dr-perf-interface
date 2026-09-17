@@ -4,8 +4,7 @@
 For a region declaring states (s1..sk), DynamoRIO counted every basic block
 exactly, per combination of state values.  Each block gets a least-squares
 hyperplane a1*s1 + .. + ak*sk + d over the observed points; the block is
-affine if that plane holds within tolerance at every point (and has no
-large negative intercept), scaling in the variables whose slope matters
+affine if that plane holds within tolerance at every point, scaling in the variables whose slope matters
 over the observed range, constant otherwise; a block that obeys no such
 relation is reported separately as the irregular part and never enters the
 formula.  Coefficients are attributed to the functions the blocks live in.
@@ -243,10 +242,9 @@ def derive_regime(vecs, values, slots):
         ok = all(abs(y - (sum(a[j] * v[j] for j in range(k)) + c)) <= max(ABS_TOL, REL_TOL * y)
                  for v, y in zip(values, ys))
         thr = max(ABS_TOL, REL_TOL * max(ys))
-        # a count cannot be negative: an intercept well below zero is a curve
-        # (n^2 over a narrow range) seen through the tolerance, not a law
-        if ok and c < -thr:
-            ok = False
+        # The origin need not be a valid input. For example, a traversal has
+        # depth-1 descents: a negative intercept is valid and must not change
+        # acceptance when the annotator translates a PCV by a constant.
         if ok:
             exact = dev <= 1e-9 * max(1.0, max(ys))
             scal = [j for j in range(k) if abs(a[j]) * ranges[j] > thr or (exact and abs(a[j]) > 1e-9)]
@@ -418,8 +416,6 @@ def describe(region, names, regimes, trig, slots, top=6):
                 out.append("    note: %s is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)" % names[j])
         if r.marker:
             out.append("    marker cost subtracted from the constant: %s per call (calibrated)" % fmt(r.marker))
-        if r.c < -ABS_TOL:
-            out.append("    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation")
         if r.irr:
             out.append("    irregular blocks, per call: %s .. %s" % (fmt(min(r.irr.values())), fmt(max(r.irr.values()))))
         if r.wait:

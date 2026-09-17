@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaTemplateInstantiate.cpp
++++ b/clang/lib/Sema/SemaTemplateInstantiate.cpp
+@@ -9,6 +9,7 @@
+ //
+ //===----------------------------------------------------------------------===/
+ 
++#include "drperf_bench_region.h"
+ #include "TreeTransform.h"
+ #include "clang/AST/ASTConcept.h"
+ #include "clang/AST/ASTConsumer.h"
+@@ -3645,6 +3646,7 @@
+                        const MultiLevelTemplateArgumentList &TemplateArgs,
+                        TemplateSpecializationKind TSK,
+                        bool Complain) {
++                         DRPERF_BENCH_REGION("cf-166");
+   CXXRecordDecl *PatternDef
+     = cast_or_null<CXXRecordDecl>(Pattern->getDefinition());
+   if (DiagnoseUninstantiableTemplate(PointOfInstantiation, Instantiation,

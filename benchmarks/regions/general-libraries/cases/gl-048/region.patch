@@ -1,0 +1,38 @@
+--- a/networkx/generators/geometric.py
++++ b/networkx/generators/geometric.py
+@@ -1,4 +1,5 @@
+ """Generators for geometric graphs."""
++import perfmark
+ 
+ import math
+ from bisect import bisect_left
+@@ -1011,17 +1012,18 @@
+     # Generate random positions on a circle
+     thetas = {k: seed.uniform(0, 2 * math.pi) for k in kappas}
+ 
+-    for u in kappas:
+-        for v in list(G):
+-            angle = math.pi - math.fabs(math.pi - math.fabs(thetas[u] - thetas[v]))
+-            dij = math.pow(R * angle, beta)
+-            mu_kappas = math.pow(mu * kappas[u] * kappas[v], max(1, beta))
+-            p_ij = 1 / (1 + dij / mu_kappas)
+-
+-            # Create an edge with a certain connection probability
+-            if seed.random() < p_ij:
+-                G.add_edge(u, v)
+-        G.add_node(u)
++    with perfmark.region("gl-048"):
++        for u in kappas:
++            for v in list(G):
++                angle = math.pi - math.fabs(math.pi - math.fabs(thetas[u] - thetas[v]))
++                dij = math.pow(R * angle, beta)
++                mu_kappas = math.pow(mu * kappas[u] * kappas[v], max(1, beta))
++                p_ij = 1 / (1 + dij / mu_kappas)
++    
++                # Create an edge with a certain connection probability
++                if seed.random() < p_ij:
++                    G.add_edge(u, v)
++            G.add_node(u)
+ 
+     nx.set_node_attributes(G, thetas, "theta")
+     nx.set_node_attributes(G, kappas, "kappa")

@@ -1,0 +1,32 @@
+{
+  "case": "cf-180",
+  "phase": "formatting",
+  "scenario": "unwrapped-line-parsing",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_180(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_180 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_180(2)==14);\nint main() { Item_180 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_180_0 { int value[1]; };\nstruct Scale_180_1 { int value[2]; };\nstruct Scale_180_2 { int value[3]; };\nstruct Scale_180_3 { int value[4]; };\ntemplate<class T> constexpr T fold_180(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_180 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_180(2)==14);\nint main() { Item_180 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_180_0 { int value[1]; };\nstruct Scale_180_1 { int value[2]; };\nstruct Scale_180_2 { int value[3]; };\nstruct Scale_180_3 { int value[4]; };\nstruct Scale_180_4 { int value[1]; };\nstruct Scale_180_5 { int value[2]; };\nstruct Scale_180_6 { int value[3]; };\nstruct Scale_180_7 { int value[4]; };\nstruct Scale_180_8 { int value[1]; };\nstruct Scale_180_9 { int value[2]; };\nstruct Scale_180_10 { int value[3]; };\nstruct Scale_180_11 { int value[4]; };\nstruct Scale_180_12 { int value[1]; };\nstruct Scale_180_13 { int value[2]; };\nstruct Scale_180_14 { int value[3]; };\nstruct Scale_180_15 { int value[4]; };\ntemplate<class T> constexpr T fold_180(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_180 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_180(2)==14);\nint main() { Item_180 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_180_0 { int value[1]; };\nstruct Scale_180_1 { int value[2]; };\nstruct Scale_180_2 { int value[3]; };\nstruct Scale_180_3 { int value[4]; };\nstruct Scale_180_4 { int value[1]; };\nstruct Scale_180_5 { int value[2]; };\nstruct Scale_180_6 { int value[3]; };\nstruct Scale_180_7 { int value[4]; };\nstruct Scale_180_8 { int value[1]; };\nstruct Scale_180_9 { int value[2]; };\nstruct Scale_180_10 { int value[3]; };\nstruct Scale_180_11 { int value[4]; };\nstruct Scale_180_12 { int value[1]; };\nstruct Scale_180_13 { int value[2]; };\nstruct Scale_180_14 { int value[3]; };\nstruct Scale_180_15 { int value[4]; };\nstruct Scale_180_16 { int value[1]; };\nstruct Scale_180_17 { int value[2]; };\nstruct Scale_180_18 { int value[3]; };\nstruct Scale_180_19 { int value[4]; };\nstruct Scale_180_20 { int value[1]; };\nstruct Scale_180_21 { int value[2]; };\nstruct Scale_180_22 { int value[3]; };\nstruct Scale_180_23 { int value[4]; };\nstruct Scale_180_24 { int value[1]; };\nstruct Scale_180_25 { int value[2]; };\nstruct Scale_180_26 { int value[3]; };\nstruct Scale_180_27 { int value[4]; };\nstruct Scale_180_28 { int value[1]; };\nstruct Scale_180_29 { int value[2]; };\nstruct Scale_180_30 { int value[3]; };\nstruct Scale_180_31 { int value[4]; };\nstruct Scale_180_32 { int value[1]; };\nstruct Scale_180_33 { int value[2]; };\nstruct Scale_180_34 { int value[3]; };\nstruct Scale_180_35 { int value[4]; };\nstruct Scale_180_36 { int value[1]; };\nstruct Scale_180_37 { int value[2]; };\nstruct Scale_180_38 { int value[3]; };\nstruct Scale_180_39 { int value[4]; };\nstruct Scale_180_40 { int value[1]; };\nstruct Scale_180_41 { int value[2]; };\nstruct Scale_180_42 { int value[3]; };\nstruct Scale_180_43 { int value[4]; };\nstruct Scale_180_44 { int value[1]; };\nstruct Scale_180_45 { int value[2]; };\nstruct Scale_180_46 { int value[3]; };\nstruct Scale_180_47 { int value[4]; };\nstruct Scale_180_48 { int value[1]; };\nstruct Scale_180_49 { int value[2]; };\nstruct Scale_180_50 { int value[3]; };\nstruct Scale_180_51 { int value[4]; };\nstruct Scale_180_52 { int value[1]; };\nstruct Scale_180_53 { int value[2]; };\nstruct Scale_180_54 { int value[3]; };\nstruct Scale_180_55 { int value[4]; };\nstruct Scale_180_56 { int value[1]; };\nstruct Scale_180_57 { int value[2]; };\nstruct Scale_180_58 { int value[3]; };\nstruct Scale_180_59 { int value[4]; };\nstruct Scale_180_60 { int value[1]; };\nstruct Scale_180_61 { int value[2]; };\nstruct Scale_180_62 { int value[3]; };\nstruct Scale_180_63 { int value[4]; };\ntemplate<class T> constexpr T fold_180(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_180 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_180(2)==14);\nint main() { Item_180 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "UnwrappedLineParser::calculateBraceTypes",
+  "target_source": "clang/lib/Format/UnwrappedLineParser.cpp",
+  "mapping_note": "The unwrapped-line-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

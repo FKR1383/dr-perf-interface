@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "v8-regexp-008",
+  "title": "Parse named capture group",
+  "language": "cpp",
+  "region": {
+    "symbol": "v8::internal::regexp::ParserImpl::ParseCaptureGroupName",
+    "start_line": 1818,
+    "end_line": 1887
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-regexp-008",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Parse a bounded named capture group identifier.",
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ]
+  },
+  "source": {
+    "repository": "https://chromium.googlesource.com/v8/v8.git",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/regexp/regexp-parser.cc",
+    "sha256": "4dc12f8cb552171e4cf6cec2ef51929b65963ca5f25156bc4ea4199b3be5419c"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Assertions passed under Node.js v18.19.1 as a JavaScript behavior check only; this does not verify V8 revision, d8 flags, or marked-region reachability."
+    },
+    "coverage_note": "RegExp construction invokes parsing; the interpreter-only flag prevents later native RegExp compilation from obscuring the phase. Exact entry into the marked parser function remains unverified until the instrumented d8 build is run."
+  }
+}

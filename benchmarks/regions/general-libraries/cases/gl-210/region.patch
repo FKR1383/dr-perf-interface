@@ -1,0 +1,22 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -871,8 +872,9 @@
+     # without major patching. Yield every API level from the maximum down to the
+     # minimum, inclusive.
+     min_api_level = 16
+-    for ver in range(api_level, min_api_level - 1, -1):
+-        yield f"android_{ver}_{abi}"
++    with perfmark.region("gl-210"):
++        for ver in range(api_level, min_api_level - 1, -1):
++            yield f"android_{ver}_{abi}"
+ 
+ 
+ def _linux_platforms(is_32bit: bool = _32_BIT_INTERPRETER) -> Iterator[str]:

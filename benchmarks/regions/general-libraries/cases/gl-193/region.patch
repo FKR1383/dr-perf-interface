@@ -1,0 +1,26 @@
+--- a/src/requests/utils.py
++++ b/src/requests/utils.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import codecs
+ import contextlib
+@@ -900,10 +901,11 @@
+         "all",
+     ]
+     proxy = None
+-    for proxy_key in proxy_keys:
+-        if proxy_key in proxies:
+-            proxy = proxies[proxy_key]
+-            break
++    with perfmark.region("gl-193"):
++        for proxy_key in proxy_keys:
++            if proxy_key in proxies:
++                proxy = proxies[proxy_key]
++                break
+ 
+     return proxy
+ 

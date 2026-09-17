@@ -1,0 +1,11 @@
+--- a/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
++++ b/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
+@@ -400,7 +400,7 @@
+             `int`:
+                 The index of the timestep.
+         """
+-        with perfmark.region("wan-037"):
++        with perfmark.region("wan-037", schedule_length=len(self.timesteps) if schedule_timesteps is None else len(schedule_timesteps)):
+             if schedule_timesteps is None:
+                 schedule_timesteps = self.timesteps
+ 

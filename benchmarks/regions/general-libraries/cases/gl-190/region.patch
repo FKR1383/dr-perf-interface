@@ -1,0 +1,48 @@
+--- a/src/requests/cookies.py
++++ b/src/requests/cookies.py
+@@ -8,6 +8,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import calendar
+ import copy
+@@ -497,21 +498,22 @@
+     By default, the pair of `name` and `value` will be set for the domain ''
+     and sent on every request (this is sometimes called a "supercookie").
+     """
+-    result: dict[str, Any] = {
+-        "version": 0,
+-        "name": name,
+-        "value": value,
+-        "port": None,
+-        "domain": "",
+-        "path": "/",
+-        "secure": False,
+-        "expires": None,
+-        "discard": True,
+-        "comment": None,
+-        "comment_url": None,
+-        "rest": {"HttpOnly": None},
+-        "rfc2109": False,
+-    }
++    with perfmark.region("gl-190"):
++        result: dict[str, Any] = {
++            "version": 0,
++            "name": name,
++            "value": value,
++            "port": None,
++            "domain": "",
++            "path": "/",
++            "secure": False,
++            "expires": None,
++            "discard": True,
++            "comment": None,
++            "comment_url": None,
++            "rest": {"HttpOnly": None},
++            "rfc2109": False,
++        }
+ 
+     badargs = set(kwargs) - set(result)
+     if badargs:

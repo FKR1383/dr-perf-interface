@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "v8-interpreter-041",
+  "title": "private brand installation",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/v8/v8",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/runtime/runtime-object.cc",
+    "snapshot": "../../upstream/src/runtime/runtime-object.cc",
+    "sha256": "b68d5f5f955b230e3836aac760e8ebedc2d76cf53393a9b0d0ae63f66b504ee4"
+  },
+  "region": {
+    "symbol": "v8::internal::Runtime_AddPrivateBrand",
+    "start_line": 278,
+    "end_line": 318
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-interpreter-041",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Evaluate bounded construction of classes that install private fields and methods.",
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://github.com/v8/v8/blob/736a2cbec441e85b68c742215d15318abfeae707/src/runtime/runtime-object.cc",
+    "https://github.com/v8/v8/commit/736a2cbec441e85b68c742215d15318abfeae707"
+  ],
+  "phase": "javascript-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Public JavaScript assertions passed with host Node.js v18.19.1; this is not the pinned or instrumented V8 build, so region entry was not verified."
+    },
+    "coverage_note": "This test exercises representative public JavaScript behavior, but V8 may use optimized builtins or fast paths instead of the marked native runtime fallback; region entry has not been observed in a patched build."
+  }
+}

@@ -1,0 +1,57 @@
+--- a/vllm/entrypoints/offline_utils.py
++++ b/vllm/entrypoints/offline_utils.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ from collections.abc import Callable, Iterable, Sequence
+ from typing import Any
+ 
+@@ -528,26 +529,27 @@
+         lora_requests: Sequence[LoRARequest | None] | None = None,
+         priorities: Sequence[int] | None = None,
+     ) -> list[str]:
+-        added_request_ids: list[str] = []
+-
+-        try:
+-            for i, prompt in enumerate(prompts):
+-                request_id = self._add_request(
+-                    prompt,
+-                    params[i],
+-                    lora_request=self._resolve_mm_lora(
++        with perfmark.region("vllm-002"):
++            added_request_ids: list[str] = []
++
++            try:
++                for i, prompt in enumerate(prompts):
++                    request_id = self._add_request(
+                         prompt,
+-                        None if lora_requests is None else lora_requests[i],
+-                    ),
+-                    priority=0 if priorities is None else priorities[i],
+-                )
+-                added_request_ids.append(request_id)
+-        except Exception as e:
+-            if added_request_ids:
+-                self.llm_engine.abort_request(added_request_ids, internal=True)
+-            raise e
+-
+-        return added_request_ids
++                        params[i],
++                        lora_request=self._resolve_mm_lora(
++                            prompt,
++                            None if lora_requests is None else lora_requests[i],
++                        ),
++                        priority=0 if priorities is None else priorities[i],
++                    )
++                    added_request_ids.append(request_id)
++            except Exception as e:
++                if added_request_ids:
++                    self.llm_engine.abort_request(added_request_ids, internal=True)
++                raise e
++
++            return added_request_ids
+ 
+     def _add_request(
+         self,

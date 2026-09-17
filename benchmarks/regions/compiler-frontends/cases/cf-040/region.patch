@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGAtomic.cpp
++++ b/clang/lib/CodeGen/CGAtomic.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCall.h"
+ #include "CGRecordLayout.h"
+ #include "CodeGenFunction.h"
+@@ -527,6 +528,7 @@
+                          llvm::Value *IsWeak, llvm::Value *FailureOrder,
+                          uint64_t Size, llvm::AtomicOrdering Order,
+                          llvm::SyncScope::ID Scope) {
++                           DRPERF_BENCH_REGION("cf-040");
+   llvm::AtomicRMWInst::BinOp Op = llvm::AtomicRMWInst::Add;
+   bool PostOpMinMax = false;
+   unsigned PostOp = 0;

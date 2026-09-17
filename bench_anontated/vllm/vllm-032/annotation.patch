@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -475,7 +475,7 @@
+         return max(num_new_tokens, 0)
+ 
+     def schedule(self, throttle_prefills: bool = False) -> SchedulerOutput:
+-        with perfmark.region("vllm-032"):
++        with perfmark.region("vllm-032", waiting_count=len(self.waiting)):
+             self.current_step += 1
+             # NOTE(woosuk) on the scheduling algorithm:
+             # There's no "decoding phase" nor "prefill phase" in the scheduler.

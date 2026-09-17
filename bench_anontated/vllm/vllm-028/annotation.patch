@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1347,7 +1347,7 @@
+         tokens out of order, and for connectors with a pending KV hand-off,
+         which the preemption's block free would leave without valid KV.
+         """
+-        with perfmark.region("vllm-028"):
++        with perfmark.region("vllm-028", computed_token_count=request.num_computed_tokens, drop_stale=int(drop_stale_output)):
+             assert request.status == RequestStatus.RUNNING, (
+                 "Only running requests can be preempted"
+             )

@@ -1,0 +1,21 @@
+derive vllm_compaction_record_bind_batch   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: bindings=1 x24, bindings=2 x24, bindings=4 x24, bindings=8 x24, bindings=16 x24, bindings=32 x24
+  cost(bindings) = 61,326.4*bindings + -103,137.4        [all bindings]   blocks: 2862 affine, 578 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 112,574.5 per call (calibrated)
+    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation
+    per-bindings coefficient by function:
+            17,683.7  _PyEval_EvalFrameDefault  [python3.12]
+             3,093.8  _PyTuple_Resize+?  [python3.12]
+               1,937  <no symbol>  [_ctypes.cpython-312-x86_64-linux-gnu.so]
+             1,535.8  PyDict_Contains+?  [python3.12]
+               1,523  PyTuple_New+?  [python3.12]
+             1,517.7  PyObject_Free  [python3.12]
+    constant by function:
+             2,541.5  _PyEval_EvalFrameDefault  [python3.12]
+               718.1  PyObject_Malloc  [python3.12]
+                 713  <no symbol>  [_ctypes.cpython-312-x86_64-linux-gnu.so]
+               666.3  PyObject_Free  [python3.12]
+               662.9  _PyObject_GC_New  [python3.12]
+               455.1  _PyDictView_New+?  [python3.12]
+
+derive vllm_compaction_record_bind_digest: only 1 state point(s) observed; need at least 3

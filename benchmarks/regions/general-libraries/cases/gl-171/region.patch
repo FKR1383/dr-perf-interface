@@ -1,0 +1,106 @@
+--- a/src/urllib3/util/request.py
++++ b/src/urllib3/util/request.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import io
+ import sys
+@@ -248,52 +249,53 @@
+     # No body, we need to make a recommendation on 'Content-Length'
+     # based on whether that request method is expected to have
+     # a body or not.
+-    if body is None:
+-        chunks = None
+-        if method.upper() not in _METHODS_NOT_EXPECTING_BODY:
+-            content_length = 0
++    with perfmark.region("gl-171"):
++        if body is None:
++            chunks = None
++            if method.upper() not in _METHODS_NOT_EXPECTING_BODY:
++                content_length = 0
++            else:
++                content_length = None
++    
++        # Bytes or strings become bytes
++        elif isinstance(body, (str, bytes)):
++            chunks = (to_bytes(body),)
++            content_length = len(chunks[0])
++    
++        # File-like object, TODO: use seek() and tell() for length?
++        elif hasattr(body, "read"):
++    
++            def chunk_readable() -> typing.Iterable[bytes]:
++                encode = isinstance(body, io.TextIOBase)
++                while True:
++                    datablock = body.read(blocksize)
++                    if not datablock:
++                        break
++                    if encode:
++                        datablock = datablock.encode("utf-8")
++                    yield datablock
++    
++            chunks = chunk_readable()
++            content_length = None
++    
++        # Otherwise we need to start checking via duck-typing.
+         else:
+-            content_length = None
+-
+-    # Bytes or strings become bytes
+-    elif isinstance(body, (str, bytes)):
+-        chunks = (to_bytes(body),)
+-        content_length = len(chunks[0])
+-
+-    # File-like object, TODO: use seek() and tell() for length?
+-    elif hasattr(body, "read"):
+-
+-        def chunk_readable() -> typing.Iterable[bytes]:
+-            encode = isinstance(body, io.TextIOBase)
+-            while True:
+-                datablock = body.read(blocksize)
+-                if not datablock:
+-                    break
+-                if encode:
+-                    datablock = datablock.encode("utf-8")
+-                yield datablock
+-
+-        chunks = chunk_readable()
+-        content_length = None
+-
+-    # Otherwise we need to start checking via duck-typing.
+-    else:
+-        try:
+-            # Check if the body implements the buffer API.
+-            mv = memoryview(body)
+-        except TypeError:
+             try:
+-                # Check if the body is an iterable
+-                chunks = iter(body)
+-                content_length = None
++                # Check if the body implements the buffer API.
++                mv = memoryview(body)
+             except TypeError:
+-                raise TypeError(
+-                    f"'body' must be a bytes-like object, file-like "
+-                    f"object, or iterable. Instead was {body!r}"
+-                ) from None
+-        else:
+-            # Since it implements the buffer API can be passed directly to socket.sendall()
+-            chunks = (body,)
+-            content_length = mv.nbytes
++                try:
++                    # Check if the body is an iterable
++                    chunks = iter(body)
++                    content_length = None
++                except TypeError:
++                    raise TypeError(
++                        f"'body' must be a bytes-like object, file-like "
++                        f"object, or iterable. Instead was {body!r}"
++                    ) from None
++            else:
++                # Since it implements the buffer API can be passed directly to socket.sendall()
++                chunks = (body,)
++                content_length = mv.nbytes
+ 
+     return ChunksAndContentLength(chunks=chunks, content_length=content_length)

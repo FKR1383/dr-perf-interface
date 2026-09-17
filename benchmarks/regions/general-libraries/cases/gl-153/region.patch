@@ -1,0 +1,64 @@
+--- a/pandas/core/dtypes/concat.py
++++ b/pandas/core/dtypes/concat.py
+@@ -3,6 +3,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import (
+     TYPE_CHECKING,
+@@ -87,29 +88,30 @@
+     ):
+         return union_categories_compat(cast("Sequence[Categorical]", to_concat))
+ 
+-    if len(to_concat) and lib.dtypes_all_equal([obj.dtype for obj in to_concat]):
+-        # fastpath!
+-        obj = to_concat[0]
+-        if isinstance(obj, np.ndarray):
+-            to_concat_arrs = cast("Sequence[np.ndarray]", to_concat)
+-            return np.concatenate(to_concat_arrs, axis=axis)
+-
+-        to_concat_eas = cast("Sequence[ExtensionArray]", to_concat)
+-        if ea_compat_axis:
+-            # We have 1D objects, that don't support axis keyword
+-            return obj._concat_same_type(to_concat_eas)
+-        elif axis == 0:
+-            return obj._concat_same_type(to_concat_eas)
+-        else:
+-            # e.g. DatetimeArray
+-            # NB: We are assuming here that ensure_wrapped_if_arraylike has
+-            #  been called where relevant.
+-            return obj._concat_same_type(
+-                # error: Unexpected keyword argument "axis" for "_concat_same_type"
+-                # of "ExtensionArray"
+-                to_concat_eas,
+-                axis=axis,  # type: ignore[call-arg]
+-            )
++    with perfmark.region("gl-153"):
++        if len(to_concat) and lib.dtypes_all_equal([obj.dtype for obj in to_concat]):
++            # fastpath!
++            obj = to_concat[0]
++            if isinstance(obj, np.ndarray):
++                to_concat_arrs = cast("Sequence[np.ndarray]", to_concat)
++                return np.concatenate(to_concat_arrs, axis=axis)
++    
++            to_concat_eas = cast("Sequence[ExtensionArray]", to_concat)
++            if ea_compat_axis:
++                # We have 1D objects, that don't support axis keyword
++                return obj._concat_same_type(to_concat_eas)
++            elif axis == 0:
++                return obj._concat_same_type(to_concat_eas)
++            else:
++                # e.g. DatetimeArray
++                # NB: We are assuming here that ensure_wrapped_if_arraylike has
++                #  been called where relevant.
++                return obj._concat_same_type(
++                    # error: Unexpected keyword argument "axis" for "_concat_same_type"
++                    # of "ExtensionArray"
++                    to_concat_eas,
++                    axis=axis,  # type: ignore[call-arg]
++                )
+ 
+     # If all arrays are empty, there's nothing to convert, just short-cut to
+     # the concatenation, #3121.

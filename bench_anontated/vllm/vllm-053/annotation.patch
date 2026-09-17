@@ -1,0 +1,11 @@
+--- a/vllm/v1/sample/rejection_sampler.py
++++ b/vllm/v1/sample/rejection_sampler.py
+@@ -121,7 +121,7 @@
+                 Contains the final output token IDs and their logprobs if
+                 requested.
+         """
+-        with perfmark.region("vllm-053"):
++        with perfmark.region("vllm-053", logits_rows=logits.shape[0]):
+             assert metadata.max_spec_len <= MAX_SPEC_LEN
+ 
+             bonus_logits_indices = metadata.bonus_logits_indices

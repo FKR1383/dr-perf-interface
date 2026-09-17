@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-parser.cc
++++ b/src/regexp/regexp-parser.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-parser.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/base/logging.h"
+ #include "src/execution/isolate.h"
+@@ -2957,6 +2958,7 @@
+ template <class CharT, ParseMode mode>
+ ClassSetResult<mode> ParserImpl<CharT, mode>::ParseClassStringDisjunction(
+     ZoneList<CharacterRange>* ranges, CharacterClassStrings* strings) {
++  DRPERF_BENCH_REGION("v8-regexp-014");
+   DCHECK(unicode_sets());
+   DCHECK_EQ(current(), '\\');
+   DCHECK_EQ(Next(), 'q');

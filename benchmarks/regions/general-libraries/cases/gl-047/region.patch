@@ -1,0 +1,72 @@
+--- a/networkx/algorithms/traversal/edgebfs.py
++++ b/networkx/algorithms/traversal/edgebfs.py
+@@ -6,6 +6,7 @@
+ Algorithms for a breadth-first traversal of edges in a graph.
+ 
+ """
++import perfmark
+ 
+ from collections import deque
+ 
+@@ -122,33 +123,34 @@
+         kwds["keys"] = True
+ 
+     # set up edge lookup
+-    if orientation is None:
+-
+-        def edges_from(node):
+-            return iter(G.edges(node, **kwds))
+-
+-    elif not directed or orientation == "original":
+-
+-        def edges_from(node):
+-            for e in G.edges(node, **kwds):
+-                yield e + (FORWARD,)
+-
+-    elif orientation == "reverse":
+-
+-        def edges_from(node):
+-            for e in G.in_edges(node, **kwds):
+-                yield e + (REVERSE,)
+-
+-    elif orientation == "ignore":
+-
+-        def edges_from(node):
+-            for e in G.edges(node, **kwds):
+-                yield e + (FORWARD,)
+-            for e in G.in_edges(node, **kwds):
+-                yield e + (REVERSE,)
+-
+-    else:
+-        raise nx.NetworkXError("invalid orientation argument.")
++    with perfmark.region("gl-047"):
++        if orientation is None:
++    
++            def edges_from(node):
++                return iter(G.edges(node, **kwds))
++    
++        elif not directed or orientation == "original":
++    
++            def edges_from(node):
++                for e in G.edges(node, **kwds):
++                    yield e + (FORWARD,)
++    
++        elif orientation == "reverse":
++    
++            def edges_from(node):
++                for e in G.in_edges(node, **kwds):
++                    yield e + (REVERSE,)
++    
++        elif orientation == "ignore":
++    
++            def edges_from(node):
++                for e in G.edges(node, **kwds):
++                    yield e + (FORWARD,)
++                for e in G.in_edges(node, **kwds):
++                    yield e + (REVERSE,)
++    
++        else:
++            raise nx.NetworkXError("invalid orientation argument.")
+ 
+     if directed:
+         neighbors = G.successors

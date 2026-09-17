@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -3636,6 +3637,7 @@
+ Parser::DeclGroupPtrTy Parser::ParseCXXClassMemberDeclarationWithPragmas(
+     AccessSpecifier &AS, ParsedAttributes &AccessAttrs, DeclSpec::TST TagType,
+     Decl *TagDecl) {
++      DRPERF_BENCH_REGION("cf-249");
+   ParenBraceBracketBalancer BalancerRAIIObj(*this);
+ 
+   switch (Tok.getKind()) {

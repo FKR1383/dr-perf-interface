@@ -1,0 +1,82 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -1891,38 +1892,39 @@
+            Support for slice notation.
+         """
+ 
+-        stop_on_defined = False
+-        stop_on = NoMatch()
+-        if isinstance(key, slice):
+-            key, stop_on = key.start, key.stop
+-            if key is None:
+-                key = ...
+-            stop_on_defined = True
+-        elif isinstance(key, tuple) and isinstance(key[-1], slice):
+-            key, stop_on = (key[0], key[1].start), key[1].stop
+-            stop_on_defined = True
+-
+-        # convert single arg keys to tuples
+-        if isinstance(key, str_type):
+-            key = (key,)
+-        try:
+-            iter(key)
+-        except TypeError:
+-            key = (key, key)
+-
+-        if len(key) > 2:
+-            raise TypeError(
+-                f"only 1 or 2 index arguments supported ({key[:5]}{f'... [{len(key)}]' if len(key) > 5 else ''})"
+-            )
+-
+-        # clip to 2 elements
+-        ret = self * tuple(key[:2])
+-        ret = typing.cast(_MultipleMatch, ret)
+-
+-        if stop_on_defined:
+-            ret.stopOn(stop_on)
+-
+-        return ret
++        with perfmark.region("lt-192"):
++            stop_on_defined = False
++            stop_on = NoMatch()
++            if isinstance(key, slice):
++                key, stop_on = key.start, key.stop
++                if key is None:
++                    key = ...
++                stop_on_defined = True
++            elif isinstance(key, tuple) and isinstance(key[-1], slice):
++                key, stop_on = (key[0], key[1].start), key[1].stop
++                stop_on_defined = True
++
++            # convert single arg keys to tuples
++            if isinstance(key, str_type):
++                key = (key,)
++            try:
++                iter(key)
++            except TypeError:
++                key = (key, key)
++
++            if len(key) > 2:
++                raise TypeError(
++                    f"only 1 or 2 index arguments supported ({key[:5]}{f'... [{len(key)}]' if len(key) > 5 else ''})"
++                )
++
++            # clip to 2 elements
++            ret = self * tuple(key[:2])
++            ret = typing.cast(_MultipleMatch, ret)
++
++            if stop_on_defined:
++                ret.stopOn(stop_on)
++
++            return ret
+ 
+     def __call__(self, name: typing.Optional[str] = None) -> ParserElement:
+         """

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "wan-031",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "prompt_words",
+      "expression": "sum(len(u.split()) for u in ([prompt] if isinstance(prompt, str) else prompt))"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-031",
+      "validity_warnings": [],
+      "pcv_names": [
+        "prompt_words"
+      ],
+      "distinct_states": 4,
+      "required_states": 3,
+      "calls": 18,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "prompt_words": 1
+          },
+          "calls": 6,
+          "instructions_per_call": 3203058.5,
+          "unexplained_instructions_per_call": 1083379.1666666663,
+          "unexplained_share": 0.3382327130980175
+        },
+        {
+          "state": {
+            "prompt_words": 2
+          },
+          "calls": 6,
+          "instructions_per_call": 3651236.8333333335,
+          "unexplained_instructions_per_call": 1379141.9999999993,
+          "unexplained_share": 0.37771912996970275
+        },
+        {
+          "state": {
+            "prompt_words": 3
+          },
+          "calls": 3,
+          "instructions_per_call": 3295914.6666666665,
+          "unexplained_instructions_per_call": 1148389.6666666667,
+          "unexplained_share": 0.3484282157790493
+        },
+        {
+          "state": {
+            "prompt_words": 5
+          },
+          "calls": 3,
+          "instructions_per_call": 3722246.3333333335,
+          "unexplained_instructions_per_call": 1369533.3333333333,
+          "unexplained_share": 0.36793194503784854
+        }
+      ],
+      "max_unexplained_share": 0.37771912996970275,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "prompt_words": 24774.395238095225
+        },
+        "constant": 2154873.454761893,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 19.429813154041767,
+      "raw_files": [
+        "run.3227889.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-031\": 6}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-031\"}\n",
+    "correctness_seconds": 5.315,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-031\", prompt_words=sum(len(u.split()) for u in ([prompt] if isinstance(prompt, str) else prompt))):",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Refined annotation still did not pass the strict 5% gate."
+  }
+}

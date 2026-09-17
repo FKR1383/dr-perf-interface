@@ -1,0 +1,38 @@
+--- a/src/packaging/utils.py
++++ b/src/packaging/utils.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from typing import NewType, cast
+@@ -278,16 +279,17 @@
+             f"Invalid wheel filename (invalid version): {filename!r}"
+         ) from e
+ 
+-    if dashes == 5:
+-        build_part = parts[2]
+-        build_match = _build_tag_regex.match(build_part)
+-        if build_match is None:
+-            raise InvalidWheelFilename(
+-                f"Invalid build number: {build_part} in {filename!r}"
+-            )
+-        build = cast("BuildTag", (int(build_match.group(1)), build_match.group(2)))
+-    else:
+-        build = ()
++    with perfmark.region("gl-207"):
++        if dashes == 5:
++            build_part = parts[2]
++            build_match = _build_tag_regex.match(build_part)
++            if build_match is None:
++                raise InvalidWheelFilename(
++                    f"Invalid build number: {build_part} in {filename!r}"
++                )
++            build = cast("BuildTag", (int(build_match.group(1)), build_match.group(2)))
++        else:
++            build = ()
+     tag_str = parts[-1]
+     try:
+         tags = parse_tag(tag_str, validate_order=validate_order)

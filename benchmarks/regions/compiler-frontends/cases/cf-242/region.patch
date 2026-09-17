@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/ConstantFold.cpp
++++ b/llvm/lib/IR/ConstantFold.cpp
+@@ -16,6 +16,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/ConstantFold.h"
+ #include "llvm/ADT/APSInt.h"
+ #include "llvm/ADT/SmallVector.h"
+@@ -603,6 +604,7 @@
+ 
+ Constant *llvm::ConstantFoldBinaryInstruction(unsigned Opcode, Constant *C1,
+                                               Constant *C2) {
++                                                DRPERF_BENCH_REGION("cf-242");
+   assert(Instruction::isBinaryOp(Opcode) && "Non-binary instruction detected");
+ 
+   // Simplify BinOps with their identity values first. They are no-ops and we

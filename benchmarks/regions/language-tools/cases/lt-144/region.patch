@@ -1,0 +1,148 @@
+--- a/astroid/protocols.py
++++ b/astroid/protocols.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ import itertools
+@@ -170,74 +171,75 @@
+     context: InferenceContext,
+     _: SuccessfulInferenceResult,
+ ) -> Generator[ConstFactoryResult | util.UninferableBase]:
+-    not_implemented = nodes.Const(NotImplemented)
+-    if isinstance(other, nodes.Const):
+-        if (
+-            operator == "**"
+-            and isinstance(self.value, (int, float))
+-            and isinstance(other.value, (int, float))
+-            and (self.value > 1e5 or other.value > 1e5)
+-        ):
+-            yield not_implemented
+-            return
+-        # Repeating a str/bytes by a large count ("x" * n or n * "x") would
+-        # eagerly build the whole object, the same way list/tuple repetition
+-        # is bounded in _multiply_seq_by_int. Don't materialize it.
+-        if operator == "*":
+-            sequence, count = self.value, other.value
+-            if isinstance(sequence, int) and isinstance(count, (str, bytes)):
+-                sequence, count = count, sequence
++    with perfmark.region("lt-144"):
++        not_implemented = nodes.Const(NotImplemented)
++        if isinstance(other, nodes.Const):
+             if (
+-                isinstance(sequence, (str, bytes))
+-                and isinstance(count, int)
+-                and len(sequence) * count > 1e8
++                operator == "**"
++                and isinstance(self.value, (int, float))
++                and isinstance(other.value, (int, float))
++                and (self.value > 1e5 or other.value > 1e5)
++            ):
++                yield not_implemented
++                return
++            # Repeating a str/bytes by a large count ("x" * n or n * "x") would
++            # eagerly build the whole object, the same way list/tuple repetition
++            # is bounded in _multiply_seq_by_int. Don't materialize it.
++            if operator == "*":
++                sequence, count = self.value, other.value
++                if isinstance(sequence, int) and isinstance(count, (str, bytes)):
++                    sequence, count = count, sequence
++                if (
++                    isinstance(sequence, (str, bytes))
++                    and isinstance(count, int)
++                    and len(sequence) * count > 1e8
++                ):
++                    yield util.Uninferable
++                    return
++            # Left-shifting by a large amount builds an enormous int, the integer
++            # analog of the ** guard above.
++            if (
++                operator == "<<"
++                and isinstance(self.value, int)
++                and isinstance(other.value, int)
++                and other.value > 1e8
+             ):
+                 yield util.Uninferable
+                 return
+-        # Left-shifting by a large amount builds an enormous int, the integer
+-        # analog of the ** guard above.
+-        if (
+-            operator == "<<"
+-            and isinstance(self.value, int)
+-            and isinstance(other.value, int)
+-            and other.value > 1e8
+-        ):
++            # Don't materialize an overly large str/bytes concatenation.
++            if (
++                operator == "+"
++                and isinstance(self.value, (str, bytes))
++                and isinstance(other.value, type(self.value))
++                and len(self.value) + len(other.value) > 1e8
++            ):
++                yield util.Uninferable
++                return
++            # An oversized width or precision ("%1000000000d" % 1) would
++            # materialize the whole interpolation, like the repetition above.
++            if (
++                operator in {"%", "%="}
++                and isinstance(self.value, (str, bytes))
++                and _old_style_format_too_large(self.value, other.value)
++            ):
++                yield util.Uninferable
++                return
++            try:
++                impl = BIN_OP_IMPL[operator]
++                try:
++                    yield nodes.const_factory(impl(self.value, other.value))
++                except TypeError:
++                    # ArithmeticError is not enough: float >> float is a TypeError
++                    yield not_implemented
++                except Exception:  # pylint: disable=broad-except
++                    yield util.Uninferable
++            except TypeError:
++                yield not_implemented
++        elif isinstance(self.value, str) and operator == "%":
++            # TODO(cpopa): implement string interpolation later on.
+             yield util.Uninferable
+-            return
+-        # Don't materialize an overly large str/bytes concatenation.
+-        if (
+-            operator == "+"
+-            and isinstance(self.value, (str, bytes))
+-            and isinstance(other.value, type(self.value))
+-            and len(self.value) + len(other.value) > 1e8
+-        ):
+-            yield util.Uninferable
+-            return
+-        # An oversized width or precision ("%1000000000d" % 1) would
+-        # materialize the whole interpolation, like the repetition above.
+-        if (
+-            operator in {"%", "%="}
+-            and isinstance(self.value, (str, bytes))
+-            and _old_style_format_too_large(self.value, other.value)
+-        ):
+-            yield util.Uninferable
+-            return
+-        try:
+-            impl = BIN_OP_IMPL[operator]
+-            try:
+-                yield nodes.const_factory(impl(self.value, other.value))
+-            except TypeError:
+-                # ArithmeticError is not enough: float >> float is a TypeError
+-                yield not_implemented
+-            except Exception:  # pylint: disable=broad-except
+-                yield util.Uninferable
+-        except TypeError:
++        else:
+             yield not_implemented
+-    elif isinstance(self.value, str) and operator == "%":
+-        # TODO(cpopa): implement string interpolation later on.
+-        yield util.Uninferable
+-    else:
+-        yield not_implemented
+ 
+ 
+ def _multiply_seq_by_int(

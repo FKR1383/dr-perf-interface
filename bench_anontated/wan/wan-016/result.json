@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-016",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "parameter_elements",
+      "expression": "int(parameters.numel())"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-016",
+      "validity_warnings": [],
+      "pcv_names": [
+        "parameter_elements"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "parameter_elements": 32
+          },
+          "calls": 3,
+          "instructions_per_call": 91411.0,
+          "unexplained_instructions_per_call": 0.0,
+          "unexplained_share": 0.0
+        },
+        {
+          "state": {
+            "parameter_elements": 288
+          },
+          "calls": 3,
+          "instructions_per_call": 76336.33333333333,
+          "unexplained_instructions_per_call": 3376.0,
+          "unexplained_share": 0.04422533612216114
+        },
+        {
+          "state": {
+            "parameter_elements": 384
+          },
+          "calls": 3,
+          "instructions_per_call": 73562.33333333333,
+          "unexplained_instructions_per_call": 4642.0,
+          "unexplained_share": 0.06310294670732758
+        }
+      ],
+      "max_unexplained_share": 0.06310294670732758,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "parameter_elements": -28.163015463917525
+        },
+        "constant": 84372.80985108715,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 9.627701605088077,
+      "raw_files": [
+        "run.3226805.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-016\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-016\"}\n",
+    "correctness_seconds": 5.287,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-016\", parameter_elements=int(parameters.numel())):",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Refined annotation still did not pass the strict 5% gate."
+  }
+}

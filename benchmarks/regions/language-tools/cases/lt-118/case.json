@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-118",
+  "title": "astroid get_constraints body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pylint-dev/astroid",
+    "revision": "5d1a0a2efabdc43f6cb8449375476b2915ede8fe",
+    "path": "astroid/constraint.py",
+    "snapshot": "../../upstream/astroid/astroid/constraint.py",
+    "sha256": "408911e96d55c0e24eaf91a8988d1413fa6238b3f4f4797f98aa5452472db909"
+  },
+  "region": {
+    "symbol": "get_constraints",
+    "start_line": 317,
+    "end_line": 353,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-118",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise get_constraints with bounded, varied astroid inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "astroid:astroid/constraint.py:get_constraints",
+  "citations": [
+    "https://github.com/pylint-dev/astroid/blob/5d1a0a2efabdc43f6cb8449375476b2915ede8fe/astroid/constraint.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

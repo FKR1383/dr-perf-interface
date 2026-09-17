@@ -1,0 +1,58 @@
+--- a/networkx/algorithms/flow/gomory_hu.py
++++ b/networkx/algorithms/flow/gomory_hu.py
+@@ -1,6 +1,7 @@
+ """
+ Gomory-Hu tree of undirected Graphs.
+ """
++import perfmark
+ 
+ import networkx as nx
+ from networkx.utils import not_implemented_for
+@@ -159,26 +160,27 @@
+     R = build_residual_network(G, capacity)
+ 
+     # For all the leaves in the star graph tree (that is n-1 nodes).
+-    for source in tree:
+-        # Find neighbor in the tree
+-        target = tree[source]
+-        # compute minimum cut
+-        cut_value, partition = nx.minimum_cut(
+-            G, source, target, capacity=capacity, flow_func=flow_func, residual=R
+-        )
+-        labels[(source, target)] = cut_value
+-        # Update the tree
+-        # Source will always be in partition[0] and target in partition[1]
+-        for node in partition[0]:
+-            if node != source and node in tree and tree[node] == target:
+-                tree[node] = source
+-                labels[node, source] = labels.get((node, target), cut_value)
+-        #
+-        if target != root and tree[target] in partition[0]:
+-            labels[source, tree[target]] = labels[target, tree[target]]
+-            labels[target, source] = cut_value
+-            tree[source] = tree[target]
+-            tree[target] = source
++    with perfmark.region("gl-077"):
++        for source in tree:
++            # Find neighbor in the tree
++            target = tree[source]
++            # compute minimum cut
++            cut_value, partition = nx.minimum_cut(
++                G, source, target, capacity=capacity, flow_func=flow_func, residual=R
++            )
++            labels[(source, target)] = cut_value
++            # Update the tree
++            # Source will always be in partition[0] and target in partition[1]
++            for node in partition[0]:
++                if node != source and node in tree and tree[node] == target:
++                    tree[node] = source
++                    labels[node, source] = labels.get((node, target), cut_value)
++            #
++            if target != root and tree[target] in partition[0]:
++                labels[source, tree[target]] = labels[target, tree[target]]
++                labels[target, source] = cut_value
++                tree[source] = tree[target]
++                tree[target] = source
+ 
+     # Build the tree
+     T = nx.Graph()

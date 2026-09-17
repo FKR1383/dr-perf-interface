@@ -1,0 +1,18 @@
+--- a/src/regexp/experimental/experimental-interpreter.cc
++++ b/src/regexp/experimental/experimental-interpreter.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/experimental/experimental-interpreter.h"
++#include "drperf_bench_region.h"
+ 
+ #include "include/v8config.h"
+ #include "src/base/logging.h"
+@@ -1585,6 +1586,7 @@
+     Tagged<TrustedByteArray> bytecode, int register_count_per_match,
+     Tagged<String> input, int start_index, int32_t* output_registers,
+     int output_register_count, Zone* zone) {
++  DRPERF_BENCH_REGION("v8-regexp-028");
+   DCHECK(input->IsFlat());
+   DisallowGarbageCollection no_gc;
+ 

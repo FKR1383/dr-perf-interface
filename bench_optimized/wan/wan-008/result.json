@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "wan-008",
+  "stage": "optimization",
+  "status": "accepted-with-model-limitation",
+  "accepted": true,
+  "gate_pass": false,
+  "baseline_measurement": "../../../bench_anontated/wan/wan-008/measurements/attempt-1/metrics.json",
+  "optimized_measurement": "measurements/optimized-final-3/metrics.json",
+  "reason": "Uses the original scalar loop for extent 1 and overlapping tensors, and a broadcast tensor blend for larger nonoverlapping extents. Aggregate instructions fell; an earlier run regressed slightly at extent 1, while the final run improved at every tested extent; the optimized unsplit affine fit remains above the 5% unexplained threshold.",
+  "correctness": {
+    "status": "passed",
+      "details": "Primary workload and separate reference-loop edge tests passed for extents -1, 0, 1, 2, 3 and aliasing. Comparisons use rtol=atol values of 1e-12 for float64, 1e-6 for float32, 1e-3 for float16, and 1e-2 for bfloat16; this is numeric tolerance equivalence, not bitwise equality for non-alias inputs."
+  },
+  "instructions": {
+    "before_total": 2222457.0,
+    "after_total": 1699295.0,
+    "change_percent": -23.539803019810957,
+    "per_state": [
+      {
+        "state": {
+          "blend_extent": 1
+        },
+        "before_instructions_per_call": 137575.66666666666,
+        "after_instructions_per_call": 137303.33333333334,
+        "change_percent": -0.19795167265527214
+      },
+      {
+        "state": {
+          "blend_extent": 2
+        },
+        "before_instructions_per_call": 243607.0,
+        "after_instructions_per_call": 237040.66666666666,
+        "change_percent": -2.695461679398925
+      },
+      {
+        "state": {
+          "blend_extent": 3
+        },
+        "before_instructions_per_call": 359636.3333333333,
+        "after_instructions_per_call": 192087.66666666666,
+        "change_percent": -46.58835916652841
+      }
+    ]
+  },
+  "optimized_gate": {
+    "case": "wan-008",
+    "validity_warnings": [],
+    "pcv_names": [
+      "blend_extent"
+    ],
+    "distinct_states": 3,
+    "required_states": 3,
+    "calls": 9,
+    "dropped_calls": 0,
+    "nested_calls_per_call": 0.0,
+    "states": [
+      {
+        "state": {
+          "blend_extent": 1
+        },
+        "calls": 3,
+        "instructions_per_call": 137303.33333333334,
+        "unexplained_instructions_per_call": 18566.0,
+        "unexplained_share": 0.13521885848850476
+      },
+      {
+        "state": {
+          "blend_extent": 2
+        },
+        "calls": 3,
+        "instructions_per_call": 237040.66666666666,
+        "unexplained_instructions_per_call": 49648.99999999998,
+        "unexplained_share": 0.20945351149310518
+      },
+      {
+        "state": {
+          "blend_extent": 3
+        },
+        "calls": 3,
+        "instructions_per_call": 192087.66666666666,
+        "unexplained_instructions_per_call": 24282.333333333336,
+        "unexplained_share": 0.1264127663931226
+      }
+    ],
+    "max_unexplained_share": 0.20945351149310518,
+    "threshold": 0.05,
+    "sufficient_points": true,
+    "gate_pass": false,
+    "gate_reasons": [
+      "unexplained share exceeds 5% at an observed state"
+    ],
+    "automatic_regime_splitting": false,
+    "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+    "formula": {
+      "coefficients": {
+        "blend_extent": 5942.833333333335
+      },
+      "constant": 146092.44444444432,
+      "dependent_columns": []
+    },
+    "returncode": 0,
+    "instrumented_wall_seconds": 10.799710944993421,
+    "raw_files": [
+      "run.3212043.json"
+    ]
+  }
+}

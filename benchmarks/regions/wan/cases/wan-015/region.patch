@@ -1,0 +1,92 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+@@ -588,44 +589,45 @@
+         self.gradient_checkpointing = False
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0]):
+-        if feat_cache is not None:
+-            idx = feat_idx[0]
+-            cache_x = x[:, :, -CACHE_T:, :, :].clone()
+-            if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
+-                # cache last frame of last two chunk
+-                cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
+-            x = self.conv_in(x, feat_cache[idx])
+-            feat_cache[idx] = cache_x
+-            feat_idx[0] += 1
+-        else:
+-            x = self.conv_in(x)
+-
+-        ## downsamples
+-        for layer in self.down_blocks:
++        with perfmark.region("wan-015"):
+             if feat_cache is not None:
+-                x = layer(x, feat_cache=feat_cache, feat_idx=feat_idx)
++                idx = feat_idx[0]
++                cache_x = x[:, :, -CACHE_T:, :, :].clone()
++                if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
++                    # cache last frame of last two chunk
++                    cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
++                x = self.conv_in(x, feat_cache[idx])
++                feat_cache[idx] = cache_x
++                feat_idx[0] += 1
+             else:
+-                x = layer(x)
+-
+-        ## middle
+-        x = self.mid_block(x, feat_cache=feat_cache, feat_idx=feat_idx)
+-
+-        ## head
+-        x = self.norm_out(x)
+-        x = self.nonlinearity(x)
+-        if feat_cache is not None:
+-            idx = feat_idx[0]
+-            cache_x = x[:, :, -CACHE_T:, :, :].clone()
+-            if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
+-                # cache last frame of last two chunk
+-                cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
+-            x = self.conv_out(x, feat_cache[idx])
+-            feat_cache[idx] = cache_x
+-            feat_idx[0] += 1
+-        else:
+-            x = self.conv_out(x)
+-
+-        return x
++                x = self.conv_in(x)
++
++            ## downsamples
++            for layer in self.down_blocks:
++                if feat_cache is not None:
++                    x = layer(x, feat_cache=feat_cache, feat_idx=feat_idx)
++                else:
++                    x = layer(x)
++
++            ## middle
++            x = self.mid_block(x, feat_cache=feat_cache, feat_idx=feat_idx)
++
++            ## head
++            x = self.norm_out(x)
++            x = self.nonlinearity(x)
++            if feat_cache is not None:
++                idx = feat_idx[0]
++                cache_x = x[:, :, -CACHE_T:, :, :].clone()
++                if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
++                    # cache last frame of last two chunk
++                    cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
++                x = self.conv_out(x, feat_cache[idx])
++                feat_cache[idx] = cache_x
++                feat_idx[0] += 1
++            else:
++                x = self.conv_out(x)
++
++            return x
+ 
+ 
+ class WanResidualUpBlock(nn.Module):

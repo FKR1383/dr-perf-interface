@@ -1,0 +1,19 @@
+derive vllm_compaction_release_if_idle   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: entries=1 x24, entries=2 x24, entries=4 x24, entries=8 x24, entries=16 x24, entries=32 x24
+  cost(entries) = 1,920.4*entries + 12,646.3        [all entries]   blocks: 319 affine, 1499 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    per-entries coefficient by function:
+               737.6  _PyEval_EvalFrameDefault  [python3.12]
+               267.9  PyUnicode_Substring+?  [python3.12]
+                 114  PyObject_Free  [python3.12]
+                  94  _PyUnicode_FromASCII  [python3.12]
+                  78  PyObject_Malloc  [python3.12]
+                  74  PyList_AsTuple+?  [python3.12]
+    constant by function:
+             5,146.7  _PyEval_EvalFrameDefault  [python3.12]
+               633.9  PyObject_Free  [python3.12]
+               547.2  PyObject_Malloc  [python3.12]
+               431.3  PyDict_Contains+?  [python3.12]
+                 401  _PyObject_GC_New  [python3.12]
+               348.8  PyTuple_GetItem  [python3.12]
+

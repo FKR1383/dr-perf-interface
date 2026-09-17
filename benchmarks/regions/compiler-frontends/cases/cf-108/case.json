@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-108",
+  "title": "Parser::ParsePostfixExpressionSuffix compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Parse/ParseExpr.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Parse/ParseExpr.cpp",
+    "sha256": "6299ab7165e8e8b730e9da3d40549a66d630f36a76f887f9f8bc7001f3a09c8c"
+  },
+  "region": {
+    "symbol": "Parser::ParsePostfixExpressionSuffix",
+    "start_line": 2000,
+    "end_line": 2421,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-108",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "parsing",
+  "workload": {
+    "description": "Run the bounded parse-templates fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Parse/ParseExpr.cpp:Parser::ParsePostfixExpressionSuffix",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Parse/ParseExpr.cpp#L2000-L2421"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "ec6e989da228a7362616505a7855da065d19f709b90bb8f9b773be078790ba41",
+      "patch_sha256": "e67b01fe5510a498a871a9c5e59f90e1f83986dbfe719889a574875d14736d33"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

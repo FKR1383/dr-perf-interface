@@ -1,0 +1,24 @@
+--- a/src/urllib3/util/ssl_.py
++++ b/src/urllib3/util/ssl_.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import hashlib
+ import hmac
+@@ -129,10 +130,11 @@
+         )
+ 
+     # We need encode() here for py32; works on py2 and p33.
+-    try:
+-        fingerprint_bytes = unhexlify(fingerprint.encode())
+-    except BinasciiError as e:
+-        raise SSLError(e) from e
++    with perfmark.region("gl-176"):
++        try:
++            fingerprint_bytes = unhexlify(fingerprint.encode())
++        except BinasciiError as e:
++            raise SSLError(e) from e
+ 
+     cert_digest = hashfunc(cert).digest()
+ 

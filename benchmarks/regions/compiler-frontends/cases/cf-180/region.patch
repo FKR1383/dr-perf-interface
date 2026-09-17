@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/UnwrappedLineParser.cpp
++++ b/clang/lib/Format/UnwrappedLineParser.cpp
+@@ -12,6 +12,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "UnwrappedLineParser.h"
+ #include "FormatToken.h"
+ #include "FormatTokenLexer.h"
+@@ -480,6 +481,7 @@
+ }
+ 
+ void UnwrappedLineParser::calculateBraceTypes(bool ExpectClassBody) {
++  DRPERF_BENCH_REGION("cf-180");
+   // We'll parse forward through the tokens until we hit
+   // a closing brace or eof - note that getNextToken() will
+   // parse macros, so this will magically work inside macro

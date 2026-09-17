@@ -1,0 +1,19 @@
+derive vllm_store_invalidate_blocks   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: blocks=1 x30, blocks=2 x30, blocks=3 x30, blocks=4 x30, blocks=6 x30, blocks=8 x30
+  cost(blocks) = 924*blocks + 6,336.3        [all blocks]   blocks: 159 affine, 564 constant, 0 irregular (0.0% of cost)
+    marker cost subtracted from the constant: 571.9 per call (calibrated)
+    per-blocks coefficient by function:
+               392.9  _PyEval_EvalFrameDefault  [python3.12]
+                  66  _PyTuple_Resize+?  [python3.12]
+                  64  _PyObject_MakeTpCall  [python3.12]
+                  60  PySet_Add  [python3.12]
+                  55  PyTuple_New+?  [python3.12]
+                  48  PyType_IsSubtype  [python3.12]
+    constant by function:
+             3,603.9  _PyEval_EvalFrameDefault  [python3.12]
+               407.4  PyObject_Free  [python3.12]
+               286.4  PyObject_Malloc  [python3.12]
+               243.3  _PyMem_Strdup+?  [python3.12]
+                 233  _PyErr_ChainStackItem+?  [python3.12]
+               195.8  _PyLong_FromByteArray+?  [python3.12]
+

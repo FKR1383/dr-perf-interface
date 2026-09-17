@@ -1,0 +1,78 @@
+--- a/networkx/algorithms/tree/mst.py
++++ b/networkx/algorithms/tree/mst.py
+@@ -2,6 +2,7 @@
+ Algorithms for calculating min/max spanning trees/forests.
+ 
+ """
++import perfmark
+ 
+ from dataclasses import dataclass, field
+ from enum import Enum
+@@ -108,36 +109,37 @@
+     best_edges = [edge for edge in best_edges if edge is not None]
+     # If each entry was ``None``, that means the graph was disconnected,
+     # so we are done generating the forest.
+-    while best_edges:
+-        # Determine the optimum edge in the edge boundary of each
+-        # component in the forest.
+-        #
+-        # This must be a sequence, not an iterator. In this list, the
+-        # same edge may appear twice, in different orientations (but
+-        # that's okay, since a union operation will be called on the
+-        # endpoints the first time it is seen, but not the second time).
+-        #
+-        # Any ``None`` indicates that the edge boundary for that
+-        # component was empty, so that part of the forest has been
+-        # completed.
+-        #
+-        # TODO This can be parallelized, both in the outer loop over
+-        # each component in the forest and in the computation of the
+-        # minimum. (Same goes for the identical lines outside the loop.)
+-        best_edges = (best_edge(component) for component in forest.to_sets())
+-        best_edges = [edge for edge in best_edges if edge is not None]
+-        # Join trees in the forest using the best edges, and yield that
+-        # edge, since it is part of the spanning tree.
+-        #
+-        # TODO This loop can be parallelized, to an extent (the union
+-        # operation must be atomic).
+-        for u, v, d in best_edges:
+-            if forest[u] != forest[v]:
+-                if data:
+-                    yield u, v, d
+-                else:
+-                    yield u, v
+-                forest.union(u, v)
++    with perfmark.region("gl-051"):
++        while best_edges:
++            # Determine the optimum edge in the edge boundary of each
++            # component in the forest.
++            #
++            # This must be a sequence, not an iterator. In this list, the
++            # same edge may appear twice, in different orientations (but
++            # that's okay, since a union operation will be called on the
++            # endpoints the first time it is seen, but not the second time).
++            #
++            # Any ``None`` indicates that the edge boundary for that
++            # component was empty, so that part of the forest has been
++            # completed.
++            #
++            # TODO This can be parallelized, both in the outer loop over
++            # each component in the forest and in the computation of the
++            # minimum. (Same goes for the identical lines outside the loop.)
++            best_edges = (best_edge(component) for component in forest.to_sets())
++            best_edges = [edge for edge in best_edges if edge is not None]
++            # Join trees in the forest using the best edges, and yield that
++            # edge, since it is part of the spanning tree.
++            #
++            # TODO This loop can be parallelized, to an extent (the union
++            # operation must be atomic).
++            for u, v, d in best_edges:
++                if forest[u] != forest[v]:
++                    if data:
++                        yield u, v, d
++                    else:
++                        yield u, v
++                    forest.union(u, v)
+ 
+ 
+ @nx._dispatchable(

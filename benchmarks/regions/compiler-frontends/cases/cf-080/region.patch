@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExpr.cpp
++++ b/clang/lib/CodeGen/CGExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ABIInfoImpl.h"
+ #include "CGCUDARuntime.h"
+ #include "CGCXXABI.h"
+@@ -2402,6 +2403,7 @@
+ /// is 'Ty'.
+ void CodeGenFunction::EmitStoreThroughLValue(RValue Src, LValue Dst,
+                                              bool isInit) {
++                                               DRPERF_BENCH_REGION("cf-080");
+   if (!Dst.isSimple()) {
+     if (Dst.isVectorElt()) {
+       // Read/modify/write the vector, inserting the new element.

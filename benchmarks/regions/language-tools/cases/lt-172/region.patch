@@ -1,0 +1,44 @@
+--- a/src/jinja2/environment.py
++++ b/src/jinja2/environment.py
+@@ -1,6 +1,7 @@
+ """Classes for managing templates and their runtime and compile time
+ options.
+ """
++import perfmark
+ 
+ import os
+ import typing
+@@ -755,19 +756,20 @@
+         .. versionadded:: 2.4
+            `defer_init` parameter added.
+         """
+-        source_hint = None
+-        try:
+-            if isinstance(source, str):
+-                source_hint = source
+-                source = self._parse(source, name, filename)
+-            source = self._generate(source, name, filename, defer_init=defer_init)
+-            if raw:
+-                return source
+-            if filename is None:
+-                filename = "<template>"
+-            return self._compile(source, filename)
+-        except TemplateSyntaxError:
+-            self.handle_exception(source=source_hint)
++        with perfmark.region("lt-172"):
++            source_hint = None
++            try:
++                if isinstance(source, str):
++                    source_hint = source
++                    source = self._parse(source, name, filename)
++                source = self._generate(source, name, filename, defer_init=defer_init)
++                if raw:
++                    return source
++                if filename is None:
++                    filename = "<template>"
++                return self._compile(source, filename)
++            except TemplateSyntaxError:
++                self.handle_exception(source=source_hint)
+ 
+     def compile_expression(
+         self, source: str, undefined_to_none: bool = True

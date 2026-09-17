@@ -1,0 +1,11 @@
+--- a/vllm/v1/worker/gpu_input_batch.py
++++ b/vllm/v1/worker/gpu_input_batch.py
+@@ -352,7 +352,7 @@
+         self,
+         request: "CachedRequestState",
+     ) -> int:
+-        with perfmark.region("vllm-061"):
++        with perfmark.region("vllm-061", batch_size=self.num_reqs, output_token_count=len(request.output_token_ids)):
+             req_index = self._register_add_request(request)
+ 
+             req_id = request.req_id

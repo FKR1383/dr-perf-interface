@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -1311,6 +1312,7 @@
+ }
+ 
+ void ASTWriter::writeUnhashedControlBlock(Preprocessor &PP) {
++  DRPERF_BENCH_REGION("cf-209");
+   using namespace llvm;
+ 
+   // Flush first to prepare the PCM hash (signature).

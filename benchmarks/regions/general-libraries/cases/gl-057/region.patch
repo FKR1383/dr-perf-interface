@@ -1,0 +1,110 @@
+--- a/networkx/algorithms/connectivity/connectivity.py
++++ b/networkx/algorithms/connectivity/connectivity.py
+@@ -1,6 +1,7 @@
+ """
+ Flow based connectivity algorithms
+ """
++import perfmark
+ 
+ import itertools
+ from operator import itemgetter
+@@ -792,51 +793,52 @@
+     R = build_residual_network(H, "capacity")
+     kwargs = {"flow_func": flow_func, "auxiliary": H, "residual": R}
+ 
+-    if G.is_directed():
+-        # Algorithm 8 in [1]
+-        if not nx.is_weakly_connected(G):
+-            return 0
+-
+-        # initial value for \lambda is minimum degree
+-        L = min(d for n, d in G.degree())
+-        nodes = list(G)
+-        n = len(nodes)
+-
+-        if cutoff is not None:
+-            L = min(cutoff, L)
+-
+-        for i in range(n):
+-            kwargs["cutoff"] = L
+-            try:
+-                L = min(L, local_edge_connectivity(G, nodes[i], nodes[i + 1], **kwargs))
+-            except IndexError:  # last node!
+-                L = min(L, local_edge_connectivity(G, nodes[i], nodes[0], **kwargs))
+-        return L
+-    else:  # undirected
+-        # Algorithm 6 in [1]
+-        if not nx.is_connected(G):
+-            return 0
+-
+-        # initial value for \lambda is minimum degree
+-        L = min(d for n, d in G.degree())
+-
+-        if cutoff is not None:
+-            L = min(cutoff, L)
+-
+-        # A dominating set is \lambda-covering
+-        # We need a dominating set with at least two nodes
+-        for node in G:
+-            D = nx.dominating_set(G, start_with=node)
+-            v = D.pop()
+-            if D:
+-                break
+-        else:
+-            # in complete graphs the dominating sets will always be of one node
+-            # thus we return min degree
++    with perfmark.region("gl-057"):
++        if G.is_directed():
++            # Algorithm 8 in [1]
++            if not nx.is_weakly_connected(G):
++                return 0
++    
++            # initial value for \lambda is minimum degree
++            L = min(d for n, d in G.degree())
++            nodes = list(G)
++            n = len(nodes)
++    
++            if cutoff is not None:
++                L = min(cutoff, L)
++    
++            for i in range(n):
++                kwargs["cutoff"] = L
++                try:
++                    L = min(L, local_edge_connectivity(G, nodes[i], nodes[i + 1], **kwargs))
++                except IndexError:  # last node!
++                    L = min(L, local_edge_connectivity(G, nodes[i], nodes[0], **kwargs))
+             return L
+-
+-        for w in D:
+-            kwargs["cutoff"] = L
+-            L = min(L, local_edge_connectivity(G, v, w, **kwargs))
+-
+-        return L
++        else:  # undirected
++            # Algorithm 6 in [1]
++            if not nx.is_connected(G):
++                return 0
++    
++            # initial value for \lambda is minimum degree
++            L = min(d for n, d in G.degree())
++    
++            if cutoff is not None:
++                L = min(cutoff, L)
++    
++            # A dominating set is \lambda-covering
++            # We need a dominating set with at least two nodes
++            for node in G:
++                D = nx.dominating_set(G, start_with=node)
++                v = D.pop()
++                if D:
++                    break
++            else:
++                # in complete graphs the dominating sets will always be of one node
++                # thus we return min degree
++                return L
++    
++            for w in D:
++                kwargs["cutoff"] = L
++                L = min(L, local_edge_connectivity(G, v, w, **kwargs))
++    
++            return L

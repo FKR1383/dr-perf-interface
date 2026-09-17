@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-035",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 1,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "max_sequence_length",
+      "expression": "int(max_sequence_length)"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-035",
+      "validity_warnings": [],
+      "pcv_names": [
+        "max_sequence_length"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "max_sequence_length": 8
+          },
+          "calls": 3,
+          "instructions_per_call": 15243919.0,
+          "unexplained_instructions_per_call": 1543791.3333333323,
+          "unexplained_share": 0.10127260144411239
+        },
+        {
+          "state": {
+            "max_sequence_length": 12
+          },
+          "calls": 3,
+          "instructions_per_call": 15802167.0,
+          "unexplained_instructions_per_call": 1911428.999999999,
+          "unexplained_share": 0.12095992910339443
+        },
+        {
+          "state": {
+            "max_sequence_length": 16
+          },
+          "calls": 3,
+          "instructions_per_call": 14967099.666666666,
+          "unexplained_instructions_per_call": 1530421.666666667,
+          "unexplained_share": 0.10225238695210134
+        }
+      ],
+      "max_unexplained_share": 0.12095992910339443,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "max_sequence_length": -17896.041666666675
+        },
+        "constant": 13890600.388888812,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 19.611700573004782,
+      "raw_files": [
+        "run.3201400.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-035\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-035\"}\n",
+    "correctness_seconds": 5.535,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "Feedback and source were reviewed for a second PCV; final source retains the measured first-round marker. Prompt encoding combines positive/negative passes, batch count, padded length, and prompt content; current three configurations confound those dimensions.",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict measurement gate within the bounded run budget."
+  }
+}

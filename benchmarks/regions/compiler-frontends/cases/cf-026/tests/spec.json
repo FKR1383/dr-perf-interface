@@ -1,0 +1,32 @@
+{
+  "case": "cf-026",
+  "phase": "semantic-analysis",
+  "scenario": "destructor-name-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_17(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_17 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_17(2)==14);\nint main() { Item_17 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct D0{~D0();}; void f0(D0*p){p->~D0();}\nstruct D1{~D1();}; void f1(D1*p){p->~D1();}\nstruct D2{~D2();}; void f2(D2*p){p->~D2();}\nstruct D3{~D3();}; void f3(D3*p){p->~D3();}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct D0{~D0();}; void f0(D0*p){p->~D0();}\nstruct D1{~D1();}; void f1(D1*p){p->~D1();}\nstruct D2{~D2();}; void f2(D2*p){p->~D2();}\nstruct D3{~D3();}; void f3(D3*p){p->~D3();}\nstruct D4{~D4();}; void f4(D4*p){p->~D4();}\nstruct D5{~D5();}; void f5(D5*p){p->~D5();}\nstruct D6{~D6();}; void f6(D6*p){p->~D6();}\nstruct D7{~D7();}; void f7(D7*p){p->~D7();}\nstruct D8{~D8();}; void f8(D8*p){p->~D8();}\nstruct D9{~D9();}; void f9(D9*p){p->~D9();}\nstruct D10{~D10();}; void f10(D10*p){p->~D10();}\nstruct D11{~D11();}; void f11(D11*p){p->~D11();}\nstruct D12{~D12();}; void f12(D12*p){p->~D12();}\nstruct D13{~D13();}; void f13(D13*p){p->~D13();}\nstruct D14{~D14();}; void f14(D14*p){p->~D14();}\nstruct D15{~D15();}; void f15(D15*p){p->~D15();}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct D0{~D0();}; void f0(D0*p){p->~D0();}\nstruct D1{~D1();}; void f1(D1*p){p->~D1();}\nstruct D2{~D2();}; void f2(D2*p){p->~D2();}\nstruct D3{~D3();}; void f3(D3*p){p->~D3();}\nstruct D4{~D4();}; void f4(D4*p){p->~D4();}\nstruct D5{~D5();}; void f5(D5*p){p->~D5();}\nstruct D6{~D6();}; void f6(D6*p){p->~D6();}\nstruct D7{~D7();}; void f7(D7*p){p->~D7();}\nstruct D8{~D8();}; void f8(D8*p){p->~D8();}\nstruct D9{~D9();}; void f9(D9*p){p->~D9();}\nstruct D10{~D10();}; void f10(D10*p){p->~D10();}\nstruct D11{~D11();}; void f11(D11*p){p->~D11();}\nstruct D12{~D12();}; void f12(D12*p){p->~D12();}\nstruct D13{~D13();}; void f13(D13*p){p->~D13();}\nstruct D14{~D14();}; void f14(D14*p){p->~D14();}\nstruct D15{~D15();}; void f15(D15*p){p->~D15();}\nstruct D16{~D16();}; void f16(D16*p){p->~D16();}\nstruct D17{~D17();}; void f17(D17*p){p->~D17();}\nstruct D18{~D18();}; void f18(D18*p){p->~D18();}\nstruct D19{~D19();}; void f19(D19*p){p->~D19();}\nstruct D20{~D20();}; void f20(D20*p){p->~D20();}\nstruct D21{~D21();}; void f21(D21*p){p->~D21();}\nstruct D22{~D22();}; void f22(D22*p){p->~D22();}\nstruct D23{~D23();}; void f23(D23*p){p->~D23();}\nstruct D24{~D24();}; void f24(D24*p){p->~D24();}\nstruct D25{~D25();}; void f25(D25*p){p->~D25();}\nstruct D26{~D26();}; void f26(D26*p){p->~D26();}\nstruct D27{~D27();}; void f27(D27*p){p->~D27();}\nstruct D28{~D28();}; void f28(D28*p){p->~D28();}\nstruct D29{~D29();}; void f29(D29*p){p->~D29();}\nstruct D30{~D30();}; void f30(D30*p){p->~D30();}\nstruct D31{~D31();}; void f31(D31*p){p->~D31();}\nstruct D32{~D32();}; void f32(D32*p){p->~D32();}\nstruct D33{~D33();}; void f33(D33*p){p->~D33();}\nstruct D34{~D34();}; void f34(D34*p){p->~D34();}\nstruct D35{~D35();}; void f35(D35*p){p->~D35();}\nstruct D36{~D36();}; void f36(D36*p){p->~D36();}\nstruct D37{~D37();}; void f37(D37*p){p->~D37();}\nstruct D38{~D38();}; void f38(D38*p){p->~D38();}\nstruct D39{~D39();}; void f39(D39*p){p->~D39();}\nstruct D40{~D40();}; void f40(D40*p){p->~D40();}\nstruct D41{~D41();}; void f41(D41*p){p->~D41();}\nstruct D42{~D42();}; void f42(D42*p){p->~D42();}\nstruct D43{~D43();}; void f43(D43*p){p->~D43();}\nstruct D44{~D44();}; void f44(D44*p){p->~D44();}\nstruct D45{~D45();}; void f45(D45*p){p->~D45();}\nstruct D46{~D46();}; void f46(D46*p){p->~D46();}\nstruct D47{~D47();}; void f47(D47*p){p->~D47();}\nstruct D48{~D48();}; void f48(D48*p){p->~D48();}\nstruct D49{~D49();}; void f49(D49*p){p->~D49();}\nstruct D50{~D50();}; void f50(D50*p){p->~D50();}\nstruct D51{~D51();}; void f51(D51*p){p->~D51();}\nstruct D52{~D52();}; void f52(D52*p){p->~D52();}\nstruct D53{~D53();}; void f53(D53*p){p->~D53();}\nstruct D54{~D54();}; void f54(D54*p){p->~D54();}\nstruct D55{~D55();}; void f55(D55*p){p->~D55();}\nstruct D56{~D56();}; void f56(D56*p){p->~D56();}\nstruct D57{~D57();}; void f57(D57*p){p->~D57();}\nstruct D58{~D58();}; void f58(D58*p){p->~D58();}\nstruct D59{~D59();}; void f59(D59*p){p->~D59();}\nstruct D60{~D60();}; void f60(D60*p){p->~D60();}\nstruct D61{~D61();}; void f61(D61*p){p->~D61();}\nstruct D62{~D62();}; void f62(D62*p){p->~D62();}\nstruct D63{~D63();}; void f63(D63*p){p->~D63();}\n"
+    }
+  ],
+  "target_symbol": "Sema::AddKnownFunctionAttributes",
+  "target_source": "clang/lib/Sema/SemaDecl.cpp",
+  "mapping_note": "Pinned source coverage observed Sema::AddKnownFunctionAttributes in the combined run of witness cf-017; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "semantic-analysis"
+}

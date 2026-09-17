@@ -1,0 +1,67 @@
+--- a/lark/utils.py
++++ b/lark/utils.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import unicodedata
+ import os
+ from itertools import product
+@@ -132,33 +133,34 @@
+ categ_pattern = re.compile(r'\\p{[A-Za-z_]+}')
+ 
+ def get_regexp_width(expr: str) -> Union[Tuple[int, int], List[int]]:
+-    if _has_regex:
+-        # Since `sre_parse` cannot deal with Unicode categories of the form `\p{Mn}`, we replace these with
+-        # a simple letter, which makes no difference as we are only trying to get the possible lengths of the regex
+-        # match here below.
+-        regexp_final = re.sub(categ_pattern, 'A', expr)
+-    else:
+-        if re.search(categ_pattern, expr):
+-            raise ImportError('`regex` module must be installed in order to use Unicode categories.', expr)
+-        regexp_final = expr
+-    try:
+-        # Fixed in next version (past 0.960) of typeshed
+-        return [int(x) for x in sre_parse.parse(regexp_final).getwidth()]
+-    except sre_constants.error:
+-        if not _has_regex:
+-            raise ValueError(expr)
++    with perfmark.region("lt-206"):
++        if _has_regex:
++            # Since `sre_parse` cannot deal with Unicode categories of the form `\p{Mn}`, we replace these with
++            # a simple letter, which makes no difference as we are only trying to get the possible lengths of the regex
++            # match here below.
++            regexp_final = re.sub(categ_pattern, 'A', expr)
+         else:
+-            # sre_parse does not support the new features in regex. To not completely fail in that case,
+-            # we manually test for the most important info (whether the empty string is matched)
+-            c = regex.compile(regexp_final)
+-            # Python 3.11.7 introducded sre_parse.MAXWIDTH that is used instead of MAXREPEAT
+-            # See lark-parser/lark#1376 and python/cpython#109859
+-            MAXWIDTH = getattr(sre_parse, "MAXWIDTH", sre_constants.MAXREPEAT)
+-            if c.match('') is None:
+-                # MAXREPEAT is a none pickable subclass of int, therefore needs to be converted to enable caching
+-                return 1, int(MAXWIDTH)
++            if re.search(categ_pattern, expr):
++                raise ImportError('`regex` module must be installed in order to use Unicode categories.', expr)
++            regexp_final = expr
++        try:
++            # Fixed in next version (past 0.960) of typeshed
++            return [int(x) for x in sre_parse.parse(regexp_final).getwidth()]
++        except sre_constants.error:
++            if not _has_regex:
++                raise ValueError(expr)
+             else:
+-                return 0, int(MAXWIDTH)
++                # sre_parse does not support the new features in regex. To not completely fail in that case,
++                # we manually test for the most important info (whether the empty string is matched)
++                c = regex.compile(regexp_final)
++                # Python 3.11.7 introducded sre_parse.MAXWIDTH that is used instead of MAXREPEAT
++                # See lark-parser/lark#1376 and python/cpython#109859
++                MAXWIDTH = getattr(sre_parse, "MAXWIDTH", sre_constants.MAXREPEAT)
++                if c.match('') is None:
++                    # MAXREPEAT is a none pickable subclass of int, therefore needs to be converted to enable caching
++                    return 1, int(MAXWIDTH)
++                else:
++                    return 0, int(MAXWIDTH)
+ 
+ 
+ @dataclass(frozen=True)

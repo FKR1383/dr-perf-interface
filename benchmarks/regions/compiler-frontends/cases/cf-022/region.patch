@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -12758,6 +12759,7 @@
+     DeclarationNameInfo NameInfo, SourceLocation EllipsisLoc,
+     const ParsedAttributesView &AttrList, bool IsInstantiation,
+     bool IsUsingIfExists) {
++      DRPERF_BENCH_REGION("cf-022");
+   assert(!SS.isInvalid() && "Invalid CXXScopeSpec.");
+   SourceLocation IdentLoc = NameInfo.getLoc();
+   assert(IdentLoc.isValid() && "Invalid TargetName location.");

@@ -1,0 +1,12 @@
+diff --git a/Lib/ntpath.py b/Lib/ntpath.py
+--- a/Lib/ntpath.py
++++ b/Lib/ntpath.py
+@@ -405,7 +405,7 @@
+     """Expand shell variables of the forms $var, ${var} and %var%.
+ 
+     Unknown variables are left unchanged."""
+-    with perfmark.region('aq-005'):
++    with perfmark.region('aq-005', input_len=len(path), input_pairs=len(path) * len(path)):
+         path = os.fspath(path)
+         if isinstance(path, bytes):
+             if b'$' not in path and b'%' not in path:

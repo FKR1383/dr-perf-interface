@@ -1,0 +1,65 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -1135,30 +1136,31 @@
+         # too many bugs elsewhere for this to work now
+         raise NotImplementedError("last axis with size 0 is not supported")
+ 
+-    if dtype is None:
+-        if names is None:
+-            names = [f'f{n}' for n in range(n_elem)]
+-        out_dtype = np.dtype([(n, arr.dtype) for n in names], align=align)
+-        fields = _get_fields_and_offsets(out_dtype)
+-        dts, counts, offsets = zip(*fields)
+-    else:
+-        if names is not None:
+-            raise ValueError("don't supply both dtype and names")
+-        # if dtype is the args of np.dtype, construct it
+-        dtype = np.dtype(dtype)
+-        # sanity check of the input dtype
+-        fields = _get_fields_and_offsets(dtype)
+-        if len(fields) == 0:
+-            dts, counts, offsets = [], [], []
++    with perfmark.region("gl-107"):
++        if dtype is None:
++            if names is None:
++                names = [f'f{n}' for n in range(n_elem)]
++            out_dtype = np.dtype([(n, arr.dtype) for n in names], align=align)
++            fields = _get_fields_and_offsets(out_dtype)
++            dts, counts, offsets = zip(*fields)
+         else:
+-            dts, counts, offsets = zip(*fields)
+-
+-        if n_elem != sum(counts):
+-            raise ValueError('The length of the last dimension of arr must '
+-                             'be equal to the number of fields in dtype')
+-        out_dtype = dtype
+-        if align and not out_dtype.isalignedstruct:
+-            raise ValueError("align was True but dtype is not aligned")
++            if names is not None:
++                raise ValueError("don't supply both dtype and names")
++            # if dtype is the args of np.dtype, construct it
++            dtype = np.dtype(dtype)
++            # sanity check of the input dtype
++            fields = _get_fields_and_offsets(dtype)
++            if len(fields) == 0:
++                dts, counts, offsets = [], [], []
++            else:
++                dts, counts, offsets = zip(*fields)
++    
++            if n_elem != sum(counts):
++                raise ValueError('The length of the last dimension of arr must '
++                                 'be equal to the number of fields in dtype')
++            out_dtype = dtype
++            if align and not out_dtype.isalignedstruct:
++                raise ValueError("align was True but dtype is not aligned")
+ 
+     names = [f'f{n}' for n in range(len(fields))]
+ 

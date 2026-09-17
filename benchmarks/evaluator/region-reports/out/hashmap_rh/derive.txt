@@ -1,0 +1,28 @@
+derive hm_insert   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: n=8,size=40,rehash=40 x20, n=8,size=60,rehash=0 x20, n=8,size=80,rehash=80 x20, n=8,size=100,rehash=0 x20, n=8,size=120,rehash=0 x20, n=8,size=160,rehash=0 x20, n=8,size=200,rehash=0 x20, n=8,size=240,rehash=0 x20, n=8,size=300,rehash=0 x20, n=8,size=340,rehash=340 x20, n=16,size=40,rehash=40 x20, n=16,size=60,rehash=0 x20, n=16,size=80,rehash=80 x20, n=16,size=100,rehash=0 x20, n=16,size=120,rehash=0 x20, n=16,size=160,rehash=160 x20, n=16,size=200,rehash=0 x20, n=16,size=240,rehash=0 x20, n=16,size=300,rehash=0 x20, n=16,size=340,rehash=340 x20, n=32,size=40,rehash=40 x20, n=32,size=60,rehash=60 x20, n=32,size=80,rehash=80 x20, n=32,size=100,rehash=0 x20, n=32,size=120,rehash=0 x20, n=32,size=160,rehash=160 x20, n=32,size=200,rehash=0 x20, n=32,size=240,rehash=0 x20, n=32,size=300,rehash=0 x20, n=32,size=340,rehash=340 x20
+  cost(n, size, rehash) = 2,014.7*n + 0*size + 5*rehash + 2,517.7        [all n, size, rehash]   blocks: 270 affine, 538 constant, 17 irregular (6.6% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 355 .. 9,055
+    per-n coefficient by function:
+               340.3  PyDict_Contains+?  [python3.12]
+                 330  _PyEval_EvalFrameDefault  [python3.12]
+                 242  _PyUnicode_JoinArray  [python3.12]
+               225.1  PyDict_SetItem  [python3.12]
+                 177  PyLong_AsLongAndOverflow  [python3.12]
+               117.1  PyObject_Malloc  [python3.12]
+    per-rehash coefficient by function:
+                   2  __memset_avx2_unaligned_erms  [libc.so.6]
+                 1.6  PyDict_SetItem  [python3.12]
+                 1.4  __memcpy_avx_unaligned_erms  [libc.so.6]
+    constant by function:
+               564.3  _Py_HashBytes  [python3.12]
+                 444  _PyEval_EvalFrameDefault  [python3.12]
+               404.6  PyDict_Contains+?  [python3.12]
+               290.6  PyDict_SetItem  [python3.12]
+               226.6  PyObject_Free  [python3.12]
+                 192  _PyMem_Strdup+?  [python3.12]
+    irregular by function:
+             1,138.8  PyDict_SetItem  [python3.12]
+                 672  _Py_HashBytes  [python3.12]
+               642.3  PyDict_Contains+?  [python3.12]
+

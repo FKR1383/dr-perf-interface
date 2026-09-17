@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -2624,6 +2625,7 @@
+ bool clang::ParseDiagnosticArgs(DiagnosticOptions &Opts, ArgList &Args,
+                                 DiagnosticsEngine *Diags,
+                                 bool DefaultDiagColor) {
++                                  DRPERF_BENCH_REGION("cf-210");
+   std::optional<DiagnosticsEngine> IgnoringDiags;
+   if (!Diags) {
+     IgnoringDiags.emplace(new DiagnosticIDs(), new DiagnosticOptions(),

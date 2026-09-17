@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "vllm-067",
+  "title": "GPUModelRunner.execute_model body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/worker/gpu_model_runner.py",
+    "snapshot": "../../upstream/vllm/v1/worker/gpu_model_runner.py",
+    "sha256": "7f2890eefca1efe25565bf1c7e5906a87948ae922610a7aaac620b28b46f26aa"
+  },
+  "region": {
+    "symbol": "GPUModelRunner.execute_model",
+    "start_line": 4294,
+    "end_line": 4650,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-067",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "vllm:vllm/v1/worker/gpu_model_runner.py:GPUModelRunner.execute_model",
+  "citations": [
+    "https://github.com/vllm-project/vllm/blob/2cf0a6915ce544dc493a0990f2ea38d81601128a/vllm/v1/worker/gpu_model_runner.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/driver.py",
+        "destination": "tests/driver.py",
+        "sha256": "ced29c2f484b8c7cb0d10a9712a6a9f0d5cb00bed7f7d9c11f5389913668e2cd"
+      },
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Runs bounded CPU inference through CPUModelRunner, which inherits these methods from GPUModelRunner in the pinned source. Probe.finish requires the exact inherited method marker; target-specific reachability is not yet verified."
+  }
+}

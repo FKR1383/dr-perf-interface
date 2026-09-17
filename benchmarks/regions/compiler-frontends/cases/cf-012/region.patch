@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -3754,6 +3755,7 @@
+                                          SourceLocation AttrFixitLoc,
+                                          ParsedAttributes &Attrs,
+                                          unsigned TagType, Decl *TagDecl) {
++                                           DRPERF_BENCH_REGION("cf-012");
+   assert((TagType == DeclSpec::TST_struct ||
+           TagType == DeclSpec::TST_interface ||
+           TagType == DeclSpec::TST_union || TagType == DeclSpec::TST_class) &&

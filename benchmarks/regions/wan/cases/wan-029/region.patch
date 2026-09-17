@@ -1,0 +1,34 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -602,14 +603,15 @@
+                     current_model = self.transformer_2
+                     current_guidance_scale = guidance_scale_2
+ 
+-                latent_model_input = latents.to(transformer_dtype)
+-                if self.config.expand_timesteps:
+-                    # seq_len: num_latent_frames * latent_height//2 * latent_width//2
+-                    temp_ts = (mask[0][0][:, ::2, ::2] * t).flatten()
+-                    # batch_size, seq_len
+-                    timestep = temp_ts.unsqueeze(0).expand(latents.shape[0], -1)
+-                else:
+-                    timestep = t.expand(latents.shape[0])
++                with perfmark.region("wan-029"):
++                    latent_model_input = latents.to(transformer_dtype)
++                    if self.config.expand_timesteps:
++                        # seq_len: num_latent_frames * latent_height//2 * latent_width//2
++                        temp_ts = (mask[0][0][:, ::2, ::2] * t).flatten()
++                        # batch_size, seq_len
++                        timestep = temp_ts.unsqueeze(0).expand(latents.shape[0], -1)
++                    else:
++                        timestep = t.expand(latents.shape[0])
+ 
+                 with current_model.cache_context("cond"):
+                     noise_pred = current_model(

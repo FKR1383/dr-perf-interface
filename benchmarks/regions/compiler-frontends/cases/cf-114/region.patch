@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -4910,6 +4911,7 @@
+ void Parser::ParseCXX11AttributeSpecifierInternal(ParsedAttributes &Attrs,
+                                                   CachedTokens &OpenMPTokens,
+                                                   SourceLocation *EndLoc) {
++                                                    DRPERF_BENCH_REGION("cf-114");
+   if (Tok.is(tok::kw_alignas)) {
+     // alignas is a valid token in C23 but it is not an attribute, it's a type-
+     // specifier-qualifier, which means it has different parsing behavior. We

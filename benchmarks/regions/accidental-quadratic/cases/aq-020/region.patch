@@ -1,0 +1,70 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -66,6 +66,7 @@
+ 
+ XXX: provide complete list of token types.
+ """
++import perfmark
+ 
+ import re
+ import sys
+@@ -2738,32 +2739,33 @@
+     """ mechanism
+ 
+     """
+-    # We should probably validate the values, since the list is fixed.
+-    cte_header = ContentTransferEncoding()
+-    if not value:
+-        cte_header.defects.append(errors.HeaderMissingRequiredValue(
+-            "Missing content transfer encoding"))
++    with perfmark.region('aq-020'):
++        # We should probably validate the values, since the list is fixed.
++        cte_header = ContentTransferEncoding()
++        if not value:
++            cte_header.defects.append(errors.HeaderMissingRequiredValue(
++                "Missing content transfer encoding"))
++            return cte_header
++        try:
++            token, value = get_token(value)
++        except errors.HeaderParseError:
++            cte_header.defects.append(errors.InvalidHeaderDefect(
++                "Expected content transfer encoding but found {!r}".format(value)))
++        else:
++            cte_header.append(token)
++            cte_header.cte = token.value.strip().lower()
++        if not value:
++            return cte_header
++        while value:
++            cte_header.defects.append(errors.InvalidHeaderDefect(
++                "Extra text after content transfer encoding"))
++            if value[0] in PHRASE_ENDS:
++                cte_header.append(ValueTerminal(value[0], 'misplaced-special'))
++                value = value[1:]
++            else:
++                token, value = get_phrase(value)
++                cte_header.append(token)
+         return cte_header
+-    try:
+-        token, value = get_token(value)
+-    except errors.HeaderParseError:
+-        cte_header.defects.append(errors.InvalidHeaderDefect(
+-            "Expected content transfer encoding but found {!r}".format(value)))
+-    else:
+-        cte_header.append(token)
+-        cte_header.cte = token.value.strip().lower()
+-    if not value:
+-        return cte_header
+-    while value:
+-        cte_header.defects.append(errors.InvalidHeaderDefect(
+-            "Extra text after content transfer encoding"))
+-        if value[0] in PHRASE_ENDS:
+-            cte_header.append(ValueTerminal(value[0], 'misplaced-special'))
+-            value = value[1:]
+-        else:
+-            token, value = get_phrase(value)
+-            cte_header.append(token)
+-    return cte_header
+ 
+ 
+ #

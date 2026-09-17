@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "wan-019",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 1,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "context_length",
+      "expression": "0 if encoder_hidden_states is None else int(encoder_hidden_states.shape[1])"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-019",
+      "validity_warnings": [],
+      "pcv_names": [
+        "context_length"
+      ],
+      "distinct_states": 4,
+      "required_states": 3,
+      "calls": 18,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "context_length": 0
+          },
+          "calls": 9,
+          "instructions_per_call": 290616.3333333333,
+          "unexplained_instructions_per_call": 165212.00000000003,
+          "unexplained_share": 0.5684883506203484
+        },
+        {
+          "state": {
+            "context_length": 4
+          },
+          "calls": 3,
+          "instructions_per_call": 150409.0,
+          "unexplained_instructions_per_call": 37770.0,
+          "unexplained_share": 0.2511152923029872
+        },
+        {
+          "state": {
+            "context_length": 6
+          },
+          "calls": 3,
+          "instructions_per_call": 276212.0,
+          "unexplained_instructions_per_call": 162810.0,
+          "unexplained_share": 0.5894385472028731
+        },
+        {
+          "state": {
+            "context_length": 9
+          },
+          "calls": 3,
+          "instructions_per_call": 329805.0,
+          "unexplained_instructions_per_call": 209306.0,
+          "unexplained_share": 0.6346356180167069
+        }
+      ],
+      "max_unexplained_share": 0.6346356180167069,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "context_length": -85.0942170240416
+        },
+        "constant": 118390.28086419766,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 10.087600968079641,
+      "raw_files": [
+        "run.3200045.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-019\": 6}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-019\"}\n",
+    "correctness_seconds": 5.35,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "Feedback and source were reviewed for a second PCV; final source retains the measured first-round marker. Dispatched attention depends on query length, key length, backend, and self/cross regime; no safe affine refinement fits the current mixed fixture.",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict measurement gate within the bounded run budget."
+  }
+}

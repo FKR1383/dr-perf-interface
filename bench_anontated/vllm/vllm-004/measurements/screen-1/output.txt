@@ -1,0 +1,19 @@
+et LD_PRELOAD` in https://docs.vllm.ai/en/latest/getting_started/installation/cpu/ to setup required pre-loaded libraries.
+INFO 09-14 19:06:44 [parallel_state.py:1638] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_216271c001aa4ae3a66eb77dc0136a48 backend=gloo
+INFO 09-14 19:06:44 [parallel_state.py:1982] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+INFO 09-14 19:06:44 [cpu_model_runner.py:131] Starting to load model /home/ubuntu/drperf/third_party/hf/hub/models--facebook--opt-125m/snapshots/27dcfa74d334bc871f3234de431e71c6eeba5dd6...
+INFO 09-14 19:06:44 [selector.py:217] Using HND KV cache layout for CPU_ATTN backend.
+INFO 09-14 19:06:45 [default_loader.py:430] Loading weights took 0.39 seconds
+WARNING 09-14 19:06:45 [utils.py:368] Failed to create oneDNN linear, fallback to torch linear. Exception: could not create a primitive descriptor for the matmul primitive. Run workload with environment variable ONEDNN_VERBOSE=all to get additional diagnostic information.
+INFO 09-14 19:06:45 [cpu_worker.py:255] Auto set (11.62/251.14) GiB for KV cache on node 0, with 12.56 GiB requested memory for the worker. 0.94 GiB memory was consumed by non-kv usages.
+INFO 09-14 19:06:45 [kv_cache_utils.py:1869] GPU KV cache size: 169,216 tokens, Maximum concurrency for 64 tokens per request: 2644.00x
+INFO 09-14 19:06:52 [core.py:354] init engine (profile, create kv cache, warmup model) took 7.18 s
+WARNING 09-14 19:06:52 [cpu_worker.py:153] CPU backend doesn't allow to use `torch.set_num_threads` after the thread binding, skip it.
+INFO 09-14 19:06:52 [hf.py:551] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+WARNING 09-14 19:06:52 [cpu_worker.py:153] CPU backend doesn't allow to use `torch.set_num_threads` after the thread binding, skip it.
+{"marker_hits": {"vllm-004": 84}, "measurement": "drperf", "target": "vllm-004"}
+[W914 19:06:44.681063553 utils.cpp:68] Warning: NUMA binding: Using MEMBIND policy for memory allocation on the NUMA nodes (0). Memory allocations will be strictly bound to these NUMA nodes. (function init_cpu_memory_env)
+Loading pt checkpoint shards:   0% Completed | 0/1 [00:00<?, ?it/s]
+Loading pt checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.63it/s]
+Loading pt checkpoint shards: 100% Completed | 1/1 [00:00<00:00,  2.63it/s]
+

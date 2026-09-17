@@ -1,0 +1,41 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -66,6 +66,7 @@
+ 
+ XXX: provide complete list of token types.
+ """
++import perfmark
+ 
+ import re
+ import sys
+@@ -2636,17 +2637,18 @@
+     """Do our best to find the parameters in an invalid MIME header
+ 
+     """
+-    while value and value[0] != ';':
+-        if value[0] in PHRASE_ENDS:
+-            tokenlist.append(ValueTerminal(value[0], 'misplaced-special'))
+-            value = value[1:]
+-        else:
+-            token, value = get_phrase(value)
+-            tokenlist.append(token)
+-    if not value:
+-        return
+-    tokenlist.append(ValueTerminal(';', 'parameter-separator'))
+-    tokenlist.append(parse_mime_parameters(value[1:]))
++    with perfmark.region('aq-019'):
++        while value and value[0] != ';':
++            if value[0] in PHRASE_ENDS:
++                tokenlist.append(ValueTerminal(value[0], 'misplaced-special'))
++                value = value[1:]
++            else:
++                token, value = get_phrase(value)
++                tokenlist.append(token)
++        if not value:
++            return
++        tokenlist.append(ValueTerminal(';', 'parameter-separator'))
++        tokenlist.append(parse_mime_parameters(value[1:]))
+ 
+ def parse_content_type_header(value):
+     """ maintype "/" subtype *( ";" parameter )

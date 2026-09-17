@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "vllm-057",
+  "title": "NgramProposer.propose body",
+  "language": "python",
+  "region": {
+    "symbol": "NgramProposer.propose",
+    "start_line": 145,
+    "end_line": 170,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-057",
+    "pcvs": [
+      "request_count"
+    ]
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/spec_decode/ngram_proposer.py",
+    "sha256": "5051e1bca645fe4befec0a6340f0dfc169fbcbe070ac1da508b72f8ee9c91736"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/driver.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Runs n-gram speculative decoding with repeated token sequences and varied output limits. Probe.finish requires the exact rejection-sampler or n-gram-proposer marker; target-specific reachability is not yet verified."
+  }
+}

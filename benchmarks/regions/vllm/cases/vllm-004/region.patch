@@ -1,0 +1,136 @@
+--- a/vllm/v1/attention/backends/cpu_attn.py
++++ b/vllm/v1/attention/backends/cpu_attn.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import functools
+ from dataclasses import dataclass
+ from typing import TYPE_CHECKING, ClassVar
+@@ -366,68 +367,69 @@
+         Returns:
+             shape = [num_tokens, num_heads * head_size]
+         """
+-        if output_scale is not None or output_block_scale is not None:
+-            raise NotImplementedError(
+-                "fused output quantization is not yet supported"
+-                " for CPUAttentionBackendImpl"
+-            )
+-
+-        # For warming-up
+-        if attn_metadata is None:
+-            return output
+-
+-        num_actual_tokens = attn_metadata.num_actual_tokens
+-
+-        is_encoder_attention = self.attn_type in (
+-            AttentionType.ENCODER_ONLY,
+-            AttentionType.ENCODER,
+-        )
+-        if is_encoder_attention:
+-            # For encoder attention,
+-            kv_cache = attn_metadata.encoder_cache
+-
+-        # KV cache size are [num_blocks, num_kv_heads, block_size,
+-        # 2 * head_size]. Make a view [num_blocks, num_kv_heads,
+-        # block_size * 2, head_size]. Then slice KV at dim 2
+-        num_blocks, num_kv_heads, block_size, _ = kv_cache.size()
+-        kv_cache = kv_cache.view((num_blocks, num_kv_heads, block_size * 2, -1))
+-        key_cache, value_cache = kv_cache.chunk(2, dim=2)
+-
+-        if is_encoder_attention:
+-            ops.cpu_attn_reshape_and_cache(
+-                key,
+-                value,
+-                key_cache,
+-                value_cache,
+-                attn_metadata.slot_mapping,
+-                self.isa,
++        with perfmark.region("vllm-004"):
++            if output_scale is not None or output_block_scale is not None:
++                raise NotImplementedError(
++                    "fused output quantization is not yet supported"
++                    " for CPUAttentionBackendImpl"
++                )
++
++            # For warming-up
++            if attn_metadata is None:
++                return output
++
++            num_actual_tokens = attn_metadata.num_actual_tokens
++
++            is_encoder_attention = self.attn_type in (
++                AttentionType.ENCODER_ONLY,
++                AttentionType.ENCODER,
++            )
++            if is_encoder_attention:
++                # For encoder attention,
++                kv_cache = attn_metadata.encoder_cache
++
++            # KV cache size are [num_blocks, num_kv_heads, block_size,
++            # 2 * head_size]. Make a view [num_blocks, num_kv_heads,
++            # block_size * 2, head_size]. Then slice KV at dim 2
++            num_blocks, num_kv_heads, block_size, _ = kv_cache.size()
++            kv_cache = kv_cache.view((num_blocks, num_kv_heads, block_size * 2, -1))
++            key_cache, value_cache = kv_cache.chunk(2, dim=2)
++
++            if is_encoder_attention:
++                ops.cpu_attn_reshape_and_cache(
++                    key,
++                    value,
++                    key_cache,
++                    value_cache,
++                    attn_metadata.slot_mapping,
++                    self.isa,
++                    k_scale=layer._k_scale_float,
++                    v_scale=layer._v_scale_float,
++                    kv_cache_dtype=self.kv_cache_dtype,
++                )
++
++            ops.cpu_attention_with_kv_cache(
++                query=query[:num_actual_tokens],
++                key_cache=key_cache,
++                value_cache=value_cache,
++                output=output[:num_actual_tokens],  # type: ignore
++                query_start_loc=attn_metadata.query_start_loc,
++                seq_lens=attn_metadata.seq_lens,
++                scale=self.scale,
++                causal=attn_metadata.causal,
++                alibi_slopes=self.alibi_slopes,  # type: ignore
++                sliding_window=self.sliding_window,
++                block_table=attn_metadata.block_table,
++                softcap=self.logits_soft_cap,
++                scheduler_metadata=attn_metadata.scheduler_metadata,
++                s_aux=self.sinks,
++                dynamic_causal=attn_metadata.dynamic_causal,
+                 k_scale=layer._k_scale_float,
+                 v_scale=layer._v_scale_float,
+                 kv_cache_dtype=self.kv_cache_dtype,
+             )
+ 
+-        ops.cpu_attention_with_kv_cache(
+-            query=query[:num_actual_tokens],
+-            key_cache=key_cache,
+-            value_cache=value_cache,
+-            output=output[:num_actual_tokens],  # type: ignore
+-            query_start_loc=attn_metadata.query_start_loc,
+-            seq_lens=attn_metadata.seq_lens,
+-            scale=self.scale,
+-            causal=attn_metadata.causal,
+-            alibi_slopes=self.alibi_slopes,  # type: ignore
+-            sliding_window=self.sliding_window,
+-            block_table=attn_metadata.block_table,
+-            softcap=self.logits_soft_cap,
+-            scheduler_metadata=attn_metadata.scheduler_metadata,
+-            s_aux=self.sinks,
+-            dynamic_causal=attn_metadata.dynamic_causal,
+-            k_scale=layer._k_scale_float,
+-            v_scale=layer._v_scale_float,
+-            kv_cache_dtype=self.kv_cache_dtype,
+-        )
+-
+-        return output
++            return output
+ 
+     def do_kv_cache_update(
+         self,

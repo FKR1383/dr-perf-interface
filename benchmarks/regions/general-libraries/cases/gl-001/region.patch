@@ -1,0 +1,64 @@
+--- a/networkx/algorithms/similarity.py
++++ b/networkx/algorithms/similarity.py
+@@ -12,6 +12,7 @@
+ At the same time, I encourage capable people to investigate
+ alternative GED algorithms, in order to improve the choices available.
+ """
++import perfmark
+ 
+ import math
+ import time
+@@ -1070,29 +1071,30 @@
+     m = len(pending_u)
+     n = len(pending_v)
+     C = np.zeros((m + n, m + n))
+-    if node_subst_cost:
+-        C[0:m, 0:n] = np.array(
+-            [
+-                node_subst_cost(G1.nodes[u], G2.nodes[v])
+-                for u in pending_u
+-                for v in pending_v
+-            ]
+-        ).reshape(m, n)
+-        if roots:
+-            initial_cost = node_subst_cost(G1.nodes[root_u], G2.nodes[root_v])
+-    elif node_match:
+-        C[0:m, 0:n] = np.array(
+-            [
+-                1 - int(node_match(G1.nodes[u], G2.nodes[v]))
+-                for u in pending_u
+-                for v in pending_v
+-            ]
+-        ).reshape(m, n)
+-        if roots:
+-            initial_cost = 1 - node_match(G1.nodes[root_u], G2.nodes[root_v])
+-    else:
+-        # all zeroes
+-        pass
++    with perfmark.region("gl-001"):
++        if node_subst_cost:
++            C[0:m, 0:n] = np.array(
++                [
++                    node_subst_cost(G1.nodes[u], G2.nodes[v])
++                    for u in pending_u
++                    for v in pending_v
++                ]
++            ).reshape(m, n)
++            if roots:
++                initial_cost = node_subst_cost(G1.nodes[root_u], G2.nodes[root_v])
++        elif node_match:
++            C[0:m, 0:n] = np.array(
++                [
++                    1 - int(node_match(G1.nodes[u], G2.nodes[v]))
++                    for u in pending_u
++                    for v in pending_v
++                ]
++            ).reshape(m, n)
++            if roots:
++                initial_cost = 1 - node_match(G1.nodes[root_u], G2.nodes[root_v])
++        else:
++            # all zeroes
++            pass
+     # assert not min(m, n) or C[0:m, 0:n].min() >= 0
+     if node_del_cost:
+         del_costs = [node_del_cost(G1.nodes[u]) for u in pending_u]

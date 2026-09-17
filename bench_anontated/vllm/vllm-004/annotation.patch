@@ -1,0 +1,11 @@
+--- a/vllm/v1/attention/backends/cpu_attn.py
++++ b/vllm/v1/attention/backends/cpu_attn.py
+@@ -367,7 +367,7 @@
+         Returns:
+             shape = [num_tokens, num_heads * head_size]
+         """
+-        with perfmark.region("vllm-004"):
++        with perfmark.region("vllm-004", query_count=query.shape[0], query_width=query.shape[-1]):
+             if output_scale is not None or output_block_scale is not None:
+                 raise NotImplementedError(
+                     "fused output quantization is not yet supported"

@@ -1,0 +1,62 @@
+--- a/networkx/algorithms/connectivity/kcomponents.py
++++ b/networkx/algorithms/connectivity/kcomponents.py
+@@ -1,6 +1,7 @@
+ """
+ Moody and White algorithm for k-components
+ """
++import perfmark
+ 
+ from collections import defaultdict
+ from itertools import combinations
+@@ -127,28 +128,29 @@
+         # avoid considering dyads as bicomponents
+         if len(bicomp) > 2:
+             k_components[2].append(bicomp)
+-    for B in bicomponents:
+-        if len(B) <= 2:
+-            continue
+-        k = nx.node_connectivity(B, flow_func=flow_func)
+-        if k > 2:
+-            k_components[k].append(set(B))
+-        # Perform cuts in a DFS like order.
+-        cuts = list(nx.all_node_cuts(B, k=k, flow_func=flow_func))
+-        stack = [(k, _generate_partition(B, cuts, k))]
+-        while stack:
+-            (parent_k, partition) = stack[-1]
+-            try:
+-                nodes = next(partition)
+-                C = B.subgraph(nodes)
+-                this_k = nx.node_connectivity(C, flow_func=flow_func)
+-                if this_k > parent_k and this_k > 2:
+-                    k_components[this_k].append(set(C))
+-                cuts = list(nx.all_node_cuts(C, k=this_k, flow_func=flow_func))
+-                if cuts:
+-                    stack.append((this_k, _generate_partition(C, cuts, this_k)))
+-            except StopIteration:
+-                stack.pop()
++    with perfmark.region("gl-070"):
++        for B in bicomponents:
++            if len(B) <= 2:
++                continue
++            k = nx.node_connectivity(B, flow_func=flow_func)
++            if k > 2:
++                k_components[k].append(set(B))
++            # Perform cuts in a DFS like order.
++            cuts = list(nx.all_node_cuts(B, k=k, flow_func=flow_func))
++            stack = [(k, _generate_partition(B, cuts, k))]
++            while stack:
++                (parent_k, partition) = stack[-1]
++                try:
++                    nodes = next(partition)
++                    C = B.subgraph(nodes)
++                    this_k = nx.node_connectivity(C, flow_func=flow_func)
++                    if this_k > parent_k and this_k > 2:
++                        k_components[this_k].append(set(C))
++                    cuts = list(nx.all_node_cuts(C, k=this_k, flow_func=flow_func))
++                    if cuts:
++                        stack.append((this_k, _generate_partition(C, cuts, this_k)))
++                except StopIteration:
++                    stack.pop()
+ 
+     # This is necessary because k-components may only be reported at their
+     # maximum k level. But we want to return a dictionary in which keys are

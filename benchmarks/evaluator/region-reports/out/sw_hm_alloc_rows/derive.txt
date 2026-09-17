@@ -1,0 +1,41 @@
+derive ftl_handle_alloc_rows_create   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=0,rows=32,name_bytes=21,rehash=0 x50, handles=1,rows=32,name_bytes=21,rehash=0 x50, handles=2,rows=32,name_bytes=21,rehash=0 x50, handles=3,rows=32,name_bytes=21,rehash=9 x50, handles=4,rows=32,name_bytes=21,rehash=0 x50, handles=5,rows=32,name_bytes=21,rehash=0 x50, handles=6,rows=32,name_bytes=21,rehash=0 x50, handles=7,rows=32,name_bytes=21,rehash=21 x50, handles=8,rows=32,name_bytes=14,rehash=0 x5, handles=8,rows=32,name_bytes=21,rehash=0 x20, handles=8,rows=64,name_bytes=14,rehash=0 x5, handles=8,rows=96,name_bytes=14,rehash=0 x5, handles=8,rows=128,name_bytes=14,rehash=0 x5, handles=8,rows=160,name_bytes=14,rehash=0 x5, handles=9,rows=32,name_bytes=21,rehash=0 x20, handles=10,rows=32,name_bytes=21,rehash=0 x20, handles=11,rows=32,name_bytes=21,rehash=0 x20, handles=12,rows=32,name_bytes=21,rehash=0 x20, handles=13,rows=32,name_bytes=21,rehash=0 x20, handles=14,rows=32,name_bytes=21,rehash=42 x20, handles=15,rows=32,name_bytes=21,rehash=0 x20, handles=16,rows=32,name_bytes=21,rehash=0 x15, handles=17,rows=32,name_bytes=21,rehash=0 x15, handles=18,rows=32,name_bytes=21,rehash=0 x15, handles=19,rows=32,name_bytes=21,rehash=0 x15, handles=20,rows=32,name_bytes=21,rehash=0 x15, handles=21,rows=32,name_bytes=21,rehash=0 x15, handles=22,rows=32,name_bytes=21,rehash=0 x15, handles=23,rows=32,name_bytes=21,rehash=0 x15, handles=24,rows=32,name_bytes=21,rehash=0 x10, handles=25,rows=32,name_bytes=21,rehash=0 x10, handles=26,rows=32,name_bytes=21,rehash=0 x10, handles=27,rows=32,name_bytes=21,rehash=0 x10, handles=28,rows=32,name_bytes=21,rehash=84 x10, handles=29,rows=32,name_bytes=21,rehash=0 x10, handles=30,rows=32,name_bytes=21,rehash=0 x10, handles=31,rows=32,name_bytes=21,rehash=0 x10, handles=32,rows=32,name_bytes=21,rehash=0 x5, handles=33,rows=32,name_bytes=21,rehash=0 x5, handles=34,rows=32,name_bytes=21,rehash=0 x5, handles=35,rows=32,name_bytes=21,rehash=0 x5, handles=36,rows=32,name_bytes=21,rehash=0 x5, handles=37,rows=32,name_bytes=21,rehash=0 x5, handles=38,rows=32,name_bytes=21,rehash=0 x5, handles=39,rows=32,name_bytes=21,rehash=0 x5
+  cost(handles, rows, name_bytes, rehash) = 0*handles + 1.4*rows + -0.286*name_bytes + 187.4*rehash + 1,954.8        [all handles, rows, name_bytes, rehash]   blocks: 29 affine, 366 constant, 22 irregular (4.1% of cost)
+    irregular blocks, per call: 0.26 .. 3,750.3
+    per-rows coefficient by function:
+                 1.4  <_ditto_ftl_core::handle_manager::FreshAllocator>::allocate  [_ditto_ftl_core.abi3.so]
+    per-name_bytes coefficient by function:
+              -0.286  __memcpy_avx_unaligned_erms  [libc.so.6]
+    per-rehash coefficient by function:
+                  86  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                  56  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                  15  <hashbrown::raw::RawTable<(u64, _ditto_ftl_core::handle_manager::Recor  [_ditto_ftl_core.abi3.so]
+                13.7  <hashbrown::raw::RawTable<(u64, alloc::vec::Vec<u8>)>>::reserve_rehash  [_ditto_ftl_core.abi3.so]
+                13.7  <hashbrown::raw::RawTable<(u64, _ditto_ftl_core::handle_manager::Handl  [_ditto_ftl_core.abi3.so]
+                 3.1  _int_malloc  [libc.so.6]
+    constant by function:
+               394.8  _int_free  [libc.so.6]
+                 258  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+               225.3  __free  [libc.so.6]
+                 168  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+               167.3  _int_malloc  [libc.so.6]
+               105.9  __GI___libc_malloc  [libc.so.6]
+    irregular by function:
+                48.4  _int_malloc  [libc.so.6]
+                44.6  malloc_consolidate  [libc.so.6]
+                20.7  unlink_chunk  [libc.so.6]
+
+derive ftl_handle_alloc_rows_validate   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: handles=0 x50, handles=1 x50, handles=2 x50, handles=3 x50, handles=4 x50, handles=5 x50, handles=6 x50, handles=7 x50, handles=8 x45, handles=9 x20, handles=10 x20, handles=11 x20, handles=12 x20, handles=13 x20, handles=14 x20, handles=15 x20, handles=16 x15, handles=17 x15, handles=18 x15, handles=19 x15, handles=20 x15, handles=21 x15, handles=22 x15, handles=23 x15, handles=24 x10, handles=25 x10, handles=26 x10, handles=27 x10, handles=28 x10, handles=29 x10, handles=30 x10, handles=31 x10, handles=32 x5, handles=33 x5, handles=34 x5, handles=35 x5, handles=36 x5, handles=37 x5, handles=38 x5, handles=39 x5
+  cost(handles) = 40.9*handles + 156        [all handles]   blocks: 10 affine, 62 constant, 0 irregular (0.0% of cost)
+    per-handles coefficient by function:
+                21.9  __memcmp_avx2_movbe  [libc.so.6]
+                19.1  <_ditto_ftl_core::handle_manager::FreshAllocator>::allocate  [_ditto_ftl_core.abi3.so]
+    constant by function:
+                  54  _int_free  [libc.so.6]
+                35.3  <_ditto_ftl_core::handle_manager::FreshAllocator>::allocate  [_ditto_ftl_core.abi3.so]
+                  31  __free  [libc.so.6]
+                  16  <perfmark::Region>::new  [_ditto_ftl_core.abi3.so]
+                11.5  __memcmp_avx2_movbe  [libc.so.6]
+                   2  <perfmark::Region as core::ops::drop::Drop>::drop  [_ditto_ftl_core.abi3.so]
+

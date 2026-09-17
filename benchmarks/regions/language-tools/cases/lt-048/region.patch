@@ -1,0 +1,93 @@
+--- a/sqlglot/tokens.py
++++ b/sqlglot/tokens.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ 
+@@ -77,45 +78,46 @@
+ 
+     @classmethod
+     def __init_subclass__(cls, **kwargs: t.Any) -> None:
+-        super().__init_subclass__(**kwargs)
+-        cls._QUOTES = _convert_quotes(cls.QUOTES)
+-        cls._IDENTIFIERS = _convert_quotes(cls.IDENTIFIERS)
+-        cls._FORMAT_STRINGS = {
+-            **{
+-                p + s: (e, TokenType.NATIONAL_STRING)
+-                for s, e in cls._QUOTES.items()
+-                for p in ("n", "N")
+-            },
+-            **_quotes_to_format(TokenType.BIT_STRING, cls.BIT_STRINGS),
+-            **_quotes_to_format(TokenType.BYTE_STRING, cls.BYTE_STRINGS),
+-            **_quotes_to_format(TokenType.HEX_STRING, cls.HEX_STRINGS),
+-            **_quotes_to_format(TokenType.RAW_STRING, cls.RAW_STRINGS),
+-            **_quotes_to_format(TokenType.HEREDOC_STRING, cls.HEREDOC_STRINGS),
+-            **_quotes_to_format(TokenType.UNICODE_STRING, cls.UNICODE_STRINGS),
+-        }
+-        if "BYTE_STRING_ESCAPES" not in cls.__dict__:
+-            cls.BYTE_STRING_ESCAPES = cls.STRING_ESCAPES.copy()
+-        cls._STRING_ESCAPES = set(cls.STRING_ESCAPES)
+-        cls._BYTE_STRING_ESCAPES = set(cls.BYTE_STRING_ESCAPES)
+-        cls._ESCAPE_FOLLOW_CHARS = set(cls.ESCAPE_FOLLOW_CHARS)
+-        cls._IDENTIFIER_ESCAPES = set(cls.IDENTIFIER_ESCAPES)
+-        cls._COMMENTS = {
+-            **{c: None for c in cls.COMMENTS if isinstance(c, str)},
+-            **{c[0]: c[1] for c in cls.COMMENTS if not isinstance(c, str)},
+-            "{#": "#}",  # Ensure Jinja comments are tokenized correctly in all dialects
+-        }
+-        if cls.HINT_START in cls.KEYWORDS:
+-            cls._COMMENTS[cls.HINT_START] = "*/"
+-        cls._KEYWORD_TRIE = new_trie(
+-            key.upper()
+-            for key in (
+-                *cls.KEYWORDS,
+-                *cls._COMMENTS,
+-                *cls._QUOTES,
+-                *cls._FORMAT_STRINGS,
++        with perfmark.region("lt-048"):
++            super().__init_subclass__(**kwargs)
++            cls._QUOTES = _convert_quotes(cls.QUOTES)
++            cls._IDENTIFIERS = _convert_quotes(cls.IDENTIFIERS)
++            cls._FORMAT_STRINGS = {
++                **{
++                    p + s: (e, TokenType.NATIONAL_STRING)
++                    for s, e in cls._QUOTES.items()
++                    for p in ("n", "N")
++                },
++                **_quotes_to_format(TokenType.BIT_STRING, cls.BIT_STRINGS),
++                **_quotes_to_format(TokenType.BYTE_STRING, cls.BYTE_STRINGS),
++                **_quotes_to_format(TokenType.HEX_STRING, cls.HEX_STRINGS),
++                **_quotes_to_format(TokenType.RAW_STRING, cls.RAW_STRINGS),
++                **_quotes_to_format(TokenType.HEREDOC_STRING, cls.HEREDOC_STRINGS),
++                **_quotes_to_format(TokenType.UNICODE_STRING, cls.UNICODE_STRINGS),
++            }
++            if "BYTE_STRING_ESCAPES" not in cls.__dict__:
++                cls.BYTE_STRING_ESCAPES = cls.STRING_ESCAPES.copy()
++            cls._STRING_ESCAPES = set(cls.STRING_ESCAPES)
++            cls._BYTE_STRING_ESCAPES = set(cls.BYTE_STRING_ESCAPES)
++            cls._ESCAPE_FOLLOW_CHARS = set(cls.ESCAPE_FOLLOW_CHARS)
++            cls._IDENTIFIER_ESCAPES = set(cls.IDENTIFIER_ESCAPES)
++            cls._COMMENTS = {
++                **{c: None for c in cls.COMMENTS if isinstance(c, str)},
++                **{c[0]: c[1] for c in cls.COMMENTS if not isinstance(c, str)},
++                "{#": "#}",  # Ensure Jinja comments are tokenized correctly in all dialects
++            }
++            if cls.HINT_START in cls.KEYWORDS:
++                cls._COMMENTS[cls.HINT_START] = "*/"
++            cls._KEYWORD_TRIE = new_trie(
++                key.upper()
++                for key in (
++                    *cls.KEYWORDS,
++                    *cls._COMMENTS,
++                    *cls._QUOTES,
++                    *cls._FORMAT_STRINGS,
++                )
++                if " " in key or any(single in key for single in cls.SINGLE_TOKENS)
+             )
+-            if " " in key or any(single in key for single in cls.SINGLE_TOKENS)
+-        )
+ 
+ 
+ class Tokenizer(_TokenizerBase):

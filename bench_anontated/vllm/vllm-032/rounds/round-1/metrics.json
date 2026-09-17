@@ -1,0 +1,71 @@
+{
+  "case": "vllm-032",
+  "validity_warnings": [],
+  "pcv_names": [
+    "waiting_count"
+  ],
+  "distinct_states": 4,
+  "required_states": 3,
+  "calls": 9,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "waiting_count": 0
+      },
+      "calls": 4,
+      "instructions_per_call": 195828.75,
+      "unexplained_instructions_per_call": 103739.5,
+      "unexplained_share": 0.5297460153322737
+    },
+    {
+      "state": {
+        "waiting_count": 1
+      },
+      "calls": 3,
+      "instructions_per_call": 325783.0,
+      "unexplained_instructions_per_call": 189515.6666666667,
+      "unexplained_share": 0.5817236217564044
+    },
+    {
+      "state": {
+        "waiting_count": 2
+      },
+      "calls": 1,
+      "instructions_per_call": 388746.0,
+      "unexplained_instructions_per_call": 198573.0,
+      "unexplained_share": 0.5108039696871479
+    },
+    {
+      "state": {
+        "waiting_count": 3
+      },
+      "calls": 1,
+      "instructions_per_call": 532871.0,
+      "unexplained_instructions_per_call": 270597.0,
+      "unexplained_share": 0.5078095824317705
+    }
+  ],
+  "max_unexplained_share": 0.5817236217564044,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "waiting_count": 46291.09166666671
+    },
+    "constant": 100764.25833333314,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 28.768004185985774,
+  "raw_files": [
+    "run.3216344.json"
+  ]
+}

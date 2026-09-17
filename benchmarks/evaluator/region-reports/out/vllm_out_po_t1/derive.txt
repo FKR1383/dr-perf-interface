@@ -1,0 +1,38 @@
+derive process_outputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_outputs=1,num_active=1 x11, num_outputs=2,num_active=2 x15, num_outputs=3,num_active=3 x25, num_outputs=4,num_active=4 x21, num_outputs=5,num_active=5 x27, num_outputs=6,num_active=6 x22, num_outputs=7,num_active=7 x27, num_outputs=8,num_active=8 x12, num_outputs=8,num_active=12 x3, num_outputs=9,num_active=9 x12, num_outputs=10,num_active=10 x3, num_outputs=11,num_active=11 x9, num_outputs=12,num_active=12 x9
+  cost(num_outputs, num_active) = -1,370.2*num_outputs + 11,726.4*num_active + 35,395.5        [all num_outputs, num_active]   blocks: 784 affine, 20602 constant, 1617 irregular (98.1% of cost)
+    marker cost subtracted from the constant: 802 per call (calibrated)
+    irregular blocks, per call: 39,740.7 .. 48,564,894.9
+    OpenMP runtime waiting, per call (excluded): 0 .. 537.2
+    per-num_outputs coefficient by function:
+             3,515.3  _PyEval_EvalFrameDefault  [python3.12]
+              -3,224  _int_malloc  [libc.so.6]
+            -1,020.6  __realloc  [libc.so.6]
+              -704.9  _int_realloc  [libc.so.6]
+               638.9  PyEval_EvalCode+?  [python3.12]
+              -623.1  _int_free_merge_chunk  [libc.so.6]
+               606.9  _PyDict_DelItem_KnownHash+?  [python3.12]
+              -572.3  __memcpy_avx_unaligned_erms  [libc.so.6]
+    per-num_active coefficient by function:
+             3,281.7  _int_malloc  [libc.so.6]
+             1,079.9  __realloc  [libc.so.6]
+               722.9  _int_realloc  [libc.so.6]
+               624.1  _int_free_merge_chunk  [libc.so.6]
+               597.2  __memcpy_avx_unaligned_erms  [libc.so.6]
+               541.3  __GI___libc_malloc  [libc.so.6]
+               524.8  malloc_consolidate  [libc.so.6]
+               477.1  alloc::raw_vec::RawVecInner$LT$A$GT$::reserve::do_reserve_and_handle  [tokenizers.abi3.so]
+    constant by function:
+             3,531.4  _PyEval_EvalFrameDefault  [python3.12]
+             1,430.9  PyEval_EvalCode+?  [python3.12]
+             1,360.3  _PyObject_Call_Prepend  [python3.12]
+               916.7  PyType_GenericNew+?  [python3.12]
+               532.3  PyUnicode_FromString+?  [python3.12]
+               493.6  PyCMethod_New+?  [python3.12]
+               441.4  tokenizers::tokenizer::step_decode_stream  [tokenizers.abi3.so]
+               387.7  tokenizers::decoders::PyDecodeStream::__pymethod_step__  [tokenizers.abi3.so]
+    irregular by function:
+         5,074,745.9  at::native::AVX2::bf16_dot_with_fp32_arith  [libtorch_cpu.so]
+           169,716.9  at::native::cpublas::(anonymous namespace)::cpublas_gemm_impl(c10::Sca  [libtorch_cpu.so]
+            50,565.6  _PyEval_EvalFrameDefault  [python3.12]
+

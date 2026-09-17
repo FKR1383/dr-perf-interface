@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-008",
+  "title": "Delimited sample analysis",
+  "language": "python",
+  "region": {
+    "symbol": "Sniffer._guess_quote_and_delimiter",
+    "start_line": 276,
+    "end_line": 354
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-008",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Analyze a bounded sample containing many quoted single-column records and a small delimiter set.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "d52184ba1ed0e7c0fe8afe4928fbb72a0f9526fb",
+    "path": "Lib/csv.py",
+    "sha256": "71347c2afeddd68b3eb41cde669a7dc8d557e360368b1c79823ba9e68a228b65"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises Sniffer._guess_quote_and_delimiter with bounded input, and verifies entry into the empty region marker."
+  }
+}

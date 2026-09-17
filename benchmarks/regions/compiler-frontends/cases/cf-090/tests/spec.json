@@ -1,0 +1,31 @@
+{
+  "case": "cf-090",
+  "phase": "semantic-analysis",
+  "scenario": "friend-function-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_90(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_90 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_90(2)==14);\nint main() { Item_90 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct F0{friend int get(F0){return 0;}};\nstruct F1{friend int get(F1){return 1;}};\nstruct F2{friend int get(F2){return 2;}};\nstruct F3{friend int get(F3){return 3;}};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct F0{friend int get(F0){return 0;}};\nstruct F1{friend int get(F1){return 1;}};\nstruct F2{friend int get(F2){return 2;}};\nstruct F3{friend int get(F3){return 3;}};\nstruct F4{friend int get(F4){return 4;}};\nstruct F5{friend int get(F5){return 5;}};\nstruct F6{friend int get(F6){return 6;}};\nstruct F7{friend int get(F7){return 7;}};\nstruct F8{friend int get(F8){return 8;}};\nstruct F9{friend int get(F9){return 9;}};\nstruct F10{friend int get(F10){return 10;}};\nstruct F11{friend int get(F11){return 11;}};\nstruct F12{friend int get(F12){return 12;}};\nstruct F13{friend int get(F13){return 13;}};\nstruct F14{friend int get(F14){return 14;}};\nstruct F15{friend int get(F15){return 15;}};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct F0{friend int get(F0){return 0;}};\nstruct F1{friend int get(F1){return 1;}};\nstruct F2{friend int get(F2){return 2;}};\nstruct F3{friend int get(F3){return 3;}};\nstruct F4{friend int get(F4){return 4;}};\nstruct F5{friend int get(F5){return 5;}};\nstruct F6{friend int get(F6){return 6;}};\nstruct F7{friend int get(F7){return 7;}};\nstruct F8{friend int get(F8){return 8;}};\nstruct F9{friend int get(F9){return 9;}};\nstruct F10{friend int get(F10){return 10;}};\nstruct F11{friend int get(F11){return 11;}};\nstruct F12{friend int get(F12){return 12;}};\nstruct F13{friend int get(F13){return 13;}};\nstruct F14{friend int get(F14){return 14;}};\nstruct F15{friend int get(F15){return 15;}};\nstruct F16{friend int get(F16){return 16;}};\nstruct F17{friend int get(F17){return 17;}};\nstruct F18{friend int get(F18){return 18;}};\nstruct F19{friend int get(F19){return 19;}};\nstruct F20{friend int get(F20){return 20;}};\nstruct F21{friend int get(F21){return 21;}};\nstruct F22{friend int get(F22){return 22;}};\nstruct F23{friend int get(F23){return 23;}};\nstruct F24{friend int get(F24){return 24;}};\nstruct F25{friend int get(F25){return 25;}};\nstruct F26{friend int get(F26){return 26;}};\nstruct F27{friend int get(F27){return 27;}};\nstruct F28{friend int get(F28){return 28;}};\nstruct F29{friend int get(F29){return 29;}};\nstruct F30{friend int get(F30){return 30;}};\nstruct F31{friend int get(F31){return 31;}};\nstruct F32{friend int get(F32){return 32;}};\nstruct F33{friend int get(F33){return 33;}};\nstruct F34{friend int get(F34){return 34;}};\nstruct F35{friend int get(F35){return 35;}};\nstruct F36{friend int get(F36){return 36;}};\nstruct F37{friend int get(F37){return 37;}};\nstruct F38{friend int get(F38){return 38;}};\nstruct F39{friend int get(F39){return 39;}};\nstruct F40{friend int get(F40){return 40;}};\nstruct F41{friend int get(F41){return 41;}};\nstruct F42{friend int get(F42){return 42;}};\nstruct F43{friend int get(F43){return 43;}};\nstruct F44{friend int get(F44){return 44;}};\nstruct F45{friend int get(F45){return 45;}};\nstruct F46{friend int get(F46){return 46;}};\nstruct F47{friend int get(F47){return 47;}};\nstruct F48{friend int get(F48){return 48;}};\nstruct F49{friend int get(F49){return 49;}};\nstruct F50{friend int get(F50){return 50;}};\nstruct F51{friend int get(F51){return 51;}};\nstruct F52{friend int get(F52){return 52;}};\nstruct F53{friend int get(F53){return 53;}};\nstruct F54{friend int get(F54){return 54;}};\nstruct F55{friend int get(F55){return 55;}};\nstruct F56{friend int get(F56){return 56;}};\nstruct F57{friend int get(F57){return 57;}};\nstruct F58{friend int get(F58){return 58;}};\nstruct F59{friend int get(F59){return 59;}};\nstruct F60{friend int get(F60){return 60;}};\nstruct F61{friend int get(F61){return 61;}};\nstruct F62{friend int get(F62){return 62;}};\nstruct F63{friend int get(F63){return 63;}};\n"
+    }
+  ],
+  "target_symbol": "Sema::ActOnFriendFunctionDecl",
+  "target_source": "clang/lib/Sema/SemaDeclCXX.cpp",
+  "mapping_note": "The friend-function-semantics construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

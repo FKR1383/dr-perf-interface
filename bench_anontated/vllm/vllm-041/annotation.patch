@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/core.py
++++ b/vllm/v1/engine/core.py
+@@ -443,7 +443,7 @@
+         belong to in DP case
+         """
+         # Validate the request_id type.
+-        with perfmark.region("vllm-041"):
++        with perfmark.region("vllm-041", prompt_tokens=len(request.prompt_token_ids)):
+             if not isinstance(request.request_id, str):
+                 raise TypeError(
+                     f"request_id must be a string, got {type(request.request_id)}"

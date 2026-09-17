@@ -1,0 +1,22 @@
+--- a/pathspec/util.py
++++ b/pathspec/util.py
+@@ -2,6 +2,7 @@
+ This module provides utility methods for dealing with path-specs.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import os.path
+@@ -569,8 +570,9 @@
+ 	# Convert path object to string.
+ 	norm_file: str = os.fspath(file)
+ 
+-	for sep in separators:
+-		norm_file = norm_file.replace(sep, posixpath.sep)
++	with perfmark.region("gl-247"):
++		for sep in separators:
++			norm_file = norm_file.replace(sep, posixpath.sep)
+ 
+ 	if norm_file.startswith('/'):
+ 		# Make path relative.

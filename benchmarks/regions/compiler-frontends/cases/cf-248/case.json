@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-248",
+  "title": "TokenAnnotator::splitPenalty compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/TokenAnnotator.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/TokenAnnotator.cpp",
+    "sha256": "0d1f08b7e6f04965aa6859e6a1c9cfbcaa3564b139b5873d78f1845c288bc164"
+  },
+  "region": {
+    "symbol": "TokenAnnotator::splitPenalty",
+    "start_line": 4226,
+    "end_line": 4441,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-248",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "formatting",
+  "workload": {
+    "description": "Run the bounded format-token-classification fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Format/TokenAnnotator.cpp:TokenAnnotator::splitPenalty",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Format/TokenAnnotator.cpp#L4226-L4441"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+      "spec_sha256": "fbef2723b1636ec2d3b6203305c2b0ae8b4b0417fd0f9735192ada486ab8fd00",
+      "patch_sha256": "c1e7aee52e7498267705cc1127a3aba1b3db1759e77cc82dfd00d578cc333399"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

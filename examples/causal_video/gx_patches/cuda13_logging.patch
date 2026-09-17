@@ -1,0 +1,36 @@
+--- a/src/sims/gpu/emu/driver.c
++++ b/src/sims/gpu/emu/driver.c
+@@ -50,6 +50,7 @@
+ #include <cuda.h>
+ #include <stdlib.h>
+ #include <stdio.h>
++#include <stdarg.h>
+ #include <string.h>
+ #include <stdint.h>
+ #include <inttypes.h>
+@@ -420,6 +421,17 @@
+     return CUDA_SUCCESS;
+ }
+ 
++/* cuDNN calls slot 1 to report CUDA launch errors.  Its arguments are a
++ * domain, severity, printf-style format, and va_list.  Leaving this callback
++ * NULL turns an otherwise reported launch error into a jump to address zero. */
++static void cuda13_log_message(const char *domain, int severity,
++                               const char *format, va_list args) {
++    fprintf(stderr, "GX CUDA13 %s severity=%d: ",
++            domain ? domain : "CUDA", severity);
++    if (format) vfprintf(stderr, format, args);
++    fputc('\n', stderr);
++}
++
+ /* CUDA 13.2 exposes several adjacent private subtables under this UUID. Keep
+  * the observed size headers so libcudart can locate the 15-entry requirements
+  * subtable beginning at slot 22. Only its exercised slot 3 (global slot 25)
+@@ -427,6 +439,7 @@
+  * succeed with uninitialized outputs. */
+ static const void *cuda13_requirements_interface[37] = {
+     [0] = (const void *)(uintptr_t)(3 * sizeof(void *)),
++    [1] = (const void *)cuda13_log_message,
+     [4] = (const void *)(uintptr_t)(2 * sizeof(void *)),
+     [6] = (const void *)(uintptr_t)(4 * sizeof(void *)),
+     [10] = (const void *)(uintptr_t)(2 * sizeof(void *)),

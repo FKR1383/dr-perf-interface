@@ -1,0 +1,87 @@
+--- a/lark/parser_frontends.py
++++ b/lark/parser_frontends.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from dataclasses import dataclass
+ from typing import Any, Callable, Dict, Optional, Collection, Union, TYPE_CHECKING, Generic, Iterator, Tuple, TypeVar
+ 
+@@ -79,42 +80,43 @@
+     options: Any
+ 
+     def __init__(self, lexer_conf: LexerConf, parser_conf: ParserConf, options, parser=None):
+-        self.parser_conf = parser_conf
+-        self.lexer_conf = lexer_conf
+-        self.options = options
+-
+-        # Set-up parser
+-        if parser:  # From cache
+-            self.parser = parser
+-        else:
+-            create_parser = _parser_creators.get(parser_conf.parser_type)
+-            assert create_parser is not None, "{} is not supported in standalone mode".format(
+-                    parser_conf.parser_type
+-                )
+-            self.parser = create_parser(lexer_conf, parser_conf, options)
+-
+-        # Set-up lexer
+-        lexer_type = lexer_conf.lexer_type
+-        self.skip_lexer = False
+-        if lexer_type in ('dynamic', 'dynamic_complete'):
+-            assert lexer_conf.postlex is None
+-            self.skip_lexer = True
+-            return
+-
+-        if isinstance(lexer_type, type):
+-            assert issubclass(lexer_type, Lexer)
+-            self.lexer = _wrap_lexer(lexer_type)(lexer_conf)
+-        elif isinstance(lexer_type, str):
+-            create_lexer = {
+-                'basic': create_basic_lexer,
+-                'contextual': create_contextual_lexer,
+-            }[lexer_type]
+-            self.lexer = create_lexer(lexer_conf, self.parser, lexer_conf.postlex, options)
+-        else:
+-            raise TypeError("Bad value for lexer_type: {lexer_type}")
+-
+-        if lexer_conf.postlex:
+-            self.lexer = PostLexConnector(self.lexer, lexer_conf.postlex)
++        with perfmark.region("lt-213"):
++            self.parser_conf = parser_conf
++            self.lexer_conf = lexer_conf
++            self.options = options
++
++            # Set-up parser
++            if parser:  # From cache
++                self.parser = parser
++            else:
++                create_parser = _parser_creators.get(parser_conf.parser_type)
++                assert create_parser is not None, "{} is not supported in standalone mode".format(
++                        parser_conf.parser_type
++                    )
++                self.parser = create_parser(lexer_conf, parser_conf, options)
++
++            # Set-up lexer
++            lexer_type = lexer_conf.lexer_type
++            self.skip_lexer = False
++            if lexer_type in ('dynamic', 'dynamic_complete'):
++                assert lexer_conf.postlex is None
++                self.skip_lexer = True
++                return
++
++            if isinstance(lexer_type, type):
++                assert issubclass(lexer_type, Lexer)
++                self.lexer = _wrap_lexer(lexer_type)(lexer_conf)
++            elif isinstance(lexer_type, str):
++                create_lexer = {
++                    'basic': create_basic_lexer,
++                    'contextual': create_contextual_lexer,
++                }[lexer_type]
++                self.lexer = create_lexer(lexer_conf, self.parser, lexer_conf.postlex, options)
++            else:
++                raise TypeError("Bad value for lexer_type: {lexer_type}")
++
++            if lexer_conf.postlex:
++                self.lexer = PostLexConnector(self.lexer, lexer_conf.postlex)
+ 
+     def _verify_start(self, start=None):
+         if start is None:

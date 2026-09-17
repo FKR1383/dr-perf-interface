@@ -1,0 +1,32 @@
+{
+  "case": "cf-176",
+  "phase": "formatting",
+  "scenario": "format-token-classification",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_176(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_176 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_176(2)==14);\nint main() { Item_176 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_176_0 { int value[1]; };\nstruct Scale_176_1 { int value[2]; };\nstruct Scale_176_2 { int value[3]; };\nstruct Scale_176_3 { int value[4]; };\ntemplate<class T> constexpr T fold_176(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_176 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_176(2)==14);\nint main() { Item_176 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_176_0 { int value[1]; };\nstruct Scale_176_1 { int value[2]; };\nstruct Scale_176_2 { int value[3]; };\nstruct Scale_176_3 { int value[4]; };\nstruct Scale_176_4 { int value[1]; };\nstruct Scale_176_5 { int value[2]; };\nstruct Scale_176_6 { int value[3]; };\nstruct Scale_176_7 { int value[4]; };\nstruct Scale_176_8 { int value[1]; };\nstruct Scale_176_9 { int value[2]; };\nstruct Scale_176_10 { int value[3]; };\nstruct Scale_176_11 { int value[4]; };\nstruct Scale_176_12 { int value[1]; };\nstruct Scale_176_13 { int value[2]; };\nstruct Scale_176_14 { int value[3]; };\nstruct Scale_176_15 { int value[4]; };\ntemplate<class T> constexpr T fold_176(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_176 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_176(2)==14);\nint main() { Item_176 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_176_0 { int value[1]; };\nstruct Scale_176_1 { int value[2]; };\nstruct Scale_176_2 { int value[3]; };\nstruct Scale_176_3 { int value[4]; };\nstruct Scale_176_4 { int value[1]; };\nstruct Scale_176_5 { int value[2]; };\nstruct Scale_176_6 { int value[3]; };\nstruct Scale_176_7 { int value[4]; };\nstruct Scale_176_8 { int value[1]; };\nstruct Scale_176_9 { int value[2]; };\nstruct Scale_176_10 { int value[3]; };\nstruct Scale_176_11 { int value[4]; };\nstruct Scale_176_12 { int value[1]; };\nstruct Scale_176_13 { int value[2]; };\nstruct Scale_176_14 { int value[3]; };\nstruct Scale_176_15 { int value[4]; };\nstruct Scale_176_16 { int value[1]; };\nstruct Scale_176_17 { int value[2]; };\nstruct Scale_176_18 { int value[3]; };\nstruct Scale_176_19 { int value[4]; };\nstruct Scale_176_20 { int value[1]; };\nstruct Scale_176_21 { int value[2]; };\nstruct Scale_176_22 { int value[3]; };\nstruct Scale_176_23 { int value[4]; };\nstruct Scale_176_24 { int value[1]; };\nstruct Scale_176_25 { int value[2]; };\nstruct Scale_176_26 { int value[3]; };\nstruct Scale_176_27 { int value[4]; };\nstruct Scale_176_28 { int value[1]; };\nstruct Scale_176_29 { int value[2]; };\nstruct Scale_176_30 { int value[3]; };\nstruct Scale_176_31 { int value[4]; };\nstruct Scale_176_32 { int value[1]; };\nstruct Scale_176_33 { int value[2]; };\nstruct Scale_176_34 { int value[3]; };\nstruct Scale_176_35 { int value[4]; };\nstruct Scale_176_36 { int value[1]; };\nstruct Scale_176_37 { int value[2]; };\nstruct Scale_176_38 { int value[3]; };\nstruct Scale_176_39 { int value[4]; };\nstruct Scale_176_40 { int value[1]; };\nstruct Scale_176_41 { int value[2]; };\nstruct Scale_176_42 { int value[3]; };\nstruct Scale_176_43 { int value[4]; };\nstruct Scale_176_44 { int value[1]; };\nstruct Scale_176_45 { int value[2]; };\nstruct Scale_176_46 { int value[3]; };\nstruct Scale_176_47 { int value[4]; };\nstruct Scale_176_48 { int value[1]; };\nstruct Scale_176_49 { int value[2]; };\nstruct Scale_176_50 { int value[3]; };\nstruct Scale_176_51 { int value[4]; };\nstruct Scale_176_52 { int value[1]; };\nstruct Scale_176_53 { int value[2]; };\nstruct Scale_176_54 { int value[3]; };\nstruct Scale_176_55 { int value[4]; };\nstruct Scale_176_56 { int value[1]; };\nstruct Scale_176_57 { int value[2]; };\nstruct Scale_176_58 { int value[3]; };\nstruct Scale_176_59 { int value[4]; };\nstruct Scale_176_60 { int value[1]; };\nstruct Scale_176_61 { int value[2]; };\nstruct Scale_176_62 { int value[3]; };\nstruct Scale_176_63 { int value[4]; };\ntemplate<class T> constexpr T fold_176(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_176 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_176(2)==14);\nint main() { Item_176 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "UnwrappedLineParser::readToken",
+  "target_source": "clang/lib/Format/UnwrappedLineParser.cpp",
+  "mapping_note": "The format-token-classification construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

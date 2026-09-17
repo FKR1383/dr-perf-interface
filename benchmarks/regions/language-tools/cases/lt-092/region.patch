@@ -1,0 +1,28 @@
+--- a/libcst/_nodes/deep_equals.py
++++ b/libcst/_nodes/deep_equals.py
+@@ -6,6 +6,7 @@
+ """
+ Provides the implementation of `CSTNode.deep_equals`.
+ """
++import perfmark
+ 
+ from dataclasses import fields
+ from typing import Sequence
+@@ -35,11 +36,12 @@
+     types, and not `List[]`, `Tuple[]`, or `Iterable[]` values, all sequences should
+     be treated as equal if they have the same values.
+     """
+-    if a is b:  # short-circuit
+-        return True
+-    if len(a) != len(b):
+-        return False
+-    return all(deep_equals(a_el, b_el) for (a_el, b_el) in zip(a, b))
++    with perfmark.region("lt-092"):
++        if a is b:  # short-circuit
++            return True
++        if len(a) != len(b):
++            return False
++        return all(deep_equals(a_el, b_el) for (a_el, b_el) in zip(a, b))
+ 
+ 
+ def _deep_equals_cst_node(a: "CSTNode", b: "CSTNode") -> bool:

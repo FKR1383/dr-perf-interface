@@ -1,0 +1,180 @@
+--- a/numpy/lib/_histograms_impl.py
++++ b/numpy/lib/_histograms_impl.py
+@@ -1,6 +1,7 @@
+ """
+ Histogram-related functions
+ """
++import perfmark
+ import contextlib
+ import functools
+ import operator
+@@ -809,88 +810,89 @@
+         np.can_cast(weights.dtype, complex)
+     )
+ 
+-    if uniform_bins is not None and simple_weights:
+-        # Fast algorithm for equal bins
+-        # We now convert values of a to bin indices, under the assumption of
+-        # equal bin widths (which is valid here).
+-        first_edge, last_edge, n_equal_bins = uniform_bins
+-
+-        # Initialize empty histogram
+-        n = np.zeros(n_equal_bins, ntype)
+-
+-        # Pre-compute histogram scaling factor
+-        norm_numerator = n_equal_bins
+-        norm_denom = _unsigned_subtract(last_edge, first_edge)
+-
+-        # We iterate over blocks here for two reasons: the first is that for
+-        # large arrays, it is actually faster (for example for a 10^8 array it
+-        # is 2x as fast) and it results in a memory footprint 3x lower in the
+-        # limit of large arrays.
+-        for i in _range(0, len(a), BLOCK):
+-            tmp_a = a[i:i + BLOCK]
+-            if weights is None:
+-                tmp_w = None
+-            else:
+-                tmp_w = weights[i:i + BLOCK]
+-
+-            # Only include values in the right range
+-            keep = (tmp_a >= first_edge)
+-            keep &= (tmp_a <= last_edge)
+-            if not np.logical_and.reduce(keep):
+-                tmp_a = tmp_a[keep]
+-                if tmp_w is not None:
+-                    tmp_w = tmp_w[keep]
+-
+-            # This cast ensures no type promotions occur below, which gh-10322
+-            # make unpredictable. Getting it wrong leads to precision errors
+-            # like gh-8123.
+-            tmp_a = tmp_a.astype(bin_edges.dtype, copy=False)
+-
+-            # Compute the bin indices, and for values that lie exactly on
+-            # last_edge we need to subtract one
+-            f_indices = ((_unsigned_subtract(tmp_a, first_edge) / norm_denom)
+-                         * norm_numerator)
+-            indices = f_indices.astype(np.intp)
+-            indices[indices == n_equal_bins] -= 1
+-
+-            # The index computation is not guaranteed to give exactly
+-            # consistent results within ~1 ULP of the bin edges.
+-            decrement = tmp_a < bin_edges[indices]
+-            indices[decrement] -= 1
+-            # The last bin includes the right edge. The other bins do not.
+-            increment = ((tmp_a >= bin_edges[indices + 1])
+-                         & (indices != n_equal_bins - 1))
+-            indices[increment] += 1
+-
+-            # We now compute the histogram using bincount
+-            if ntype.kind == 'c':
+-                n.real += np.bincount(indices, weights=tmp_w.real,
+-                                      minlength=n_equal_bins)
+-                n.imag += np.bincount(indices, weights=tmp_w.imag,
+-                                      minlength=n_equal_bins)
+-            else:
+-                n += np.bincount(indices, weights=tmp_w,
+-                                 minlength=n_equal_bins).astype(ntype)
+-    else:
+-        # Compute via cumulative histogram
+-        cum_n = np.zeros(bin_edges.shape, ntype)
+-        if weights is None:
+-            for i in _range(0, len(a), BLOCK):
+-                sa = np.sort(a[i:i + BLOCK])
+-                cum_n += _search_sorted_inclusive(sa, bin_edges)
+-        else:
+-            zero = np.zeros(1, dtype=ntype)
++    with perfmark.region("gl-116"):
++        if uniform_bins is not None and simple_weights:
++            # Fast algorithm for equal bins
++            # We now convert values of a to bin indices, under the assumption of
++            # equal bin widths (which is valid here).
++            first_edge, last_edge, n_equal_bins = uniform_bins
++    
++            # Initialize empty histogram
++            n = np.zeros(n_equal_bins, ntype)
++    
++            # Pre-compute histogram scaling factor
++            norm_numerator = n_equal_bins
++            norm_denom = _unsigned_subtract(last_edge, first_edge)
++    
++            # We iterate over blocks here for two reasons: the first is that for
++            # large arrays, it is actually faster (for example for a 10^8 array it
++            # is 2x as fast) and it results in a memory footprint 3x lower in the
++            # limit of large arrays.
+             for i in _range(0, len(a), BLOCK):
+                 tmp_a = a[i:i + BLOCK]
+-                tmp_w = weights[i:i + BLOCK]
+-                sorting_index = np.argsort(tmp_a)
+-                sa = tmp_a[sorting_index]
+-                sw = tmp_w[sorting_index]
+-                cw = np.concatenate((zero, sw.cumsum()))
+-                bin_index = _search_sorted_inclusive(sa, bin_edges)
+-                cum_n += cw[bin_index]
+-
+-        n = np.diff(cum_n)
++                if weights is None:
++                    tmp_w = None
++                else:
++                    tmp_w = weights[i:i + BLOCK]
++    
++                # Only include values in the right range
++                keep = (tmp_a >= first_edge)
++                keep &= (tmp_a <= last_edge)
++                if not np.logical_and.reduce(keep):
++                    tmp_a = tmp_a[keep]
++                    if tmp_w is not None:
++                        tmp_w = tmp_w[keep]
++    
++                # This cast ensures no type promotions occur below, which gh-10322
++                # make unpredictable. Getting it wrong leads to precision errors
++                # like gh-8123.
++                tmp_a = tmp_a.astype(bin_edges.dtype, copy=False)
++    
++                # Compute the bin indices, and for values that lie exactly on
++                # last_edge we need to subtract one
++                f_indices = ((_unsigned_subtract(tmp_a, first_edge) / norm_denom)
++                             * norm_numerator)
++                indices = f_indices.astype(np.intp)
++                indices[indices == n_equal_bins] -= 1
++    
++                # The index computation is not guaranteed to give exactly
++                # consistent results within ~1 ULP of the bin edges.
++                decrement = tmp_a < bin_edges[indices]
++                indices[decrement] -= 1
++                # The last bin includes the right edge. The other bins do not.
++                increment = ((tmp_a >= bin_edges[indices + 1])
++                             & (indices != n_equal_bins - 1))
++                indices[increment] += 1
++    
++                # We now compute the histogram using bincount
++                if ntype.kind == 'c':
++                    n.real += np.bincount(indices, weights=tmp_w.real,
++                                          minlength=n_equal_bins)
++                    n.imag += np.bincount(indices, weights=tmp_w.imag,
++                                          minlength=n_equal_bins)
++                else:
++                    n += np.bincount(indices, weights=tmp_w,
++                                     minlength=n_equal_bins).astype(ntype)
++        else:
++            # Compute via cumulative histogram
++            cum_n = np.zeros(bin_edges.shape, ntype)
++            if weights is None:
++                for i in _range(0, len(a), BLOCK):
++                    sa = np.sort(a[i:i + BLOCK])
++                    cum_n += _search_sorted_inclusive(sa, bin_edges)
++            else:
++                zero = np.zeros(1, dtype=ntype)
++                for i in _range(0, len(a), BLOCK):
++                    tmp_a = a[i:i + BLOCK]
++                    tmp_w = weights[i:i + BLOCK]
++                    sorting_index = np.argsort(tmp_a)
++                    sa = tmp_a[sorting_index]
++                    sw = tmp_w[sorting_index]
++                    cw = np.concatenate((zero, sw.cumsum()))
++                    bin_index = _search_sorted_inclusive(sa, bin_edges)
++                    cum_n += cw[bin_index]
++    
++            n = np.diff(cum_n)
+ 
+     if density:
+         db = np.array(np.diff(bin_edges), float)

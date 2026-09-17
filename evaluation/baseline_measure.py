@@ -44,8 +44,9 @@ avoid introducing narrower intermediate integer arithmetic.
 Preserve the region boundary, workload values, algorithm, dependencies, compiler
 optimization settings and program semantics. Edits are limited to the target
 instrumentation and declarations/bindings needed to expose the frozen features.
-Use perfmark's declared-state API, not extra trace-only fields. No more than four
-states are supported. Keep labels identical to the frozen list, including spaces.
+Use perfmark's declared-state API, not extra trace-only fields. Dr. Perf has no
+fixed limit on the number of declared states; bind the complete candidate.
+Keep labels identical to the frozen list, including spaces.
 
 You may inspect source, make these instrumentation edits, and run compile/link
 commands. You MUST NOT run the application, tests, benchmarks, Dr. Perf, another
@@ -88,10 +89,6 @@ def feedback(measured):
                 "advice": details.get("advice", "Specify unambiguous scalar values available at entry.")}
     messages = {
         "ok": ("The complete candidate can be measured.", ""),
-        "unsupported_state_count": (
-            "The complete candidate exceeds Dr. Perf's four declared-state capacity.",
-            "Consider whether your static hypothesis can be expressed with at most four scalar "
-            "features. Do not discard a dependency merely to satisfy this limit."),
         "unsupported_state_name": (
             "A feature label exceeds 63 UTF-8 bytes or contains NUL.",
             "Use a shorter unambiguous spelling of the same source expression, preserving its meaning."),
@@ -114,7 +111,7 @@ def feedback(measured):
 
 def retryable(measured):
     return measured["status"] in {
-        "unsupported_features", "unsupported_state_count", "unsupported_state_name",
+        "unsupported_features", "unsupported_state_name",
         "insufficient_state_variation", "state_mismatch", "instrumentation_error"}
 
 
@@ -159,10 +156,6 @@ def measure(executable, workspace, control, out, region, command, candidate, mod
 
 
 def _measure(executable, workspace, control, out, region, command, candidate, model):
-    if len(candidate) > 4:
-        return drperf_measure.failed("unsupported_state_count",
-                                     f"the complete Agent Only answer has {len(candidate)} features; "
-                                     "Dr. Perf supports at most four; no subset was measured")
     if not candidate:
         return drperf_measure.failed("insufficient_state_variation",
                                      "Dr. Perf cannot fit a model with no declared states")

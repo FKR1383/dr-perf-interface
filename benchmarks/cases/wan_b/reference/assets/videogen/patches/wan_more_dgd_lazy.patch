@@ -1,0 +1,66 @@
+`DiagonalGaussianDistribution.__init__` computes `std = exp(0.5*logvar)` and
+`var = exp(logvar)` eagerly.  Measured on the Wan VAE encode path
+(out/videogen_more_enc, region `dgd_init`, 2.7% irregular):
+
+    dgd_init = 14.2*numel + 114,569      of which 13.6 of the 14.2 is
+                                         mkl_vml_kernel_sExp
+
+`AutoencoderKLWan.forward` and the Wan pipelines read `posterior.mode()`, which
+touches neither; `sample()` touches `std` only.  So at least one of the two
+full-size `exp` passes over the encoder output is always discarded, and for the
+`mode()` callers both are.
+
+Computing them on first read keeps every value, and keeps `var is std` in the
+deterministic case.  equiv_more.py hashes mode / sample / std / var / logvar /
+kl at five (frames, resolution) points and three tiled configurations: all
+identical.
+
+--- a/src/diffusers/models/autoencoders/vae.py
++++ b/src/diffusers/models/autoencoders/vae.py
+@@ -689,12 +689,44 @@
+         self.parameters = parameters
+         self.mean, self.logvar = torch.chunk(parameters, 2, dim=1)
+         self.logvar = torch.clamp(self.logvar, -30.0, 20.0)
+         self.deterministic = deterministic
+-        self.std = torch.exp(0.5 * self.logvar)
+-        self.var = torch.exp(self.logvar)
+-        if self.deterministic:
+-            self.var = self.std = torch.zeros_like(
+-                self.mean, device=self.parameters.device, dtype=self.parameters.dtype
+-            )
++        # `std` and `var` are two full-size `exp` passes over the latent.
++        # `mode()` reads neither and `sample()` reads only `std`, so at least one
++        # of them is discarded at every call site in the Wan pipelines.  Compute
++        # on first read; the values, and the object identity `var is std` in the
++        # deterministic case, are what the eager version produced.
++        self._std = None
++        self._var = None
++
++    def _compute_std_var(self):
++        if self.deterministic:
++            self._var = self._std = torch.zeros_like(
++                self.mean, device=self.parameters.device, dtype=self.parameters.dtype
++            )
++        else:
++            self._std = torch.exp(0.5 * self.logvar)
++            self._var = torch.exp(self.logvar)
++
++    @property
++    def std(self) -> torch.Tensor:
++        if self._std is None:
++            self._compute_std_var()
++        return self._std
++
++    @std.setter
++    def std(self, value: torch.Tensor) -> None:
++        self._std = value
++
++    @property
++    def var(self) -> torch.Tensor:
++        if self._var is None:
++            self._compute_std_var()
++        return self._var
++
++    @var.setter
++    def var(self, value: torch.Tensor) -> None:
++        self._var = value

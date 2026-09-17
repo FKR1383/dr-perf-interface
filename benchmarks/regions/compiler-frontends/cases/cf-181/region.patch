@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/TypeFinder.cpp
++++ b/llvm/lib/IR/TypeFinder.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/TypeFinder.h"
+ #include "llvm/ADT/SmallVector.h"
+ #include "llvm/IR/BasicBlock.h"
+@@ -32,6 +33,7 @@
+ using namespace llvm;
+ 
+ void TypeFinder::run(const Module &M, bool onlyNamed) {
++  DRPERF_BENCH_REGION("cf-181");
+   OnlyNamed = onlyNamed;
+ 
+   // Get types from global variables.

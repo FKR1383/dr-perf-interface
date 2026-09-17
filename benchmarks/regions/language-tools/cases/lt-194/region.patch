@@ -1,0 +1,42 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -6849,18 +6850,19 @@
+       ``'a-zA-Z0-9_$'``, etc.)
+     """
+ 
+-    def _expanded(p):
+-        if isinstance(p, ParseResults):
+-            yield from (chr(c) for c in range(ord(p[0]), ord(p[1]) + 1))
+-        else:
+-            yield p
+-
+-    try:
+-        return "".join(
+-            [c for part in _reBracketExpr.parse_string(s).body for c in _expanded(part)]
+-        )
+-    except Exception as e:
+-        return ""
++    with perfmark.region("lt-194"):
++        def _expanded(p):
++            if isinstance(p, ParseResults):
++                yield from (chr(c) for c in range(ord(p[0]), ord(p[1]) + 1))
++            else:
++                yield p
++
++        try:
++            return "".join(
++                [c for part in _reBracketExpr.parse_string(s).body for c in _expanded(part)]
++            )
++        except Exception as e:
++            return ""
+ 
+ 
+ def token_map(func, *args) -> ParseAction:

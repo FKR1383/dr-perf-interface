@@ -1,0 +1,38 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4,superblocks=0,rank=0,rehash=0 x2, requests=4,superblocks=1,rank=1,rehash=0 x2, requests=4,superblocks=2,rank=2,rehash=0 x2, requests=4,superblocks=3,rank=3,rehash=0 x2, requests=4,superblocks=4,rank=4,rehash=0 x2, requests=4,superblocks=5,rank=5,rehash=0 x2, requests=4,superblocks=6,rank=6,rehash=24 x1, requests=4,superblocks=6,rank=6,rehash=25 x1, requests=4,superblocks=7,rank=7,rehash=0 x2, requests=4,superblocks=8,rank=8,rehash=0 x2, requests=4,superblocks=9,rank=9,rehash=0 x2, requests=4,superblocks=10,rank=2,rehash=0 x2, requests=4,superblocks=11,rank=3,rehash=0 x2, requests=4,superblocks=12,rank=4,rehash=0 x2, requests=4,superblocks=13,rank=5,rehash=53 x1, requests=4,superblocks=13,rank=5,rehash=54 x1, requests=4,superblocks=14,rank=6,rehash=0 x2, requests=4,superblocks=15,rank=7,rehash=0 x2, requests=4,superblocks=16,rank=8,rehash=0 x2, requests=4,superblocks=17,rank=9,rehash=0 x2, requests=4,superblocks=18,rank=10,rehash=0 x2, requests=4,superblocks=19,rank=11,rehash=0 x2, requests=4,superblocks=20,rank=13,rehash=0 x2, requests=4,superblocks=21,rank=14,rehash=0 x2, requests=4,superblocks=22,rank=15,rehash=0 x2, requests=4,superblocks=23,rank=16,rehash=0 x2, requests=16,superblocks=24,rank=17,rehash=103 x2, requests=16,superblocks=25,rank=18,rehash=0 x2, requests=16,superblocks=26,rank=19,rehash=0 x2, requests=16,superblocks=27,rank=20,rehash=0 x2, requests=16,superblocks=28,rank=21,rehash=0 x2, requests=16,superblocks=29,rank=22,rehash=0 x2, requests=16,superblocks=30,rank=24,rehash=0 x2, requests=16,superblocks=31,rank=25,rehash=215 x1, requests=16,superblocks=31,rank=25,rehash=216 x1, requests=16,superblocks=32,rank=26,rehash=0 x2, requests=16,superblocks=33,rank=27,rehash=0 x2, requests=16,superblocks=34,rank=28,rehash=0 x2, requests=16,superblocks=35,rank=29,rehash=0 x2, requests=16,superblocks=36,rank=30,rehash=0 x2, requests=16,superblocks=37,rank=31,rehash=0 x2, requests=16,superblocks=38,rank=32,rehash=0 x2, requests=16,superblocks=39,rank=33,rehash=0 x2, requests=16,superblocks=40,rank=35,rehash=0 x2, requests=16,superblocks=41,rank=36,rehash=0 x2, requests=16,superblocks=42,rank=37,rehash=0 x2, requests=16,superblocks=43,rank=38,rehash=0 x2, requests=16,superblocks=44,rank=39,rehash=0 x2, requests=16,superblocks=45,rank=40,rehash=436 x1, requests=16,superblocks=45,rank=40,rehash=444 x1, requests=16,superblocks=46,rank=41,rehash=0 x2, requests=16,superblocks=47,rank=42,rehash=0 x2
+  cost(requests, superblocks, rank, rehash) = 1,002.3*requests + 83.6*superblocks + -52.8*rank + 0*rehash + 3,421.2        [all requests, superblocks, rank, rehash]   blocks: 200 affine, 406 constant, 81 irregular (59.4% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 3,480 .. 118,207
+    per-requests coefficient by function:
+               381.4  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               121.4  __GI___libc_malloc  [libc.so.6]
+                99.4  _int_malloc  [libc.so.6]
+                  75  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+                  66  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                  46  <_ditto_ftl_core::directory::DirectoryState>::unmap_logged  [_ditto_ftl_core.abi3.so]
+    per-superblocks coefficient by function:
+                33.4  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+                28.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+                 9.3  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+                   6  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                 3.7  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                 1.7  __memcpy_avx_unaligned_erms  [libc.so.6]
+    per-rank coefficient by function:
+               -26.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               -13.4  _int_malloc  [libc.so.6]
+                -7.4  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+                -3.4  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+                -2.1  __memcpy_avx_unaligned_erms  [libc.so.6]
+                -1.9  __GI___libc_malloc  [libc.so.6]
+    constant by function:
+               722.6  _int_malloc  [libc.so.6]
+               491.8  _int_free  [libc.so.6]
+               219.7  __free  [libc.so.6]
+                 198  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                 194  __GI___libc_malloc  [libc.so.6]
+               175.3  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+    irregular by function:
+             6,552.2  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+             5,561.1  __memcmp_avx2_movbe  [libc.so.6]
+             3,094.7  _int_malloc  [libc.so.6]
+

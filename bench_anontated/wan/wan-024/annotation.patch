@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -467,7 +467,7 @@
+         temb: torch.Tensor,
+         rotary_emb: torch.Tensor,
+     ) -> torch.Tensor:
+-        with perfmark.region("wan-024"):
++        with perfmark.region("wan-024", attention_pairs=int(hidden_states.shape[1] * hidden_states.shape[1])):
+             if temb.ndim == 4:
+                 # temb: batch_size, seq_len, 6, inner_dim (wan2.2 ti2v)
+                 shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = (

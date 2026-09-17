@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaOverload.cpp
++++ b/clang/lib/Sema/SemaOverload.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/CXXInheritance.h"
+@@ -15419,6 +15420,7 @@
+                                            SourceLocation RParenLoc,
+                                            Expr *ExecConfig, bool IsExecConfig,
+                                            bool AllowRecovery) {
++                                             DRPERF_BENCH_REGION("cf-100");
+   assert(MemExprE->getType() == Context.BoundMemberTy ||
+          MemExprE->getType() == Context.OverloadTy);
+ 

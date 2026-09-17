@@ -1,0 +1,86 @@
+--- a/networkx/algorithms/connectivity/connectivity.py
++++ b/networkx/algorithms/connectivity/connectivity.py
+@@ -1,6 +1,7 @@
+ """
+ Flow based connectivity algorithms
+ """
++import perfmark
+ 
+ import itertools
+ from operator import itemgetter
+@@ -315,40 +316,41 @@
+         return local_node_connectivity(G, s, t, flow_func=flow_func)
+ 
+     # Global node connectivity
+-    if G.is_directed():
+-        if not nx.is_weakly_connected(G):
+-            return 0
+-        iter_func = itertools.permutations
+-        # It is necessary to consider both predecessors
+-        # and successors for directed graphs
+-
+-        def neighbors(v):
+-            return itertools.chain.from_iterable([G.predecessors(v), G.successors(v)])
+-
+-        # Isolating a node only requires removing all its predecessors or all
+-        # its successors, so the bound is the smaller of the two.
+-        def degree(v):
+-            return min(len(G.pred[v].keys() - {v}), len(G.succ[v].keys() - {v}))
+-
+-        # In a digraph the local node connectivity of an ordered pair is not
+-        # symmetric, and v has to lie on the source side of a minimum node cut
+-        # for its value to be the right one, so both orders are needed. Page
+-        # 513 of [2] states that for a digraph both N(v, w) and N(w, v) have to
+-        # be computed.
+-        def ordered_pairs(v, w):
+-            return ((v, w), (w, v))
+-
+-    else:
+-        if not nx.is_connected(G):
+-            return 0
+-        iter_func = itertools.combinations
+-        neighbors = G.neighbors
+-
+-        def degree(v):
+-            return len(G[v].keys() - {v})
+-
+-        def ordered_pairs(v, w):
+-            return ((v, w),)
++    with perfmark.region("gl-042"):
++        if G.is_directed():
++            if not nx.is_weakly_connected(G):
++                return 0
++            iter_func = itertools.permutations
++            # It is necessary to consider both predecessors
++            # and successors for directed graphs
++    
++            def neighbors(v):
++                return itertools.chain.from_iterable([G.predecessors(v), G.successors(v)])
++    
++            # Isolating a node only requires removing all its predecessors or all
++            # its successors, so the bound is the smaller of the two.
++            def degree(v):
++                return min(len(G.pred[v].keys() - {v}), len(G.succ[v].keys() - {v}))
++    
++            # In a digraph the local node connectivity of an ordered pair is not
++            # symmetric, and v has to lie on the source side of a minimum node cut
++            # for its value to be the right one, so both orders are needed. Page
++            # 513 of [2] states that for a digraph both N(v, w) and N(w, v) have to
++            # be computed.
++            def ordered_pairs(v, w):
++                return ((v, w), (w, v))
++    
++        else:
++            if not nx.is_connected(G):
++                return 0
++            iter_func = itertools.combinations
++            neighbors = G.neighbors
++    
++            def degree(v):
++                return len(G[v].keys() - {v})
++    
++            def ordered_pairs(v, w):
++                return ((v, w),)
+ 
+     # Reuse the auxiliary digraph and the residual network
+     H = build_auxiliary_node_connectivity(G)

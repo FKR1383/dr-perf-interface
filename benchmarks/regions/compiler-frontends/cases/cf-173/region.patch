@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/AsmWriter.cpp
++++ b/llvm/lib/IR/AsmWriter.cpp
+@@ -15,6 +15,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/ADT/APFloat.h"
+ #include "llvm/ADT/APInt.h"
+ #include "llvm/ADT/ArrayRef.h"
+@@ -1535,6 +1536,7 @@
+ 
+ static void WriteConstantInternal(raw_ostream &Out, const Constant *CV,
+                                   AsmWriterContext &WriterCtx) {
++                                    DRPERF_BENCH_REGION("cf-173");
+   if (const ConstantInt *CI = dyn_cast<ConstantInt>(CV)) {
+     Type *Ty = CI->getType();
+ 

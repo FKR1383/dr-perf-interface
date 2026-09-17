@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "aq-010",
+  "title": "Workspace file discovery",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/SocketDev/socket-python-cli",
+    "revision": "0980358ba9f0d2d3d7cf42af8516fff678931d77",
+    "path": "socketsecurity/core/__init__.py",
+    "snapshot": "../../upstream/socket-python-cli-0980358b/socketsecurity/core/__init__.py",
+    "sha256": "e614f5297f8060370cabef1dee324cd67f7de14c4d46b3e048eede91f01b6012"
+  },
+  "region": {
+    "symbol": "Core.find_files",
+    "start_line": 396,
+    "end_line": 427
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-010",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Discover files for a bounded workspace with overlapping filename patterns.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "citations": [
+    "https://github.com/SocketDev/socket-python-cli/pull/22"
+  ],
+  "source_family": "SocketDev/socket-python-cli:Core.find_files",
+  "phase": "python-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/README.md"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 in an isolated pinned Socket CLI checkout with requests in a temporary virtual environment at sizes 1, 2, 4, 8, and 16; local file-discovery assertions passed and marker_probe observed the target region. No external service was called."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises Core.find_files with bounded input, and verifies entry into the empty region marker."
+  }
+}

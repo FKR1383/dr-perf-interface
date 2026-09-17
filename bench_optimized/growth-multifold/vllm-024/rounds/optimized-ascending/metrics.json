@@ -1,0 +1,89 @@
+{
+  "case": "vllm-024",
+  "validity_warnings": [],
+  "pcv_names": [
+    "incoming_count"
+  ],
+  "distinct_states": 6,
+  "required_states": 3,
+  "calls": 6,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "incoming_count": 512
+      },
+      "calls": 1,
+      "instructions_per_call": 168122.0,
+      "unexplained_instructions_per_call": 8064.0,
+      "unexplained_share": 0.047965168151699364
+    },
+    {
+      "state": {
+        "incoming_count": 600
+      },
+      "calls": 1,
+      "instructions_per_call": 196070.0,
+      "unexplained_instructions_per_call": 10559.0,
+      "unexplained_share": 0.05385321568827459
+    },
+    {
+      "state": {
+        "incoming_count": 700
+      },
+      "calls": 1,
+      "instructions_per_call": 226115.0,
+      "unexplained_instructions_per_call": 13420.0,
+      "unexplained_share": 0.05935033058399487
+    },
+    {
+      "state": {
+        "incoming_count": 800
+      },
+      "calls": 1,
+      "instructions_per_call": 258251.0,
+      "unexplained_instructions_per_call": 16479.0,
+      "unexplained_share": 0.06381001428842482
+    },
+    {
+      "state": {
+        "incoming_count": 900
+      },
+      "calls": 1,
+      "instructions_per_call": 290551.0,
+      "unexplained_instructions_per_call": 19620.0,
+      "unexplained_share": 0.0675268713582125
+    },
+    {
+      "state": {
+        "incoming_count": 1000
+      },
+      "calls": 1,
+      "instructions_per_call": 322822.0,
+      "unexplained_instructions_per_call": 22759.0,
+      "unexplained_share": 0.07050015178643339
+    }
+  ],
+  "max_unexplained_share": 0.07050015178643339,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "incoming_count": 290.45321665089887
+    },
+    "constant": 10084.181078524147,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 0.7574774660170078,
+  "raw_files": [
+    "run.3428230.json"
+  ]
+}

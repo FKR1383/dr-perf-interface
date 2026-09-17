@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-array.cc
++++ b/src/runtime/runtime-array.cc
+@@ -11,6 +11,7 @@
+ #include "src/objects/elements.h"
+ #include "src/objects/js-array-inl.h"
+ #include "src/objects/object-conversions-inl.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -226,6 +227,7 @@
+ 
+ // ES7 22.1.3.11 Array.prototype.includes
+ RUNTIME_FUNCTION(Runtime_ArrayIncludes_Slow) {
++  DRPERF_BENCH_REGION("v8-interpreter-028");
+   HandleScope shs(isolate);
+   DCHECK_EQ(3, args.length());
+   DirectHandle<Object> search_element = args.at(1);

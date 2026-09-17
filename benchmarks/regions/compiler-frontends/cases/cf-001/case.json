@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-001",
+  "title": "Sema::ProcessAPINotes compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Sema/SemaAPINotes.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Sema/SemaAPINotes.cpp",
+    "sha256": "572c12b912eb7bc7b716dad424c9870c1e29fd34c5a1675b7f025fc8b96486e9"
+  },
+  "region": {
+    "symbol": "Sema::ProcessAPINotes",
+    "start_line": 894,
+    "end_line": 1136,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-001",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "semantic-analysis",
+  "workload": {
+    "description": "Run the bounded record-layout fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Sema/SemaAPINotes.cpp:Sema::ProcessAPINotes",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Sema/SemaAPINotes.cpp#L894-L1136"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "f9b91339a1aa632baa0ba59cebf19b29744be99d4bc0278c1d5665b90a9f7eaf",
+      "patch_sha256": "38f7965f2f806df9d12556c5ae1ff618e5eb9d8f41e9a12caf7800dcc652d194"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

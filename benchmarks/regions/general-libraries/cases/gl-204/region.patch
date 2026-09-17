@@ -1,0 +1,24 @@
+--- a/src/packaging/tags.py
++++ b/src/packaging/tags.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import operator
+@@ -558,9 +559,10 @@
+     platforms = list(platform_tags() if platforms is None else platforms)
+     if "none" not in abis:
+         abis.append("none")
+-    for abi in abis:
+-        for platform_ in platforms:
+-            yield Tag(interpreter, abi, platform_)
++    with perfmark.region("gl-204"):
++        for abi in abis:
++            for platform_ in platforms:
++                yield Tag(interpreter, abi, platform_)
+ 
+ 
+ def _py_interpreter_range(py_version: PythonVersion) -> Iterator[str]:

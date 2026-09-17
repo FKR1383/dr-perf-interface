@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/ContinuationIndenter.cpp
++++ b/clang/lib/Format/ContinuationIndenter.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ContinuationIndenter.h"
+ #include "BreakableToken.h"
+ #include "FormatInternal.h"
+@@ -1574,6 +1575,7 @@
+ 
+ unsigned ContinuationIndenter::moveStateToNextToken(LineState &State,
+                                                     bool DryRun, bool Newline) {
++                                                      DRPERF_BENCH_REGION("cf-226");
+   assert(State.Stack.size());
+   const FormatToken &Current = *State.NextToken;
+   auto &CurrentState = State.Stack.back();

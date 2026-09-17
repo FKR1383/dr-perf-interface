@@ -1,0 +1,33 @@
+{
+  "case": "cf-170",
+  "phase": "ast-processing",
+  "scenario": "ast-dump",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "template<class T> constexpr T fold_170(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_170 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_170(2)==14);\nint main() { Item_170 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Node_170_0{int x; int get()const{return x+0;}};\nstruct Node_170_1{int x; int get()const{return x+1;}};\nstruct Node_170_2{int x; int get()const{return x+2;}};\nstruct Node_170_3{int x; int get()const{return x+3;}};\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Node_170_0{int x; int get()const{return x+0;}};\nstruct Node_170_1{int x; int get()const{return x+1;}};\nstruct Node_170_2{int x; int get()const{return x+2;}};\nstruct Node_170_3{int x; int get()const{return x+3;}};\nstruct Node_170_4{int x; int get()const{return x+4;}};\nstruct Node_170_5{int x; int get()const{return x+5;}};\nstruct Node_170_6{int x; int get()const{return x+6;}};\nstruct Node_170_7{int x; int get()const{return x+7;}};\nstruct Node_170_8{int x; int get()const{return x+8;}};\nstruct Node_170_9{int x; int get()const{return x+9;}};\nstruct Node_170_10{int x; int get()const{return x+10;}};\nstruct Node_170_11{int x; int get()const{return x+11;}};\nstruct Node_170_12{int x; int get()const{return x+12;}};\nstruct Node_170_13{int x; int get()const{return x+13;}};\nstruct Node_170_14{int x; int get()const{return x+14;}};\nstruct Node_170_15{int x; int get()const{return x+15;}};\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Node_170_0{int x; int get()const{return x+0;}};\nstruct Node_170_1{int x; int get()const{return x+1;}};\nstruct Node_170_2{int x; int get()const{return x+2;}};\nstruct Node_170_3{int x; int get()const{return x+3;}};\nstruct Node_170_4{int x; int get()const{return x+4;}};\nstruct Node_170_5{int x; int get()const{return x+5;}};\nstruct Node_170_6{int x; int get()const{return x+6;}};\nstruct Node_170_7{int x; int get()const{return x+7;}};\nstruct Node_170_8{int x; int get()const{return x+8;}};\nstruct Node_170_9{int x; int get()const{return x+9;}};\nstruct Node_170_10{int x; int get()const{return x+10;}};\nstruct Node_170_11{int x; int get()const{return x+11;}};\nstruct Node_170_12{int x; int get()const{return x+12;}};\nstruct Node_170_13{int x; int get()const{return x+13;}};\nstruct Node_170_14{int x; int get()const{return x+14;}};\nstruct Node_170_15{int x; int get()const{return x+15;}};\nstruct Node_170_16{int x; int get()const{return x+16;}};\nstruct Node_170_17{int x; int get()const{return x+17;}};\nstruct Node_170_18{int x; int get()const{return x+18;}};\nstruct Node_170_19{int x; int get()const{return x+19;}};\nstruct Node_170_20{int x; int get()const{return x+20;}};\nstruct Node_170_21{int x; int get()const{return x+21;}};\nstruct Node_170_22{int x; int get()const{return x+22;}};\nstruct Node_170_23{int x; int get()const{return x+23;}};\nstruct Node_170_24{int x; int get()const{return x+24;}};\nstruct Node_170_25{int x; int get()const{return x+25;}};\nstruct Node_170_26{int x; int get()const{return x+26;}};\nstruct Node_170_27{int x; int get()const{return x+27;}};\nstruct Node_170_28{int x; int get()const{return x+28;}};\nstruct Node_170_29{int x; int get()const{return x+29;}};\nstruct Node_170_30{int x; int get()const{return x+30;}};\nstruct Node_170_31{int x; int get()const{return x+31;}};\nstruct Node_170_32{int x; int get()const{return x+32;}};\nstruct Node_170_33{int x; int get()const{return x+33;}};\nstruct Node_170_34{int x; int get()const{return x+34;}};\nstruct Node_170_35{int x; int get()const{return x+35;}};\nstruct Node_170_36{int x; int get()const{return x+36;}};\nstruct Node_170_37{int x; int get()const{return x+37;}};\nstruct Node_170_38{int x; int get()const{return x+38;}};\nstruct Node_170_39{int x; int get()const{return x+39;}};\nstruct Node_170_40{int x; int get()const{return x+40;}};\nstruct Node_170_41{int x; int get()const{return x+41;}};\nstruct Node_170_42{int x; int get()const{return x+42;}};\nstruct Node_170_43{int x; int get()const{return x+43;}};\nstruct Node_170_44{int x; int get()const{return x+44;}};\nstruct Node_170_45{int x; int get()const{return x+45;}};\nstruct Node_170_46{int x; int get()const{return x+46;}};\nstruct Node_170_47{int x; int get()const{return x+47;}};\nstruct Node_170_48{int x; int get()const{return x+48;}};\nstruct Node_170_49{int x; int get()const{return x+49;}};\nstruct Node_170_50{int x; int get()const{return x+50;}};\nstruct Node_170_51{int x; int get()const{return x+51;}};\nstruct Node_170_52{int x; int get()const{return x+52;}};\nstruct Node_170_53{int x; int get()const{return x+53;}};\nstruct Node_170_54{int x; int get()const{return x+54;}};\nstruct Node_170_55{int x; int get()const{return x+55;}};\nstruct Node_170_56{int x; int get()const{return x+56;}};\nstruct Node_170_57{int x; int get()const{return x+57;}};\nstruct Node_170_58{int x; int get()const{return x+58;}};\nstruct Node_170_59{int x; int get()const{return x+59;}};\nstruct Node_170_60{int x; int get()const{return x+60;}};\nstruct Node_170_61{int x; int get()const{return x+61;}};\nstruct Node_170_62{int x; int get()const{return x+62;}};\nstruct Node_170_63{int x; int get()const{return x+63;}};\n"
+    }
+  ],
+  "target_symbol": "DeclContext::lookupImpl",
+  "target_source": "clang/lib/AST/DeclBase.cpp",
+  "mapping_note": "The ast-dump construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

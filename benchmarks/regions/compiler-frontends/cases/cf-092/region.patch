@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaOverload.cpp
++++ b/clang/lib/Sema/SemaOverload.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/CXXInheritance.h"
+@@ -16276,6 +16277,7 @@
+ 
+ ExprResult Sema::FixOverloadedFunctionReference(Expr *E, DeclAccessPair Found,
+                                                 FunctionDecl *Fn) {
++                                                  DRPERF_BENCH_REGION("cf-092");
+   if (ParenExpr *PE = dyn_cast<ParenExpr>(E)) {
+     ExprResult SubExpr =
+         FixOverloadedFunctionReference(PE->getSubExpr(), Found, Fn);

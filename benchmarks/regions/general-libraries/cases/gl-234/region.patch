@@ -1,0 +1,141 @@
+--- a/src/attr/_funcs.py
++++ b/src/attr/_funcs.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # SPDX-License-Identifier: MIT
+ 
+ 
+@@ -77,75 +78,76 @@
+     """
+     attrs = fields(inst.__class__)
+     rv = dict_factory()
+-    for a in attrs:
+-        v = getattr(inst, a.name)
+-        if filter is not None and not filter(a, v):
+-            continue
+-
+-        if value_serializer is not None:
+-            v = value_serializer(inst, a, v)
+-
+-        if recurse is True:
+-            value_type = type(v)
+-            if value_type in _ATOMIC_TYPES:
+-                rv[a.name] = v
+-            elif has(value_type):
+-                rv[a.name] = asdict(
+-                    v,
+-                    recurse=True,
+-                    filter=filter,
+-                    dict_factory=dict_factory,
+-                    retain_collection_types=retain_collection_types,
+-                    value_serializer=value_serializer,
+-                )
+-            elif issubclass(value_type, (tuple, list, set, frozenset)):
+-                cf = value_type if retain_collection_types is True else list
+-                items = [
+-                    _asdict_anything(
+-                        i,
+-                        is_key=False,
++    with perfmark.region("gl-234"):
++        for a in attrs:
++            v = getattr(inst, a.name)
++            if filter is not None and not filter(a, v):
++                continue
++    
++            if value_serializer is not None:
++                v = value_serializer(inst, a, v)
++    
++            if recurse is True:
++                value_type = type(v)
++                if value_type in _ATOMIC_TYPES:
++                    rv[a.name] = v
++                elif has(value_type):
++                    rv[a.name] = asdict(
++                        v,
++                        recurse=True,
+                         filter=filter,
+                         dict_factory=dict_factory,
+                         retain_collection_types=retain_collection_types,
+                         value_serializer=value_serializer,
+                     )
+-                    for i in v
+-                ]
+-                try:
+-                    rv[a.name] = cf(items)
+-                except TypeError:
+-                    if not issubclass(cf, tuple):
+-                        raise
+-                    # Workaround for TypeError: cf.__new__() missing 1 required
+-                    # positional argument (which appears, for a namedturle)
+-                    rv[a.name] = cf(*items)
+-            elif issubclass(value_type, dict):
+-                df = dict_factory
+-                rv[a.name] = df(
+-                    (
++                elif issubclass(value_type, (tuple, list, set, frozenset)):
++                    cf = value_type if retain_collection_types is True else list
++                    items = [
+                         _asdict_anything(
+-                            kk,
+-                            is_key=True,
++                            i,
++                            is_key=False,
+                             filter=filter,
+-                            dict_factory=df,
++                            dict_factory=dict_factory,
+                             retain_collection_types=retain_collection_types,
+                             value_serializer=value_serializer,
+-                        ),
+-                        _asdict_anything(
+-                            vv,
+-                            is_key=False,
+-                            filter=filter,
+-                            dict_factory=df,
+-                            retain_collection_types=retain_collection_types,
+-                            value_serializer=value_serializer,
+-                        ),
++                        )
++                        for i in v
++                    ]
++                    try:
++                        rv[a.name] = cf(items)
++                    except TypeError:
++                        if not issubclass(cf, tuple):
++                            raise
++                        # Workaround for TypeError: cf.__new__() missing 1 required
++                        # positional argument (which appears, for a namedturle)
++                        rv[a.name] = cf(*items)
++                elif issubclass(value_type, dict):
++                    df = dict_factory
++                    rv[a.name] = df(
++                        (
++                            _asdict_anything(
++                                kk,
++                                is_key=True,
++                                filter=filter,
++                                dict_factory=df,
++                                retain_collection_types=retain_collection_types,
++                                value_serializer=value_serializer,
++                            ),
++                            _asdict_anything(
++                                vv,
++                                is_key=False,
++                                filter=filter,
++                                dict_factory=df,
++                                retain_collection_types=retain_collection_types,
++                                value_serializer=value_serializer,
++                            ),
++                        )
++                        for kk, vv in v.items()
+                     )
+-                    for kk, vv in v.items()
+-                )
++                else:
++                    rv[a.name] = v
+             else:
+                 rv[a.name] = v
+-        else:
+-            rv[a.name] = v
+     return rv
+ 
+ 

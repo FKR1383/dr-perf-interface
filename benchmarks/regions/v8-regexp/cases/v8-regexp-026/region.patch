@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-compiler.cc
++++ b/src/regexp/regexp-compiler.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-compiler.h"
++#include "drperf_bench_region.h"
+ 
+ #include <algorithm>
+ #include <optional>
+@@ -5652,6 +5653,7 @@
+                                    int first_choice, Trace* trace,
+                                    PreloadState* preload,
+                                    ParkedGrant body_parked_grant) {
++  DRPERF_BENCH_REGION("v8-regexp-026");
+   TRACE("* Emit Choices");
+   RegExpMacroAssembler* macro_assembler = compiler->macro_assembler();
+   SetUpPreLoad(compiler, trace, preload);

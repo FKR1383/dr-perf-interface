@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "v8-regexp-017",
+  "title": "Parse Unicode-sets class subtraction",
+  "language": "cpp",
+  "source": {
+    "repository": "https://chromium.googlesource.com/v8/v8.git",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/regexp/regexp-parser.cc",
+    "snapshot": "../../upstream/src/regexp/regexp-parser.cc",
+    "sha256": "4dc12f8cb552171e4cf6cec2ef51929b65963ca5f25156bc4ea4199b3be5419c"
+  },
+  "region": {
+    "symbol": "v8::internal::regexp::ParserImpl::ParseClassSubtraction",
+    "start_line": 3344,
+    "end_line": 3386
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-regexp-017",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Parse a bounded Unicode-sets character class subtraction.",
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://chromium.googlesource.com/v8/v8.git/+/736a2cbec441e85b68c742215d15318abfeae707/src/regexp/regexp-parser.cc"
+  ],
+  "phase": "regexp-parsing",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "not-run",
+      "details": "Host Node.js 18 does not support Unicode Sets. The test fails explicitly on unsupported runtimes; run with the pinned d8 build. No target-region entry verified."
+    },
+    "coverage_note": "RegExp construction invokes parsing; the interpreter-only flag prevents later native RegExp compilation from obscuring the phase. Exact entry into the marked parser function remains unverified until the instrumented d8 build is run."
+  }
+}

@@ -1,0 +1,20 @@
+--- a/src/requests/sessions.py
++++ b/src/requests/sessions.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import sys
+@@ -98,7 +99,8 @@
+ 
+     # Remove keys that are set to None. Extract keys first to avoid altering
+     # the dictionary during iteration.
+-    none_keys = [k for (k, v) in merged_setting.items() if v is None]
++    with perfmark.region("gl-186"):
++        none_keys = [k for (k, v) in merged_setting.items() if v is None]
+     for key in none_keys:
+         del merged_setting[key]
+ 

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-043",
+  "title": "Sema::BuildCallExpr compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Sema/SemaExpr.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Sema/SemaExpr.cpp",
+    "sha256": "1f3ba9d4dbeb2cc3a4aeb0c98fe8314ca1ade07396b4f4d67f1458dbd4e1c278"
+  },
+  "region": {
+    "symbol": "Sema::BuildCallExpr",
+    "start_line": 6476,
+    "end_line": 6681,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-043",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "semantic-analysis",
+  "workload": {
+    "description": "Run the bounded intrinsic-upgrade-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Sema/SemaExpr.cpp:Sema::BuildCallExpr",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Sema/SemaExpr.cpp#L6476-L6681"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "ad87cedf9b9750da3ec728c31e54f4626ac7d09b9ec17dd326f5dcc85eac9d23",
+      "patch_sha256": "b33c34797594f9e254d245f42f2ceb5a22d14998c3bde4481894cf62ca717c4f"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

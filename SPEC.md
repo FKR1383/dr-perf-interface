@@ -1,7 +1,7 @@
 # drperf: what it computes
 
-**Measurement.** `perfmark_begin(ρ, x, v)` (`perfmark_begin_v`: up to four
-states) … `perfmark_end(ρ)` around a code region yields a *trigger*
+**Measurement.** `perfmark_begin(ρ, x, v)` (`perfmark_begin_v`: all declared
+states, with dynamically sized storage) … `perfmark_end(ρ)` around a code region yields a *trigger*
 $t$: region $\rho(t)$, declared state vector $v(t) \in \mathbb{Z}^k$, thread
 $\tau(t)$, sequence numbers $b(t) < e(t)$ from one atomic counter shared by
 all threads. DynamoRIO attributes every executed
@@ -16,11 +16,25 @@ beyond either are counted and reported, not placed at a point.  Blocks beyond
 the counter table are merged into one slot, which is reported and invalidates
 the run.
 
+**Optional measurement scope.** `DRPERF_FOLLOW_THREADS=0` attributes instructions
+only while their own thread has an open region; unmarked workers do not inherit
+the leader's region. `DRPERF_EXCLUDE_CUDA_MODULE=basename` suppresses the selected
+module's blocks and synchronous callees beneath its exported CUDA driver/runtime
+and cuBLAS/cuDNN/cuSOLVER/cuSPARSE/cuFFT/cuRAND/cuTENSOR APIs. Exclusion depth is
+thread-local and nested; normal return restores counting. Asynchronous callee
+work on another thread is outside this stack scope. Raw output records the
+scope, matched exports, call count and excluded instructions. The latter is a
+process-wide diagnostic, not a per-region cost. An exclusion matching no exports
+invalidates the run. These options change what cost means; compare identical
+scopes and check remaining module attribution. Defaults retain the measurement
+above. Exclusion still instruments execution and is not a wall-time speedup.
+
 **Cost formulae (`derive`).** Over the observed points $V \subset \mathbb{Z}^k$,
 $|V| \ge k + 2$, each block gets a least-squares plane
 $a_\beta \cdot v + d_\beta$; tolerance $\theta(y) = \max(64,\ 0.05\,y)$.
 $\beta$ is *affine* if $|c_\beta(v) - a_\beta \cdot v - d_\beta| \le \theta(c_\beta(v))$
-for all $v \in V$ and $d_\beta \ge -\theta(\max_v c_\beta)$; it *scales* in
+for all $v \in V$; a negative intercept is allowed because the origin need
+not belong to the input domain (e.g. `cost = a*(depth-1)`). It *scales* in
 variable $j$ if moreover $|a_{\beta j}|(\max V_j - \min V_j) > \theta(\max_v c_\beta)$
 or the points are exactly coplanar with $a_{\beta j} \ne 0$ (other slopes
 are folded into the constant); a block scaling in no variable is *constant*;
@@ -39,8 +53,8 @@ cost never enters $A$ or $D$ (P3). Not provided: loop detection or
 data flow (the only link to $v$ is co-variation across $V$: an undeclared
 variable shows as irregular if independent, hides in $D$ if balanced across
 $V$, is charged to $v$ if correlated), non-affine
-forms ($n \log n$ over a fourfold range passes as a plane; a negative $D$ is
-the sign), regimes in more than one variable, checked extrapolation beyond
+forms (curves such as $n \log n$ can pass as a plane over a limited range;
+the sign of $D$ does not establish curvature), regimes in more than one variable, checked extrapolation beyond
 $V$, min–max intervals.
 
 **Relationships (`learn`).** For a trigger $t$ of region $A$ with state $x$,

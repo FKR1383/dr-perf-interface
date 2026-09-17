@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/Lexer.cpp
++++ b/clang/lib/Lex/Lexer.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Lex/Lexer.h"
+ #include "UnicodeCharSets.h"
+ #include "clang/Basic/CharInfo.h"
+@@ -2868,6 +2869,7 @@
+ /// some tokens, this will store the first token and return true.
+ bool Lexer::SkipBlockComment(Token &Result, const char *CurPtr,
+                              bool &TokAtPhysicalStartOfLine) {
++                               DRPERF_BENCH_REGION("cf-128");
+   // Scan one character past where we should, looking for a '/' character.  Once
+   // we find it, check to see if it was preceded by a *.  This common
+   // optimization helps people who like to put a lot of * characters in their

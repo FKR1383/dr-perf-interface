@@ -1,0 +1,75 @@
+--- a/libcst/_nodes/base.py
++++ b/libcst/_nodes/base.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -216,36 +217,37 @@
+         the given visitor's callbacks.
+         """
+         # visit self
+-        should_visit_children = visitor.on_visit(self)
+-
+-        # TODO: provide traversal where children are not replaced
+-        # visit children (optionally)
+-        if should_visit_children:
+-            # It's not possible to define `_visit_and_replace_children` with the correct
+-            # return type in any sane way, so we're using this cast. See the
+-            # explanation above the declaration of `_visit_and_replace_children`.
+-            with_updated_children = cast(
+-                _CSTNodeSelfT, self._visit_and_replace_children(visitor)
+-            )
+-        else:
+-            with_updated_children = self
+-
+-        if isinstance(visitor, CSTVisitor):
+-            visitor.on_leave(self)
+-            leave_result = self
+-        else:
+-            leave_result = visitor.on_leave(self, with_updated_children)
+-
+-        # validate return type of the user-defined `visitor.on_leave` method
+-        if not isinstance(leave_result, (CSTNode, RemovalSentinel, FlattenSentinel)):
+-            raise CSTValidationError(
+-                "Expected a node of type CSTNode or a RemovalSentinel, "
+-                + f"but got a return value of {type(leave_result).__name__}"
+-            )
+-
+-        # TODO: Run runtime typechecks against updated nodes
+-
+-        return leave_result
++        with perfmark.region("lt-090"):
++            should_visit_children = visitor.on_visit(self)
++
++            # TODO: provide traversal where children are not replaced
++            # visit children (optionally)
++            if should_visit_children:
++                # It's not possible to define `_visit_and_replace_children` with the correct
++                # return type in any sane way, so we're using this cast. See the
++                # explanation above the declaration of `_visit_and_replace_children`.
++                with_updated_children = cast(
++                    _CSTNodeSelfT, self._visit_and_replace_children(visitor)
++                )
++            else:
++                with_updated_children = self
++
++            if isinstance(visitor, CSTVisitor):
++                visitor.on_leave(self)
++                leave_result = self
++            else:
++                leave_result = visitor.on_leave(self, with_updated_children)
++
++            # validate return type of the user-defined `visitor.on_leave` method
++            if not isinstance(leave_result, (CSTNode, RemovalSentinel, FlattenSentinel)):
++                raise CSTValidationError(
++                    "Expected a node of type CSTNode or a RemovalSentinel, "
++                    + f"but got a return value of {type(leave_result).__name__}"
++                )
++
++            # TODO: Run runtime typechecks against updated nodes
++
++            return leave_result
+ 
+     # The return type of `_visit_and_replace_children` is `CSTNode`, not
+     # `_CSTNodeSelfT`. This is because pyre currently doesn't have a way to annotate

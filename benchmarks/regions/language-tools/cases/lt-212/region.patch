@@ -1,0 +1,73 @@
+--- a/lark/parsers/lalr_parser.py
++++ b/lark/parsers/lalr_parser.py
+@@ -1,5 +1,6 @@
+ """This module implements a LALR(1) Parser
+ """
++import perfmark
+ # Author: Erez Shinan (2017)
+ # Email : erezshin@gmail.com
+ from typing import Dict, Any, Optional
+@@ -38,36 +39,37 @@
+         return self.parser.parse(lexer, start, start_interactive=True)
+ 
+     def parse(self, lexer, start, on_error=None):
+-        try:
+-            return self.parser.parse(lexer, start)
+-        except UnexpectedInput as e:
+-            if on_error is None:
+-                raise
++        with perfmark.region("lt-212"):
++            try:
++                return self.parser.parse(lexer, start)
++            except UnexpectedInput as e:
++                if on_error is None:
++                    raise
+ 
+-            while True:
+-                if isinstance(e, UnexpectedCharacters):
+-                    s = e.interactive_parser.lexer_thread.state
+-                    p = s.line_ctr.char_pos
++                while True:
++                    if isinstance(e, UnexpectedCharacters):
++                        s = e.interactive_parser.lexer_thread.state
++                        p = s.line_ctr.char_pos
+ 
+-                if not on_error(e):
+-                    raise e
++                    if not on_error(e):
++                        raise e
+ 
+-                if isinstance(e, UnexpectedCharacters):
+-                    # If user didn't change the character position, then we should
+-                    if p == s.line_ctr.char_pos:
+-                        s.line_ctr.feed(s.text.text[p:p+1])
++                    if isinstance(e, UnexpectedCharacters):
++                        # If user didn't change the character position, then we should
++                        if p == s.line_ctr.char_pos:
++                            s.line_ctr.feed(s.text.text[p:p+1])
+ 
+-                try:
+-                    return e.interactive_parser.resume_parse()
+-                except UnexpectedToken as e2:
+-                    if (isinstance(e, UnexpectedToken)
+-                        and e.token.type == e2.token.type == '$END'
+-                        and e.interactive_parser == e2.interactive_parser):
+-                        # Prevent infinite loop
+-                        raise e2
+-                    e = e2
+-                except UnexpectedCharacters as e2:
+-                    e = e2
++                    try:
++                        return e.interactive_parser.resume_parse()
++                    except UnexpectedToken as e2:
++                        if (isinstance(e, UnexpectedToken)
++                            and e.token.type == e2.token.type == '$END'
++                            and e.interactive_parser == e2.interactive_parser):
++                            # Prevent infinite loop
++                            raise e2
++                        e = e2
++                    except UnexpectedCharacters as e2:
++                        e = e2
+ 
+ 
+ class _Parser:

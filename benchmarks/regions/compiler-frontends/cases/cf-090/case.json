@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-090",
+  "title": "Sema::ActOnFriendFunctionDecl compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Sema/SemaDeclCXX.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Sema/SemaDeclCXX.cpp",
+    "sha256": "78a84293a8ed90cc34e402b66bd437c42261c533296f82936fbcd5e959634b3c"
+  },
+  "region": {
+    "symbol": "Sema::ActOnFriendFunctionDecl",
+    "start_line": 17686,
+    "end_line": 17997,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-090",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "semantic-analysis",
+  "workload": {
+    "description": "Run the bounded friend-function-semantics fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Sema/SemaDeclCXX.cpp:Sema::ActOnFriendFunctionDecl",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Sema/SemaDeclCXX.cpp#L17686-L17997"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "07cf025a9165c405004e8940f671dbaf7405cc7d32ff17fc2b5d53f326ad35fc",
+      "patch_sha256": "23edd3e768ae705ede5d351449a0f0d6ad9e890e417fad22f5e1dd66b3e1e3a8"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

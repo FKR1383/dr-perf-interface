@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-032",
+  "title": "CodeGenFunction::FinishFunction compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/CodeGen/CodeGenFunction.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/CodeGen/CodeGenFunction.cpp",
+    "sha256": "61f9e9f51d685dcf7f43831fd4ba134ec1b3def422ea2e1a0fc2babfe02e581a"
+  },
+  "region": {
+    "symbol": "CodeGenFunction::FinishFunction",
+    "start_line": 366,
+    "end_line": 567,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-032",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-generation",
+  "workload": {
+    "description": "Run the bounded intrinsic-upgrade-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/CodeGen/CodeGenFunction.cpp:CodeGenFunction::FinishFunction",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/CodeGen/CodeGenFunction.cpp#L366-L567"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "18e8e7991809569647335355559a89980e90113276a6edd427743eceef4dfcd5",
+      "patch_sha256": "99ecdf23b8cda80be181b3c152480ca882076ffcecc8e462e4dcc488d35add6c"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

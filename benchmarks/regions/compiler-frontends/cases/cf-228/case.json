@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-228",
+  "title": "clang::ParseAST compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Parse/ParseAST.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Parse/ParseAST.cpp",
+    "sha256": "ee809cf917bc7fe91c52ad108dcd9d36627f5835cbfd645ef81c44c205880796"
+  },
+  "region": {
+    "symbol": "clang::ParseAST",
+    "start_line": 115,
+    "end_line": 202,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-228",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "parsing",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Parse/ParseAST.cpp:clang::ParseAST",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Parse/ParseAST.cpp#L115-L202"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "6c32b8926f0cb3c03631c1b759c115356fb909ea7fee0996c225a172b9071d0f",
+      "patch_sha256": "b3dd850a5998318c0f0036b8a71fe8d2e598cd4ddac1049aecd51d3813eaa546"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

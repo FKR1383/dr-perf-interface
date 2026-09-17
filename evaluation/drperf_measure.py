@@ -119,8 +119,6 @@ def measure(command, out, region, expected):
 
 def attempt(config, candidate):
     candidate = variables(candidate)
-    if len(candidate) > 4:
-        raise EvaluationError("perfmark supports at most four declared states")
     if Path.cwd().resolve() != Path(config["workspace"]).resolve():
         raise EvaluationError("measurement must run in the disposable workspace")
     journal = Path(config["journal"])

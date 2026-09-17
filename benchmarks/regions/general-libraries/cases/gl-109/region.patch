@@ -1,0 +1,35 @@
+--- a/numpy/ma/mrecords.py
++++ b/numpy/ma/mrecords.py
+@@ -8,6 +8,7 @@
+ .. moduleauthor:: Pierre Gerard-Marchant
+ 
+ """
++import perfmark
+ #  We should make sure that no field is called '_mask','mask','_fieldmask',
+ #  or whatever restricted keywords.  An idea would be to no bother in the
+ #  first place, and then rename the invalid fields with a trailing
+@@ -679,15 +680,16 @@
+     ftext.close()
+ 
+     # Try to guess the dtype.
+-    if vartypes is None:
+-        vartypes = _guessvartypes(_variables[0])
+-    else:
+-        vartypes = [np.dtype(v) for v in vartypes]
+-        if len(vartypes) != nfields:
+-            msg = f"Attempting to {len(vartypes)} dtypes for {nfields} fields!"
+-            msg += " Reverting to default."
+-            warnings.warn(msg, stacklevel=2)
++    with perfmark.region("gl-109"):
++        if vartypes is None:
+             vartypes = _guessvartypes(_variables[0])
++        else:
++            vartypes = [np.dtype(v) for v in vartypes]
++            if len(vartypes) != nfields:
++                msg = f"Attempting to {len(vartypes)} dtypes for {nfields} fields!"
++                msg += " Reverting to default."
++                warnings.warn(msg, stacklevel=2)
++                vartypes = _guessvartypes(_variables[0])
+ 
+     # Construct the descriptor.
+     mdescr = list(zip(varnames, vartypes))

@@ -1,0 +1,18 @@
+--- a/clang/lib/Tooling/Tooling.cpp
++++ b/clang/lib/Tooling/Tooling.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Tooling/Tooling.h"
+ #include "clang/Basic/Diagnostic.h"
+ #include "clang/Basic/DiagnosticIDs.h"
+@@ -370,6 +371,7 @@
+ }
+ 
+ bool ToolInvocation::run() {
++  DRPERF_BENCH_REGION("cf-134");
+   llvm::opt::ArgStringList Argv;
+   for (const std::string &Str : CommandLine)
+     Argv.push_back(Str.c_str());

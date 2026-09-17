@@ -6,7 +6,7 @@
         ...                                   # counted, state n_entries=<value>
 
     with perfmark.region("consume", q=len(queue), batch=b, mode="fast"):
-        ...   # integer keywords = declared states (all part of the key, at most 4);
+        ...   # integer keywords = declared states (all part of the key);
               # other keywords are extra states recorded per trigger in the trace
 
     @perfmark.region("encode")                # decorator form, no state
@@ -118,19 +118,19 @@ def _encode(s):
     return s if isinstance(s, bytes) else str(s).encode()
 
 
-KEY_STATES = 4
-
-
 def _split_state(state):
     """Keyword states -> (declared states [(bytes, int)], extra states [(bytes, bytes)]).
 
     Integer values (not bool) are declared states: they form the aggregation
-    key and the cost formula is derived in all of them (at most KEY_STATES).
+    key and the cost formula is derived in all of them.
     Any other value is an extra state, recorded per trigger in the trace."""
     key, extra = [], []
     for k, v in state.items():
-        if isinstance(v, numbers.Integral) and not isinstance(v, bool) and len(key) < KEY_STATES:
-            key.append((_encode(k), int(v)))
+        if isinstance(v, numbers.Integral) and not isinstance(v, bool):
+            value = int(v)
+            if not -(1 << 63) <= value < (1 << 63):
+                raise OverflowError("declared state %r must fit a signed 64-bit integer" % k)
+            key.append((_encode(k), value))
         else:
             extra.append((_encode(k), _encode(v)))
     return key, extra

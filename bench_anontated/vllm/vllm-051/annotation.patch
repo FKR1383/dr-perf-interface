@@ -1,0 +1,11 @@
+--- a/vllm/v1/sample/ops/penalties.py
++++ b/vllm/v1/sample/ops/penalties.py
+@@ -19,7 +19,7 @@
+     """
+     Applies presence, frequency and repetition penalties to the logits.
+     """
+-    with perfmark.region("vllm-051"):
++    with perfmark.region("vllm-051", batch_size=logits.shape[0]):
+         _, vocab_size = logits.shape
+         output_tokens_t = _convert_to_tensors(output_token_ids, vocab_size, logits.device)
+ 

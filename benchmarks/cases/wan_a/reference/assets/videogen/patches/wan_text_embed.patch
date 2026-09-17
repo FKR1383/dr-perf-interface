@@ -1,0 +1,60 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -13,6 +13,7 @@
+ # limitations under the License.
+ 
+ import math
++import weakref
+ from typing import Any
+ 
+ import torch
+@@ -327,6 +328,40 @@
+         if image_embed_dim is not None:
+             self.image_embedder = WanImageEmbedding(image_embed_dim, dim, pos_embed_seq_len=pos_embed_seq_len)
+ 
++        # (prompt tensor -> its projection) for the last few distinct prompts; see
++        # `_project_text`.  Held weakly, so it never keeps a prompt embedding alive.
++        self._text_proj_cache = []
++
++    def _project_text(self, encoder_hidden_states: torch.Tensor) -> torch.Tensor:
++        """`self.text_embedder(encoder_hidden_states)`, memoised on the input tensor.
++
++        The prompt embedding is fixed for a whole pipeline call, but this module is
++        entered once per denoising step and per classifier-free-guidance branch, so
++        the projection is recomputed for an unchanged input tens of times.  Key the
++        result on the identity of the input tensor (plus its `_version`, so an
++        in-place edit invalidates it); at most a handful of distinct prompts are
++        live at once (cond / uncond), and entries are held weakly.
++        """
++        if torch.is_grad_enabled():
++            return self.text_embedder(encoder_hidden_states)
++
++        version = encoder_hidden_states._version
++        live, hit = [], None
++        for ref, cached_version, cached in self._text_proj_cache:
++            src = ref()
++            if src is None:
++                continue
++            live.append((ref, cached_version, cached))
++            if src is encoder_hidden_states and cached_version == version:
++                hit = cached
++        if hit is not None:
++            self._text_proj_cache = live
++            return hit
++
++        projected = self.text_embedder(encoder_hidden_states)
++        self._text_proj_cache = [(weakref.ref(encoder_hidden_states), version, projected)] + live[:3]
++        return projected
++
+     def forward(
+         self,
+         timestep: torch.Tensor,
+@@ -344,7 +379,7 @@
+         temb = self.time_embedder(timestep).type_as(encoder_hidden_states)
+         timestep_proj = self.time_proj(self.act_fn(temb))
+ 
+-        encoder_hidden_states = self.text_embedder(encoder_hidden_states)
++        encoder_hidden_states = self._project_text(encoder_hidden_states)
+         if encoder_hidden_states_image is not None:
+             encoder_hidden_states_image = self.image_embedder(encoder_hidden_states_image)
+ 

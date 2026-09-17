@@ -1,0 +1,70 @@
+{
+  "case": "vllm-037",
+  "status": "annotation-not-qualified",
+  "pcvs": [
+    {
+      "name": "running_count",
+      "expression": "len(self.running)"
+    },
+    {
+      "name": "waiting_count",
+      "expression": "len(self.waiting)"
+    }
+  ],
+  "gate_pass": false,
+  "final_measurement": "measurements/screen-1/metrics.json",
+  "attempts": 1,
+  "evidence": {
+    "budget": "one DRPerf attempt, 60 second timeout",
+    "metrics": {
+      "case": "vllm-037",
+      "validity_warnings": [],
+      "pcv_names": [
+        "running_count",
+        "waiting_count"
+      ],
+      "distinct_states": 2,
+      "required_states": 4,
+      "calls": 7,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "running_count": 1,
+            "waiting_count": 0
+          },
+          "calls": 6,
+          "instructions_per_call": 7364.666666666667
+        },
+        {
+          "state": {
+            "running_count": 2,
+            "waiting_count": 0
+          },
+          "calls": 1,
+          "instructions_per_call": 6805.0
+        }
+      ],
+      "max_unexplained_share": null,
+      "threshold": 0.05,
+      "sufficient_points": false,
+      "gate_pass": false,
+      "gate_reasons": [
+        "insufficient state points: 2; need 4"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "returncode": 0,
+      "instrumented_wall_seconds": 25.59261356294155,
+      "raw_files": [
+        "run.3222442.json"
+      ]
+    },
+    "wrapper_output": "{\"out\": \"/home/ubuntu/drperf/bench_anontated/vllm/vllm-037/measurements/screen-1\", \"returncode\": 0, \"gate_pass\": false, \"max_unexplained_share\": null, \"gate_reasons\": [\"insufficient state points: 2; need 4\"]}\n"
+  },
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict gate in its single budgeted attempt."
+  }
+}

@@ -1,0 +1,20 @@
+derive vllm_compaction_submit_batch   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: members=1 x24, members=2 x24, members=4 x24, members=8 x24, members=16 x24, members=32 x24
+  cost(members) = 8,162.1*members + 376,843.1        [all members]   blocks: 792 affine, 4083 constant, 3 irregular (0.4% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,010.5 .. 4,392.5
+    per-members coefficient by function:
+               3,479  _PyEval_EvalFrameDefault  [python3.12]
+               524.4  PyEval_EvalCode+?  [python3.12]
+                 314  PyType_GenericNew  [python3.12]
+               267.9  PyUnicode_Substring+?  [python3.12]
+                 247  _PyErr_ChainStackItem+?  [python3.12]
+               225.4  PyDict_Contains+?  [python3.12]
+    constant by function:
+           125,940.6  _PyEval_EvalFrameDefault  [python3.12]
+            20,698.7  PyObject_Free  [python3.12]
+              15,742  PyUnicode_Concat  [python3.12]
+            15,729.5  PyObject_Malloc  [python3.12]
+            15,381.4  PyEval_EvalCode+?  [python3.12]
+             9,950.2  _PyTuple_Resize+?  [python3.12]
+

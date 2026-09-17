@@ -1,0 +1,31 @@
+{
+  "case": "cf-099",
+  "phase": "semantic-analysis",
+  "scenario": "coroutine-semantics",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_99(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_99 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_99(2)==14);\nint main() { Item_99 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "#include <coroutine>\nstruct T{struct promise_type{T get_return_object(){return{};} std::suspend_never initial_suspend(){return{};} std::suspend_never final_suspend() noexcept{return{};} void return_void(){} void unhandled_exception(){}};}; T f(){co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_return;}\n"
+    },
+    {
+      "size": 16,
+      "source": "#include <coroutine>\nstruct T{struct promise_type{T get_return_object(){return{};} std::suspend_never initial_suspend(){return{};} std::suspend_never final_suspend() noexcept{return{};} void return_void(){} void unhandled_exception(){}};}; T f(){co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_return;}\n"
+    },
+    {
+      "size": 64,
+      "source": "#include <coroutine>\nstruct T{struct promise_type{T get_return_object(){return{};} std::suspend_never initial_suspend(){return{};} std::suspend_never final_suspend() noexcept{return{};} void return_void(){} void unhandled_exception(){}};}; T f(){co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_await std::suspend_never{};co_return;}\n"
+    }
+  ],
+  "target_symbol": "CoroutineStmtBuilder::makeNewAndDeleteExpr",
+  "target_source": "clang/lib/Sema/SemaCoroutine.cpp",
+  "mapping_note": "The coroutine-semantics construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

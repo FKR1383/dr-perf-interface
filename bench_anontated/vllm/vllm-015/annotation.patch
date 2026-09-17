@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -86,7 +86,7 @@
+ 
+     def peek_request(self) -> Request:
+         """Peek at the next request in the queue without removing it."""
+-        with perfmark.region("vllm-015"):
++        with perfmark.region("vllm-015", front_priority=self[0].priority):
+             if not self:
+                 raise IndexError("peek from an empty queue")
+             return self[0]

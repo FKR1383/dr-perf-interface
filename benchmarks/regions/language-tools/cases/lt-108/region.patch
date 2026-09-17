@@ -1,0 +1,50 @@
+--- a/libcst/_nodes/statement.py
++++ b/libcst/_nodes/statement.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -307,24 +308,25 @@
+     def _codegen_impl(
+         self, state: CodegenState, default_semicolon: bool = False
+     ) -> None:
+-        with state.record_syntactic_position(self):
+-            state.add_token("return")
+-            whitespace_after_return = self.whitespace_after_return
+-            value = self.value
+-            if isinstance(whitespace_after_return, MaybeSentinel):
++        with perfmark.region("lt-108"):
++            with state.record_syntactic_position(self):
++                state.add_token("return")
++                whitespace_after_return = self.whitespace_after_return
++                value = self.value
++                if isinstance(whitespace_after_return, MaybeSentinel):
++                    if value is not None:
++                        state.add_token(" ")
++                else:
++                    whitespace_after_return._codegen(state)
+                 if value is not None:
+-                    state.add_token(" ")
+-            else:
+-                whitespace_after_return._codegen(state)
+-            if value is not None:
+-                value._codegen(state)
+-
+-        semicolon = self.semicolon
+-        if isinstance(semicolon, MaybeSentinel):
+-            if default_semicolon:
+-                state.add_token("; ")
+-        elif isinstance(semicolon, Semicolon):
+-            semicolon._codegen(state)
++                    value._codegen(state)
++
++            semicolon = self.semicolon
++            if isinstance(semicolon, MaybeSentinel):
++                if default_semicolon:
++                    state.add_token("; ")
++            elif isinstance(semicolon, Semicolon):
++                semicolon._codegen(state)
+ 
+ 
+ @add_slots

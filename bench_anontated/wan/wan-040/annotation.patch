@@ -1,0 +1,11 @@
+--- a/src/diffusers/video_processor.py
++++ b/src/diffusers/video_processor.py
+@@ -102,7 +102,7 @@
+             video (`torch.Tensor`): The video as a tensor.
+             output_type (`str`, defaults to `"np"`): Output type of the postprocessed `video` tensor.
+         """
+-        with perfmark.region("wan-040"):
++        with perfmark.region("wan-040", video_elements=int(video.numel())):
+             batch_size = video.shape[0]
+             outputs = []
+             for batch_idx in range(batch_size):

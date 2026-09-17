@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -655,7 +655,7 @@
+         self._current_timestep = None
+ 
+         if not output_type == "latent":
+-            with perfmark.region("wan-028"):
++            with perfmark.region("wan-028", inference_steps=int(num_inference_steps)):
+                 latents = latents.to(self.vae.dtype)
+                 latents_mean = (
+                     torch.tensor(self.vae.config.latents_mean)

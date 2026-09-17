@@ -1,0 +1,103 @@
+--- a/networkx/algorithms/tree/mst.py
++++ b/networkx/algorithms/tree/mst.py
+@@ -2,6 +2,7 @@
+ Algorithms for calculating min/max spanning trees/forests.
+ 
+ """
++import perfmark
+ 
+ from dataclasses import dataclass, field
+ from enum import Enum
+@@ -932,49 +933,50 @@
+     shuffled_edges = list(G.edges())
+     seed.shuffle(shuffled_edges)
+ 
+-    for u, v in shuffled_edges:
+-        e_weight = G[u][v][weight] if weight is not None else 1
+-        node_map, prepared_G = prepare_graph()
+-        G_total_tree_weight = spanning_tree_total_weight(prepared_G, weight)
+-        # Add the edge to U so that we can compute the total tree weight
+-        # assuming we include that edge
+-        # Now, if (u, v) cannot exist in G because it is fully contracted out
+-        # of existence, then it by definition cannot influence G_e's Kirchhoff
+-        # value. But, we also cannot pick it.
+-        rep_edge = (find_node(node_map, u), find_node(node_map, v))
+-        # Check to see if the 'representative edge' for the current edge is
+-        # in prepared_G. If so, then we can pick it.
+-        if rep_edge in prepared_G.edges:
+-            prepared_G_e = nx.contracted_edge(
+-                prepared_G, edge=rep_edge, self_loops=False
+-            )
+-            G_e_total_tree_weight = spanning_tree_total_weight(prepared_G_e, weight)
+-            if multiplicative:
+-                threshold = e_weight * G_e_total_tree_weight / G_total_tree_weight
++    with perfmark.region("gl-065"):
++        for u, v in shuffled_edges:
++            e_weight = G[u][v][weight] if weight is not None else 1
++            node_map, prepared_G = prepare_graph()
++            G_total_tree_weight = spanning_tree_total_weight(prepared_G, weight)
++            # Add the edge to U so that we can compute the total tree weight
++            # assuming we include that edge
++            # Now, if (u, v) cannot exist in G because it is fully contracted out
++            # of existence, then it by definition cannot influence G_e's Kirchhoff
++            # value. But, we also cannot pick it.
++            rep_edge = (find_node(node_map, u), find_node(node_map, v))
++            # Check to see if the 'representative edge' for the current edge is
++            # in prepared_G. If so, then we can pick it.
++            if rep_edge in prepared_G.edges:
++                prepared_G_e = nx.contracted_edge(
++                    prepared_G, edge=rep_edge, self_loops=False
++                )
++                G_e_total_tree_weight = spanning_tree_total_weight(prepared_G_e, weight)
++                if multiplicative:
++                    threshold = e_weight * G_e_total_tree_weight / G_total_tree_weight
++                else:
++                    numerator = (st_cached_value + e_weight) * nx.number_of_spanning_trees(
++                        prepared_G_e
++                    ) + G_e_total_tree_weight
++                    denominator = (
++                        st_cached_value * nx.number_of_spanning_trees(prepared_G)
++                        + G_total_tree_weight
++                    )
++                    threshold = numerator / denominator
+             else:
+-                numerator = (st_cached_value + e_weight) * nx.number_of_spanning_trees(
+-                    prepared_G_e
+-                ) + G_e_total_tree_weight
+-                denominator = (
+-                    st_cached_value * nx.number_of_spanning_trees(prepared_G)
+-                    + G_total_tree_weight
+-                )
+-                threshold = numerator / denominator
+-        else:
+-            threshold = 0.0
+-        z = seed.uniform(0.0, 1.0)
+-        if z > threshold:
+-            # Remove the edge from V since we did not pick it.
+-            V.remove((u, v))
+-        else:
+-            # Add the edge to U since we picked it.
+-            st_cached_value += e_weight
+-            U.add((u, v))
+-        # If we decide to keep an edge, it may complete the spanning tree.
+-        if len(U) == G.number_of_nodes() - 1:
+-            spanning_tree = nx.Graph()
+-            spanning_tree.add_edges_from(U)
+-            return spanning_tree
++                threshold = 0.0
++            z = seed.uniform(0.0, 1.0)
++            if z > threshold:
++                # Remove the edge from V since we did not pick it.
++                V.remove((u, v))
++            else:
++                # Add the edge to U since we picked it.
++                st_cached_value += e_weight
++                U.add((u, v))
++            # If we decide to keep an edge, it may complete the spanning tree.
++            if len(U) == G.number_of_nodes() - 1:
++                spanning_tree = nx.Graph()
++                spanning_tree.add_edges_from(U)
++                return spanning_tree
+     raise Exception(f"Something went wrong! Only {len(U)} edges in the spanning tree!")
+ 
+ 

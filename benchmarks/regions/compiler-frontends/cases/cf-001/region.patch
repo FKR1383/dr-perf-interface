@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaAPINotes.cpp
++++ b/clang/lib/Sema/SemaAPINotes.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CheckExprLifetime.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/APINotes/APINotesReader.h"
+@@ -892,6 +893,7 @@
+ /// Process API notes that are associated with this declaration, mapping them
+ /// to attributes as appropriate.
+ void Sema::ProcessAPINotes(Decl *D) {
++  DRPERF_BENCH_REGION("cf-001");
+   if (!D)
+     return;
+ 

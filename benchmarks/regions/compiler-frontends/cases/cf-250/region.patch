@@ -1,0 +1,18 @@
+--- a/clang/lib/StaticAnalyzer/Frontend/AnalysisConsumer.cpp
++++ b/clang/lib/StaticAnalyzer/Frontend/AnalysisConsumer.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/StaticAnalyzer/Frontend/AnalysisConsumer.h"
+ #include "ModelInjector.h"
+ #include "clang/AST/Decl.h"
+@@ -436,6 +437,7 @@
+ }
+ 
+ void AnalysisConsumer::HandleDeclsCallGraph(const unsigned LocalTUDeclsSize) {
++  DRPERF_BENCH_REGION("cf-250");
+   // Build the Call Graph by adding all the top level declarations to the graph.
+   // Note: CallGraph can trigger deserialization of more items from a pch
+   // (though HandleInterestingDecl); triggering additions to LocalTUDecls.

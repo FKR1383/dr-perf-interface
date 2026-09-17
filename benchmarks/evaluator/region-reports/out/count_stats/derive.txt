@@ -1,0 +1,49 @@
+derive case_count   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: entries=7 x20, entries=11 x20, entries=19 x20, entries=35 x20, entries=67 x20
+  cost(entries) = 1,896.6*entries + 1,060.1        [all entries]   blocks: 359 affine, 700 constant, 47 irregular (22.8% of cost)
+    marker cost subtracted from the constant: 2,222.2 per call (calibrated)
+    irregular blocks, per call: 1,242.9 .. 45,912.1
+    per-entries coefficient by function:
+               159.5  PyDict_SetItem  [python3.12]
+               150.3  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+               143.5  _int_free  [libc.so.6]
+               113.8  _int_malloc  [libc.so.6]
+               101.8  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+                93.7  <hashbrown::map::HashMap<alloc::string::String, i64, std::hash::random  [_ditto_ftl_core.abi3.so]
+    constant by function:
+              -642.2  _int_malloc  [libc.so.6]
+               428.4  <hashbrown::raw::RawTable<(alloc::string::String, i64)>>::reserve_reha  [_ditto_ftl_core.abi3.so]
+                 340  _PyEval_EvalFrameDefault  [python3.12]
+               325.8  PyDict_SetItem  [python3.12]
+               230.4  _int_free  [libc.so.6]
+               192.8  __free  [libc.so.6]
+    irregular by function:
+             4,182.6  _int_malloc  [libc.so.6]
+             3,664.2  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+             2,424.7  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+
+derive ftl_controller_stats   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: entries=3 x10, entries=7 x20, entries=11 x20, entries=19 x20, entries=35 x20, entries=67 x20
+  cost(entries) = 315*entries + -1,154.9        [all entries]   blocks: 94 affine, 145 constant, 4 irregular (9.8% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation
+    irregular blocks, per call: 52 .. 2,095.3
+    per-entries coefficient by function:
+               133.3  _int_malloc  [libc.so.6]
+                44.6  __GI___libc_malloc  [libc.so.6]
+                34.3  malloc_consolidate  [libc.so.6]
+                  33  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                  26  <hashbrown::raw::RawTable<(alloc::string::String, i64)> as core::clone  [_ditto_ftl_core.abi3.so]
+                18.8  unlink_chunk  [libc.so.6]
+    constant by function:
+              -502.1  _int_malloc  [libc.so.6]
+              -184.8  malloc_consolidate  [libc.so.6]
+              -130.8  unlink_chunk  [libc.so.6]
+                98.8  <hashbrown::raw::RawTable<(alloc::string::String, i64)> as core::clone  [_ditto_ftl_core.abi3.so]
+                  54  _int_free  [libc.so.6]
+               -40.9  __GI___libc_malloc  [libc.so.6]
+    irregular by function:
+                 372  _int_malloc  [libc.so.6]
+               199.4  malloc_consolidate  [libc.so.6]
+               116.2  __GI___libc_malloc  [libc.so.6]
+

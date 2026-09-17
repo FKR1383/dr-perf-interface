@@ -1,0 +1,3678 @@
+--- a/src/sims/gpu/func-emu.c
++++ b/src/sims/gpu/func-emu.c
+@@ -2,6 +2,7 @@
+ // Copyright (c) 2026 The GX Project Authors
+ 
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ #include <driver_types.h>
+ #include <cuda.h>
+ #include <stdlib.h>
+@@ -291,12 +292,18 @@
+ 
+ // #ifdef FEMU
+ 
++static unsigned long long gx_context_id_counter;
+ EmuHandle* createEmuHandle(EmuHandleType type){
+     EmuHandle* handle = malloc(sizeof(EmuHandle));
+     memset(handle, 0, sizeof(EmuHandle));
+     handle->type = type;
+     handle->dev = _device;
+     handle->data = NULL;
++    if (type == CU_CTX) {
++        /* Context IDs must not be reused when malloc recycles a handle. */
++        handle->pointer = (void*)(uintptr_t)__atomic_add_fetch(
++            &gx_context_id_counter, 1, __ATOMIC_RELAXED);
++    }
+     return handle;
+ }
+ 
+@@ -529,6 +536,11 @@
+ }
+ 
+ const char* cudnnGetErrorString(cudnnStatus_t status){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetErrorString) real = (__typeof__(&cudnnGetErrorString))gx_real_cudnn_symbol("cudnnGetErrorString");
++        return real(status);
++    }
++
+     ENTRY_PRINT_FEMU;
+     char* ret = malloc(128);
+     memset(ret, 0, 128);
+@@ -1171,10 +1183,29 @@
+ // CUDA event API (cudaEventCreate/CreateWithFlags/Destroy/Record/Query/
+ // Synchronize/ElapsedTime) moved verbatim to emu/streams.c.
+ 
++void *gx_real_cublas_handle(void *handle) {
++    EmuHandle *emu = (EmuHandle*)handle;
++    if (!emu || emu->type != CUBLAS || !emu->data) {
++        fprintf(stderr, "GX_REAL_CUDNN: invalid cuBLAS shadow handle\n");
++        abort();
++    }
++    return emu->data;
++}
++
+ cublasStatus_t cublasCreate_v2(cublasHandle_t* handle){
+     ENTRY_PRINT_FEMU;
+     EmuHandleType type = CUBLAS;
+     *handle = (cublasHandle_t)createEmuHandle(type);
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasCreate_v2) real_create;
++        if (!real_create) real_create = gx_real_cublas_symbol("cublasCreate_v2");
++        cublasHandle_t shadow = NULL;
++        cublasStatus_t status = real_create(&shadow);
++        if (status != CUBLAS_STATUS_SUCCESS) {
++            free(*handle); *handle = NULL; return status;
++        }
++        ((EmuHandle*)*handle)->data = shadow;
++    }
+     return 0;
+ }
+ 
+@@ -1206,18 +1237,33 @@
+     ENTRY_PRINT_FEMU;
+     EmuHandle* _handle = (EmuHandle*) handle;
+     _handle->stream = (void*)streamId;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetStream_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetStream_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), streamId);
++    }
+     return 0;    
+ }
+ 
+ cublasStatus_t cublasSetWorkspace_v2(cublasHandle_t handle, void* workspace, size_t workspaceSizeInBytes){
+     ENTRY_PRINT_FEMU;
+     LOGE(LOG_DEBUG, "Ignore workspace pointer %p", workspace);
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetWorkspace_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetWorkspace_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), workspace, workspaceSizeInBytes);
++    }
+     return 0;
+ }
+ 
+ cublasStatus_t cublasSetMathMode(cublasHandle_t handle, cublasMath_t mode){
+     ENTRY_PRINT_FEMU;
+     LOGE(LOG_DEBUG, "Ignore set math mode %p", mode);
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetMathMode) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetMathMode");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return 0;
+ }
+ 
+@@ -1442,6 +1488,11 @@
+ 
+ 
+ cudnnStatus_t cudnnCreate(cudnnHandle_t* handle){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreate) real = (__typeof__(&cudnnCreate))gx_real_cudnn_symbol("cudnnCreate");
++        return real(handle);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandleType type = CUDNN;
+     *handle = (cudnnHandle_t)createEmuHandle(type);
+@@ -1450,6 +1501,11 @@
+ 
+ 
+ cudnnStatus_t cudnnSetStream(cudnnHandle_t handle, cudaStream_t streamId){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetStream) real = (__typeof__(&cudnnSetStream))gx_real_cudnn_symbol("cudnnSetStream");
++        return real(handle, streamId);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandle* _handle = (EmuHandle*) handle;
+     _handle->stream = (void*)streamId;
+@@ -1457,11 +1513,21 @@
+ }
+ 
+ cudnnStatus_t cudnnBackendFinalize(cudnnBackendDescriptor_t descriptor){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendFinalize) real = (__typeof__(&cudnnBackendFinalize))gx_real_cudnn_symbol("cudnnBackendFinalize");
++        return real(descriptor);
++    }
++
+     ENTRY_PRINT_FEMU;
+     return 0;
+ }
+ 
+ cudnnStatus_t cudnnBackendDestroyDescriptor(cudnnBackendDescriptor_t descriptor){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendDestroyDescriptor) real = (__typeof__(&cudnnBackendDestroyDescriptor))gx_real_cudnn_symbol("cudnnBackendDestroyDescriptor");
++        return real(descriptor);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandle* handle = (EmuHandle*) descriptor;
+     // resource_mg_delete(rm_cudnnbackenddescriptors, handle);
+@@ -1474,6 +1540,11 @@
+ 
+ cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t descriptorType, cudnnBackendDescriptor_t *descriptor)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendCreateDescriptor) real = (__typeof__(&cudnnBackendCreateDescriptor))gx_real_cudnn_symbol("cudnnBackendCreateDescriptor");
++        return real(descriptorType, descriptor);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandleType type = CUDNN_DESCRIPTOR;
+     EmuHandle* handle = createEmuHandle(type);
+@@ -1617,6 +1688,11 @@
+     int64_t elementCount,
+     const void *arrayOfElements)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendSetAttribute) real = (__typeof__(&cudnnBackendSetAttribute))gx_real_cudnn_symbol("cudnnBackendSetAttribute");
++        return real(descriptor, attributeName, attributeType, elementCount, arrayOfElements);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandle* handle = (EmuHandle*) descriptor;
+     EmuCudnnBackendDescriptor* data = handle->data;
+@@ -1709,6 +1785,11 @@
+     int64_t *elementCount,
+     void *arrayOfElements)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendGetAttribute) real = (__typeof__(&cudnnBackendGetAttribute))gx_real_cudnn_symbol("cudnnBackendGetAttribute");
++        return real(descriptor, attributeName, attributeType, requestedElementCount, elementCount, arrayOfElements);
++    }
++
+     ENTRY_PRINT_FEMU;
+ 
+     if(descriptor == NULL){
+@@ -1806,6 +1887,11 @@
+ }
+ 
+ size_t cudnnGetVersion(void){
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetVersion) real = (__typeof__(&cudnnGetVersion))gx_real_cudnn_symbol("cudnnGetVersion");
++        return real();
++    }
++
+     ENTRY_PRINT_FEMU;
+     // return CUDNN_VERSION;
+     return 9000; // 9.0.0
+@@ -1813,6 +1899,11 @@
+ 
+ cudnnStatus_t cudnnBackendExecute(cudnnHandle_t handle, cudnnBackendDescriptor_t executionPlan, cudnnBackendDescriptor_t variantPack)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendExecute) real = (__typeof__(&cudnnBackendExecute))gx_real_cudnn_symbol("cudnnBackendExecute");
++        return real(handle, executionPlan, variantPack);
++    }
++
+     ENTRY_PRINT_FEMU;
+     return 0;
+ }
+@@ -1863,6 +1954,11 @@
+     void *reserveSpace,
+     size_t reserveSpaceSizeInBytes)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBatchNormalizationForwardTrainingEx) real = (__typeof__(&cudnnBatchNormalizationForwardTrainingEx))gx_real_cudnn_symbol("cudnnBatchNormalizationForwardTrainingEx");
++        return real(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScale, bnBias, exponentialAverageFactor, resultRunningMean, resultRunningVariance, epsilon, resultSaveMean, resultSaveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT_FEMU;
+     return 0;
+ }
+@@ -1870,6 +1966,11 @@
+ 
+ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyTensorDescriptor) real = (__typeof__(&cudnnDestroyTensorDescriptor))gx_real_cudnn_symbol("cudnnDestroyTensorDescriptor");
++        return real(tensorDesc);
++    }
++
+     ENTRY_PRINT_FEMU;
+     EmuHandle* handle = (EmuHandle*) tensorDesc;
+     if(handle->type == CUDNN_DESCRIPTOR){
+@@ -1891,6 +1992,11 @@
+     const cudnnActivationDescriptor_t       activationDesc,
+     size_t                                  *sizeInBytes)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize) real = (__typeof__(&cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize))gx_real_cudnn_symbol("cudnnGetBatchNormalizationForwardTrainingExWorkspaceSize");
++        return real(handle, mode, bnOps, xDesc, zDesc, yDesc, bnScaleBiasMeanVarDesc, activationDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT_FEMU;
+     *sizeInBytes = 0;
+     return 0;
+@@ -1904,6 +2010,11 @@
+     const cudnnTensorDescriptor_t xDesc,
+     size_t *sizeInBytes)
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetBatchNormalizationTrainingExReserveSpaceSize) real = (__typeof__(&cudnnGetBatchNormalizationTrainingExReserveSpaceSize))gx_real_cudnn_symbol("cudnnGetBatchNormalizationTrainingExReserveSpaceSize");
++        return real(handle, mode, bnOps, activationDesc, xDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT_FEMU;
+     *sizeInBytes = 0;
+     return 0;
+@@ -1912,6 +2023,11 @@
+ 
+ cudnnStatus_t cudnnGetBatchNormalizationBackwardExWorkspaceSize(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t yDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnTensorDescriptor_t dzDesc, const cudnnTensorDescriptor_t dxDesc, const cudnnTensorDescriptor_t dBnScaleBiasDesc, const cudnnActivationDescriptor_t activationDesc, size_t *sizeInBytes) 
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetBatchNormalizationBackwardExWorkspaceSize) real = (__typeof__(&cudnnGetBatchNormalizationBackwardExWorkspaceSize))gx_real_cudnn_symbol("cudnnGetBatchNormalizationBackwardExWorkspaceSize");
++        return real(handle, mode, bnOps, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dBnScaleBiasDesc, activationDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT_FEMU;
+     *sizeInBytes = 0;
+     return 0;
+@@ -1920,6 +2036,11 @@
+ 
+ cudnnStatus_t cudnnBatchNormalizationBackwardEx(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alphaDataDiff, const void *betaDataDiff, const void *alphaParamDiff, const void *betaParamDiff, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t yDesc, const void *yData, const cudnnTensorDescriptor_t dyDesc, const void *dyData, const cudnnTensorDescriptor_t dzDesc, void *dzData, const cudnnTensorDescriptor_t dxDesc, void *dxData, const cudnnTensorDescriptor_t dBnScaleBiasDesc, const void *bnScaleData, const void *bnBiasData, void *dBnScaleData, void *dBnBiasData, double epsilon, const void *savedMean, const void *savedInvVariance, cudnnActivationDescriptor_t activationDesc, void *workSpace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) 
+ {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBatchNormalizationBackwardEx) real = (__typeof__(&cudnnBatchNormalizationBackwardEx))gx_real_cudnn_symbol("cudnnBatchNormalizationBackwardEx");
++        return real(handle, mode, bnOps, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, xData, yDesc, yData, dyDesc, dyData, dzDesc, dzData, dxDesc, dxData, dBnScaleBiasDesc, bnScaleData, bnBiasData, dBnScaleData, dBnBiasData, epsilon, savedMean, savedInvVariance, activationDesc, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT_FEMU;
+     return 0;   
+ }
+--- a/src/sims/gpu/cuda_intercept/cudnn_intercept.c
++++ b/src/sims/gpu/cuda_intercept/cudnn_intercept.c
+@@ -1,5 +1,6 @@
+ // Auto-generated CUDNN API interceptor
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ #include <dlfcn.h>
+ #include <light/log.h>
+ #include <light/common.h>
+@@ -7,6 +8,11 @@
+ 
+ 
+ cudnnStatus_t cudnnActivationBackward(cudnnHandle_t handle, cudnnActivationDescriptor_t activationDesc, const void *alpha, const cudnnTensorDescriptor_t yDesc, const void *y, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnActivationBackward) real = (__typeof__(&cudnnActivationBackward))gx_real_cudnn_symbol("cudnnActivationBackward");
++        return real(handle, activationDesc, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -21,6 +27,11 @@
+ }
+ 
+ cudnnStatus_t cudnnActivationForward(cudnnHandle_t handle, cudnnActivationDescriptor_t activationDesc, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnActivationForward) real = (__typeof__(&cudnnActivationForward))gx_real_cudnn_symbol("cudnnActivationForward");
++        return real(handle, activationDesc, alpha, xDesc, x, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -35,6 +46,11 @@
+ }
+ 
+ cudnnStatus_t cudnnAddTensor(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t aDesc, const void *A, const void *beta, const cudnnTensorDescriptor_t cDesc, void *C) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnAddTensor) real = (__typeof__(&cudnnAddTensor))gx_real_cudnn_symbol("cudnnAddTensor");
++        return real(handle, alpha, aDesc, A, beta, cDesc, C);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -49,6 +65,11 @@
+ }
+ 
+ cudnnStatus_t cudnnAdvVersionCheck(void) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnAdvVersionCheck) real = (__typeof__(&cudnnAdvVersionCheck))gx_real_cudnn_symbol("cudnnAdvVersionCheck");
++        return real();
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -63,6 +84,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBackendInitialize(cudnnBackendDescriptor_t descriptor) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendInitialize) real = (__typeof__(&cudnnBackendInitialize))gx_real_cudnn_symbol("cudnnBackendInitialize");
++        return real(descriptor);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -77,6 +103,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBackendPopulateCudaGraph(cudnnHandle_t handle, cudnnBackendDescriptor_t executionPlan, cudnnBackendDescriptor_t variantPack, cudaGraph_t graph) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendPopulateCudaGraph) real = (__typeof__(&cudnnBackendPopulateCudaGraph))gx_real_cudnn_symbol("cudnnBackendPopulateCudaGraph");
++        return real(handle, executionPlan, variantPack, graph);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -91,6 +122,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBackendUpdateCudaGraph(cudnnHandle_t handle, cudnnBackendDescriptor_t executionPlan, cudnnBackendDescriptor_t variantPack, cudaGraph_t graph) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBackendUpdateCudaGraph) real = (__typeof__(&cudnnBackendUpdateCudaGraph))gx_real_cudnn_symbol("cudnnBackendUpdateCudaGraph");
++        return real(handle, executionPlan, variantPack, graph);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -105,6 +141,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBatchNormalizationBackward(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alphaDataDiff, const void *betaDataDiff, const void *alphaParamDiff, const void *betaParamDiff, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnTensorDescriptor_t dxDesc, void *dx, const cudnnTensorDescriptor_t dBnScaleBiasDesc, const void *bnScale, void *dBnScaleResult, void *dBnBiasResult, double epsilon, const void *savedMean, const void *savedInvVariance) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBatchNormalizationBackward) real = (__typeof__(&cudnnBatchNormalizationBackward))gx_real_cudnn_symbol("cudnnBatchNormalizationBackward");
++        return real(handle, mode, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, x, dyDesc, dy, dxDesc, dx, dBnScaleBiasDesc, bnScale, dBnScaleResult, dBnBiasResult, epsilon, savedMean, savedInvVariance);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -119,6 +160,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBatchNormalizationForwardInference) real = (__typeof__(&cudnnBatchNormalizationForwardInference))gx_real_cudnn_symbol("cudnnBatchNormalizationForwardInference");
++        return real(handle, mode, alpha, beta, xDesc, x, yDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -133,6 +179,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBatchNormalizationForwardTraining(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, double exponentialAverageFactor, void *resultRunningMean, void *resultRunningVariance, double epsilon, void *resultSaveMean, void *resultSaveInvVariance) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBatchNormalizationForwardTraining) real = (__typeof__(&cudnnBatchNormalizationForwardTraining))gx_real_cudnn_symbol("cudnnBatchNormalizationForwardTraining");
++        return real(handle, mode, alpha, beta, xDesc, x, yDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, exponentialAverageFactor, resultRunningMean, resultRunningVariance, epsilon, resultSaveMean, resultSaveInvVariance);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -147,6 +198,11 @@
+ }
+ 
+ cudnnStatus_t cudnnBuildRNNDynamic(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, int miniBatch) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnBuildRNNDynamic) real = (__typeof__(&cudnnBuildRNNDynamic))gx_real_cudnn_symbol("cudnnBuildRNNDynamic");
++        return real(handle, rnnDesc, miniBatch);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -161,6 +217,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCTCLoss(cudnnHandle_t handle, const cudnnTensorDescriptor_t probsDesc, const void *probs, const int hostLabels[], const int hostLabelLengths[], const int hostInputLengths[], void *costs, const cudnnTensorDescriptor_t gradientsDesc, void *gradients, cudnnCTCLossAlgo_t algo, cudnnCTCLossDescriptor_t ctcLossDesc, void *workspace, size_t workSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCTCLoss) real = (__typeof__(&cudnnCTCLoss))gx_real_cudnn_symbol("cudnnCTCLoss");
++        return real(handle, probsDesc, probs, hostLabels, hostLabelLengths, hostInputLengths, costs, gradientsDesc, gradients, algo, ctcLossDesc, workspace, workSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -175,6 +236,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCTCLoss_v8(cudnnHandle_t handle, cudnnCTCLossAlgo_t algo, cudnnCTCLossDescriptor_t ctcLossDesc, const cudnnTensorDescriptor_t probsDesc, const void *probs, const int labels[], const int labelLengths[], const int inputLengths[], void *costs, const cudnnTensorDescriptor_t gradientsDesc, void *gradients, size_t workSpaceSizeInBytes, void *workspace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCTCLoss_v8) real = (__typeof__(&cudnnCTCLoss_v8))gx_real_cudnn_symbol("cudnnCTCLoss_v8");
++        return real(handle, algo, ctcLossDesc, probsDesc, probs, labels, labelLengths, inputLengths, costs, gradientsDesc, gradients, workSpaceSizeInBytes, workspace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -189,6 +255,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCnnVersionCheck(void) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCnnVersionCheck) real = (__typeof__(&cudnnCnnVersionCheck))gx_real_cudnn_symbol("cudnnCnnVersionCheck");
++        return real();
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -203,6 +274,11 @@
+ }
+ 
+ cudnnStatus_t cudnnConvolutionBackwardBias(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t dyDesc, const void *dy, const void *beta, const cudnnTensorDescriptor_t dbDesc, void *db) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnConvolutionBackwardBias) real = (__typeof__(&cudnnConvolutionBackwardBias))gx_real_cudnn_symbol("cudnnConvolutionBackwardBias");
++        return real(handle, alpha, dyDesc, dy, beta, dbDesc, db);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -217,6 +293,11 @@
+ }
+ 
+ cudnnStatus_t cudnnConvolutionBackwardData(cudnnHandle_t handle, const void *alpha, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdDataAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnConvolutionBackwardData) real = (__typeof__(&cudnnConvolutionBackwardData))gx_real_cudnn_symbol("cudnnConvolutionBackwardData");
++        return real(handle, alpha, wDesc, w, dyDesc, dy, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, dxDesc, dx);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -231,6 +312,11 @@
+ }
+ 
+ cudnnStatus_t cudnnConvolutionBackwardFilter(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionBwdFilterAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnFilterDescriptor_t dwDesc, void *dw) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnConvolutionBackwardFilter) real = (__typeof__(&cudnnConvolutionBackwardFilter))gx_real_cudnn_symbol("cudnnConvolutionBackwardFilter");
++        return real(handle, alpha, xDesc, x, dyDesc, dy, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, dwDesc, dw);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -245,6 +331,11 @@
+ }
+ 
+ cudnnStatus_t cudnnConvolutionBiasActivationForward(cudnnHandle_t handle, const void *alpha1, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *alpha2, const cudnnTensorDescriptor_t zDesc, const void *z, const cudnnTensorDescriptor_t biasDesc, const void *bias, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnConvolutionBiasActivationForward) real = (__typeof__(&cudnnConvolutionBiasActivationForward))gx_real_cudnn_symbol("cudnnConvolutionBiasActivationForward");
++        return real(handle, alpha1, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, alpha2, zDesc, z, biasDesc, bias, activationDesc, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -259,6 +350,11 @@
+ }
+ 
+ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnConvolutionForward) real = (__typeof__(&cudnnConvolutionForward))gx_real_cudnn_symbol("cudnnConvolutionForward");
++        return real(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -273,6 +369,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateActivationDescriptor(cudnnActivationDescriptor_t *activationDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateActivationDescriptor) real = (__typeof__(&cudnnCreateActivationDescriptor))gx_real_cudnn_symbol("cudnnCreateActivationDescriptor");
++        return real(activationDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -287,6 +388,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateAttnDescriptor(cudnnAttnDescriptor_t *attnDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateAttnDescriptor) real = (__typeof__(&cudnnCreateAttnDescriptor))gx_real_cudnn_symbol("cudnnCreateAttnDescriptor");
++        return real(attnDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -301,6 +407,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateCTCLossDescriptor(cudnnCTCLossDescriptor_t *ctcLossDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateCTCLossDescriptor) real = (__typeof__(&cudnnCreateCTCLossDescriptor))gx_real_cudnn_symbol("cudnnCreateCTCLossDescriptor");
++        return real(ctcLossDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -315,6 +426,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionDescriptor_t *convDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateConvolutionDescriptor) real = (__typeof__(&cudnnCreateConvolutionDescriptor))gx_real_cudnn_symbol("cudnnCreateConvolutionDescriptor");
++        return real(convDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -329,6 +445,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateDropoutDescriptor(cudnnDropoutDescriptor_t *dropoutDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateDropoutDescriptor) real = (__typeof__(&cudnnCreateDropoutDescriptor))gx_real_cudnn_symbol("cudnnCreateDropoutDescriptor");
++        return real(dropoutDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -343,6 +464,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateFilterDescriptor(cudnnFilterDescriptor_t *filterDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateFilterDescriptor) real = (__typeof__(&cudnnCreateFilterDescriptor))gx_real_cudnn_symbol("cudnnCreateFilterDescriptor");
++        return real(filterDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -357,6 +483,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t *constPack, cudnnFusedOps_t ops) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateFusedOpsConstParamPack) real = (__typeof__(&cudnnCreateFusedOpsConstParamPack))gx_real_cudnn_symbol("cudnnCreateFusedOpsConstParamPack");
++        return real(constPack, ops);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -371,6 +502,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateFusedOpsPlan(cudnnFusedOpsPlan_t *plan, cudnnFusedOps_t ops) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateFusedOpsPlan) real = (__typeof__(&cudnnCreateFusedOpsPlan))gx_real_cudnn_symbol("cudnnCreateFusedOpsPlan");
++        return real(plan, ops);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -385,6 +521,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack_t *varPack, cudnnFusedOps_t ops) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateFusedOpsVariantParamPack) real = (__typeof__(&cudnnCreateFusedOpsVariantParamPack))gx_real_cudnn_symbol("cudnnCreateFusedOpsVariantParamPack");
++        return real(varPack, ops);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -399,6 +540,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateLRNDescriptor(cudnnLRNDescriptor_t *normDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateLRNDescriptor) real = (__typeof__(&cudnnCreateLRNDescriptor))gx_real_cudnn_symbol("cudnnCreateLRNDescriptor");
++        return real(normDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -413,6 +559,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateOpTensorDescriptor(cudnnOpTensorDescriptor_t *opTensorDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateOpTensorDescriptor) real = (__typeof__(&cudnnCreateOpTensorDescriptor))gx_real_cudnn_symbol("cudnnCreateOpTensorDescriptor");
++        return real(opTensorDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -427,6 +578,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreatePoolingDescriptor(cudnnPoolingDescriptor_t *poolingDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreatePoolingDescriptor) real = (__typeof__(&cudnnCreatePoolingDescriptor))gx_real_cudnn_symbol("cudnnCreatePoolingDescriptor");
++        return real(poolingDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -441,6 +597,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataDescriptor_t *rnnDataDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateRNNDataDescriptor) real = (__typeof__(&cudnnCreateRNNDataDescriptor))gx_real_cudnn_symbol("cudnnCreateRNNDataDescriptor");
++        return real(rnnDataDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -455,6 +616,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNDescriptor_t *rnnDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateRNNDescriptor) real = (__typeof__(&cudnnCreateRNNDescriptor))gx_real_cudnn_symbol("cudnnCreateRNNDescriptor");
++        return real(rnnDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -469,6 +635,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateReduceTensorDescriptor(cudnnReduceTensorDescriptor_t *reduceTensorDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateReduceTensorDescriptor) real = (__typeof__(&cudnnCreateReduceTensorDescriptor))gx_real_cudnn_symbol("cudnnCreateReduceTensorDescriptor");
++        return real(reduceTensorDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -483,6 +654,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataDescriptor_t *seqDataDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateSeqDataDescriptor) real = (__typeof__(&cudnnCreateSeqDataDescriptor))gx_real_cudnn_symbol("cudnnCreateSeqDataDescriptor");
++        return real(seqDataDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -497,6 +673,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateSpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t *stDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateSpatialTransformerDescriptor) real = (__typeof__(&cudnnCreateSpatialTransformerDescriptor))gx_real_cudnn_symbol("cudnnCreateSpatialTransformerDescriptor");
++        return real(stDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -511,6 +692,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorDescriptor_t *tensorDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateTensorDescriptor) real = (__typeof__(&cudnnCreateTensorDescriptor))gx_real_cudnn_symbol("cudnnCreateTensorDescriptor");
++        return real(tensorDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -525,6 +711,11 @@
+ }
+ 
+ cudnnStatus_t cudnnCreateTensorTransformDescriptor(cudnnTensorTransformDescriptor_t *transformDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnCreateTensorTransformDescriptor) real = (__typeof__(&cudnnCreateTensorTransformDescriptor))gx_real_cudnn_symbol("cudnnCreateTensorTransformDescriptor");
++        return real(transformDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -539,6 +730,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDeriveBNTensorDescriptor(cudnnTensorDescriptor_t derivedBnDesc, const cudnnTensorDescriptor_t xDesc, cudnnBatchNormMode_t mode) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDeriveBNTensorDescriptor) real = (__typeof__(&cudnnDeriveBNTensorDescriptor))gx_real_cudnn_symbol("cudnnDeriveBNTensorDescriptor");
++        return real(derivedBnDesc, xDesc, mode);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -553,6 +749,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDeriveNormTensorDescriptor(cudnnTensorDescriptor_t derivedNormScaleBiasDesc, cudnnTensorDescriptor_t derivedNormMeanVarDesc, const cudnnTensorDescriptor_t xDesc, cudnnNormMode_t mode, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDeriveNormTensorDescriptor) real = (__typeof__(&cudnnDeriveNormTensorDescriptor))gx_real_cudnn_symbol("cudnnDeriveNormTensorDescriptor");
++        return real(derivedNormScaleBiasDesc, derivedNormMeanVarDesc, xDesc, mode, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -567,6 +768,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroy(cudnnHandle_t handle) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroy) real = (__typeof__(&cudnnDestroy))gx_real_cudnn_symbol("cudnnDestroy");
++        return real(handle);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -581,6 +787,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t activationDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyActivationDescriptor) real = (__typeof__(&cudnnDestroyActivationDescriptor))gx_real_cudnn_symbol("cudnnDestroyActivationDescriptor");
++        return real(activationDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -595,6 +806,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyAttnDescriptor(cudnnAttnDescriptor_t attnDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyAttnDescriptor) real = (__typeof__(&cudnnDestroyAttnDescriptor))gx_real_cudnn_symbol("cudnnDestroyAttnDescriptor");
++        return real(attnDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -609,6 +825,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyCTCLossDescriptor(cudnnCTCLossDescriptor_t ctcLossDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyCTCLossDescriptor) real = (__typeof__(&cudnnDestroyCTCLossDescriptor))gx_real_cudnn_symbol("cudnnDestroyCTCLossDescriptor");
++        return real(ctcLossDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -623,6 +844,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t convDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyConvolutionDescriptor) real = (__typeof__(&cudnnDestroyConvolutionDescriptor))gx_real_cudnn_symbol("cudnnDestroyConvolutionDescriptor");
++        return real(convDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -637,6 +863,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyDropoutDescriptor) real = (__typeof__(&cudnnDestroyDropoutDescriptor))gx_real_cudnn_symbol("cudnnDestroyDropoutDescriptor");
++        return real(dropoutDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -651,6 +882,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyFilterDescriptor) real = (__typeof__(&cudnnDestroyFilterDescriptor))gx_real_cudnn_symbol("cudnnDestroyFilterDescriptor");
++        return real(filterDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -665,6 +901,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyFusedOpsConstParamPack(cudnnFusedOpsConstParamPack_t constPack) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyFusedOpsConstParamPack) real = (__typeof__(&cudnnDestroyFusedOpsConstParamPack))gx_real_cudnn_symbol("cudnnDestroyFusedOpsConstParamPack");
++        return real(constPack);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -679,6 +920,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyFusedOpsPlan(cudnnFusedOpsPlan_t plan) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyFusedOpsPlan) real = (__typeof__(&cudnnDestroyFusedOpsPlan))gx_real_cudnn_symbol("cudnnDestroyFusedOpsPlan");
++        return real(plan);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -693,6 +939,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyFusedOpsVariantParamPack(cudnnFusedOpsVariantParamPack_t varPack) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyFusedOpsVariantParamPack) real = (__typeof__(&cudnnDestroyFusedOpsVariantParamPack))gx_real_cudnn_symbol("cudnnDestroyFusedOpsVariantParamPack");
++        return real(varPack);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -707,6 +958,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyLRNDescriptor(cudnnLRNDescriptor_t lrnDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyLRNDescriptor) real = (__typeof__(&cudnnDestroyLRNDescriptor))gx_real_cudnn_symbol("cudnnDestroyLRNDescriptor");
++        return real(lrnDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -721,6 +977,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyOpTensorDescriptor(cudnnOpTensorDescriptor_t opTensorDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyOpTensorDescriptor) real = (__typeof__(&cudnnDestroyOpTensorDescriptor))gx_real_cudnn_symbol("cudnnDestroyOpTensorDescriptor");
++        return real(opTensorDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -735,6 +996,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyPoolingDescriptor(cudnnPoolingDescriptor_t poolingDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyPoolingDescriptor) real = (__typeof__(&cudnnDestroyPoolingDescriptor))gx_real_cudnn_symbol("cudnnDestroyPoolingDescriptor");
++        return real(poolingDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -749,6 +1015,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyRNNDataDescriptor(cudnnRNNDataDescriptor_t rnnDataDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyRNNDataDescriptor) real = (__typeof__(&cudnnDestroyRNNDataDescriptor))gx_real_cudnn_symbol("cudnnDestroyRNNDataDescriptor");
++        return real(rnnDataDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -763,6 +1034,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyRNNDescriptor) real = (__typeof__(&cudnnDestroyRNNDescriptor))gx_real_cudnn_symbol("cudnnDestroyRNNDescriptor");
++        return real(rnnDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -777,6 +1053,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyReduceTensorDescriptor(cudnnReduceTensorDescriptor_t reduceTensorDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyReduceTensorDescriptor) real = (__typeof__(&cudnnDestroyReduceTensorDescriptor))gx_real_cudnn_symbol("cudnnDestroyReduceTensorDescriptor");
++        return real(reduceTensorDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -791,6 +1072,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroySeqDataDescriptor(cudnnSeqDataDescriptor_t seqDataDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroySeqDataDescriptor) real = (__typeof__(&cudnnDestroySeqDataDescriptor))gx_real_cudnn_symbol("cudnnDestroySeqDataDescriptor");
++        return real(seqDataDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -805,6 +1091,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroySpatialTransformerDescriptor(cudnnSpatialTransformerDescriptor_t stDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroySpatialTransformerDescriptor) real = (__typeof__(&cudnnDestroySpatialTransformerDescriptor))gx_real_cudnn_symbol("cudnnDestroySpatialTransformerDescriptor");
++        return real(stDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -819,6 +1110,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDestroyTensorTransformDescriptor(cudnnTensorTransformDescriptor_t transformDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDestroyTensorTransformDescriptor) real = (__typeof__(&cudnnDestroyTensorTransformDescriptor))gx_real_cudnn_symbol("cudnnDestroyTensorTransformDescriptor");
++        return real(transformDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -833,6 +1129,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDivisiveNormalizationBackward(cudnnHandle_t handle, cudnnLRNDescriptor_t normDesc, cudnnDivNormMode_t mode, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *means, const void *dy, void *temp, void *temp2, const void *beta, const cudnnTensorDescriptor_t dXdMeansDesc, void *dx, void *dMeans) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDivisiveNormalizationBackward) real = (__typeof__(&cudnnDivisiveNormalizationBackward))gx_real_cudnn_symbol("cudnnDivisiveNormalizationBackward");
++        return real(handle, normDesc, mode, alpha, xDesc, x, means, dy, temp, temp2, beta, dXdMeansDesc, dx, dMeans);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -847,6 +1148,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDivisiveNormalizationForward(cudnnHandle_t handle, cudnnLRNDescriptor_t normDesc, cudnnDivNormMode_t mode, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *means, void *temp, void *temp2, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDivisiveNormalizationForward) real = (__typeof__(&cudnnDivisiveNormalizationForward))gx_real_cudnn_symbol("cudnnDivisiveNormalizationForward");
++        return real(handle, normDesc, mode, alpha, xDesc, x, means, temp, temp2, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -861,6 +1167,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDropoutBackward(cudnnHandle_t handle, const cudnnDropoutDescriptor_t dropoutDesc, const cudnnTensorDescriptor_t dydesc, const void *dy, const cudnnTensorDescriptor_t dxdesc, void *dx, void *reserveSpace, size_t reserveSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDropoutBackward) real = (__typeof__(&cudnnDropoutBackward))gx_real_cudnn_symbol("cudnnDropoutBackward");
++        return real(handle, dropoutDesc, dydesc, dy, dxdesc, dx, reserveSpace, reserveSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -875,6 +1186,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDropoutForward(cudnnHandle_t handle, const cudnnDropoutDescriptor_t dropoutDesc, const cudnnTensorDescriptor_t xdesc, const void *x, const cudnnTensorDescriptor_t ydesc, void *y, void *reserveSpace, size_t reserveSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDropoutForward) real = (__typeof__(&cudnnDropoutForward))gx_real_cudnn_symbol("cudnnDropoutForward");
++        return real(handle, dropoutDesc, xdesc, x, ydesc, y, reserveSpace, reserveSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -889,6 +1205,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDropoutGetReserveSpaceSize(cudnnTensorDescriptor_t xdesc, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDropoutGetReserveSpaceSize) real = (__typeof__(&cudnnDropoutGetReserveSpaceSize))gx_real_cudnn_symbol("cudnnDropoutGetReserveSpaceSize");
++        return real(xdesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -903,6 +1224,11 @@
+ }
+ 
+ cudnnStatus_t cudnnDropoutGetStatesSize(cudnnHandle_t handle, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnDropoutGetStatesSize) real = (__typeof__(&cudnnDropoutGetStatesSize))gx_real_cudnn_symbol("cudnnDropoutGetStatesSize");
++        return real(handle, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -917,6 +1243,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle_t handle, const cudnnFilterDescriptor_t wDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t dxDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionBackwardDataAlgorithm) real = (__typeof__(&cudnnFindConvolutionBackwardDataAlgorithm))gx_real_cudnn_symbol("cudnnFindConvolutionBackwardDataAlgorithm");
++        return real(handle, wDesc, dyDesc, convDesc, dxDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -931,6 +1262,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionBackwardDataAlgorithmEx(cudnnHandle_t handle, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t dxDesc, void *dx, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t *perfResults, void *workSpace, size_t workSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionBackwardDataAlgorithmEx) real = (__typeof__(&cudnnFindConvolutionBackwardDataAlgorithmEx))gx_real_cudnn_symbol("cudnnFindConvolutionBackwardDataAlgorithmEx");
++        return real(handle, wDesc, w, dyDesc, dy, convDesc, dxDesc, dx, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -945,6 +1281,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t dwDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionBackwardFilterAlgorithm) real = (__typeof__(&cudnnFindConvolutionBackwardFilterAlgorithm))gx_real_cudnn_symbol("cudnnFindConvolutionBackwardFilterAlgorithm");
++        return real(handle, xDesc, dyDesc, convDesc, dwDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -959,6 +1300,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithmEx(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t dyDesc, const void *y, const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t dwDesc, void *dw, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t *perfResults, void *workSpace, size_t workSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionBackwardFilterAlgorithmEx) real = (__typeof__(&cudnnFindConvolutionBackwardFilterAlgorithmEx))gx_real_cudnn_symbol("cudnnFindConvolutionBackwardFilterAlgorithmEx");
++        return real(handle, xDesc, x, dyDesc, y, convDesc, dwDesc, dw, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -973,6 +1319,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const cudnnFilterDescriptor_t wDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t yDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionForwardAlgorithm) real = (__typeof__(&cudnnFindConvolutionForwardAlgorithm))gx_real_cudnn_symbol("cudnnFindConvolutionForwardAlgorithm");
++        return real(handle, xDesc, wDesc, convDesc, yDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -987,6 +1338,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFindConvolutionForwardAlgorithmEx(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t yDesc, void *y, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t *perfResults, void *workSpace, size_t workSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFindConvolutionForwardAlgorithmEx) real = (__typeof__(&cudnnFindConvolutionForwardAlgorithmEx))gx_real_cudnn_symbol("cudnnFindConvolutionForwardAlgorithmEx");
++        return real(handle, xDesc, x, wDesc, w, convDesc, yDesc, y, requestedAlgoCount, returnedAlgoCount, perfResults, workSpace, workSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1001,6 +1357,11 @@
+ }
+ 
+ cudnnStatus_t cudnnFusedOpsExecute(cudnnHandle_t handle, const cudnnFusedOpsPlan_t plan, cudnnFusedOpsVariantParamPack_t varPack) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnFusedOpsExecute) real = (__typeof__(&cudnnFusedOpsExecute))gx_real_cudnn_symbol("cudnnFusedOpsExecute");
++        return real(handle, plan, varPack);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1015,6 +1376,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetActivationDescriptor(const cudnnActivationDescriptor_t activationDesc, cudnnActivationMode_t *mode, cudnnNanPropagation_t *reluNanOpt, double *coef) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetActivationDescriptor) real = (__typeof__(&cudnnGetActivationDescriptor))gx_real_cudnn_symbol("cudnnGetActivationDescriptor");
++        return real(activationDesc, mode, reluNanOpt, coef);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1029,6 +1395,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t activationDesc, double *swish_beta) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetActivationDescriptorSwishBeta) real = (__typeof__(&cudnnGetActivationDescriptorSwishBeta))gx_real_cudnn_symbol("cudnnGetActivationDescriptorSwishBeta");
++        return real(activationDesc, swish_beta);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1043,6 +1414,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetAttnDescriptor(cudnnAttnDescriptor_t attnDesc, unsigned *attnMode, int *nHeads, double *smScaler, cudnnDataType_t *dataType, cudnnDataType_t *computePrec, cudnnMathType_t *mathType, cudnnDropoutDescriptor_t *attnDropoutDesc, cudnnDropoutDescriptor_t *postDropoutDesc, int *qSize, int *kSize, int *vSize, int *qProjSize, int *kProjSize, int *vProjSize, int *oProjSize, int *qoMaxSeqLength, int *kvMaxSeqLength, int *maxBatchSize, int *maxBeamSize) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetAttnDescriptor) real = (__typeof__(&cudnnGetAttnDescriptor))gx_real_cudnn_symbol("cudnnGetAttnDescriptor");
++        return real(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1057,6 +1433,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossDescriptor(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t *compType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossDescriptor) real = (__typeof__(&cudnnGetCTCLossDescriptor))gx_real_cudnn_symbol("cudnnGetCTCLossDescriptor");
++        return real(ctcLossDesc, compType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1071,6 +1452,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t *compType, cudnnLossNormalizationMode_t *normMode, cudnnNanPropagation_t *gradMode) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossDescriptorEx) real = (__typeof__(&cudnnGetCTCLossDescriptorEx))gx_real_cudnn_symbol("cudnnGetCTCLossDescriptorEx");
++        return real(ctcLossDesc, compType, normMode, gradMode);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1085,6 +1471,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t *compType, cudnnLossNormalizationMode_t *normMode, cudnnNanPropagation_t *gradMode, int *maxLabelLength) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossDescriptor_v8) real = (__typeof__(&cudnnGetCTCLossDescriptor_v8))gx_real_cudnn_symbol("cudnnGetCTCLossDescriptor_v8");
++        return real(ctcLossDesc, compType, normMode, gradMode, maxLabelLength);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1099,6 +1490,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossDescriptor_v9(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t *compType, cudnnLossNormalizationMode_t *normMode, cudnnCTCGradMode_t *ctcGradMode, int *maxLabelLength) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossDescriptor_v9) real = (__typeof__(&cudnnGetCTCLossDescriptor_v9))gx_real_cudnn_symbol("cudnnGetCTCLossDescriptor_v9");
++        return real(ctcLossDesc, compType, normMode, ctcGradMode, maxLabelLength);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1113,6 +1509,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossWorkspaceSize(cudnnHandle_t handle, const cudnnTensorDescriptor_t probsDesc, const cudnnTensorDescriptor_t gradientsDesc, const int *labels, const int *labelLengths, const int *inputLengths, cudnnCTCLossAlgo_t algo, cudnnCTCLossDescriptor_t ctcLossDesc, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossWorkspaceSize) real = (__typeof__(&cudnnGetCTCLossWorkspaceSize))gx_real_cudnn_symbol("cudnnGetCTCLossWorkspaceSize");
++        return real(handle, probsDesc, gradientsDesc, labels, labelLengths, inputLengths, algo, ctcLossDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1127,6 +1528,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCTCLossWorkspaceSize_v8(cudnnHandle_t handle, cudnnCTCLossAlgo_t algo, cudnnCTCLossDescriptor_t ctcLossDesc, const cudnnTensorDescriptor_t probsDesc, const cudnnTensorDescriptor_t gradientsDesc, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCTCLossWorkspaceSize_v8) real = (__typeof__(&cudnnGetCTCLossWorkspaceSize_v8))gx_real_cudnn_symbol("cudnnGetCTCLossWorkspaceSize_v8");
++        return real(handle, algo, ctcLossDesc, probsDesc, gradientsDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1141,6 +1547,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetCallback(unsigned *mask, void **udata, cudnnCallback_t *fptr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetCallback) real = (__typeof__(&cudnnGetCallback))gx_real_cudnn_symbol("cudnnGetCallback");
++        return real(mask, udata, fptr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1155,6 +1566,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolution2dDescriptor(const cudnnConvolutionDescriptor_t convDesc, int *pad_h, int *pad_w, int *u, int *v, int *dilation_h, int *dilation_w, cudnnConvolutionMode_t *mode, cudnnDataType_t *computeType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolution2dDescriptor) real = (__typeof__(&cudnnGetConvolution2dDescriptor))gx_real_cudnn_symbol("cudnnGetConvolution2dDescriptor");
++        return real(convDesc, pad_h, pad_w, u, v, dilation_h, dilation_w, mode, computeType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1169,6 +1585,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolution2dForwardOutputDim(const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t inputTensorDesc, const cudnnFilterDescriptor_t filterDesc, int *n, int *c, int *h, int *w) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolution2dForwardOutputDim) real = (__typeof__(&cudnnGetConvolution2dForwardOutputDim))gx_real_cudnn_symbol("cudnnGetConvolution2dForwardOutputDim");
++        return real(convDesc, inputTensorDesc, filterDesc, n, c, h, w);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1183,6 +1604,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnnHandle_t handle, int *count) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardDataAlgorithmMaxCount) real = (__typeof__(&cudnnGetConvolutionBackwardDataAlgorithmMaxCount))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardDataAlgorithmMaxCount");
++        return real(handle, count);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1197,6 +1623,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnnHandle_t handle, const cudnnFilterDescriptor_t filterDesc, const cudnnTensorDescriptor_t diffDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t gradDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdDataAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardDataAlgorithm_v7) real = (__typeof__(&cudnnGetConvolutionBackwardDataAlgorithm_v7))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardDataAlgorithm_v7");
++        return real(handle, filterDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1211,6 +1642,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardDataWorkspaceSize(cudnnHandle_t handle, const cudnnFilterDescriptor_t wDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t dxDesc, cudnnConvolutionBwdDataAlgo_t algo, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardDataWorkspaceSize) real = (__typeof__(&cudnnGetConvolutionBackwardDataWorkspaceSize))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardDataWorkspaceSize");
++        return real(handle, wDesc, dyDesc, convDesc, dxDesc, algo, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1225,6 +1661,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnHandle_t handle, int *count) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardFilterAlgorithmMaxCount) real = (__typeof__(&cudnnGetConvolutionBackwardFilterAlgorithmMaxCount))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardFilterAlgorithmMaxCount");
++        return real(handle, count);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1239,6 +1680,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnnHandle_t handle, const cudnnTensorDescriptor_t srcDesc, const cudnnTensorDescriptor_t diffDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t gradDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardFilterAlgorithm_v7) real = (__typeof__(&cudnnGetConvolutionBackwardFilterAlgorithm_v7))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardFilterAlgorithm_v7");
++        return real(handle, srcDesc, diffDesc, convDesc, gradDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1253,6 +1699,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnFilterDescriptor_t gradDesc, cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionBackwardFilterWorkspaceSize) real = (__typeof__(&cudnnGetConvolutionBackwardFilterWorkspaceSize))gx_real_cudnn_symbol("cudnnGetConvolutionBackwardFilterWorkspaceSize");
++        return real(handle, xDesc, dyDesc, convDesc, gradDesc, algo, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1267,6 +1718,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t handle, int *count) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionForwardAlgorithmMaxCount) real = (__typeof__(&cudnnGetConvolutionForwardAlgorithmMaxCount))gx_real_cudnn_symbol("cudnnGetConvolutionForwardAlgorithmMaxCount");
++        return real(handle, count);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1281,6 +1737,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm_v7(cudnnHandle_t handle, const cudnnTensorDescriptor_t srcDesc, const cudnnFilterDescriptor_t filterDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t destDesc, const int requestedAlgoCount, int *returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t *perfResults) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionForwardAlgorithm_v7) real = (__typeof__(&cudnnGetConvolutionForwardAlgorithm_v7))gx_real_cudnn_symbol("cudnnGetConvolutionForwardAlgorithm_v7");
++        return real(handle, srcDesc, filterDesc, convDesc, destDesc, requestedAlgoCount, returnedAlgoCount, perfResults);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1295,6 +1756,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const cudnnFilterDescriptor_t wDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t yDesc, cudnnConvolutionFwdAlgo_t algo, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionForwardWorkspaceSize) real = (__typeof__(&cudnnGetConvolutionForwardWorkspaceSize))gx_real_cudnn_symbol("cudnnGetConvolutionForwardWorkspaceSize");
++        return real(handle, xDesc, wDesc, convDesc, yDesc, algo, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1309,6 +1775,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionGroupCount(cudnnConvolutionDescriptor_t convDesc, int *groupCount) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionGroupCount) real = (__typeof__(&cudnnGetConvolutionGroupCount))gx_real_cudnn_symbol("cudnnGetConvolutionGroupCount");
++        return real(convDesc, groupCount);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1323,6 +1794,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionMathType(cudnnConvolutionDescriptor_t convDesc, cudnnMathType_t *mathType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionMathType) real = (__typeof__(&cudnnGetConvolutionMathType))gx_real_cudnn_symbol("cudnnGetConvolutionMathType");
++        return real(convDesc, mathType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1337,6 +1813,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionNdDescriptor(const cudnnConvolutionDescriptor_t convDesc, int arrayLengthRequested, int *arrayLength, int padA[], int strideA[], int dilationA[], cudnnConvolutionMode_t *mode, cudnnDataType_t *computeType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionNdDescriptor) real = (__typeof__(&cudnnGetConvolutionNdDescriptor))gx_real_cudnn_symbol("cudnnGetConvolutionNdDescriptor");
++        return real(convDesc, arrayLengthRequested, arrayLength, padA, strideA, dilationA, mode, computeType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1351,6 +1832,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t inputTensorDesc, const cudnnFilterDescriptor_t filterDesc, int nbDims, int tensorOuputDimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionNdForwardOutputDim) real = (__typeof__(&cudnnGetConvolutionNdForwardOutputDim))gx_real_cudnn_symbol("cudnnGetConvolutionNdForwardOutputDim");
++        return real(convDesc, inputTensorDesc, filterDesc, nbDims, tensorOuputDimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1365,6 +1851,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetConvolutionReorderType(cudnnConvolutionDescriptor_t convDesc, cudnnReorderType_t *reorderType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetConvolutionReorderType) real = (__typeof__(&cudnnGetConvolutionReorderType))gx_real_cudnn_symbol("cudnnGetConvolutionReorderType");
++        return real(convDesc, reorderType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1379,6 +1870,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc, cudnnHandle_t handle, float *dropout, void **states, unsigned long long *seed) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetDropoutDescriptor) real = (__typeof__(&cudnnGetDropoutDescriptor))gx_real_cudnn_symbol("cudnnGetDropoutDescriptor");
++        return real(dropoutDesc, handle, dropout, states, seed);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1393,6 +1889,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFilter4dDescriptor(const cudnnFilterDescriptor_t filterDesc, cudnnDataType_t *dataType, cudnnTensorFormat_t *format, int *k, int *c, int *h, int *w) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFilter4dDescriptor) real = (__typeof__(&cudnnGetFilter4dDescriptor))gx_real_cudnn_symbol("cudnnGetFilter4dDescriptor");
++        return real(filterDesc, dataType, format, k, c, h, w);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1407,6 +1908,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFilterNdDescriptor(const cudnnFilterDescriptor_t filterDesc, int nbDimsRequested, cudnnDataType_t *dataType, cudnnTensorFormat_t *format, int *nbDims, int filterDimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFilterNdDescriptor) real = (__typeof__(&cudnnGetFilterNdDescriptor))gx_real_cudnn_symbol("cudnnGetFilterNdDescriptor");
++        return real(filterDesc, nbDimsRequested, dataType, format, nbDims, filterDimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1421,6 +1927,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFilterSizeInBytes(const cudnnFilterDescriptor_t filterDesc, size_t *size) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFilterSizeInBytes) real = (__typeof__(&cudnnGetFilterSizeInBytes))gx_real_cudnn_symbol("cudnnGetFilterSizeInBytes");
++        return real(filterDesc, size);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1435,6 +1946,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(const cudnnHandle_t handle, const cudnnFilterDescriptor_t filterDesc, const cudnnTensorDescriptor_t diffDesc, const cudnnConvolutionDescriptor_t convDesc, const cudnnTensorDescriptor_t gradDesc, const cudnnTensorFormat_t transformFormat, cudnnFilterDescriptor_t foldedFilterDesc, cudnnTensorDescriptor_t paddedDiffDesc, cudnnConvolutionDescriptor_t foldedConvDesc, cudnnTensorDescriptor_t foldedGradDesc, cudnnTensorTransformDescriptor_t filterFoldTransDesc, cudnnTensorTransformDescriptor_t diffPadTransDesc, cudnnTensorTransformDescriptor_t gradFoldTransDesc, cudnnTensorTransformDescriptor_t gradUnfoldTransDesc) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFoldedConvBackwardDataDescriptors) real = (__typeof__(&cudnnGetFoldedConvBackwardDataDescriptors))gx_real_cudnn_symbol("cudnnGetFoldedConvBackwardDataDescriptors");
++        return real(handle, filterDesc, diffDesc, convDesc, gradDesc, transformFormat, foldedFilterDesc, paddedDiffDesc, foldedConvDesc, foldedGradDesc, filterFoldTransDesc, diffPadTransDesc, gradFoldTransDesc, gradUnfoldTransDesc);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1449,6 +1965,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFusedOpsConstParamPackAttribute(const cudnnFusedOpsConstParamPack_t constPack, cudnnFusedOpsConstParamLabel_t paramLabel, void *param, int *isNULL) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFusedOpsConstParamPackAttribute) real = (__typeof__(&cudnnGetFusedOpsConstParamPackAttribute))gx_real_cudnn_symbol("cudnnGetFusedOpsConstParamPackAttribute");
++        return real(constPack, paramLabel, param, isNULL);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1463,6 +1984,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetFusedOpsVariantParamPackAttribute(const cudnnFusedOpsVariantParamPack_t varPack, cudnnFusedOpsVariantParamLabel_t paramLabel, void *ptr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetFusedOpsVariantParamPackAttribute) real = (__typeof__(&cudnnGetFusedOpsVariantParamPackAttribute))gx_real_cudnn_symbol("cudnnGetFusedOpsVariantParamPackAttribute");
++        return real(varPack, paramLabel, ptr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1477,6 +2003,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetLRNDescriptor(cudnnLRNDescriptor_t normDesc, unsigned *lrnN, double *lrnAlpha, double *lrnBeta, double *lrnK) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetLRNDescriptor) real = (__typeof__(&cudnnGetLRNDescriptor))gx_real_cudnn_symbol("cudnnGetLRNDescriptor");
++        return real(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1491,6 +2022,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetMultiHeadAttnBuffers(cudnnHandle_t handle, const cudnnAttnDescriptor_t attnDesc, size_t *weightSizeInBytes, size_t *workSpaceSizeInBytes, size_t *reserveSpaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetMultiHeadAttnBuffers) real = (__typeof__(&cudnnGetMultiHeadAttnBuffers))gx_real_cudnn_symbol("cudnnGetMultiHeadAttnBuffers");
++        return real(handle, attnDesc, weightSizeInBytes, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1505,6 +2041,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetMultiHeadAttnWeights(cudnnHandle_t handle, const cudnnAttnDescriptor_t attnDesc, cudnnMultiHeadAttnWeightKind_t wKind, size_t weightSizeInBytes, const void *weights, cudnnTensorDescriptor_t wDesc, void **wAddr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetMultiHeadAttnWeights) real = (__typeof__(&cudnnGetMultiHeadAttnWeights))gx_real_cudnn_symbol("cudnnGetMultiHeadAttnWeights");
++        return real(handle, attnDesc, wKind, weightSizeInBytes, weights, wDesc, wAddr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1519,6 +2060,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetNormalizationBackwardWorkspaceSize(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t yDesc, const cudnnTensorDescriptor_t dyDesc, const cudnnTensorDescriptor_t dzDesc, const cudnnTensorDescriptor_t dxDesc, const cudnnTensorDescriptor_t dNormScaleBiasDesc, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t normMeanVarDesc, size_t *sizeInBytes, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetNormalizationBackwardWorkspaceSize) real = (__typeof__(&cudnnGetNormalizationBackwardWorkspaceSize))gx_real_cudnn_symbol("cudnnGetNormalizationBackwardWorkspaceSize");
++        return real(handle, mode, normOps, algo, xDesc, yDesc, dyDesc, dzDesc, dxDesc, dNormScaleBiasDesc, activationDesc, normMeanVarDesc, sizeInBytes, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1533,6 +2079,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetNormalizationForwardTrainingWorkspaceSize(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const cudnnTensorDescriptor_t xDesc, const cudnnTensorDescriptor_t zDesc, const cudnnTensorDescriptor_t yDesc, const cudnnTensorDescriptor_t normScaleBiasDesc, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t normMeanVarDesc, size_t *sizeInBytes, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetNormalizationForwardTrainingWorkspaceSize) real = (__typeof__(&cudnnGetNormalizationForwardTrainingWorkspaceSize))gx_real_cudnn_symbol("cudnnGetNormalizationForwardTrainingWorkspaceSize");
++        return real(handle, mode, normOps, algo, xDesc, zDesc, yDesc, normScaleBiasDesc, activationDesc, normMeanVarDesc, sizeInBytes, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1547,6 +2098,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetNormalizationTrainingReserveSpaceSize(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t xDesc, size_t *sizeInBytes, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetNormalizationTrainingReserveSpaceSize) real = (__typeof__(&cudnnGetNormalizationTrainingReserveSpaceSize))gx_real_cudnn_symbol("cudnnGetNormalizationTrainingReserveSpaceSize");
++        return real(handle, mode, normOps, algo, activationDesc, xDesc, sizeInBytes, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1561,6 +2117,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetOpTensorDescriptor(const cudnnOpTensorDescriptor_t opTensorDesc, cudnnOpTensorOp_t *opTensorOp, cudnnDataType_t *opTensorCompType, cudnnNanPropagation_t *opTensorNanOpt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetOpTensorDescriptor) real = (__typeof__(&cudnnGetOpTensorDescriptor))gx_real_cudnn_symbol("cudnnGetOpTensorDescriptor");
++        return real(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1575,6 +2136,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetPooling2dDescriptor(const cudnnPoolingDescriptor_t poolingDesc, cudnnPoolingMode_t *mode, cudnnNanPropagation_t *maxpoolingNanOpt, int *windowHeight, int *windowWidth, int *verticalPadding, int *horizontalPadding, int *verticalStride, int *horizontalStride) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetPooling2dDescriptor) real = (__typeof__(&cudnnGetPooling2dDescriptor))gx_real_cudnn_symbol("cudnnGetPooling2dDescriptor");
++        return real(poolingDesc, mode, maxpoolingNanOpt, windowHeight, windowWidth, verticalPadding, horizontalPadding, verticalStride, horizontalStride);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1589,6 +2155,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetPooling2dForwardOutputDim(const cudnnPoolingDescriptor_t poolingDesc, const cudnnTensorDescriptor_t inputTensorDesc, int *n, int *c, int *h, int *w) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetPooling2dForwardOutputDim) real = (__typeof__(&cudnnGetPooling2dForwardOutputDim))gx_real_cudnn_symbol("cudnnGetPooling2dForwardOutputDim");
++        return real(poolingDesc, inputTensorDesc, n, c, h, w);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1603,6 +2174,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetPoolingNdDescriptor(const cudnnPoolingDescriptor_t poolingDesc, int nbDimsRequested, cudnnPoolingMode_t *mode, cudnnNanPropagation_t *maxpoolingNanOpt, int *nbDims, int windowDimA[], int paddingA[], int strideA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetPoolingNdDescriptor) real = (__typeof__(&cudnnGetPoolingNdDescriptor))gx_real_cudnn_symbol("cudnnGetPoolingNdDescriptor");
++        return real(poolingDesc, nbDimsRequested, mode, maxpoolingNanOpt, nbDims, windowDimA, paddingA, strideA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1617,6 +2193,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetPoolingNdForwardOutputDim(const cudnnPoolingDescriptor_t poolingDesc, const cudnnTensorDescriptor_t inputTensorDesc, int nbDims, int outputTensorDimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetPoolingNdForwardOutputDim) real = (__typeof__(&cudnnGetPoolingNdForwardOutputDim))gx_real_cudnn_symbol("cudnnGetPoolingNdForwardOutputDim");
++        return real(poolingDesc, inputTensorDesc, nbDims, outputTensorDimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1631,6 +2212,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetProperty(libraryPropertyType type, int *value) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetProperty) real = (__typeof__(&cudnnGetProperty))gx_real_cudnn_symbol("cudnnGetProperty");
++        return real(type, value);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1645,6 +2231,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetRNNDataDescriptor(cudnnRNNDataDescriptor_t rnnDataDesc, cudnnDataType_t *dataType, cudnnRNNDataLayout_t *layout, int *maxSeqLength, int *batchSize, int *vectorSize, int arrayLengthRequested, int seqLengthArray[], void *paddingFill) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetRNNDataDescriptor) real = (__typeof__(&cudnnGetRNNDataDescriptor))gx_real_cudnn_symbol("cudnnGetRNNDataDescriptor");
++        return real(rnnDataDesc, dataType, layout, maxSeqLength, batchSize, vectorSize, arrayLengthRequested, seqLengthArray, paddingFill);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1659,6 +2250,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetRNNDescriptor_v8(cudnnRNNDescriptor_t rnnDesc, cudnnRNNAlgo_t *algo, cudnnRNNMode_t *cellMode, cudnnRNNBiasMode_t *biasMode, cudnnDirectionMode_t *dirMode, cudnnRNNInputMode_t *inputMode, cudnnDataType_t *dataType, cudnnDataType_t *mathPrec, cudnnMathType_t *mathType, int32_t *inputSize, int32_t *hiddenSize, int32_t *projSize, int32_t *numLayers, cudnnDropoutDescriptor_t *dropoutDesc, uint32_t *auxFlags) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetRNNDescriptor_v8) real = (__typeof__(&cudnnGetRNNDescriptor_v8))gx_real_cudnn_symbol("cudnnGetRNNDescriptor_v8");
++        return real(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1673,6 +2269,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, cudnnForwardMode_t fwdMode, cudnnRNNDataDescriptor_t xDesc, size_t *workSpaceSize, size_t *reserveSpaceSize) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetRNNTempSpaceSizes) real = (__typeof__(&cudnnGetRNNTempSpaceSizes))gx_real_cudnn_symbol("cudnnGetRNNTempSpaceSizes");
++        return real(handle, rnnDesc, fwdMode, xDesc, workSpaceSize, reserveSpaceSize);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1687,6 +2288,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetRNNWeightParams(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, int32_t pseudoLayer, size_t weightSpaceSize, const void *weightSpace, int32_t linLayerID, cudnnTensorDescriptor_t mDesc, void **mAddr, cudnnTensorDescriptor_t bDesc, void **bAddr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetRNNWeightParams) real = (__typeof__(&cudnnGetRNNWeightParams))gx_real_cudnn_symbol("cudnnGetRNNWeightParams");
++        return real(handle, rnnDesc, pseudoLayer, weightSpaceSize, weightSpace, linLayerID, mDesc, mAddr, bDesc, bAddr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1701,6 +2307,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, size_t *weightSpaceSize) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetRNNWeightSpaceSize) real = (__typeof__(&cudnnGetRNNWeightSpaceSize))gx_real_cudnn_symbol("cudnnGetRNNWeightSpaceSize");
++        return real(handle, rnnDesc, weightSpaceSize);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1715,6 +2326,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetReduceTensorDescriptor(const cudnnReduceTensorDescriptor_t reduceTensorDesc, cudnnReduceTensorOp_t *reduceTensorOp, cudnnDataType_t *reduceTensorCompType, cudnnNanPropagation_t *reduceTensorNanOpt, cudnnReduceTensorIndices_t *reduceTensorIndices, cudnnIndicesType_t *reduceTensorIndicesType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetReduceTensorDescriptor) real = (__typeof__(&cudnnGetReduceTensorDescriptor))gx_real_cudnn_symbol("cudnnGetReduceTensorDescriptor");
++        return real(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1729,6 +2345,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetReductionIndicesSize(cudnnHandle_t handle, const cudnnReduceTensorDescriptor_t reduceTensorDesc, const cudnnTensorDescriptor_t aDesc, const cudnnTensorDescriptor_t cDesc, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetReductionIndicesSize) real = (__typeof__(&cudnnGetReductionIndicesSize))gx_real_cudnn_symbol("cudnnGetReductionIndicesSize");
++        return real(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1743,6 +2364,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetReductionWorkspaceSize(cudnnHandle_t handle, const cudnnReduceTensorDescriptor_t reduceTensorDesc, const cudnnTensorDescriptor_t aDesc, const cudnnTensorDescriptor_t cDesc, size_t *sizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetReductionWorkspaceSize) real = (__typeof__(&cudnnGetReductionWorkspaceSize))gx_real_cudnn_symbol("cudnnGetReductionWorkspaceSize");
++        return real(handle, reduceTensorDesc, aDesc, cDesc, sizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1757,6 +2383,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetSeqDataDescriptor(const cudnnSeqDataDescriptor_t seqDataDesc, cudnnDataType_t *dataType, int *nbDims, int nbDimsRequested, int dimA[], cudnnSeqDataAxis_t axes[], size_t *seqLengthArraySize, size_t seqLengthSizeRequested, int seqLengthArray[], void *paddingFill) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetSeqDataDescriptor) real = (__typeof__(&cudnnGetSeqDataDescriptor))gx_real_cudnn_symbol("cudnnGetSeqDataDescriptor");
++        return real(seqDataDesc, dataType, nbDims, nbDimsRequested, dimA, axes, seqLengthArraySize, seqLengthSizeRequested, seqLengthArray, paddingFill);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1771,6 +2402,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetStream(cudnnHandle_t handle, cudaStream_t *streamId) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetStream) real = (__typeof__(&cudnnGetStream))gx_real_cudnn_symbol("cudnnGetStream");
++        return real(handle, streamId);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1785,6 +2421,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetTensor4dDescriptor(const cudnnTensorDescriptor_t tensorDesc, cudnnDataType_t *dataType, int *n, int *c, int *h, int *w, int *nStride, int *cStride, int *hStride, int *wStride) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetTensor4dDescriptor) real = (__typeof__(&cudnnGetTensor4dDescriptor))gx_real_cudnn_symbol("cudnnGetTensor4dDescriptor");
++        return real(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1799,6 +2440,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetTensorNdDescriptor(const cudnnTensorDescriptor_t tensorDesc, int nbDimsRequested, cudnnDataType_t *dataType, int *nbDims, int dimA[], int strideA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetTensorNdDescriptor) real = (__typeof__(&cudnnGetTensorNdDescriptor))gx_real_cudnn_symbol("cudnnGetTensorNdDescriptor");
++        return real(tensorDesc, nbDimsRequested, dataType, nbDims, dimA, strideA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1813,6 +2459,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetTensorSizeInBytes(const cudnnTensorDescriptor_t tensorDesc, size_t *size) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetTensorSizeInBytes) real = (__typeof__(&cudnnGetTensorSizeInBytes))gx_real_cudnn_symbol("cudnnGetTensorSizeInBytes");
++        return real(tensorDesc, size);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1827,6 +2478,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t transformDesc, uint32_t nbDimsRequested, cudnnTensorFormat_t *destFormat, int32_t padBeforeA[], int32_t padAfterA[], uint32_t foldA[], cudnnFoldingDirection_t *direction) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGetTensorTransformDescriptor) real = (__typeof__(&cudnnGetTensorTransformDescriptor))gx_real_cudnn_symbol("cudnnGetTensorTransformDescriptor");
++        return real(transformDesc, nbDimsRequested, destFormat, padBeforeA, padAfterA, foldA, direction);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1841,6 +2497,11 @@
+ }
+ 
+ cudnnStatus_t cudnnGraphVersionCheck(void) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnGraphVersionCheck) real = (__typeof__(&cudnnGraphVersionCheck))gx_real_cudnn_symbol("cudnnGraphVersionCheck");
++        return real();
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1855,6 +2516,11 @@
+ }
+ 
+ cudnnStatus_t cudnnIm2Col(cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const cudnnConvolutionDescriptor_t convDesc, void *colBuffer) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnIm2Col) real = (__typeof__(&cudnnIm2Col))gx_real_cudnn_symbol("cudnnIm2Col");
++        return real(handle, xDesc, x, wDesc, convDesc, colBuffer);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1869,6 +2535,11 @@
+ }
+ 
+ cudnnStatus_t cudnnInitTransformDest(const cudnnTensorTransformDescriptor_t transformDesc, const cudnnTensorDescriptor_t srcDesc, cudnnTensorDescriptor_t destDesc, size_t *destSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnInitTransformDest) real = (__typeof__(&cudnnInitTransformDest))gx_real_cudnn_symbol("cudnnInitTransformDest");
++        return real(transformDesc, srcDesc, destDesc, destSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1883,6 +2554,11 @@
+ }
+ 
+ cudnnStatus_t cudnnLRNCrossChannelBackward(cudnnHandle_t handle, cudnnLRNDescriptor_t normDesc, cudnnLRNMode_t lrnMode, const void *alpha, const cudnnTensorDescriptor_t yDesc, const void *y, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnLRNCrossChannelBackward) real = (__typeof__(&cudnnLRNCrossChannelBackward))gx_real_cudnn_symbol("cudnnLRNCrossChannelBackward");
++        return real(handle, normDesc, lrnMode, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1897,6 +2573,11 @@
+ }
+ 
+ cudnnStatus_t cudnnLRNCrossChannelForward(cudnnHandle_t handle, cudnnLRNDescriptor_t normDesc, cudnnLRNMode_t lrnMode, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnLRNCrossChannelForward) real = (__typeof__(&cudnnLRNCrossChannelForward))gx_real_cudnn_symbol("cudnnLRNCrossChannelForward");
++        return real(handle, normDesc, lrnMode, alpha, xDesc, x, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1911,6 +2592,11 @@
+ }
+ 
+ cudnnStatus_t cudnnMakeFusedOpsPlan(cudnnHandle_t handle, cudnnFusedOpsPlan_t plan, const cudnnFusedOpsConstParamPack_t constPack, size_t *workspaceSizeInBytes) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnMakeFusedOpsPlan) real = (__typeof__(&cudnnMakeFusedOpsPlan))gx_real_cudnn_symbol("cudnnMakeFusedOpsPlan");
++        return real(handle, plan, constPack, workspaceSizeInBytes);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1925,6 +2611,11 @@
+ }
+ 
+ cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnHandle_t handle, const cudnnAttnDescriptor_t attnDesc, const int loWinIdx[], const int hiWinIdx[], const int devSeqLengthsDQDO[], const int devSeqLengthsDKDV[], const cudnnSeqDataDescriptor_t doDesc, const void *dout, const cudnnSeqDataDescriptor_t dqDesc, void *dqueries, const void *queries, const cudnnSeqDataDescriptor_t dkDesc, void *dkeys, const void *keys, const cudnnSeqDataDescriptor_t dvDesc, void *dvalues, const void *values, size_t weightSizeInBytes, const void *weights, size_t workSpaceSizeInBytes, void *workSpace, size_t reserveSpaceSizeInBytes, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnMultiHeadAttnBackwardData) real = (__typeof__(&cudnnMultiHeadAttnBackwardData))gx_real_cudnn_symbol("cudnnMultiHeadAttnBackwardData");
++        return real(handle, attnDesc, loWinIdx, hiWinIdx, devSeqLengthsDQDO, devSeqLengthsDKDV, doDesc, dout, dqDesc, dqueries, queries, dkDesc, dkeys, keys, dvDesc, dvalues, values, weightSizeInBytes, weights, workSpaceSizeInBytes, workSpace, reserveSpaceSizeInBytes, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1939,6 +2630,11 @@
+ }
+ 
+ cudnnStatus_t cudnnMultiHeadAttnBackwardWeights(cudnnHandle_t handle, const cudnnAttnDescriptor_t attnDesc, cudnnWgradMode_t addGrad, const cudnnSeqDataDescriptor_t qDesc, const void *queries, const cudnnSeqDataDescriptor_t kDesc, const void *keys, const cudnnSeqDataDescriptor_t vDesc, const void *values, const cudnnSeqDataDescriptor_t doDesc, const void *dout, size_t weightSizeInBytes, const void *weights, void *dweights, size_t workSpaceSizeInBytes, void *workSpace, size_t reserveSpaceSizeInBytes, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnMultiHeadAttnBackwardWeights) real = (__typeof__(&cudnnMultiHeadAttnBackwardWeights))gx_real_cudnn_symbol("cudnnMultiHeadAttnBackwardWeights");
++        return real(handle, attnDesc, addGrad, qDesc, queries, kDesc, keys, vDesc, values, doDesc, dout, weightSizeInBytes, weights, dweights, workSpaceSizeInBytes, workSpace, reserveSpaceSizeInBytes, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1953,6 +2649,11 @@
+ }
+ 
+ cudnnStatus_t cudnnMultiHeadAttnForward(cudnnHandle_t handle, const cudnnAttnDescriptor_t attnDesc, int currIdx, const int loWinIdx[], const int hiWinIdx[], const int devSeqLengthsQO[], const int devSeqLengthsKV[], const cudnnSeqDataDescriptor_t qDesc, const void *queries, const void *residuals, const cudnnSeqDataDescriptor_t kDesc, const void *keys, const cudnnSeqDataDescriptor_t vDesc, const void *values, const cudnnSeqDataDescriptor_t oDesc, void *out, size_t weightSizeInBytes, const void *weights, size_t workSpaceSizeInBytes, void *workSpace, size_t reserveSpaceSizeInBytes, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnMultiHeadAttnForward) real = (__typeof__(&cudnnMultiHeadAttnForward))gx_real_cudnn_symbol("cudnnMultiHeadAttnForward");
++        return real(handle, attnDesc, currIdx, loWinIdx, hiWinIdx, devSeqLengthsQO, devSeqLengthsKV, qDesc, queries, residuals, kDesc, keys, vDesc, values, oDesc, out, weightSizeInBytes, weights, workSpaceSizeInBytes, workSpace, reserveSpaceSizeInBytes, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1967,6 +2668,11 @@
+ }
+ 
+ cudnnStatus_t cudnnNormalizationBackward(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const void *alphaDataDiff, const void *betaDataDiff, const void *alphaParamDiff, const void *betaParamDiff, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t yDesc, const void *yData, const cudnnTensorDescriptor_t dyDesc, const void *dyData, const cudnnTensorDescriptor_t dzDesc, void *dzData, const cudnnTensorDescriptor_t dxDesc, void *dxData, const cudnnTensorDescriptor_t dNormScaleBiasDesc, const void *normScaleData, const void *normBiasData, void *dNormScaleData, void *dNormBiasData, double epsilon, const cudnnTensorDescriptor_t normMeanVarDesc, const void *savedMean, const void *savedInvVariance, cudnnActivationDescriptor_t activationDesc, void *workSpace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnNormalizationBackward) real = (__typeof__(&cudnnNormalizationBackward))gx_real_cudnn_symbol("cudnnNormalizationBackward");
++        return real(handle, mode, normOps, algo, alphaDataDiff, betaDataDiff, alphaParamDiff, betaParamDiff, xDesc, xData, yDesc, yData, dyDesc, dyData, dzDesc, dzData, dxDesc, dxData, dNormScaleBiasDesc, normScaleData, normBiasData, dNormScaleData, dNormBiasData, epsilon, normMeanVarDesc, savedMean, savedInvVariance, activationDesc, workSpace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1981,6 +2687,11 @@
+ }
+ 
+ cudnnStatus_t cudnnNormalizationForwardInference(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t normScaleBiasDesc, const void *normScale, const void *normBias, const cudnnTensorDescriptor_t normMeanVarDesc, const void *estimatedMean, const void *estimatedVariance, const cudnnTensorDescriptor_t zDesc, const void *z, cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t yDesc, void *y, double epsilon, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnNormalizationForwardInference) real = (__typeof__(&cudnnNormalizationForwardInference))gx_real_cudnn_symbol("cudnnNormalizationForwardInference");
++        return real(handle, mode, normOps, algo, alpha, beta, xDesc, x, normScaleBiasDesc, normScale, normBias, normMeanVarDesc, estimatedMean, estimatedVariance, zDesc, z, activationDesc, yDesc, y, epsilon, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1995,6 +2706,11 @@
+ }
+ 
+ cudnnStatus_t cudnnNormalizationForwardTraining(cudnnHandle_t handle, cudnnNormMode_t mode, cudnnNormOps_t normOps, cudnnNormAlgo_t algo, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t normScaleBiasDesc, const void *normScale, const void *normBias, double exponentialAverageFactor, const cudnnTensorDescriptor_t normMeanVarDesc, void *resultRunningMean, void *resultRunningVariance, double epsilon, void *resultSaveMean, void *resultSaveInvVariance, cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t zDesc, const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes, int groupCnt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnNormalizationForwardTraining) real = (__typeof__(&cudnnNormalizationForwardTraining))gx_real_cudnn_symbol("cudnnNormalizationForwardTraining");
++        return real(handle, mode, normOps, algo, alpha, beta, xDesc, xData, normScaleBiasDesc, normScale, normBias, exponentialAverageFactor, normMeanVarDesc, resultRunningMean, resultRunningVariance, epsilon, resultSaveMean, resultSaveInvVariance, activationDesc, zDesc, zData, yDesc, yData, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes, groupCnt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2009,6 +2725,11 @@
+ }
+ 
+ cudnnStatus_t cudnnOpTensor(cudnnHandle_t handle, const cudnnOpTensorDescriptor_t opTensorDesc, const void *alpha1, const cudnnTensorDescriptor_t aDesc, const void *A, const void *alpha2, const cudnnTensorDescriptor_t bDesc, const void *B, const void *beta, const cudnnTensorDescriptor_t cDesc, void *C) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnOpTensor) real = (__typeof__(&cudnnOpTensor))gx_real_cudnn_symbol("cudnnOpTensor");
++        return real(handle, opTensorDesc, alpha1, aDesc, A, alpha2, bDesc, B, beta, cDesc, C);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2023,6 +2744,11 @@
+ }
+ 
+ cudnnStatus_t cudnnOpsVersionCheck(void) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnOpsVersionCheck) real = (__typeof__(&cudnnOpsVersionCheck))gx_real_cudnn_symbol("cudnnOpsVersionCheck");
++        return real();
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2037,6 +2763,11 @@
+ }
+ 
+ cudnnStatus_t cudnnPoolingBackward(cudnnHandle_t handle, const cudnnPoolingDescriptor_t poolingDesc, const void *alpha, const cudnnTensorDescriptor_t yDesc, const void *y, const cudnnTensorDescriptor_t dyDesc, const void *dy, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnPoolingBackward) real = (__typeof__(&cudnnPoolingBackward))gx_real_cudnn_symbol("cudnnPoolingBackward");
++        return real(handle, poolingDesc, alpha, yDesc, y, dyDesc, dy, xDesc, x, beta, dxDesc, dx);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2051,6 +2782,11 @@
+ }
+ 
+ cudnnStatus_t cudnnPoolingForward(cudnnHandle_t handle, const cudnnPoolingDescriptor_t poolingDesc, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnPoolingForward) real = (__typeof__(&cudnnPoolingForward))gx_real_cudnn_symbol("cudnnPoolingForward");
++        return real(handle, poolingDesc, alpha, xDesc, x, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2065,6 +2801,11 @@
+ }
+ 
+ cudnnStatus_t cudnnQueryRuntimeError(cudnnHandle_t handle, cudnnStatus_t *rstatus, cudnnErrQueryMode_t mode, cudnnRuntimeTag_t *tag) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnQueryRuntimeError) real = (__typeof__(&cudnnQueryRuntimeError))gx_real_cudnn_symbol("cudnnQueryRuntimeError");
++        return real(handle, rstatus, mode, tag);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2079,6 +2820,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNBackwardData_v8(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, const int32_t devSeqLengths[], cudnnRNNDataDescriptor_t yDesc, const void *y, const void *dy, cudnnRNNDataDescriptor_t xDesc, void *dx, cudnnTensorDescriptor_t hDesc, const void *hx, const void *dhy, void *dhx, cudnnTensorDescriptor_t cDesc, const void *cx, const void *dcy, void *dcx, size_t weightSpaceSize, const void *weightSpace, size_t workSpaceSize, void *workSpace, size_t reserveSpaceSize, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNBackwardData_v8) real = (__typeof__(&cudnnRNNBackwardData_v8))gx_real_cudnn_symbol("cudnnRNNBackwardData_v8");
++        return real(handle, rnnDesc, devSeqLengths, yDesc, y, dy, xDesc, dx, hDesc, hx, dhy, dhx, cDesc, cx, dcy, dcx, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2093,6 +2839,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, cudnnWgradMode_t addGrad, const int32_t devSeqLengths[], cudnnRNNDataDescriptor_t xDesc, const void *x, cudnnTensorDescriptor_t hDesc, const void *hx, cudnnRNNDataDescriptor_t yDesc, const void *y, size_t weightSpaceSize, void *dweightSpace, size_t workSpaceSize, void *workSpace, size_t reserveSpaceSize, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNBackwardWeights_v8) real = (__typeof__(&cudnnRNNBackwardWeights_v8))gx_real_cudnn_symbol("cudnnRNNBackwardWeights_v8");
++        return real(handle, rnnDesc, addGrad, devSeqLengths, xDesc, x, hDesc, hx, yDesc, y, weightSpaceSize, dweightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2107,6 +2858,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNForward(cudnnHandle_t handle, cudnnRNNDescriptor_t rnnDesc, cudnnForwardMode_t fwdMode, const int32_t devSeqLengths[], cudnnRNNDataDescriptor_t xDesc, const void *x, cudnnRNNDataDescriptor_t yDesc, void *y, cudnnTensorDescriptor_t hDesc, const void *hx, void *hy, cudnnTensorDescriptor_t cDesc, const void *cx, void *cy, size_t weightSpaceSize, const void *weightSpace, size_t workSpaceSize, void *workSpace, size_t reserveSpaceSize, void *reserveSpace) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNForward) real = (__typeof__(&cudnnRNNForward))gx_real_cudnn_symbol("cudnnRNNForward");
++        return real(handle, rnnDesc, fwdMode, devSeqLengths, xDesc, x, yDesc, y, hDesc, hx, hy, cDesc, cx, cy, weightSpaceSize, weightSpace, workSpaceSize, workSpace, reserveSpaceSize, reserveSpace);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2121,6 +2877,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNDescriptor_t rnnDesc, cudnnRNNClipMode_t *clipMode, cudnnNanPropagation_t *clipNanOpt, double *lclip, double *rclip) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNGetClip_v8) real = (__typeof__(&cudnnRNNGetClip_v8))gx_real_cudnn_symbol("cudnnRNNGetClip_v8");
++        return real(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2135,6 +2896,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNGetClip_v9(cudnnRNNDescriptor_t rnnDesc, cudnnRNNClipMode_t *clipMode, double *lclip, double *rclip) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNGetClip_v9) real = (__typeof__(&cudnnRNNGetClip_v9))gx_real_cudnn_symbol("cudnnRNNGetClip_v9");
++        return real(rnnDesc, clipMode, lclip, rclip);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2149,6 +2915,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNDescriptor_t rnnDesc, cudnnRNNClipMode_t clipMode, cudnnNanPropagation_t clipNanOpt, double lclip, double rclip) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNSetClip_v8) real = (__typeof__(&cudnnRNNSetClip_v8))gx_real_cudnn_symbol("cudnnRNNSetClip_v8");
++        return real(rnnDesc, clipMode, clipNanOpt, lclip, rclip);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2163,6 +2934,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRNNSetClip_v9(cudnnRNNDescriptor_t rnnDesc, cudnnRNNClipMode_t clipMode, double lclip, double rclip) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRNNSetClip_v9) real = (__typeof__(&cudnnRNNSetClip_v9))gx_real_cudnn_symbol("cudnnRNNSetClip_v9");
++        return real(rnnDesc, clipMode, lclip, rclip);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2177,6 +2953,11 @@
+ }
+ 
+ cudnnStatus_t cudnnReduceTensor(cudnnHandle_t handle, const cudnnReduceTensorDescriptor_t reduceTensorDesc, void *indices, size_t indicesSizeInBytes, void *workspace, size_t workspaceSizeInBytes, const void *alpha, const cudnnTensorDescriptor_t aDesc, const void *A, const void *beta, const cudnnTensorDescriptor_t cDesc, void *C) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnReduceTensor) real = (__typeof__(&cudnnReduceTensor))gx_real_cudnn_symbol("cudnnReduceTensor");
++        return real(handle, reduceTensorDesc, indices, indicesSizeInBytes, workspace, workspaceSizeInBytes, alpha, aDesc, A, beta, cDesc, C);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2191,6 +2972,11 @@
+ }
+ 
+ cudnnStatus_t cudnnReorderFilterAndBias(cudnnHandle_t handle, const cudnnFilterDescriptor_t filterDesc, cudnnReorderType_t reorderType, const void *filterData, void *reorderedFilterData, int reorderBias, const void *biasData, void *reorderedBiasData) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnReorderFilterAndBias) real = (__typeof__(&cudnnReorderFilterAndBias))gx_real_cudnn_symbol("cudnnReorderFilterAndBias");
++        return real(handle, filterDesc, reorderType, filterData, reorderedFilterData, reorderBias, biasData, reorderedBiasData);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2205,6 +2991,11 @@
+ }
+ 
+ cudnnStatus_t cudnnRestoreDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc, cudnnHandle_t handle, float dropout, void *states, size_t stateSizeInBytes, unsigned long long seed) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnRestoreDropoutDescriptor) real = (__typeof__(&cudnnRestoreDropoutDescriptor))gx_real_cudnn_symbol("cudnnRestoreDropoutDescriptor");
++        return real(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2219,6 +3010,11 @@
+ }
+ 
+ cudnnStatus_t cudnnScaleTensor(cudnnHandle_t handle, const cudnnTensorDescriptor_t yDesc, void *y, const void *alpha) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnScaleTensor) real = (__typeof__(&cudnnScaleTensor))gx_real_cudnn_symbol("cudnnScaleTensor");
++        return real(handle, yDesc, y, alpha);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2233,6 +3029,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetActivationDescriptor(cudnnActivationDescriptor_t activationDesc, cudnnActivationMode_t mode, cudnnNanPropagation_t reluNanOpt, double coef) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetActivationDescriptor) real = (__typeof__(&cudnnSetActivationDescriptor))gx_real_cudnn_symbol("cudnnSetActivationDescriptor");
++        return real(activationDesc, mode, reluNanOpt, coef);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2247,6 +3048,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetActivationDescriptorSwishBeta(cudnnActivationDescriptor_t activationDesc, double swish_beta) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetActivationDescriptorSwishBeta) real = (__typeof__(&cudnnSetActivationDescriptorSwishBeta))gx_real_cudnn_symbol("cudnnSetActivationDescriptorSwishBeta");
++        return real(activationDesc, swish_beta);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2261,6 +3067,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetAttnDescriptor(cudnnAttnDescriptor_t attnDesc, unsigned attnMode, int nHeads, double smScaler, cudnnDataType_t dataType, cudnnDataType_t computePrec, cudnnMathType_t mathType, cudnnDropoutDescriptor_t attnDropoutDesc, cudnnDropoutDescriptor_t postDropoutDesc, int qSize, int kSize, int vSize, int qProjSize, int kProjSize, int vProjSize, int oProjSize, int qoMaxSeqLength, int kvMaxSeqLength, int maxBatchSize, int maxBeamSize) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetAttnDescriptor) real = (__typeof__(&cudnnSetAttnDescriptor))gx_real_cudnn_symbol("cudnnSetAttnDescriptor");
++        return real(attnDesc, attnMode, nHeads, smScaler, dataType, computePrec, mathType, attnDropoutDesc, postDropoutDesc, qSize, kSize, vSize, qProjSize, kProjSize, vProjSize, oProjSize, qoMaxSeqLength, kvMaxSeqLength, maxBatchSize, maxBeamSize);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2275,6 +3086,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetCTCLossDescriptor(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t compType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetCTCLossDescriptor) real = (__typeof__(&cudnnSetCTCLossDescriptor))gx_real_cudnn_symbol("cudnnSetCTCLossDescriptor");
++        return real(ctcLossDesc, compType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2289,6 +3105,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetCTCLossDescriptorEx(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t compType, cudnnLossNormalizationMode_t normMode, cudnnNanPropagation_t gradMode) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetCTCLossDescriptorEx) real = (__typeof__(&cudnnSetCTCLossDescriptorEx))gx_real_cudnn_symbol("cudnnSetCTCLossDescriptorEx");
++        return real(ctcLossDesc, compType, normMode, gradMode);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2303,6 +3124,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetCTCLossDescriptor_v8(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t compType, cudnnLossNormalizationMode_t normMode, cudnnNanPropagation_t gradMode, int maxLabelLength) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetCTCLossDescriptor_v8) real = (__typeof__(&cudnnSetCTCLossDescriptor_v8))gx_real_cudnn_symbol("cudnnSetCTCLossDescriptor_v8");
++        return real(ctcLossDesc, compType, normMode, gradMode, maxLabelLength);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2317,6 +3143,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetCTCLossDescriptor_v9(cudnnCTCLossDescriptor_t ctcLossDesc, cudnnDataType_t compType, cudnnLossNormalizationMode_t normMode, cudnnCTCGradMode_t ctcGradMode, int maxLabelLength) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetCTCLossDescriptor_v9) real = (__typeof__(&cudnnSetCTCLossDescriptor_v9))gx_real_cudnn_symbol("cudnnSetCTCLossDescriptor_v9");
++        return real(ctcLossDesc, compType, normMode, ctcGradMode, maxLabelLength);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2331,6 +3162,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetCallback(unsigned mask, void *udata, cudnnCallback_t fptr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetCallback) real = (__typeof__(&cudnnSetCallback))gx_real_cudnn_symbol("cudnnSetCallback");
++        return real(mask, udata, fptr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2345,6 +3181,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetConvolution2dDescriptor(cudnnConvolutionDescriptor_t convDesc, int pad_h, int pad_w, int u, int v, int dilation_h, int dilation_w, cudnnConvolutionMode_t mode, cudnnDataType_t computeType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetConvolution2dDescriptor) real = (__typeof__(&cudnnSetConvolution2dDescriptor))gx_real_cudnn_symbol("cudnnSetConvolution2dDescriptor");
++        return real(convDesc, pad_h, pad_w, u, v, dilation_h, dilation_w, mode, computeType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2359,6 +3200,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetConvolutionGroupCount(cudnnConvolutionDescriptor_t convDesc, int groupCount) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetConvolutionGroupCount) real = (__typeof__(&cudnnSetConvolutionGroupCount))gx_real_cudnn_symbol("cudnnSetConvolutionGroupCount");
++        return real(convDesc, groupCount);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2373,6 +3219,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetConvolutionMathType(cudnnConvolutionDescriptor_t convDesc, cudnnMathType_t mathType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetConvolutionMathType) real = (__typeof__(&cudnnSetConvolutionMathType))gx_real_cudnn_symbol("cudnnSetConvolutionMathType");
++        return real(convDesc, mathType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2387,6 +3238,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetConvolutionNdDescriptor(cudnnConvolutionDescriptor_t convDesc, int arrayLength, const int padA[], const int filterStrideA[], const int dilationA[], cudnnConvolutionMode_t mode, cudnnDataType_t computeType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetConvolutionNdDescriptor) real = (__typeof__(&cudnnSetConvolutionNdDescriptor))gx_real_cudnn_symbol("cudnnSetConvolutionNdDescriptor");
++        return real(convDesc, arrayLength, padA, filterStrideA, dilationA, mode, computeType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2401,6 +3257,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetConvolutionReorderType(cudnnConvolutionDescriptor_t convDesc, cudnnReorderType_t reorderType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetConvolutionReorderType) real = (__typeof__(&cudnnSetConvolutionReorderType))gx_real_cudnn_symbol("cudnnSetConvolutionReorderType");
++        return real(convDesc, reorderType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2415,6 +3276,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc, cudnnHandle_t handle, float dropout, void *states, size_t stateSizeInBytes, unsigned long long seed) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetDropoutDescriptor) real = (__typeof__(&cudnnSetDropoutDescriptor))gx_real_cudnn_symbol("cudnnSetDropoutDescriptor");
++        return real(dropoutDesc, handle, dropout, states, stateSizeInBytes, seed);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2429,6 +3295,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t filterDesc, cudnnDataType_t dataType, cudnnTensorFormat_t format, int k, int c, int h, int w) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetFilter4dDescriptor) real = (__typeof__(&cudnnSetFilter4dDescriptor))gx_real_cudnn_symbol("cudnnSetFilter4dDescriptor");
++        return real(filterDesc, dataType, format, k, c, h, w);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2443,6 +3314,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetFilterNdDescriptor(cudnnFilterDescriptor_t filterDesc, cudnnDataType_t dataType, cudnnTensorFormat_t format, int nbDims, const int filterDimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetFilterNdDescriptor) real = (__typeof__(&cudnnSetFilterNdDescriptor))gx_real_cudnn_symbol("cudnnSetFilterNdDescriptor");
++        return real(filterDesc, dataType, format, nbDims, filterDimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2457,6 +3333,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetFusedOpsConstParamPackAttribute(cudnnFusedOpsConstParamPack_t constPack, cudnnFusedOpsConstParamLabel_t paramLabel, const void *param) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetFusedOpsConstParamPackAttribute) real = (__typeof__(&cudnnSetFusedOpsConstParamPackAttribute))gx_real_cudnn_symbol("cudnnSetFusedOpsConstParamPackAttribute");
++        return real(constPack, paramLabel, param);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2471,6 +3352,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetFusedOpsVariantParamPackAttribute(cudnnFusedOpsVariantParamPack_t varPack, cudnnFusedOpsVariantParamLabel_t paramLabel, void *ptr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetFusedOpsVariantParamPackAttribute) real = (__typeof__(&cudnnSetFusedOpsVariantParamPackAttribute))gx_real_cudnn_symbol("cudnnSetFusedOpsVariantParamPackAttribute");
++        return real(varPack, paramLabel, ptr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2485,6 +3371,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetLRNDescriptor(cudnnLRNDescriptor_t normDesc, unsigned lrnN, double lrnAlpha, double lrnBeta, double lrnK) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetLRNDescriptor) real = (__typeof__(&cudnnSetLRNDescriptor))gx_real_cudnn_symbol("cudnnSetLRNDescriptor");
++        return real(normDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2499,6 +3390,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetOpTensorDescriptor(cudnnOpTensorDescriptor_t opTensorDesc, cudnnOpTensorOp_t opTensorOp, cudnnDataType_t opTensorCompType, cudnnNanPropagation_t opTensorNanOpt) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetOpTensorDescriptor) real = (__typeof__(&cudnnSetOpTensorDescriptor))gx_real_cudnn_symbol("cudnnSetOpTensorDescriptor");
++        return real(opTensorDesc, opTensorOp, opTensorCompType, opTensorNanOpt);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2513,6 +3409,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetPooling2dDescriptor(cudnnPoolingDescriptor_t poolingDesc, cudnnPoolingMode_t mode, cudnnNanPropagation_t maxpoolingNanOpt, int windowHeight, int windowWidth, int verticalPadding, int horizontalPadding, int verticalStride, int horizontalStride) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetPooling2dDescriptor) real = (__typeof__(&cudnnSetPooling2dDescriptor))gx_real_cudnn_symbol("cudnnSetPooling2dDescriptor");
++        return real(poolingDesc, mode, maxpoolingNanOpt, windowHeight, windowWidth, verticalPadding, horizontalPadding, verticalStride, horizontalStride);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2527,6 +3428,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetPoolingNdDescriptor(cudnnPoolingDescriptor_t poolingDesc, const cudnnPoolingMode_t mode, const cudnnNanPropagation_t maxpoolingNanOpt, int nbDims, const int windowDimA[], const int paddingA[], const int strideA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetPoolingNdDescriptor) real = (__typeof__(&cudnnSetPoolingNdDescriptor))gx_real_cudnn_symbol("cudnnSetPoolingNdDescriptor");
++        return real(poolingDesc, mode, maxpoolingNanOpt, nbDims, windowDimA, paddingA, strideA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2541,6 +3447,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetRNNDataDescriptor(cudnnRNNDataDescriptor_t rnnDataDesc, cudnnDataType_t dataType, cudnnRNNDataLayout_t layout, int maxSeqLength, int batchSize, int vectorSize, const int seqLengthArray[], void *paddingFill) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetRNNDataDescriptor) real = (__typeof__(&cudnnSetRNNDataDescriptor))gx_real_cudnn_symbol("cudnnSetRNNDataDescriptor");
++        return real(rnnDataDesc, dataType, layout, maxSeqLength, batchSize, vectorSize, seqLengthArray, paddingFill);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2555,6 +3466,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetRNNDescriptor_v8(cudnnRNNDescriptor_t rnnDesc, cudnnRNNAlgo_t algo, cudnnRNNMode_t cellMode, cudnnRNNBiasMode_t biasMode, cudnnDirectionMode_t dirMode, cudnnRNNInputMode_t inputMode, cudnnDataType_t dataType, cudnnDataType_t mathPrec, cudnnMathType_t mathType, int32_t inputSize, int32_t hiddenSize, int32_t projSize, int32_t numLayers, cudnnDropoutDescriptor_t dropoutDesc, uint32_t auxFlags) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetRNNDescriptor_v8) real = (__typeof__(&cudnnSetRNNDescriptor_v8))gx_real_cudnn_symbol("cudnnSetRNNDescriptor_v8");
++        return real(rnnDesc, algo, cellMode, biasMode, dirMode, inputMode, dataType, mathPrec, mathType, inputSize, hiddenSize, projSize, numLayers, dropoutDesc, auxFlags);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2569,6 +3485,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetReduceTensorDescriptor(cudnnReduceTensorDescriptor_t reduceTensorDesc, cudnnReduceTensorOp_t reduceTensorOp, cudnnDataType_t reduceTensorCompType, cudnnNanPropagation_t reduceTensorNanOpt, cudnnReduceTensorIndices_t reduceTensorIndices, cudnnIndicesType_t reduceTensorIndicesType) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetReduceTensorDescriptor) real = (__typeof__(&cudnnSetReduceTensorDescriptor))gx_real_cudnn_symbol("cudnnSetReduceTensorDescriptor");
++        return real(reduceTensorDesc, reduceTensorOp, reduceTensorCompType, reduceTensorNanOpt, reduceTensorIndices, reduceTensorIndicesType);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2583,6 +3504,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetSeqDataDescriptor(cudnnSeqDataDescriptor_t seqDataDesc, cudnnDataType_t dataType, int nbDims, const int dimA[], const cudnnSeqDataAxis_t axes[], size_t seqLengthArraySize, const int seqLengthArray[], void *paddingFill) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetSeqDataDescriptor) real = (__typeof__(&cudnnSetSeqDataDescriptor))gx_real_cudnn_symbol("cudnnSetSeqDataDescriptor");
++        return real(seqDataDesc, dataType, nbDims, dimA, axes, seqLengthArraySize, seqLengthArray, paddingFill);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2597,6 +3523,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetSpatialTransformerNdDescriptor(cudnnSpatialTransformerDescriptor_t stDesc, cudnnSamplerType_t samplerType, cudnnDataType_t dataType, const int nbDims, const int dimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetSpatialTransformerNdDescriptor) real = (__typeof__(&cudnnSetSpatialTransformerNdDescriptor))gx_real_cudnn_symbol("cudnnSetSpatialTransformerNdDescriptor");
++        return real(stDesc, samplerType, dataType, nbDims, dimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2611,6 +3542,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensor(cudnnHandle_t handle, const cudnnTensorDescriptor_t yDesc, void *y, const void *valuePtr) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensor) real = (__typeof__(&cudnnSetTensor))gx_real_cudnn_symbol("cudnnSetTensor");
++        return real(handle, yDesc, y, valuePtr);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2625,6 +3561,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensor4dDescriptor(cudnnTensorDescriptor_t tensorDesc, cudnnTensorFormat_t format, cudnnDataType_t dataType, int n, int c, int h, int w) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensor4dDescriptor) real = (__typeof__(&cudnnSetTensor4dDescriptor))gx_real_cudnn_symbol("cudnnSetTensor4dDescriptor");
++        return real(tensorDesc, format, dataType, n, c, h, w);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2639,6 +3580,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensor4dDescriptorEx(cudnnTensorDescriptor_t tensorDesc, cudnnDataType_t dataType, int n, int c, int h, int w, int nStride, int cStride, int hStride, int wStride) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensor4dDescriptorEx) real = (__typeof__(&cudnnSetTensor4dDescriptorEx))gx_real_cudnn_symbol("cudnnSetTensor4dDescriptorEx");
++        return real(tensorDesc, dataType, n, c, h, w, nStride, cStride, hStride, wStride);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2653,6 +3599,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensorNdDescriptor(cudnnTensorDescriptor_t tensorDesc, cudnnDataType_t dataType, int nbDims, const int dimA[], const int strideA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensorNdDescriptor) real = (__typeof__(&cudnnSetTensorNdDescriptor))gx_real_cudnn_symbol("cudnnSetTensorNdDescriptor");
++        return real(tensorDesc, dataType, nbDims, dimA, strideA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2667,6 +3618,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensorNdDescriptorEx(cudnnTensorDescriptor_t tensorDesc, cudnnTensorFormat_t format, cudnnDataType_t dataType, int nbDims, const int dimA[]) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensorNdDescriptorEx) real = (__typeof__(&cudnnSetTensorNdDescriptorEx))gx_real_cudnn_symbol("cudnnSetTensorNdDescriptorEx");
++        return real(tensorDesc, format, dataType, nbDims, dimA);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2681,6 +3637,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSetTensorTransformDescriptor(cudnnTensorTransformDescriptor_t transformDesc, const uint32_t nbDims, const cudnnTensorFormat_t destFormat, const int32_t padBeforeA[], const int32_t padAfterA[], const uint32_t foldA[], const cudnnFoldingDirection_t direction) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSetTensorTransformDescriptor) real = (__typeof__(&cudnnSetTensorTransformDescriptor))gx_real_cudnn_symbol("cudnnSetTensorTransformDescriptor");
++        return real(transformDesc, nbDims, destFormat, padBeforeA, padAfterA, foldA, direction);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2695,6 +3656,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSoftmaxBackward(cudnnHandle_t handle, cudnnSoftmaxAlgorithm_t algo, cudnnSoftmaxMode_t mode, const void *alpha, const cudnnTensorDescriptor_t yDesc, const void *y, const cudnnTensorDescriptor_t dyDesc, const void *dy, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSoftmaxBackward) real = (__typeof__(&cudnnSoftmaxBackward))gx_real_cudnn_symbol("cudnnSoftmaxBackward");
++        return real(handle, algo, mode, alpha, yDesc, y, dyDesc, dy, beta, dxDesc, dx);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2709,6 +3675,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSoftmaxForward(cudnnHandle_t handle, cudnnSoftmaxAlgorithm_t algo, cudnnSoftmaxMode_t mode, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSoftmaxForward) real = (__typeof__(&cudnnSoftmaxForward))gx_real_cudnn_symbol("cudnnSoftmaxForward");
++        return real(handle, algo, mode, alpha, xDesc, x, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2723,6 +3694,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSpatialTfGridGeneratorBackward(cudnnHandle_t handle, const cudnnSpatialTransformerDescriptor_t stDesc, const void *dgrid, void *dtheta) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSpatialTfGridGeneratorBackward) real = (__typeof__(&cudnnSpatialTfGridGeneratorBackward))gx_real_cudnn_symbol("cudnnSpatialTfGridGeneratorBackward");
++        return real(handle, stDesc, dgrid, dtheta);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2737,6 +3713,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSpatialTfGridGeneratorForward(cudnnHandle_t handle, const cudnnSpatialTransformerDescriptor_t stDesc, const void *theta, void *grid) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSpatialTfGridGeneratorForward) real = (__typeof__(&cudnnSpatialTfGridGeneratorForward))gx_real_cudnn_symbol("cudnnSpatialTfGridGeneratorForward");
++        return real(handle, stDesc, theta, grid);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2751,6 +3732,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSpatialTfSamplerBackward(cudnnHandle_t handle, cudnnSpatialTransformerDescriptor_t stDesc, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t dxDesc, void *dx, const void *alphaDgrid, const cudnnTensorDescriptor_t dyDesc, const void *dy, const void *grid, const void *betaDgrid, void *dgrid) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSpatialTfSamplerBackward) real = (__typeof__(&cudnnSpatialTfSamplerBackward))gx_real_cudnn_symbol("cudnnSpatialTfSamplerBackward");
++        return real(handle, stDesc, alpha, xDesc, x, beta, dxDesc, dx, alphaDgrid, dyDesc, dy, grid, betaDgrid, dgrid);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2765,6 +3751,11 @@
+ }
+ 
+ cudnnStatus_t cudnnSpatialTfSamplerForward(cudnnHandle_t handle, cudnnSpatialTransformerDescriptor_t stDesc, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *grid, const void *beta, cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnSpatialTfSamplerForward) real = (__typeof__(&cudnnSpatialTfSamplerForward))gx_real_cudnn_symbol("cudnnSpatialTfSamplerForward");
++        return real(handle, stDesc, alpha, xDesc, x, grid, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2779,6 +3770,11 @@
+ }
+ 
+ cudnnStatus_t cudnnTransformFilter(cudnnHandle_t handle, const cudnnTensorTransformDescriptor_t transDesc, const void *alpha, const cudnnFilterDescriptor_t srcDesc, const void *srcData, const void *beta, const cudnnFilterDescriptor_t destDesc, void *destData) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnTransformFilter) real = (__typeof__(&cudnnTransformFilter))gx_real_cudnn_symbol("cudnnTransformFilter");
++        return real(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2793,6 +3789,11 @@
+ }
+ 
+ cudnnStatus_t cudnnTransformTensor(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnTransformTensor) real = (__typeof__(&cudnnTransformTensor))gx_real_cudnn_symbol("cudnnTransformTensor");
++        return real(handle, alpha, xDesc, x, beta, yDesc, y);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2807,6 +3808,11 @@
+ }
+ 
+ cudnnStatus_t cudnnTransformTensorEx(cudnnHandle_t handle, const cudnnTensorTransformDescriptor_t transDesc, const void *alpha, const cudnnTensorDescriptor_t srcDesc, const void *srcData, const void *beta, const cudnnTensorDescriptor_t destDesc, void *destData) {
++    if (gx_real_cudnn_enabled()) {
++        __typeof__(&cudnnTransformTensorEx) real = (__typeof__(&cudnnTransformTensorEx))gx_real_cudnn_symbol("cudnnTransformTensorEx");
++        return real(handle, transDesc, alpha, srcDesc, srcData, beta, destDesc, destData);
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+--- a/src/sims/gpu/cuda_intercept/driver_intercept.c
++++ b/src/sims/gpu/cuda_intercept/driver_intercept.c
+@@ -1,5 +1,6 @@
+ // Auto-generated DRIVER API interceptor
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ #include <dlfcn.h>
+ #include <light/log.h>
+ #include <light/common.h>
+@@ -354,6 +355,12 @@
+ }
+ 
+ CUresult cuCtxGetApiVersion(CUcontext ctx, unsigned int *version) {
++    if (gx_real_cudnn_enabled()) {
++        if (!version) return CUDA_ERROR_INVALID_VALUE;
++        /* GX uses the modern CUDA context ABI, distinct from driver version. */
++        *version = 3020;
++        return CUDA_SUCCESS;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -427,6 +434,12 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        if (!ctxId) return CUDA_ERROR_INVALID_VALUE;
++        if (!ctx || ((EmuHandle*)ctx)->type != CU_CTX) return CUDA_ERROR_INVALID_CONTEXT;
++        *ctxId = (unsigned long long)(uintptr_t)((EmuHandle*)ctx)->pointer;
++        return CUDA_SUCCESS;
++    }
+     return CUDA_SUCCESS;
+ #else
+     if (!original_cuCtxGetId) {
+@@ -437,7 +450,38 @@
+ #endif
+ }
+ 
++/* Read the measured limits of the profiled primary context once. */
++#include <pthread.h>
++static pthread_once_t gx_ctx_limits_once = PTHREAD_ONCE_INIT;
++static struct { int valid; int status; size_t value; } gx_ctx_limits[64];
++static void gx_load_ctx_limits(void) {
++    const char *path = getenv("GX_CUDA_CONTEXT_LIMITS");
++    FILE *file = path && *path ? fopen(path, "r") : NULL;
++    if (!file) {
++        fprintf(stderr,"GX_REAL_CUDNN: GX_CUDA_CONTEXT_LIMITS must name measured context limits\n");
++        abort();
++    }
++    unsigned int key; int status; size_t value;
++    while (fscanf(file, "%u %d %zu", &key, &status, &value) == 3) {
++        if (key >= 64 || gx_ctx_limits[key].valid) abort();
++        gx_ctx_limits[key].valid = 1;
++        gx_ctx_limits[key].status = status;
++        gx_ctx_limits[key].value = value;
++    }
++    if (!feof(file)) abort();
++    fclose(file);
++}
+ CUresult cuCtxGetLimit(size_t *pvalue, CUlimit limit) {
++    if (gx_real_cudnn_enabled()) {
++        if (!pvalue) return CUDA_ERROR_INVALID_VALUE;
++        pthread_once(&gx_ctx_limits_once, gx_load_ctx_limits);
++        if ((unsigned)limit >= 64 || !gx_ctx_limits[limit].valid)
++            return CUDA_ERROR_UNSUPPORTED_LIMIT;
++        if (gx_ctx_limits[limit].status == CUDA_SUCCESS)
++            *pvalue = gx_ctx_limits[limit].value;
++        return (CUresult)gx_ctx_limits[limit].status;
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -914,6 +958,13 @@
+ }
+ 
+ CUresult cuEventCreate(CUevent *phEvent, unsigned int Flags) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventCreateWithFlags((cudaEvent_t*)phEvent, Flags);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -928,6 +979,13 @@
+ }
+ 
+ CUresult cuEventDestroy_v2(CUevent hEvent) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventDestroy((cudaEvent_t)hEvent);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -942,6 +1000,13 @@
+ }
+ 
+ CUresult cuEventElapsedTime(float *pMilliseconds, CUevent hStart, CUevent hEnd) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventElapsedTime(pMilliseconds, (cudaEvent_t)hStart, (cudaEvent_t)hEnd);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -956,6 +1021,13 @@
+ }
+ 
+ CUresult cuEventElapsedTime_v2(float *pMilliseconds, CUevent hStart, CUevent hEnd) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventElapsedTime(pMilliseconds, (cudaEvent_t)hStart, (cudaEvent_t)hEnd);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -970,6 +1042,13 @@
+ }
+ 
+ CUresult cuEventQuery(CUevent hEvent) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventQuery((cudaEvent_t)hEvent);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -984,6 +1063,13 @@
+ }
+ 
+ CUresult cuEventRecord(CUevent hEvent, CUstream hStream) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventRecord((cudaEvent_t)hEvent, (cudaStream_t)hStream);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -998,6 +1084,13 @@
+ }
+ 
+ CUresult cuEventRecordWithFlags(CUevent hEvent, CUstream hStream, unsigned int flags) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventRecordWithFlags((cudaEvent_t)hEvent, (cudaStream_t)hStream, flags);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -1012,6 +1105,13 @@
+ }
+ 
+ CUresult cuEventSynchronize(CUevent hEvent) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaEventSynchronize((cudaEvent_t)hEvent);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -2872,6 +2972,12 @@
+ }
+ 
+ CUresult cuLibraryGetModule(CUmodule *pMod, CUlibrary library) {
++    if (gx_real_cudnn_enabled()) {
++        if (!pMod || !library) return CUDA_ERROR_INVALID_VALUE;
++        *pMod = (CUmodule)library;
++        return CUDA_SUCCESS;
++    }
++
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4618,6 +4724,13 @@
+ }
+ 
+ CUresult cuStreamCreate(CUstream *phStream, unsigned int Flags) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamCreateWithPriority((cudaStream_t*)phStream, Flags, 0);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4632,6 +4745,13 @@
+ }
+ 
+ CUresult cuStreamCreateWithPriority(CUstream *phStream, unsigned int flags, int priority) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamCreateWithPriority((cudaStream_t*)phStream, flags, priority);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4646,6 +4766,13 @@
+ }
+ 
+ CUresult cuStreamDestroy_v2(CUstream hStream) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamDestroy((cudaStream_t)hStream);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4800,6 +4927,13 @@
+ }
+ 
+ CUresult cuStreamQuery(CUstream hStream) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamQuery((cudaStream_t)hStream);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4828,6 +4962,13 @@
+ }
+ 
+ CUresult cuStreamSynchronize(CUstream hStream) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamSynchronize((cudaStream_t)hStream);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -4870,6 +5011,13 @@
+ }
+ 
+ CUresult cuStreamWaitEvent(CUstream hStream, CUevent hEvent, unsigned int Flags) {
++    if (gx_real_cudnn_enabled()) {
++        cudaError_t result = cudaStreamWaitEvent((cudaStream_t)hStream, (cudaEvent_t)hEvent, Flags);
++        if (result == cudaSuccess) return CUDA_SUCCESS;
++        if (result == cudaErrorNotReady) return CUDA_ERROR_NOT_READY;
++        if (result == cudaErrorInvalidValue) return CUDA_ERROR_INVALID_VALUE;
++        return CUDA_ERROR_UNKNOWN;
++    }
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
+@@ -5568,3 +5716,35 @@
+     return original_cuWaitExternalSemaphoresAsync(extSemArray, paramsArray, numExtSems, stream);
+ #endif
+ }
++
++/* Legacy symbols resolved eagerly by cuBLASLt 12.8. This eager-only study
++ * does not implement graphs or device-memory polling; fail explicitly if used. */
++#undef cuDevicePrimaryCtxRelease
++#undef cuStreamWaitValue32
++#undef cuStreamBatchMemOp
++#undef cuGraphKernelNodeGetParams
++#undef cuGraphExecKernelNodeSetParams
++#undef cuGraphInstantiate
++CUresult cuDevicePrimaryCtxRelease(CUdevice dev) {
++    return cuDevicePrimaryCtxRelease_v2(dev);
++}
++CUresult cuStreamWaitValue32(CUstream stream, CUdeviceptr addr, cuuint32_t value, unsigned int flags) {
++    fprintf(stderr, "GX_REAL_CUDNN: unsupported legacy cuStreamWaitValue32\n");
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++CUresult cuStreamBatchMemOp(CUstream stream, unsigned int count, CUstreamBatchMemOpParams *params, unsigned int flags) {
++    fprintf(stderr, "GX_REAL_CUDNN: unsupported legacy cuStreamBatchMemOp\n");
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++CUresult cuGraphKernelNodeGetParams(CUgraphNode node, CUDA_KERNEL_NODE_PARAMS_v1 *params) {
++    fprintf(stderr, "GX_REAL_CUDNN: unsupported legacy cuGraphKernelNodeGetParams\n");
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++CUresult cuGraphExecKernelNodeSetParams(CUgraphExec graph, CUgraphNode node, const CUDA_KERNEL_NODE_PARAMS_v1 *params) {
++    fprintf(stderr, "GX_REAL_CUDNN: unsupported legacy cuGraphExecKernelNodeSetParams\n");
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++CUresult cuGraphInstantiate(CUgraphExec *exec, CUgraph graph, CUgraphNode *error, char *log, size_t size) {
++    fprintf(stderr, "GX_REAL_CUDNN: unsupported legacy cuGraphInstantiate\n");
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
+--- a/src/sims/gpu/runtime/preload.c
++++ b/src/sims/gpu/runtime/preload.c
+@@ -2,6 +2,7 @@
+ // Copyright (c) 2026 The GX Project Authors
+ 
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -500,6 +501,9 @@
+ 
+ static const char *find_replacement(const char *filename)
+ {
++        if (gx_real_cudnn_enabled() && (strstr(filename, "libcudnn") != NULL || strstr(filename, "libcublas") != NULL))
++                return NULL;
++
+         if (!replacements_ready) {
+                 gx_resolve_home();
+                 if (!replacements_ready)
+--- a/src/sims/gpu/emu/kernel.c
++++ b/src/sims/gpu/emu/kernel.c
+@@ -1,4 +1,5 @@
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ 
+ // CUDA kernel registration + launch API interposer for the GX GPU emulator.
+ //
+@@ -599,6 +600,17 @@
+       }
+     }
+     config_copy->api_type = "cuLaunchEx";
++    if (gx_real_cudnn_enabled()) {
++        void *wrapper = resource_mg_get(rm_functions, (void*)f);
++        if (wrapper == (void*)f) {
++            fprintf(stderr, "GX_REAL_CUDNN: unregistered extended launch %p\n", (void*)f);
++            free(config_copy->kernelParams);
++            free(config_copy);
++            pthread_mutex_unlock(&cuda_host_api_lock);
++            return CUDA_ERROR_INVALID_HANDLE;
++        }
++        config_copy->kernelFn = wrapper;
++    }
+     Predict_kernel_fn(config_copy);
+   }
+ 
+--- a/src/sims/gpu/emu/driver.c
++++ b/src/sims/gpu/emu/driver.c
+@@ -2,6 +2,7 @@
+ // Copyright (c) 2026 The GX Project Authors
+ 
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ 
+ // CUDA driver-API context + module interposer for the GX GPU emulator.
+ //
+@@ -445,8 +446,33 @@
+     [6] = (const void *)cudart_get_callback_buffer2,
+ };
+ 
++/* Verified against the profiled CUDA driver: TOOLS_TLS slot 2 returns the
++ * current CUcontext. The second table's slot 4 returns its unique context ID,
++ * identical to cuCtxGetId. cuBLASLt uses both for its kernel registry; treating
++ * the first callback as optional tooling silently disables every candidate. */
++static CUresult tools_tls_current_context(CUcontext *context) {
++    if (!gx_real_cudnn_enabled()) return CUDA_ERROR_NOT_SUPPORTED;
++    if (!context) return CUDA_ERROR_INVALID_VALUE;
++    return cuCtxGetCurrent(context);
++}
+ static const void *tools_tls_interface[4] = {
+     [0] = (const void *)(uintptr_t)(4 * sizeof(void *)),
++    [2] = (const void *)tools_tls_current_context,
++};
++static const unsigned char kContextIdentityUuid[16] = {
++    0x21, 0x31, 0x8c, 0x60, 0x97, 0x14, 0x32, 0x48,
++    0x8c, 0xa6, 0x41, 0xff, 0x73, 0x24, 0xc8, 0xf2,
++};
++static CUresult context_identity_unsupported(void) {
++    return CUDA_ERROR_NOT_SUPPORTED;
++}
++/* Advertise only the verified prefix, not the driver's other 88 callbacks. */
++static const void *context_identity_interface[5] = {
++    [0] = (const void *)(uintptr_t)(5 * sizeof(void *)),
++    [1] = (const void *)context_identity_unsupported,
++    [2] = (const void *)context_identity_unsupported,
++    [3] = (const void *)context_identity_unsupported,
++    [4] = (const void *)cuCtxGetId,
+ };
+ 
+ static const void *context_local_storage_interface[4] = {
+@@ -501,6 +527,11 @@
+         *ppExportTable = cudart_interface;
+         return CUDA_SUCCESS;
+     }
++    if (gx_real_cudnn_enabled() &&
++        memcmp(pExportTableId->bytes, kContextIdentityUuid, sizeof(kContextIdentityUuid)) == 0) {
++        *ppExportTable = context_identity_interface;
++        return CUDA_SUCCESS;
++    }
+     if (memcmp(pExportTableId->bytes, kToolsTlsUuid,
+                sizeof(kToolsTlsUuid)) == 0) {
+         *ppExportTable = tools_tls_interface;
+@@ -640,6 +671,13 @@
+ }
+ 
+ CUresult cuCtxGetCurrent(CUcontext *pctx){
++    if (gx_real_cudnn_enabled() && !thread_ctx) {
++        CUcontext primary = NULL;
++        CUresult status = cudart_get_primary_context(&primary, _device);
++        if (status != CUDA_SUCCESS) return status;
++        thread_ctx = (EmuHandle*)primary;
++    }
++
+     ENTRY_PRINT_FEMU;
+     if (!thread_ctx) {
+         // Lazily create a context on the current device if none exists
+@@ -698,7 +736,27 @@
+     return 0;
+ }
+ 
++typedef struct gx_ctx_stack_entry {
++    EmuHandle *previous;
++    int device;
++    struct gx_ctx_stack_entry *next;
++} gx_ctx_stack_entry;
++static __thread gx_ctx_stack_entry *gx_context_stack;
++
+ CUresult cuCtxPushCurrent_v2(CUcontext ctx){
++    if (gx_real_cudnn_enabled()) {
++        if (!ctx) return CUDA_ERROR_INVALID_CONTEXT;
++        gx_ctx_stack_entry *entry = malloc(sizeof(*entry));
++        if (!entry) return CUDA_ERROR_OUT_OF_MEMORY;
++        entry->previous = thread_ctx;
++        entry->device = _device;
++        entry->next = gx_context_stack;
++        gx_context_stack = entry;
++        thread_ctx = (EmuHandle*)ctx;
++        _device = thread_ctx->dev;
++        return CUDA_SUCCESS;
++    }
++
+     ENTRY_PRINT_FEMU;
+     // Simple implementation - just set as current
+     thread_ctx = (EmuHandle*)ctx;
+@@ -709,6 +767,17 @@
+ }
+ 
+ CUresult cuCtxPopCurrent_v2(CUcontext *pctx){
++    if (gx_real_cudnn_enabled() && gx_context_stack) {
++        if (!pctx) return CUDA_ERROR_INVALID_VALUE;
++        *pctx = (CUcontext)thread_ctx;
++        gx_ctx_stack_entry *entry = gx_context_stack;
++        thread_ctx = entry->previous;
++        _device = entry->device;
++        gx_context_stack = entry->next;
++        free(entry);
++        return CUDA_SUCCESS;
++    }
++
+     ENTRY_PRINT_FEMU;
+     if (pctx) {
+         *pctx = (CUcontext)thread_ctx;
+--- /dev/null
++++ b/src/sims/gpu/include/light/cudnn_passthrough.h
+@@ -0,0 +1,40 @@
++#pragma once
++#include <dlfcn.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++
++/* Opt in only when the installed cuDNN library is the profiled build. */
++static inline int gx_real_cudnn_enabled(void) {
++    const char *value = getenv("GX_REAL_CUDNN");
++    return value && strcmp(value, "1") == 0;
++}
++
++extern void *(*orig_dlopen)(const char *, int);
++static inline void *gx_real_cudnn_symbol(const char *name) {
++    /* Bypass GX's dlopen replacement only for cuDNN host code. RTLD_DEEPBIND
++       is deliberately absent: CUDA calls must keep resolving through GX. */
++    void *handle = orig_dlopen("libcudnn.so.9", RTLD_LAZY | RTLD_LOCAL);
++    void *symbol = handle ? dlsym(handle, name) : NULL;
++    if (!symbol) {
++        fprintf(stderr, "GX_REAL_CUDNN: cannot resolve %s: %s\n", name, dlerror());
++        abort();
++    }
++    /* dlclose balances the lookup reference; PyTorch retains cuDNN itself. */
++    dlclose(handle);
++    return symbol;
++}
++
++/* Batched cuBLAS calls must execute real host dispatch: the default GX stubs
++ * omit T5's attention kernels entirely. CUDA launches still resolve to GX. */
++static inline void *gx_real_cublas_symbol(const char *name) {
++    void *handle = orig_dlopen("libcublas.so.12", RTLD_LAZY | RTLD_LOCAL);
++    void *symbol = handle ? dlsym(handle, name) : NULL;
++    if (!symbol) {
++        fprintf(stderr, "GX_REAL_CUDNN: cannot resolve cuBLAS %s: %s\n", name, dlerror());
++        abort();
++    }
++    dlclose(handle);
++    return symbol;
++}
++extern void *gx_real_cublas_handle(void *handle);
+--- a/src/profile/gx_profile.cc
++++ b/src/profile/gx_profile.cc
+@@ -290,6 +290,7 @@
+   int64_t database_id = 0;
+   uint32_t attempted = 0;
+   uint32_t recorded = 0;
++  uint64_t observed = 0;
+ };
+ 
+ struct State {
+@@ -336,6 +337,8 @@
+ }
+ 
+ bool profiling_enabled() {
++  static const std::string stop_file = env_or("GX_PROFILE_STOP_FILE");
++  if (!stop_file.empty() && access(stop_file.c_str(), F_OK) == 0) return false;
+   static const std::string start_file = env_or("GX_PROFILE_START_FILE");
+   static std::atomic<bool> active{start_file.empty()};
+   if (active.load(std::memory_order_acquire)) return true;
+@@ -708,6 +711,7 @@
+   SignatureState &entry = state.signatures[key];
+   if (entry.database_id == 0)
+     entry.database_id = ensure_signature_locked(key, name, api, shape);
++  if (entry.database_id != 0) ++entry.observed;
+   uint32_t limit = state.warmup_samples + state.samples_per_signature;
+   if (entry.database_id == 0 || entry.attempted >= limit) return false;
+   ++entry.attempted;
+@@ -1758,6 +1762,18 @@
+ void close_profiler() {
+   std::lock_guard<std::mutex> lock(state.mutex);
+   if (state.db != nullptr) {
++    sql_exec("CREATE TABLE IF NOT EXISTS observed_launches(run_id INTEGER, kernel_id INTEGER, count INTEGER, PRIMARY KEY(run_id,kernel_id));");
++    sqlite3_stmt *statement = nullptr;
++    if (sqlite3_prepare_v2(state.db, "INSERT OR REPLACE INTO observed_launches VALUES(?,?,?);", -1, &statement, nullptr) == SQLITE_OK) {
++      for (const auto &item : state.signatures) {
++        if (!item.second.database_id) continue;
++        sqlite3_bind_int64(statement, 1, state.run_id);
++        sqlite3_bind_int64(statement, 2, item.second.database_id);
++        sqlite3_bind_int64(statement, 3, item.second.observed);
++        sqlite3_step(statement); sqlite3_reset(statement);
++      }
++      sqlite3_finalize(statement);
++    }
+     if (state.transaction_open) {
+       sql_exec("COMMIT;");
+       state.transaction_open = false;
+@@ -1949,9 +1965,9 @@
+                                       void **extra) {
+   static DriverLaunchEx original = driver_symbol<DriverLaunchEx>("cuLaunchKernelEx");
+   if (original == nullptr) return CUDA_ERROR_NOT_FOUND;
+-  /* GXVM owns NCCL/communication timing.  This path is predominantly used by
+-   * NCCL in the target stack, so keep it out of the compute predictor DB. */
+-  return original(config, function, arguments, extra);
++  if (profile_depth != 0 || config == nullptr)
++    return original(config, function, arguments, extra);
++  return measure_driver_ex(original, "cuLaunchKernelEx", config, function, arguments, extra);
+ }
+ 
+ extern "C" CUresult cuLaunchKernelEx_ptsz(const CUlaunchConfig *config,
+@@ -1960,21 +1976,38 @@
+   static DriverLaunchEx original =
+       driver_symbol<DriverLaunchEx>("cuLaunchKernelEx_ptsz");
+   if (original == nullptr) return CUDA_ERROR_NOT_FOUND;
+-  return original(config, function, arguments, extra);
+-}
+-
++  if (profile_depth != 0 || config == nullptr)
++    return original(config, function, arguments, extra);
++  return measure_driver_ex(original, "cuLaunchKernelEx_ptsz", config, function, arguments, extra);
++}
++
++/* A runtime can resolve cuGetProcAddress through cuGetProcAddress itself.
++ * Preserve interception through that bootstrap, including its versioned ABI. */
++extern "C" CUresult cuGetProcAddress(const char *, void **, int, cuuint64_t);
++extern "C" CUresult cuGetProcAddress_v2(const char *, void **, int, cuuint64_t,
++                                       CUdriverProcAddressQueryResult *);
+ namespace {
+ 
+ void substitute_driver_launch(const char *symbol, cuuint64_t flags,
+-                              void **function) {
++                              void **function, int cuda_version) {
+   if (symbol == nullptr || function == nullptr || *function == nullptr) return;
+   const bool per_thread =
+       (flags & CU_GET_PROC_ADDRESS_PER_THREAD_DEFAULT_STREAM) != 0;
+-  if (std::strcmp(symbol, "cuLaunchKernel") == 0) {
++  if (std::strcmp(symbol, "cuGetProcAddress") == 0) {
++    *function = cuda_version >= 12000
++        ? reinterpret_cast<void *>(&cuGetProcAddress_v2)
++        : reinterpret_cast<void *>(&cuGetProcAddress);
++  } else if (std::strcmp(symbol, "cuGetProcAddress_v2") == 0) {
++    *function = reinterpret_cast<void *>(&cuGetProcAddress_v2);
++  } else if (std::strcmp(symbol, "cuLaunchKernel") == 0) {
+     *function = reinterpret_cast<void *>(
+         per_thread ? &cuLaunchKernel_ptsz : &cuLaunchKernel);
+   } else if (std::strcmp(symbol, "cuLaunchKernel_ptsz") == 0) {
+     *function = reinterpret_cast<void *>(&cuLaunchKernel_ptsz);
++  } else if (std::strcmp(symbol, "cuLaunchKernelEx") == 0) {
++    *function = reinterpret_cast<void *>(per_thread ? &cuLaunchKernelEx_ptsz : &cuLaunchKernelEx);
++  } else if (std::strcmp(symbol, "cuLaunchKernelEx_ptsz") == 0) {
++    *function = reinterpret_cast<void *>(&cuLaunchKernelEx_ptsz);
+   }
+ }
+ 
+@@ -1989,7 +2022,7 @@
+       driver_symbol<Resolver>("cuGetProcAddress_v2");
+   if (original == nullptr) return CUDA_ERROR_NOT_FOUND;
+   CUresult result = original(symbol, function, cuda_version, flags, status);
+-  if (result == CUDA_SUCCESS) substitute_driver_launch(symbol, flags, function);
++  if (result == CUDA_SUCCESS) substitute_driver_launch(symbol, flags, function, cuda_version);
+   return result;
+ }
+ 
+@@ -1999,7 +2032,7 @@
+   static Resolver original = driver_symbol<Resolver>("cuGetProcAddress");
+   if (original == nullptr) return CUDA_ERROR_NOT_FOUND;
+   CUresult result = original(symbol, function, cuda_version, flags);
+-  if (result == CUDA_SUCCESS) substitute_driver_launch(symbol, flags, function);
++  if (result == CUDA_SUCCESS) substitute_driver_launch(symbol, flags, function, cuda_version);
+   return result;
+ }
+ 
+@@ -2012,7 +2045,7 @@
+       next_symbol<Resolver>("cudaGetDriverEntryPoint");
+   if (original == nullptr) return cudaErrorSharedObjectSymbolNotFound;
+   cudaError_t result = original(symbol, function, flags, status);
+-  if (result == cudaSuccess) substitute_driver_launch(symbol, flags, function);
++  if (result == cudaSuccess) substitute_driver_launch(symbol, flags, function, CUDART_VERSION);
+   return result;
+ }
+ 
+@@ -2026,23 +2059,31 @@
+       next_symbol<Resolver>("cudaGetDriverEntryPointByVersion");
+   if (original == nullptr) return cudaErrorSharedObjectSymbolNotFound;
+   cudaError_t result = original(symbol, function, cuda_version, flags, status);
+-  if (result == cudaSuccess) substitute_driver_launch(symbol, flags, function);
++  if (result == cudaSuccess) substitute_driver_launch(symbol, flags, function, cuda_version);
+   return result;
+ }
+ 
+ /* CuPy's SoftLink uses ctypes.CDLL(libcuda).<symbol>, which resolves through
+  * dlsym on an explicit libcuda handle.  Ordinary ELF interposition and the
+  * CUDA entry-point resolver hooks above do not see that path.  Substitute only
+- * the non-Ex Driver launch functions; attributed/Ex launches remain pass-
+- * through because communication timing is outside the compute predictor. */
++ * launch functions and resolver functions. Communication kernels remain
++ * excluded by name, while extended compute launches must be measured. */
+ extern "C" void *dlsym(void *handle, const char *symbol) {
+   void *resolved = raw_dlsym(handle, symbol);
+-  if (resolved == nullptr || handle == RTLD_NEXT || profile_depth != 0)
++  if (resolved == nullptr || handle == RTLD_NEXT)
+     return resolved;
+   if (std::strcmp(symbol, "cuLaunchKernel") == 0)
+     return reinterpret_cast<void *>(&cuLaunchKernel);
+   if (std::strcmp(symbol, "cuLaunchKernel_ptsz") == 0)
+     return reinterpret_cast<void *>(&cuLaunchKernel_ptsz);
++  if (std::strcmp(symbol, "cuGetProcAddress") == 0)
++    return reinterpret_cast<void *>(&cuGetProcAddress);
++  if (std::strcmp(symbol, "cuGetProcAddress_v2") == 0)
++    return reinterpret_cast<void *>(&cuGetProcAddress_v2);
++  if (std::strcmp(symbol, "cuLaunchKernelEx") == 0)
++    return reinterpret_cast<void *>(&cuLaunchKernelEx);
++  if (std::strcmp(symbol, "cuLaunchKernelEx_ptsz") == 0)
++    return reinterpret_cast<void *>(&cuLaunchKernelEx_ptsz);
+   if (std::strcmp(symbol, "cudaFuncGetAttributes") == 0)
+     return reinterpret_cast<void *>(&cudaFuncGetAttributes);
+   if (std::strcmp(symbol, "cudaFuncSetAttribute") == 0)
+--- a/src/sims/gpu/emu/device.c
++++ b/src/sims/gpu/emu/device.c
+@@ -2,6 +2,7 @@
+ // Copyright (c) 2026 The GX Project Authors
+ 
+ #define _GNU_SOURCE
++#include <light/cudnn_passthrough.h>
+ 
+ // CUDA device-management interposer for the GX GPU emulator.
+ //
+@@ -287,8 +288,38 @@
+     return CUDA_SUCCESS;
+ }
+ 
++static pthread_once_t gx_device_attributes_once = PTHREAD_ONCE_INIT;
++static struct { int valid; int status; int value; } gx_measured_attributes[256];
++static void gx_load_device_attributes(void) {
++    const char *path = getenv("GX_CUDA_DEVICE_ATTRIBUTES");
++    FILE *file = path && *path ? fopen(path, "r") : NULL;
++    if (!file) {
++        fprintf(stderr,"GX_REAL_CUDNN: GX_CUDA_DEVICE_ATTRIBUTES must name measured driver attributes\n");
++        abort();
++    }
++    unsigned int key; int status, value;
++    while (fscanf(file, "%u %d %d", &key, &status, &value) == 3) {
++        if (key >= 256 || gx_measured_attributes[key].valid) abort();
++        gx_measured_attributes[key].valid = 1;
++        gx_measured_attributes[key].status = status;
++        gx_measured_attributes[key].value = value;
++    }
++    if (!feof(file)) abort();
++    fclose(file);
++}
+ CUresult cuDeviceGetAttribute(int *pi, CUdevice_attribute attrib, CUdevice dev)
+ {
++    if (gx_real_cudnn_enabled()) {
++        if (!pi) return CUDA_ERROR_INVALID_VALUE;
++        if (dev < 0 || dev >= physical_device_cnt) return CUDA_ERROR_INVALID_DEVICE;
++        pthread_once(&gx_device_attributes_once, gx_load_device_attributes);
++        if ((unsigned)attrib >= 256 || !gx_measured_attributes[attrib].valid)
++            return CUDA_ERROR_INVALID_VALUE;
++        if (gx_measured_attributes[attrib].status == CUDA_SUCCESS)
++            *pi = gx_measured_attributes[attrib].value;
++        return (CUresult)gx_measured_attributes[attrib].status;
++    }
++
+     ENTRY_PRINT_FEMU;
+     
+     if (!pi) return CUDA_ERROR_INVALID_VALUE;
+--- a/src/sims/gpu/cuda_intercept/cublas_intercept.c
++++ b/src/sims/gpu/cuda_intercept/cublas_intercept.c
+@@ -1,6 +1,7 @@
+ // Auto-generated CUBLAS API interceptor
+ #define _GNU_SOURCE
+ #include <dlfcn.h>
++#include <light/cudnn_passthrough.h>
+ #include <light/log.h>
+ #include <light/common.h>
+ #include <light/cuda_orig.h>
+@@ -1928,6 +1929,13 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasDestroy_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasDestroy_v2");
++        cublasStatus_t status = real((cublasHandle_t)gx_real_cublas_handle(handle));
++        if (status == CUBLAS_STATUS_SUCCESS) free(handle);
++        return status;
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasDestroy_v2) {
+@@ -3174,6 +3182,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGemmBatchedEx) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGemmBatchedEx");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGemmBatchedEx) {
+@@ -3188,6 +3201,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGemmBatchedEx_64) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGemmBatchedEx_64");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), transa, transb, m, n, k, alpha, Aarray, Atype, lda, Barray, Btype, ldb, beta, Carray, Ctype, ldc, batchCount, computeType, algo);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGemmBatchedEx_64) {
+@@ -3244,6 +3262,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGemmStridedBatchedEx) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGemmStridedBatchedEx");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGemmStridedBatchedEx) {
+@@ -3258,6 +3281,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGemmStridedBatchedEx_64) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGemmStridedBatchedEx_64");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), transa, transb, m, n, k, alpha, A, Atype, lda, strideA, B, Btype, ldb, strideB, beta, C, Ctype, ldc, strideC, batchCount, computeType, algo);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGemmStridedBatchedEx_64) {
+@@ -3272,6 +3300,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetAtomicsMode) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetAtomicsMode");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetAtomicsMode) {
+@@ -3300,6 +3333,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetMathMode) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetMathMode");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetMathMode) {
+@@ -3370,6 +3408,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetPointerMode_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetPointerMode_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetPointerMode_v2) {
+@@ -3398,6 +3441,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetSmCountTarget) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetSmCountTarget");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), smCountTarget);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetSmCountTarget) {
+@@ -3412,6 +3460,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetStream_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetStream_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), streamId);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetStream_v2) {
+@@ -3482,6 +3535,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasGetVersion_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasGetVersion_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), version);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasGetVersion_v2) {
+@@ -4126,6 +4184,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetAtomicsMode) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetAtomicsMode");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasSetAtomicsMode) {
+@@ -4210,6 +4273,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetPointerMode_v2) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetPointerMode_v2");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), mode);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasSetPointerMode_v2) {
+@@ -4224,6 +4292,11 @@
+     ENTRY_PRINT;
+     #ifdef FEMU
+     ENTRY_PRINT_ORIG;
++    if (gx_real_cudnn_enabled()) {
++        static __typeof__(&cublasSetSmCountTarget) real;
++        if (!real) real = gx_real_cublas_symbol("cublasSetSmCountTarget");
++        return real((cublasHandle_t)gx_real_cublas_handle(handle), smCountTarget);
++    }
+     return CUBLAS_STATUS_SUCCESS;
+ #else
+     if (!original_cublasSetSmCountTarget) {
+--- a/src/sims/gpu/emu/emulator.cc
++++ b/src/sims/gpu/emu/emulator.cc
+@@ -664,6 +664,13 @@
+ }
+ 
+ static double trace_now_us() {
++    // Stream bookkeeping may execute outside translated application code.
++    // A libc clock wrapper can therefore alternate between host and virtual
++    // time even within one task. Read the shared simulation clock explicitly.
++    // Setup remains host-timed; the caller synchronizes before adoption.
++    uint64_t logical_ns = 0;
++    if (gx_gpu_timing_clock_now(&logical_ns))
++        return static_cast<double>(logical_ns) / 1000.0;
+     return static_cast<double>(read_vts()) / 1000.0;
+ }
+ 
+@@ -923,7 +930,8 @@
+         file << "\n";
+     }
+     file << "  ],\n";
+-    file << "  \"displayTimeUnit\": \"ms\"\n";
++    file << "  \"displayTimeUnit\": \"ms\",\n";
++    file << "  \"gxClock\": \"host_before_adoption_logical_after_adoption\"\n";
+     file << "}\n";
+     file.close();
+ 
+@@ -1848,10 +1856,6 @@
+     {
+         std::lock_guard<std::mutex> event_lock(event_info->event_mutex);
+         is_complete = (event_info->completed_generation >= event_info->current_generation);
+-        if (is_complete && event_info->timeline_record_task_id) {
+-            gx_timeline_sync(0, event_info->timeline_record_task_id, false);
+-            gx_timeline_resume();
+-        }
+     }
+     LOG(LOG_DEBUG, "Event %p query result: %s", event_handle, is_complete ? "COMPLETE" : "NOT_COMPLETE");
+     
+@@ -1935,7 +1939,7 @@
+     event_info->pending_tasks = 1;
+     // Allocate the identity before publishing event_info in cuda_events.
+     const uint64_t timeline_event_id = next_trace_task_id.fetch_add(1, std::memory_order_relaxed);
+-    event_info->timeline_record_task_id = gx_timeline_enabled() ? timeline_event_id : 0;
++    event_info->timeline_record_task_id = timeline_event_id;
+ 
+     uint64_t seq_id;
+     {
+@@ -2100,8 +2104,6 @@
+             // LOG(LOG_DEBUG, "Stream %p query: NOT_READY (has pending tasks in queue)", stream);
+             return false;
+         }
+-        gx_timeline_sync(processor->processor_id, 0, false);
+-        gx_timeline_resume();
+     }
+ 
+     LOG(LOG_DEBUG, "Stream %p query: READY", stream);

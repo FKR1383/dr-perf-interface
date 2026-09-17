@@ -1,0 +1,57 @@
+--- a/Cython/Compiler/UtilityCode.py
++++ b/Cython/Compiler/UtilityCode.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import Cython
+ from .TreeFragment import parse_from_strings, StringParseContext
+ from .Scanning import FileSourceDescriptor
+@@ -83,27 +84,28 @@
+         #    while the generated node trees can be altered in the compilation of a
+         #    single file.
+         # Hence, delay any processing until later.
+-        context_types = {}
+-        if context is not None:
+-            from .PyrexTypes import BaseType
+-            for key, value in context.items():
+-                if isinstance(value, BaseType):
+-                    context[key] = key
+-                    context_types[key] = value
+-            impl = Code.sub_tempita(impl, context, file, name)
+-        self.impl = impl
+-        self.name = name
+-        self.file = file
+-        self.prefix = prefix
+-        self.requires = requires or []
+-        self.from_scope = from_scope
+-        self.outer_module_scope = outer_module_scope
+-        if outer_module_scope is not None:
+-            # Inherit some global directives from the module scope.
+-            compiler_directives = self.filter_inherited_directives(
+-                outer_module_scope.global_scope().directives, compiler_directives)
+-        self.compiler_directives = compiler_directives
+-        self.context_types = context_types
++        with perfmark.region("lt-236"):
++            context_types = {}
++            if context is not None:
++                from .PyrexTypes import BaseType
++                for key, value in context.items():
++                    if isinstance(value, BaseType):
++                        context[key] = key
++                        context_types[key] = value
++                impl = Code.sub_tempita(impl, context, file, name)
++            self.impl = impl
++            self.name = name
++            self.file = file
++            self.prefix = prefix
++            self.requires = requires or []
++            self.from_scope = from_scope
++            self.outer_module_scope = outer_module_scope
++            if outer_module_scope is not None:
++                # Inherit some global directives from the module scope.
++                compiler_directives = self.filter_inherited_directives(
++                    outer_module_scope.global_scope().directives, compiler_directives)
++            self.compiler_directives = compiler_directives
++            self.context_types = context_types
+ 
+     def __eq__(self, other):
+         if isinstance(other, CythonUtilityCode):

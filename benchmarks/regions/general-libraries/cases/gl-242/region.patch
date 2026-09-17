@@ -1,0 +1,55 @@
+--- a/pathspec/util.py
++++ b/pathspec/util.py
+@@ -2,6 +2,7 @@
+ This module provides utility methods for dealing with path-specs.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ import os
+ import os.path
+@@ -153,25 +154,26 @@
+ 	"""
+ 	all_files = files if isinstance(files, Collection) else list(files)
+ 	return_files: dict[str, MatchDetail] = {}
+-	for pattern in patterns:
+-		if pattern.include is not None:
+-			result_files = pattern.match(all_files)  # TODO: Replace with `.match_file()`.
+-			if pattern.include:
+-				# Add files and record pattern.
+-				for result_file in result_files:
+-					if result_file in return_files:
+-						# We know here that .patterns is a list, because we made it here
+-						if all_matches:
+-							return_files[result_file].patterns.append(pattern)  # type: ignore[attr-defined]
++	with perfmark.region("gl-242"):
++		for pattern in patterns:
++			if pattern.include is not None:
++				result_files = pattern.match(all_files)  # TODO: Replace with `.match_file()`.
++				if pattern.include:
++					# Add files and record pattern.
++					for result_file in result_files:
++						if result_file in return_files:
++							# We know here that .patterns is a list, because we made it here
++							if all_matches:
++								return_files[result_file].patterns.append(pattern)  # type: ignore[attr-defined]
++							else:
++								return_files[result_file].patterns[0] = pattern  # type: ignore[index]
+ 						else:
+-							return_files[result_file].patterns[0] = pattern  # type: ignore[index]
+-					else:
+-						return_files[result_file] = MatchDetail([pattern])
+-
+-			else:
+-				# Remove files.
+-				for file in result_files:
+-					del return_files[file]
++							return_files[result_file] = MatchDetail([pattern])
++	
++				else:
++					# Remove files.
++					for file in result_files:
++						del return_files[file]
+ 
+ 	return return_files
+ 

@@ -1,0 +1,12 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -2397,7 +2397,7 @@
+     The caller should already have dealt with leading CFWS.
+ 
+     """
+-    with perfmark.region('aq-017'):
++    with perfmark.region('aq-017', input_len=len(value), input_pairs=len(value) * len(value)):
+         section = Section()
+         if not value or value[0] != '*':
+             raise errors.HeaderParseError("Expected section but found {}".format(

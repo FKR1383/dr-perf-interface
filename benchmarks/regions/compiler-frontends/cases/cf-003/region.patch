@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -6257,6 +6258,7 @@
+ 
+ NamedDecl *Sema::HandleDeclarator(Scope *S, Declarator &D,
+                                   MultiTemplateParamsArg TemplateParamLists) {
++                                    DRPERF_BENCH_REGION("cf-003");
+   // TODO: consider using NameInfo for diagnostic.
+   DeclarationNameInfo NameInfo = GetNameForDeclarator(D);
+   DeclarationName Name = NameInfo.getName();

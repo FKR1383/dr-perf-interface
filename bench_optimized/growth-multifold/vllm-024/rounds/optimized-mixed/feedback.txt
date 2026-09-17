@@ -1,0 +1,14 @@
+vllm-024 = 274.22654*incoming_count + 9552.6439 + unexplained
+  unexplained 12176.5 instr/call: _PyObject_GC_Resize+? [python3.12]
+  unexplained 1485 instr/call: PyList_Size+? [python3.12]
+  unexplained 72.833333 instr/call: _PyEval_EvalFrameDefault [python3.12]
+  unexplained 23.333333 instr/call: _PyDict_DelItem_KnownHash+? [python3.12]
+  incoming_count coefficient 102.17767: PyObject_RichCompareBool [python3.12]
+  incoming_count coefficient 78.08789: _PyObject_GC_Resize+? [python3.12]
+  incoming_count coefficient 65.182308: PyLong_AsSsize_t+? [python3.12]
+  incoming_count coefficient 14: PyList_Size+? [python3.12]
+  incoming_count coefficient 11: _PyList_Extend+? [python3.12]
+  incoming_count coefficient 4.497824: PyInit__heapq+? [python3.12]
+  incoming_count coefficient -0.28874172: PyDict_Contains+? [python3.12]
+  incoming_count coefficient -0.25657521: _PyType_Lookup [python3.12]
+gate: unexplained share exceeds 5% at an observed state

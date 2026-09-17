@@ -1,0 +1,18 @@
+--- a/include/rapidjson/document.h
++++ b/include/rapidjson/document.h
+@@ -17,6 +17,7 @@
+ 
+ /*! \file document.h */
+ 
++#include "drperf_bench_region.h"
+ #include "reader.h"
+ #include "internal/meta.h"
+ #include "internal/strfunc.h"
+@@ -2641,6 +2642,7 @@
+     */
+     template <unsigned parseFlags, typename SourceEncoding, typename InputStream>
+     GenericDocument& ParseStream(InputStream& is) {
++        DRPERF_BENCH_REGION("nl-017");
+         GenericReader<SourceEncoding, Encoding, StackAllocator> reader(
+             stack_.HasAllocator() ? &stack_.GetAllocator() : 0);
+         ClearStackOnExit scope(*this);

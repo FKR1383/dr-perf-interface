@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseAST.cpp
++++ b/clang/lib/Parse/ParseAST.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Parse/ParseAST.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -113,6 +114,7 @@
+ }
+ 
+ void clang::ParseAST(Sema &S, bool PrintStats, bool SkipFunctionBodies) {
++  DRPERF_BENCH_REGION("cf-228");
+   // Collect global stats on Decls/Stmts (until we have a module streamer).
+   if (PrintStats) {
+     Decl::EnableStatistics();

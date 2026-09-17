@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseStmt.cpp
++++ b/clang/lib/Parse/ParseStmt.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/PrettyStackTrace.h"
+@@ -2039,6 +2040,7 @@
+ /// [C++0x]   expression
+ /// [C++0x]   braced-init-list            [TODO]
+ StmtResult Parser::ParseForStatement(SourceLocation *TrailingElseLoc) {
++  DRPERF_BENCH_REGION("cf-025");
+   assert(Tok.is(tok::kw_for) && "Not a for stmt!");
+   SourceLocation ForLoc = ConsumeToken();  // eat the 'for'.
+ 

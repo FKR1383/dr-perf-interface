@@ -1,0 +1,180 @@
+--- a/pandas/core/reshape/encoding.py
++++ b/pandas/core/reshape/encoding.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import defaultdict
+ from collections.abc import (
+@@ -186,91 +187,92 @@
+         # not implemented (handled above)
+         return is_object_dtype(dtype)
+ 
+-    if isinstance(data, DataFrame):
+-        # determine columns being encoded
+-        if columns is None:
+-            mgr = data._mgr._get_data_subset(_is_encodable).copy(deep=False)
+-            data_to_encode = data._constructor_from_mgr(
+-                mgr, axes=mgr.axes
+-            ).__finalize__(data)
+-        elif not is_list_like(columns):
+-            raise TypeError("Input must be a list-like for parameter `columns`")
+-        else:
+-            data_to_encode = data[columns]
+-
+-        # validate prefixes and separator to avoid silently dropping cols
+-        def check_len(item, name: str) -> None:
+-            if is_list_like(item):
+-                if not len(item) == data_to_encode.shape[1]:
+-                    len_msg = (
+-                        f"Length of '{name}' ({len(item)}) did not match the "
+-                        "length of the columns being encoded "
+-                        f"({data_to_encode.shape[1]})."
++    with perfmark.region("gl-148"):
++        if isinstance(data, DataFrame):
++            # determine columns being encoded
++            if columns is None:
++                mgr = data._mgr._get_data_subset(_is_encodable).copy(deep=False)
++                data_to_encode = data._constructor_from_mgr(
++                    mgr, axes=mgr.axes
++                ).__finalize__(data)
++            elif not is_list_like(columns):
++                raise TypeError("Input must be a list-like for parameter `columns`")
++            else:
++                data_to_encode = data[columns]
++    
++            # validate prefixes and separator to avoid silently dropping cols
++            def check_len(item, name: str) -> None:
++                if is_list_like(item):
++                    if not len(item) == data_to_encode.shape[1]:
++                        len_msg = (
++                            f"Length of '{name}' ({len(item)}) did not match the "
++                            "length of the columns being encoded "
++                            f"({data_to_encode.shape[1]})."
++                        )
++                        raise ValueError(len_msg)
++    
++            check_len(prefix, "prefix")
++            check_len(prefix_sep, "prefix_sep")
++    
++            if isinstance(prefix, str):
++                prefix = itertools.repeat(prefix, len(data_to_encode.columns))
++            if isinstance(prefix, dict):
++                prefix = [prefix[col] for col in data_to_encode.columns]
++    
++            if prefix is None:
++                prefix = data_to_encode.columns
++    
++            # validate separators
++            if isinstance(prefix_sep, str):
++                prefix_sep = itertools.repeat(prefix_sep, len(data_to_encode.columns))
++            elif isinstance(prefix_sep, dict):
++                prefix_sep = [prefix_sep[col] for col in data_to_encode.columns]
++    
++            with_dummies: list[DataFrame]
++            if data_to_encode.shape == data.shape:
++                # Encoding the entire df, do not prepend any dropped columns
++                with_dummies = []
++            elif columns is not None:
++                # Encoding only cols specified in columns. Get all cols not in
++                # columns to prepend to result.
++                with_dummies = [data.drop(columns, axis=1)]
++            else:
++                # Encoding only object and category dtype columns. Get remaining
++                # columns to prepend to result.
++                rest_mgr = data._mgr._get_data_subset(
++                    lambda arr: not _is_encodable(arr)
++                ).copy(deep=False)
++                with_dummies = [
++                    data._constructor_from_mgr(rest_mgr, axes=rest_mgr.axes).__finalize__(
++                        data
+                     )
+-                    raise ValueError(len_msg)
+-
+-        check_len(prefix, "prefix")
+-        check_len(prefix_sep, "prefix_sep")
+-
+-        if isinstance(prefix, str):
+-            prefix = itertools.repeat(prefix, len(data_to_encode.columns))
+-        if isinstance(prefix, dict):
+-            prefix = [prefix[col] for col in data_to_encode.columns]
+-
+-        if prefix is None:
+-            prefix = data_to_encode.columns
+-
+-        # validate separators
+-        if isinstance(prefix_sep, str):
+-            prefix_sep = itertools.repeat(prefix_sep, len(data_to_encode.columns))
+-        elif isinstance(prefix_sep, dict):
+-            prefix_sep = [prefix_sep[col] for col in data_to_encode.columns]
+-
+-        with_dummies: list[DataFrame]
+-        if data_to_encode.shape == data.shape:
+-            # Encoding the entire df, do not prepend any dropped columns
+-            with_dummies = []
+-        elif columns is not None:
+-            # Encoding only cols specified in columns. Get all cols not in
+-            # columns to prepend to result.
+-            with_dummies = [data.drop(columns, axis=1)]
+-        else:
+-            # Encoding only object and category dtype columns. Get remaining
+-            # columns to prepend to result.
+-            rest_mgr = data._mgr._get_data_subset(
+-                lambda arr: not _is_encodable(arr)
+-            ).copy(deep=False)
+-            with_dummies = [
+-                data._constructor_from_mgr(rest_mgr, axes=rest_mgr.axes).__finalize__(
+-                    data
++                ]
++    
++            for col, pre, sep in zip(
++                data_to_encode.items(), prefix, prefix_sep, strict=True
++            ):
++                # col is (column_name, column), use just column data here
++                dummy = _get_dummies_1d(
++                    col[1],
++                    prefix=pre,
++                    prefix_sep=sep,
++                    dummy_na=dummy_na,
++                    sparse=sparse,
++                    drop_first=drop_first,
++                    dtype=dtype,
+                 )
+-            ]
+-
+-        for col, pre, sep in zip(
+-            data_to_encode.items(), prefix, prefix_sep, strict=True
+-        ):
+-            # col is (column_name, column), use just column data here
+-            dummy = _get_dummies_1d(
+-                col[1],
+-                prefix=pre,
+-                prefix_sep=sep,
+-                dummy_na=dummy_na,
++                with_dummies.append(dummy)
++            result = concat(with_dummies, axis=1)
++        else:
++            result = _get_dummies_1d(
++                data,
++                prefix,
++                prefix_sep,
++                dummy_na,
+                 sparse=sparse,
+                 drop_first=drop_first,
+                 dtype=dtype,
+             )
+-            with_dummies.append(dummy)
+-        result = concat(with_dummies, axis=1)
+-    else:
+-        result = _get_dummies_1d(
+-            data,
+-            prefix,
+-            prefix_sep,
+-            dummy_na,
+-            sparse=sparse,
+-            drop_first=drop_first,
+-            dtype=dtype,
+-        )
+     return result
+ 
+ 

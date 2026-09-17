@@ -1,0 +1,26 @@
+--- a/vllm/v1/core/kv_cache_manager.py
++++ b/vllm/v1/core/kv_cache_manager.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
++import perfmark
+ import itertools
+ from collections.abc import Sequence
+ from dataclasses import dataclass
+@@ -575,10 +576,11 @@
+         Args:
+             request: The request to free the blocks.
+         """
+-        pins = self._partial_tail_pins.pop(request.request_id, None)
+-        if pins:
+-            self.block_pool.free_blocks(pins)
+-        self.coordinator.free(request.request_id)
++        with perfmark.region("vllm-011"):
++            pins = self._partial_tail_pins.pop(request.request_id, None)
++            if pins:
++                self.block_pool.free_blocks(pins)
++            self.coordinator.free(request.request_id)
+ 
+     def remove_skipped_blocks(
+         self,

@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaCXXScopeSpec.cpp
++++ b/clang/lib/Sema/SemaCXXScopeSpec.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+@@ -410,6 +411,7 @@
+                                        bool ErrorRecoveryLookup,
+                                        bool *IsCorrectedToColon,
+                                        bool OnlyNamespace) {
++                                         DRPERF_BENCH_REGION("cf-014");
+   if (IdInfo.Identifier->isEditorPlaceholder())
+     return true;
+   LookupResult Found(*this, IdInfo.Identifier, IdInfo.IdentifierLoc,

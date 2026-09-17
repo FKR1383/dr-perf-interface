@@ -1,0 +1,17 @@
+# FastVideo final `partial_sync` worker result
+
+The final managed [81-frame run](/home/ubuntu/GX/NEX/build/experiments/fastvideo-partial-final-1789611575199136097/result.json) passed with an empty cleanup-error list. It uses the interop=1 [CPU IPC profile](FASTVIDEO_CPU_PROFILE.md), the matched [native GPU profile](evidence/fastvideo-native.json), and the corrected timeline client that excludes nested CUDA export instructions from CPU cost. The worker log reports `GXVM_TIMELINE_CUDA_EXCLUSION exports=1551 calls=3139800 scopes=2822846`. The [evidence manifest](evidence/fastvideo-partial.json) hashes the inputs and reports.
+
+| Marked worker generation, model time | Result |
+| --- | ---: |
+| Virtual duration | **12.066437 s** |
+| CPU work summed across worker threads | 2.609091 s |
+| GPU work and device busy | 11.752095 s |
+| GPU idle within virtual interval | 0.314342 s |
+| Modeled device busy fraction | 97.39% |
+
+The whole-capture virtual makespan is 12.364709 s. The [full timeline report](/home/ubuntu/drperf/out/causal-video/fastvideo-partial-final-report-full/summary.json) and [marked-interval screening summary](/home/ubuntu/drperf/out/causal-video/fastvideo-partial-final-screen-full.md) agree on the worker duration. These numbers exclude the FastVideo parent process's frame-grid and output assembly. Summed CPU work is not a CPU critical path; modeled GPU idle alone does not establish a CPU bottleneck. All 155,594 CPU segments were unsampled (`GXVM_TIMELINE_SAMPLE_NS=0`), so this capture cannot assign CPU cost to functions. The separate valid [worker drperf instruction profile](FASTVIDEO_DRPERF.md) measures 8.632 billion marked exclusive host instructions but does not turn them into native critical-path time.
+
+The predictor produced 106,249 hits, **84 misses**, zero errors, and zero disabled events (99.921% hit coverage). The complete [native-versus-GX launch audit](/home/ubuntu/drperf/out/causal-video/fastvideo-partial-final-kernel-audit.json) **fails**: each measured interval contains exactly 106,333 launches, but seven GX-only cuDNN signatures account for 84 missed predictions and 14 signature-count differences. There are no configuration, source-hash, package, loaded-cuDNN-DSO, matched-signature metadata, ambiguous-signature, missing-native-sample, or malformed-trace differences. The nine loaded cuDNN DSO hashes match exactly. The auditor records and removes only the managed GX NCCL and DynamoRIO library-path prefixes after verifying those hashes and the unchanged native path. The remaining 84 plan divergences are real audit failures; equal total counts are insufficient for launch fidelity.
+
+This is an **optimistic dependency-timeline estimate**, not a guaranteed hardware lower bound or a measured A100 end-to-end latency. Missed predictions and modeled copies have zero service cost; partial synchronization omits arbitrary CPU mutex, shared-memory and thread-creation dependencies. The CPU IPC database was collected on EPYC 7702P rather than the native EPYC 9554; path/page hashes and 94.77% resolved-sample coverage do not prove identical binaries, ISA dispatch, or native CPU timing. The [first FastVideo partial capture](FASTVIDEO_PARTIAL_DIAGNOSTIC.md) used a previous interop setting and had a truncated launch trace; it remains diagnostic. Its 84 prediction misses are independently observed and must not be confused with the earlier CPU-profile trace's 21 signature differences.

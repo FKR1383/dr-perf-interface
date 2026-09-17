@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -4196,6 +4197,7 @@
+ }
+ 
+ void BytecodeGenerator::VisitObjectLiteral(ObjectLiteral* expr) {
++  DRPERF_BENCH_REGION("v8-interpreter-024");
+   expr->builder()->InitDepthAndFlags();
+ 
+   // Fast path for the empty object literal which doesn't need an

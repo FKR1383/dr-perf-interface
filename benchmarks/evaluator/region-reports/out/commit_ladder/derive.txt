@@ -1,0 +1,35 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4,ladder=12,resident=0 x16, requests=4,ladder=12,resident=1 x16, requests=4,ladder=12,resident=2 x16, requests=4,ladder=12,resident=3 x16, requests=4,ladder=12,resident=4 x16, requests=4,ladder=12,resident=5 x16, requests=4,ladder=12,resident=6 x16, requests=4,ladder=12,resident=7 x16, requests=8,ladder=32,resident=0 x16, requests=8,ladder=32,resident=1 x16, requests=8,ladder=32,resident=2 x16, requests=8,ladder=32,resident=3 x16, requests=8,ladder=32,resident=4 x16, requests=8,ladder=32,resident=5 x16, requests=8,ladder=32,resident=6 x16, requests=8,ladder=32,resident=7 x16, requests=12,ladder=48,resident=0 x16, requests=12,ladder=48,resident=1 x16, requests=12,ladder=48,resident=2 x16, requests=12,ladder=48,resident=3 x16, requests=12,ladder=48,resident=4 x16, requests=12,ladder=48,resident=5 x16, requests=12,ladder=48,resident=6 x16, requests=12,ladder=48,resident=7 x16, requests=16,ladder=80,resident=0 x16, requests=16,ladder=80,resident=1 x16, requests=16,ladder=80,resident=2 x16, requests=16,ladder=80,resident=3 x16, requests=16,ladder=80,resident=4 x16, requests=16,ladder=80,resident=5 x16, requests=16,ladder=80,resident=6 x16, requests=16,ladder=80,resident=7 x16, requests=20,ladder=100,resident=0 x16, requests=20,ladder=100,resident=1 x16, requests=20,ladder=100,resident=2 x16, requests=20,ladder=100,resident=3 x16, requests=20,ladder=100,resident=4 x16, requests=20,ladder=100,resident=5 x16, requests=20,ladder=100,resident=6 x16, requests=20,ladder=100,resident=7 x16, requests=24,ladder=120,resident=0 x16, requests=24,ladder=120,resident=1 x16, requests=24,ladder=120,resident=2 x16, requests=24,ladder=120,resident=3 x16, requests=24,ladder=120,resident=4 x16, requests=24,ladder=120,resident=5 x16, requests=24,ladder=120,resident=6 x16, requests=24,ladder=120,resident=7 x16, requests=28,ladder=140,resident=0 x16, requests=28,ladder=140,resident=1 x16, requests=28,ladder=140,resident=2 x16, requests=28,ladder=140,resident=3 x16, requests=28,ladder=140,resident=4 x16, requests=28,ladder=140,resident=5 x16, requests=28,ladder=140,resident=6 x16, requests=28,ladder=140,resident=7 x16, requests=32,ladder=192,resident=0 x16, requests=32,ladder=192,resident=1 x16, requests=32,ladder=192,resident=2 x16, requests=32,ladder=192,resident=3 x16, requests=32,ladder=192,resident=4 x16, requests=32,ladder=192,resident=5 x16, requests=32,ladder=192,resident=6 x16, requests=32,ladder=192,resident=7 x16
+  cost(requests, ladder, resident) = 924.8*requests + 8.5*ladder + 1,400.6*resident + 3,667.3        [all requests, ladder, resident]   blocks: 153 affine, 518 constant, 98 irregular (63.5% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 6,891.9 .. 96,856.6
+    per-requests coefficient by function:
+               309.1  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               102.3  _int_malloc  [libc.so.6]
+                99.9  __GI___libc_malloc  [libc.so.6]
+                80.7  <hashbrown::map::HashMap<i64, (alloc::string::String, usize), std::has  [_ditto_ftl_core.abi3.so]
+                  66  <alloc::string::String as core::clone::Clone>::clone  [_ditto_ftl_core.abi3.so]
+                  46  <_ditto_ftl_core::directory::DirectoryState>::unmap_logged  [_ditto_ftl_core.abi3.so]
+    per-ladder coefficient by function:
+                 8.1  _int_malloc  [libc.so.6]
+                -2.5  malloc_consolidate  [libc.so.6]
+                 2.1  __GI___libc_malloc  [libc.so.6]
+                 1.5  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+              -0.382  unlink_chunk  [libc.so.6]
+              -0.359  <alloc::collections::btree::node::Handle<alloc::collections::btree::no  [_ditto_ftl_core.abi3.so]
+    per-resident coefficient by function:
+             1,172.7  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+                 192  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                35.9  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+    constant by function:
+               513.4  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+               469.9  _int_free  [libc.so.6]
+                 290  __realloc  [libc.so.6]
+               285.7  _int_malloc  [libc.so.6]
+               271.6  _int_realloc  [libc.so.6]
+               227.3  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+    irregular by function:
+            18,780.8  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+            14,287.9  __memcmp_avx2_movbe  [libc.so.6]
+             4,781.4  _int_malloc  [libc.so.6]
+

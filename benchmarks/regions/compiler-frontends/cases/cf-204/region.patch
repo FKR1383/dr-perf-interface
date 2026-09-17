@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -9291,6 +9292,7 @@
+                                            TypeSourceInfo *TInfo,
+                                            StorageClass SC,
+                                            bool &IsVirtualOkay) {
++                                             DRPERF_BENCH_REGION("cf-204");
+   DeclarationNameInfo NameInfo = SemaRef.GetNameForDeclarator(D);
+   DeclarationName Name = NameInfo.getName();
+ 

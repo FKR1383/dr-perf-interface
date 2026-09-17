@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-004",
+  "title": "Incremental markup parsing",
+  "language": "python",
+  "region": {
+    "symbol": "HTMLParser.goahead",
+    "start_line": 152,
+    "end_line": 269
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-004",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Feed a parser a long incomplete markup sequence and then signal end of input.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "eed827ed091c6e55f11164046d287a76e30fbc0e",
+    "path": "Lib/html/parser.py",
+    "sha256": "e94f07c7a3039811ba350fb3a4db8961d502083d875f9b0f2ff3cc8eb8ad9968"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises HTMLParser.goahead with bounded input, and verifies entry into the empty region marker."
+  }
+}

@@ -1,0 +1,89 @@
+--- a/networkx/algorithms/shortest_paths/weighted.py
++++ b/networkx/algorithms/shortest_paths/weighted.py
+@@ -1,6 +1,7 @@
+ """
+ Shortest path algorithms for weighted graphs.
+ """
++import perfmark
+ 
+ from collections import deque
+ from heapq import heappop, heappush
+@@ -2420,42 +2421,43 @@
+     finaldist = None
+     meetnode = None
+     direction = 1
+-    while fringe[0] and fringe[1]:
+-        # choose direction
+-        # direction == 0 is forward direction and direction == 1 is back
+-        direction = 1 - direction
+-        # extract closest to expand
+-        (dist, _, v) = heappop(fringe[direction])
+-        if v in dists[direction]:
+-            # Shortest path to v has already been found
+-            continue
+-        # update distance
+-        dists[direction][v] = dist  # equal to seen[direction][v]
+-        if v in dists[1 - direction]:
+-            # if we have scanned v in both directions we are done
+-            # we have now discovered the shortest path
+-            return (finaldist, path(meetnode, 0) + path(preds[1][meetnode], 1))
+-
+-        for w, d in neighbors[direction][v].items():
+-            # weight(v, w, d) for forward and weight(w, v, d) for back direction
+-            cost = weight(v, w, d) if direction == 0 else weight(w, v, d)
+-            if cost is None:
++    with perfmark.region("gl-066"):
++        while fringe[0] and fringe[1]:
++            # choose direction
++            # direction == 0 is forward direction and direction == 1 is back
++            direction = 1 - direction
++            # extract closest to expand
++            (dist, _, v) = heappop(fringe[direction])
++            if v in dists[direction]:
++                # Shortest path to v has already been found
+                 continue
+-            vwLength = dist + cost
+-            if w in dists[direction]:
+-                if vwLength < dists[direction][w]:
+-                    raise ValueError("Contradictory paths found: negative weights?")
+-            elif w not in seen[direction] or vwLength < seen[direction][w]:
+-                # relaxing
+-                seen[direction][w] = vwLength
+-                heappush(fringe[direction], (vwLength, next(c), w))
+-                preds[direction][w] = v
+-                if w in seen[1 - direction]:
+-                    # see if this path is better than the already
+-                    # discovered shortest path
+-                    finaldist_w = vwLength + seen[1 - direction][w]
+-                    if finaldist is None or finaldist > finaldist_w:
+-                        finaldist, meetnode = finaldist_w, w
++            # update distance
++            dists[direction][v] = dist  # equal to seen[direction][v]
++            if v in dists[1 - direction]:
++                # if we have scanned v in both directions we are done
++                # we have now discovered the shortest path
++                return (finaldist, path(meetnode, 0) + path(preds[1][meetnode], 1))
++    
++            for w, d in neighbors[direction][v].items():
++                # weight(v, w, d) for forward and weight(w, v, d) for back direction
++                cost = weight(v, w, d) if direction == 0 else weight(w, v, d)
++                if cost is None:
++                    continue
++                vwLength = dist + cost
++                if w in dists[direction]:
++                    if vwLength < dists[direction][w]:
++                        raise ValueError("Contradictory paths found: negative weights?")
++                elif w not in seen[direction] or vwLength < seen[direction][w]:
++                    # relaxing
++                    seen[direction][w] = vwLength
++                    heappush(fringe[direction], (vwLength, next(c), w))
++                    preds[direction][w] = v
++                    if w in seen[1 - direction]:
++                        # see if this path is better than the already
++                        # discovered shortest path
++                        finaldist_w = vwLength + seen[1 - direction][w]
++                        if finaldist is None or finaldist > finaldist_w:
++                            finaldist, meetnode = finaldist_w, w
+     raise nx.NetworkXNoPath(f"No path between {source} and {target}.")
+ 
+ 

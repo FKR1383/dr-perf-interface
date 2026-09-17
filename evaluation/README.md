@@ -20,8 +20,8 @@ Formulas, irregularity, costs, traces, and performance diagnostics are never
 sent back. The loop stops on the **first measurable set, regardless of its
 irregularity**, or at its round limit. Agent + Dr. Perf then runs independently.
 
-The initial static prompt and experimental prompt remain unchanged. Baseline
-revision invocations append only the prior proposals and measurability feedback.
+Baseline revision invocations append only the prior proposals and measurability
+feedback to the initial static prompt.
 This baseline is explicitly labelled as static reasoning with measurability
 feedback; its initial unassisted answer is preserved separately.
 
@@ -63,9 +63,12 @@ The earlier [zlib compression case study](case_studies/zlib/README.md) includes
 fixed file workloads and a separate validation step.
 
 The workload must reach the region and vary its state enough to fit a model.
-Dr. Perf supports up to four declared integer states and needs at least
-`max(3, number of states + 2)` distinct state combinations. The harness uses
-your supplied workload; it does not generate one.
+Dr. Perf has no fixed limit on the number of declared integer states. A fit needs
+at least `max(3, number of states + 2)` distinct state combinations. The collector
+retains at most 128 combinations per region, subject to its counter-memory
+budget; exceeding those limits invalidates the measurement. More features still
+require enough varied inputs. The harness uses your supplied workload; it does
+not generate one.
 
 ## Read the results
 
@@ -90,10 +93,10 @@ visible to the user, not the static author. Files and matching `result.json` key
   round budget, and stopping reason.
 - `agent_only_measurement.json`: the final candidate's measurement, or failure.
 
-The initial answer may still contain any number of features. If a candidate
-exceeds four states, has labels too long for Dr. Perf, or cannot be faithfully
-exposed as integer entry state, the service reports that limitation. The author
-can revise its proposal; the harness never drops or substitutes features for
+Both competitors may propose any number of features. If a candidate has labels
+too long for Dr. Perf or cannot be faithfully exposed as integer entry state,
+the service reports that limitation. The author can revise its proposal; the
+harness never drops or substitutes features for
 it. Each candidate stays frozen while it is being checked. If the loop exhausts
 its budget, formula and score remain `null` (`n/a`) with a reason. An execution
 or tool failure ends the loop without treating it as evidence about cost
@@ -161,6 +164,22 @@ for the next candidate. Calls with identical declared states are averaged, and
 the current fitter only splits one-variable models into regimes. Meeting the
 target describes the measured fit; it does not prove per-call accuracy or
 identify a unique correct variable set.
+
+Both competitors use the same checked-out Dr. Perf engine and measurement scope.
+The fitter accepts valid negative intercepts, such as `a*(depth-1)`; a negative
+constant alone is not evidence of curvature. Results from the earlier fitter,
+which rejected sufficiently negative intercepts, are not directly comparable.
+Rebuild after updating the engine, record the revision with your results, and
+rerun both competitors when comparing versions. Keep `DRPERF_EXCLUDE_CUDA_MODULE`
+and `DRPERF_FOLLOW_THREADS` identical across compared runs; these optional controls
+change which instructions are counted. Their effective scope is recorded in the
+raw Dr. Perf output.
+
+The [source-region collection](../benchmarks/README.md) supplies targets for
+discovery. Its [pilot protocol](../benchmarks/PIPELINE_DESIGN.md) compares timing
+feedback with timing plus Dr. Perf and permits input changes. This harness uses
+the fixed supplied workload and a static baseline with measurability feedback;
+these are separate evaluation protocols, and their scores should not be pooled.
 
 ## Options
 

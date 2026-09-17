@@ -1,0 +1,68 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -66,6 +66,7 @@
+ 
+ XXX: provide complete list of token types.
+ """
++import perfmark
+ 
+ import re
+ import sys
+@@ -1433,31 +1434,32 @@
+     even the obsolete grammar.
+ 
+     """
+-    phrase = Phrase()
+-    try:
+-        token, value = get_word(value)
+-        phrase.append(token)
+-    except errors.HeaderParseError:
+-        phrase.defects.append(errors.InvalidHeaderDefect(
+-            "phrase does not start with word"))
+-    while value and value[0] not in PHRASE_ENDS:
+-        if value[0]=='.':
+-            phrase.append(DOT)
+-            phrase.defects.append(errors.ObsoleteHeaderDefect(
+-                "period in 'phrase'"))
+-            value = value[1:]
+-        else:
+-            try:
+-                token, value = get_word(value)
+-            except errors.HeaderParseError:
+-                if value[0] in CFWS_LEADER:
+-                    token, value = get_cfws(value)
+-                    phrase.defects.append(errors.ObsoleteHeaderDefect(
+-                        "comment found without atom"))
+-                else:
+-                    raise
++    with perfmark.region('aq-011'):
++        phrase = Phrase()
++        try:
++            token, value = get_word(value)
+             phrase.append(token)
+-    return phrase, value
++        except errors.HeaderParseError:
++            phrase.defects.append(errors.InvalidHeaderDefect(
++                "phrase does not start with word"))
++        while value and value[0] not in PHRASE_ENDS:
++            if value[0]=='.':
++                phrase.append(DOT)
++                phrase.defects.append(errors.ObsoleteHeaderDefect(
++                    "period in 'phrase'"))
++                value = value[1:]
++            else:
++                try:
++                    token, value = get_word(value)
++                except errors.HeaderParseError:
++                    if value[0] in CFWS_LEADER:
++                        token, value = get_cfws(value)
++                        phrase.defects.append(errors.ObsoleteHeaderDefect(
++                            "comment found without atom"))
++                    else:
++                        raise
++                phrase.append(token)
++        return phrase, value
+ 
+ def get_local_part(value):
+     """ local-part = dot-atom / quoted-string / obs-local-part

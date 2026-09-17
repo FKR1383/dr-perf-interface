@@ -1,0 +1,20 @@
+--- a/numpy/_core/records.py
++++ b/numpy/_core/records.py
+@@ -1,6 +1,7 @@
+ """
+ This module contains a set of functions for record arrays.
+ """
++import perfmark
+ import os
+ import warnings
+ from collections import Counter
+@@ -615,7 +616,8 @@
+               dtype=[('a', '<i4'), ('b', 'S3'), ('c', '<f4')])
+     """
+ 
+-    arrayList = [sb.asarray(x) for x in arrayList]
++    with perfmark.region("gl-126"):
++        arrayList = [sb.asarray(x) for x in arrayList]
+ 
+     # NumPy 1.19.0, 2020-01-01
+     shape = _deprecate_shape_0_as_None(shape)

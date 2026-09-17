@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-166",
+  "title": "jinja Environment.__init__ body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pallets/jinja",
+    "revision": "5ef70112a1ff19c05324ff889dd30405b1002044",
+    "path": "src/jinja2/environment.py",
+    "snapshot": "../../upstream/jinja/src/jinja2/environment.py",
+    "sha256": "31b30f0d9bf368eff55fe1a908f57d1a52f27ddf94ac9d37ade0351abc2f2b53"
+  },
+  "region": {
+    "symbol": "Environment.__init__",
+    "start_line": 332,
+    "end_line": 369,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-166",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise Environment.__init__ with bounded, varied jinja inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "jinja:src/jinja2/environment.py:Environment.__init__",
+  "citations": [
+    "https://github.com/pallets/jinja/blob/5ef70112a1ff19c05324ff889dd30405b1002044/src/jinja2/environment.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

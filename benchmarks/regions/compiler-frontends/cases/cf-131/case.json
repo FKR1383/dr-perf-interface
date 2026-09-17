@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-131",
+  "title": "Driver::BuildJobsForActionNoCache compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Driver/Driver.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Driver/Driver.cpp",
+    "sha256": "d3265329cc452c1ab5d6e6828be6a074fc100776a4c46956ed9c0d677d5dd5cf"
+  },
+  "region": {
+    "symbol": "Driver::BuildJobsForActionNoCache",
+    "start_line": 5726,
+    "end_line": 6007,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-131",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Driver/Driver.cpp:Driver::BuildJobsForActionNoCache",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Driver/Driver.cpp#L5726-L6007"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "313bab165be8de3ba4cc7018b66da518c93725fb65d606f745cbd1a16c0f7ebb",
+      "patch_sha256": "780427fc76fc0f519dcad6845274a302d071016de1162a37f2792c5f7061a052"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

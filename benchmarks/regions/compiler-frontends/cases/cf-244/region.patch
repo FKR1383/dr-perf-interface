@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -6168,6 +6169,7 @@
+ }
+ 
+ void ASTWriter::WriteDeclAndTypes(ASTContext &Context) {
++  DRPERF_BENCH_REGION("cf-244");
+   // Keep writing types, declarations, and declaration update records
+   // until we've emitted all of them.
+   RecordData DeclUpdatesOffsetsRecord;

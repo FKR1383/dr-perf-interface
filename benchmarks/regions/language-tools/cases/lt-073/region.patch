@@ -1,0 +1,57 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1364,26 +1365,27 @@
+         start: int | None = None,
+         end: int | None = None,
+     ) -> E:
+-        if isinstance(other, Token):
+-            meta = self.meta
+-            meta["line"] = other.line
+-            meta["col"] = other.col
+-            meta["start"] = other.start
+-            meta["end"] = other.end
+-        elif other is not None:
+-            other_meta = other._meta
+-            if other_meta:
++        with perfmark.region("lt-073"):
++            if isinstance(other, Token):
+                 meta = self.meta
+-                for k in POSITION_META_KEYS:
+-                    if k in other_meta:
+-                        meta[k] = other_meta[k]
+-        else:
+-            meta = self.meta
+-            meta["line"] = line
+-            meta["col"] = col
+-            meta["start"] = start
+-            meta["end"] = end
+-        return self
++                meta["line"] = other.line
++                meta["col"] = other.col
++                meta["start"] = other.start
++                meta["end"] = other.end
++            elif other is not None:
++                other_meta = other._meta
++                if other_meta:
++                    meta = self.meta
++                    for k in POSITION_META_KEYS:
++                        if k in other_meta:
++                            meta[k] = other_meta[k]
++            else:
++                meta = self.meta
++                meta["line"] = line
++                meta["col"] = col
++                meta["start"] = start
++                meta["end"] = end
++            return self
+ 
+     def as_(
+         self,

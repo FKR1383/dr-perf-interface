@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExpr.cpp
++++ b/clang/lib/Parse/ParseExpr.cpp
+@@ -20,6 +20,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Availability.h"
+ #include "clang/AST/ExprCXX.h"
+@@ -1999,6 +2000,7 @@
+ /// \endverbatim
+ ExprResult
+ Parser::ParsePostfixExpressionSuffix(ExprResult LHS) {
++  DRPERF_BENCH_REGION("cf-108");
+   // Now that the primary-expression piece of the postfix-expression has been
+   // parsed, see if there are any postfix-expression pieces here.
+   SourceLocation Loc;

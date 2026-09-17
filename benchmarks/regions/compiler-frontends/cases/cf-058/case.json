@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-058",
+  "title": "Parser::ParseOpenMPDeclarativeOrExecutableDirective compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Parse/ParseOpenMP.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Parse/ParseOpenMP.cpp",
+    "sha256": "0d2d858cd18263cf3ef00e0f9ae7ff94c8b98deefbb5b3a74514c3f9807ee48c"
+  },
+  "region": {
+    "symbol": "Parser::ParseOpenMPDeclarativeOrExecutableDirective",
+    "start_line": 2684,
+    "end_line": 3005,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-058",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "parsing",
+  "workload": {
+    "description": "Run the bounded openmp-directive-parsing fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Parse/ParseOpenMP.cpp:Parser::ParseOpenMPDeclarativeOrExecutableDirective",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Parse/ParseOpenMP.cpp#L2684-L3005"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "191d012002deab8a67e902c61802dbf0170b4664f8e43f67358592da9671b6b9",
+      "patch_sha256": "748952d011de24510bb99af587fe2bbc6fade8a7a8ecc3217a848ba7edeff49f"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

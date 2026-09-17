@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-005",
+  "title": "sympy Pow._eval_expand_multinomial body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/sympy/sympy",
+    "revision": "117eaf45237de39c9d4518a3b7c715f0484ccea9",
+    "path": "sympy/core/power.py",
+    "snapshot": "../../upstream/sympy/sympy/core/power.py",
+    "sha256": "a62a34c9f907e7971f8b233a6bb625ff9386424156858870d7544989d9e1bfbf"
+  },
+  "region": {
+    "symbol": "Pow._eval_expand_multinomial",
+    "start_line": 1011,
+    "end_line": 1128,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-005",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise Pow._eval_expand_multinomial with bounded, varied sympy inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "sympy:sympy/core/power.py:Pow._eval_expand_multinomial",
+  "citations": [
+    "https://github.com/sympy/sympy/blob/117eaf45237de39c9d4518a3b7c715f0484ccea9/sympy/core/power.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

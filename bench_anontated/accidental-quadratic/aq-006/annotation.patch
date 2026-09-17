@@ -1,0 +1,12 @@
+diff --git a/Lib/posixpath.py b/Lib/posixpath.py
+--- a/Lib/posixpath.py
++++ b/Lib/posixpath.py
+@@ -292,7 +292,7 @@
+ def expandvars(path):
+     """Expand shell variables of form $var and ${var}.  Unknown variables
+     are left unchanged."""
+-    with perfmark.region('aq-006'):
++    with perfmark.region('aq-006', input_len=len(path), input_pairs=len(path) * len(path)):
+         path = os.fspath(path)
+         global _varprog, _varprogb
+         if isinstance(path, bytes):

@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -2787,6 +2788,7 @@
+ 
+ static void GenerateFrontendArgs(const FrontendOptions &Opts,
+                                  ArgumentConsumer Consumer, bool IsHeader) {
++                                   DRPERF_BENCH_REGION("cf-234");
+   const FrontendOptions &FrontendOpts = Opts;
+ #define FRONTEND_OPTION_WITH_MARSHALLING(...)                                  \
+   GENERATE_OPTION_WITH_MARSHALLING(Consumer, __VA_ARGS__)

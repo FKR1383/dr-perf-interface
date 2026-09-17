@@ -1,0 +1,132 @@
+--- a/tools/gxvm/experimental/timeline/CMakeLists.txt
++++ b/tools/gxvm/experimental/timeline/CMakeLists.txt
+@@ -7,4 +7,5 @@
+ configure_DynamoRIO_client(gxvm_timeline_client)
+ use_DynamoRIO_extension(gxvm_timeline_client drmgr)
+ use_DynamoRIO_extension(gxvm_timeline_client drwrap)
++use_DynamoRIO_extension(gxvm_timeline_client drsyms)
+ target_compile_options(gxvm_timeline_client PRIVATE -O2 -Wall -Wextra -Werror)
+--- a/tools/gxvm/experimental/timeline/client.c
++++ b/tools/gxvm/experimental/timeline/client.c
+@@ -6,6 +6,7 @@
+ #include "dr_api.h"
+ #include "drmgr.h"
+ #include "drwrap.h"
++#include "drsyms.h"
+ #include "../../dr_scheduler/native_ipc_replay.h"
+ #include "../../extension/gpu/native_execution.h"
+ #include <stdlib.h>
+@@ -20,16 +21,50 @@
+ static uint32_t fixed_cost = 4096;
+ static app_pc stamp_pc;
+ static app_pc stamp_return_pc;
++static uint64_t cuda_exports, cuda_calls, cuda_outer_scopes;
++static void die(const char *message);
++
++static uint64_t *slots(void) {
++    return (uint64_t *)((byte *)dr_get_dr_segment_base(tls_segment) + tls_offset);
++}
++static void cuda_pre(void *wrapcxt, void **user_data) {
++    (void)wrapcxt; (void)user_data;
++    uint64_t *depth = &slots()[2];
++    if ((*depth)++ == 0) __atomic_fetch_add(&cuda_outer_scopes, 1, __ATOMIC_RELAXED);
++    __atomic_fetch_add(&cuda_calls, 1, __ATOMIC_RELAXED);
++}
++static void cuda_post(void *wrapcxt, void *user_data) {
++    (void)wrapcxt; (void)user_data;
++    uint64_t *depth = &slots()[2];
++    if (*depth == 0) die("unmatched CUDA API exclusion");
++    --*depth;
++}
++static bool cuda_export(const char *name, size_t offset, void *data) {
++    const module_data_t *module = data;
++    const char *symbol = name;
++    (void)offset;
++    if (symbol != NULL && strncmp(symbol, "__cuda", 6) == 0) symbol += 2;
++    if (symbol == NULL || symbol[0] != 'c' || symbol[1] != 'u' ||
++        !((symbol[2] >= 'A' && symbol[2] <= 'Z') ||
++          strncmp(symbol, "cuda", 4) == 0 || strncmp(symbol, "cublas", 6) == 0 ||
++          strncmp(symbol, "cudnn", 5) == 0 || strncmp(symbol, "cusolver", 8) == 0 ||
++          strncmp(symbol, "cusparse", 8) == 0 || strncmp(symbol, "cufft", 5) == 0 ||
++          strncmp(symbol, "curand", 6) == 0 || strncmp(symbol, "cutensor", 8) == 0))
++        return true;
++    app_pc address = (app_pc)dr_get_proc_address(module->handle, name);
++    if (address == NULL || drwrap_is_wrapped(address, cuda_pre, cuda_post)) return true;
++    if (!drwrap_wrap(address, cuda_pre, cuda_post)) die("CUDA API wrap");
++    __atomic_fetch_add(&cuda_exports, 1, __ATOMIC_RELAXED);
++    return true;
++}
+ 
+ static void die(const char *message) {
+     dr_fprintf(STDERR, "GXVM_TIMELINE error=%s\n", message);
+     dr_abort();
+ }
+-static uint64_t *counter(void) {
+-    return (uint64_t *)((byte *)dr_get_dr_segment_base(tls_segment) + tls_offset);
+-}
+ static void thread_init(void *context) {
+-    *counter() = 0;
++    slots()[0] = 0;
++    slots()[2] = 0;
+     timeline_sampling_thread_init(context);
+ }
+ static void module_load(void *context, const module_data_t *module, bool loaded) {
+@@ -52,6 +87,13 @@
+         if (!stamp_return_pc) die("cannot locate straight-line stamp return");
+     }
+     if (!gxvm_native_gpu_install(module)) die("cannot install native GPU boundary");
++    const char *path = module->full_path;
++    const char *basename = path == NULL ? NULL : strrchr(path, '/');
++    basename = basename == NULL ? path : basename + 1;
++    if (basename != NULL && strcmp(basename, "gx_cuda.so") == 0 &&
++        drsym_enumerate_symbols(path, cuda_export, (void *)module,
++                                DRSYM_DEFAULT_FLAGS) != DRSYM_SUCCESS)
++        die("CUDA API export enumeration");
+ }
+ /* Retain the established native callback boundary: NCCL implementation code
+  * is neither instruction-counted nor run through the DR code cache. */
+@@ -85,14 +127,25 @@
+     /* Exact executed BB debit; no budget test, clean call, or epoch wait.
+      * Preserve arithmetic flags conservatively in this initial implementation. */
+     dr_save_arith_flags(context, bb, where, SPILL_SLOT_1);
++    instr_t *skip = INSTR_CREATE_label(context);
++    instrlist_meta_preinsert(bb, where, INSTR_CREATE_cmp(context,
++        dr_raw_tls_opnd(context, tls_segment, tls_offset + 2*sizeof(uint64_t)),
++        OPND_CREATE_INT8(0)));
++    instrlist_meta_preinsert(bb, where, INSTR_CREATE_jcc(context, OP_jnz,
++        opnd_create_instr(skip)));
+     instrlist_meta_preinsert(bb, where, INSTR_CREATE_add(context,
+         dr_raw_tls_opnd(context, tls_segment, tls_offset),
+         OPND_CREATE_INT32((int)(uintptr_t)data)));
+     timeline_sampling_insert(context, bb, where, instr_get_app_pc(where), (uint32_t)(uintptr_t)data);
++    instrlist_meta_preinsert(bb, where, skip);
+     dr_restore_arith_flags(context, bb, where, SPILL_SLOT_1);
+     return DR_EMIT_DEFAULT;
+ }
+ static void finish(void) {
++    dr_fprintf(STDERR, "GXVM_TIMELINE_CUDA_EXCLUSION exports=%llu calls=%llu scopes=%llu\n",
++               (unsigned long long)__atomic_load_n(&cuda_exports, __ATOMIC_RELAXED),
++               (unsigned long long)__atomic_load_n(&cuda_calls, __ATOMIC_RELAXED),
++               (unsigned long long)__atomic_load_n(&cuda_outer_scopes, __ATOMIC_RELAXED));
+     gxvm_native_gpu_report();
+     if (replay) gxvm_native_ipc_replay_exit();
+     dr_fprintf(STDERR, "GXVM_TIMELINE epochs=0 clock_virtualization=0 cpu_cost=%s\n",
+@@ -102,14 +155,14 @@
+     drmgr_unregister_module_load_event(module_load);
+     drmgr_unregister_thread_exit_event(timeline_sampling_thread_exit);
+     timeline_sampling_exit();
+-    dr_raw_tls_cfree(tls_offset, 2);
+-    drwrap_exit(); drmgr_exit();
++    dr_raw_tls_cfree(tls_offset, 3);
++    drwrap_exit(); drsym_exit(); drmgr_exit();
+ }
+ DR_EXPORT void dr_client_main(client_id_t id, int argc, const char *argv[]) {
+     (void)id; (void)argc; (void)argv;
+     dr_set_client_name("GXVM experimental dependency timeline", "");
+-    if (!drmgr_init() || !drwrap_init() ||
+-        !dr_raw_tls_calloc(&tls_segment, &tls_offset, 2, 0)) die("initialization");
++    if (!drmgr_init() || !drwrap_init() || drsym_init(0) != DRSYM_SUCCESS ||
++        !dr_raw_tls_calloc(&tls_segment, &tls_offset, 3, 0)) die("initialization");
+     timeline_sampling_init(tls_segment, tls_offset);
+     const char *db = getenv("GXVM_NATIVE_IPC_REPLAY");
+     replay = db != NULL && *db != '\0';

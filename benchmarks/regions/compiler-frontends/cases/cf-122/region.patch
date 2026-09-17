@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/LiteralSupport.cpp
++++ b/clang/lib/Lex/LiteralSupport.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Lex/LiteralSupport.h"
+ #include "clang/Basic/CharInfo.h"
+ #include "clang/Basic/LangOptions.h"
+@@ -1961,6 +1962,7 @@
+ }
+ 
+ void StringLiteralParser::init(ArrayRef<Token> StringToks){
++  DRPERF_BENCH_REGION("cf-122");
+   // The literal token may have come from an invalid source location (e.g. due
+   // to a PCH error), in which case the token length will be 0.
+   if (StringToks.empty() || StringToks[0].getLength() < 2)

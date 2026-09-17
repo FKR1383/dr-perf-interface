@@ -1,0 +1,28 @@
+--- a/pathspec/_backends/_utils.py
++++ b/pathspec/_backends/_utils.py
+@@ -4,6 +4,7 @@
+ WARNING: The *pathspec._backends* package is not part of the public API. Its
+ contents and structure are likely to change.
+ """
++import perfmark
+ 
+ from collections.abc import (
+ 	Iterable)
+@@ -34,11 +35,12 @@
+ 
+ 	Returns the enumerated patterns (:class:`list` of :class:`tuple`).
+ 	"""
+-	out_patterns = [
+-		(__i, __pat)
+-		for __i, __pat in enumerate(patterns)
+-		if not filter or __pat.include is not None
+-	]
++	with perfmark.region("gl-246"):
++		out_patterns = [
++			(__i, __pat)
++			for __i, __pat in enumerate(patterns)
++			if not filter or __pat.include is not None
++		]
+ 	if reverse:
+ 		out_patterns.reverse()
+ 

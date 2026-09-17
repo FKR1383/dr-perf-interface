@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "v8-regexp-003",
+  "title": "Handle interrupts during interpreted matching",
+  "language": "cpp",
+  "source": {
+    "repository": "https://chromium.googlesource.com/v8/v8.git",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/regexp/regexp-interpreter.cc",
+    "snapshot": "../../upstream/src/regexp/regexp-interpreter.cc",
+    "sha256": "e3bd535cc77f868da4cf79094cb15e2a73dbdb7b3b973495f107c96fc5da1a18"
+  },
+  "region": {
+    "symbol": "v8::internal::regexp::HandleInterrupts",
+    "start_line": 260,
+    "end_line": 318
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-regexp-003",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Run an interpreted regular expression while a bounded interrupt request is serviced.",
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://chromium.googlesource.com/v8/v8.git/+/736a2cbec441e85b68c742215d15318abfeae707/src/regexp/regexp-interpreter.cc"
+  ],
+  "phase": "regexp-execution",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "--regexp-interpret-all",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Assertions passed under Node.js v18.19.1 as a JavaScript behavior check only; this does not verify V8 revision, d8 flags, or marked-region reachability."
+    },
+    "coverage_note": "The flag keeps supported classic RegExp matching in the bytecode interpreter. Exact entry into the marked internal function remains unverified until the instrumented d8 build is run."
+  }
+}

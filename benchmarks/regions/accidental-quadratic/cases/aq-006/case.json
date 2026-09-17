@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "aq-006",
+  "title": "Variable reference expansion",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "81cec22a9bd0090bdcf037bd8eafab1d5b58b582",
+    "path": "Lib/posixpath.py",
+    "snapshot": "../../upstream/cpython-81cec22a/Lib/posixpath.py",
+    "sha256": "627a003d217b16e46654d57eb297c50becc583a98c0cc203f1602d624a2de939"
+  },
+  "region": {
+    "symbol": "expandvars",
+    "start_line": 291,
+    "end_line": 337
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-006",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Expand a long path-like value containing many adjacent variable references.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "citations": [
+    "https://github.com/python/cpython/issues/136065",
+    "https://github.com/python/cpython/pull/134952"
+  ],
+  "source_family": "https://github.com/python/cpython/issues/136065",
+  "phase": "python-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises expandvars with bounded input, and verifies entry into the empty region marker."
+  }
+}

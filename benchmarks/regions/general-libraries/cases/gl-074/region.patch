@@ -1,0 +1,30 @@
+--- a/networkx/algorithms/graph_hashing.py
++++ b/networkx/algorithms/graph_hashing.py
+@@ -3,6 +3,7 @@
+ Isomorphic graphs should be assigned identical hashes.
+ For now, only Weisfeiler-Lehman hashing is implemented.
+ """
++import perfmark
+ 
+ import warnings
+ from collections import Counter, defaultdict
+@@ -412,12 +413,13 @@
+ 
+     node_labels = _init_node_labels(G, edge_attr, node_attr)
+ 
+-    if include_initial_labels:
+-        node_subgraph_hashes = {
+-            k: [_hash_label(v, digest_size)] for k, v in node_labels.items()
+-        }
+-    else:
+-        node_subgraph_hashes = defaultdict(list)
++    with perfmark.region("gl-074"):
++        if include_initial_labels:
++            node_subgraph_hashes = {
++                k: [_hash_label(v, digest_size)] for k, v in node_labels.items()
++            }
++        else:
++            node_subgraph_hashes = defaultdict(list)
+ 
+     # If the graph has no attributes, initial labels are the nodes' degrees.
+     # This is equivalent to doing the first iterations of WL.

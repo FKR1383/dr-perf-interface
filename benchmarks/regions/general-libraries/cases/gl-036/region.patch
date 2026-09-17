@@ -1,0 +1,20 @@
+--- a/networkx/convert_matrix.py
++++ b/networkx/convert_matrix.py
+@@ -24,6 +24,7 @@
+ --------
+ nx_agraph, nx_pydot
+ """
++import perfmark
+ 
+ import itertools
+ from collections import defaultdict
+@@ -300,7 +301,8 @@
+         raise nx.NetworkXError(f"Target name {target!r} is an edge attr name")
+ 
+     nan = float("nan")
+-    edge_attr = {k: [d.get(k, nan) for _, _, d in edgelist] for k in all_attrs}
++    with perfmark.region("gl-036"):
++        edge_attr = {k: [d.get(k, nan) for _, _, d in edgelist] for k in all_attrs}
+ 
+     if G.is_multigraph() and edge_key is not None:
+         if edge_key in all_attrs:

@@ -1,0 +1,25 @@
+{
+  "case": "vllm-050",
+  "status": "qualified",
+  "pcvs": [
+    "batch_size"
+  ],
+  "gate_pass": true,
+  "final_measurement": "rounds/round-2/metrics.json",
+  "attempts": [
+    {
+      "measurement": "rounds/round-1/metrics.json",
+      "gate_pass": true,
+      "max_unexplained_share": 0.018689651323185848,
+      "gate_reasons": []
+    },
+    {
+      "measurement": "rounds/round-2/metrics.json",
+      "gate_pass": true,
+      "max_unexplained_share": 0.018691290687845873,
+      "gate_reasons": []
+    }
+  ],
+  "evidence": "Final measured annotation passed the strict affine gate with at least three PCV states.",
+  "optimization_review": "Accepted CPU-device fast return in bench_optimized/vllm/vllm-050 after same-workload instruction reduction."
+}

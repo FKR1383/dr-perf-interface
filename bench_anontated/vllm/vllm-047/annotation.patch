@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/output_processor.py
++++ b/vllm/v1/engine/output_processor.py
+@@ -624,7 +624,7 @@
+         within the loop below.
+         """
+ 
+-        with perfmark.region("vllm-047"):
++        with perfmark.region("vllm-047", output_count=len(engine_core_outputs), has_iteration_stats=int(iteration_stats is not None)):
+             request_outputs: list[RequestOutput | PoolingRequestOutput] = []
+             reqs_to_abort: list[str] = []
+             for engine_core_output in engine_core_outputs:

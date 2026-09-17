@@ -1,0 +1,49 @@
+--- a/libcst/_nodes/expression.py
++++ b/libcst/_nodes/expression.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -3688,23 +3689,24 @@
+         )
+ 
+     def _codegen_impl(self, state: CodegenState) -> None:
+-        self.whitespace_before._codegen(state)
+-        asynchronous = self.asynchronous
+-        if asynchronous is not None:
+-            asynchronous._codegen(state)
+-        state.add_token("for")
+-        self.whitespace_after_for._codegen(state)
+-        self.target._codegen(state)
+-        self.whitespace_before_in._codegen(state)
+-        state.add_token("in")
+-        self.whitespace_after_in._codegen(state)
+-        self.iter._codegen(state)
+-        ifs = self.ifs
+-        for if_clause in ifs:
+-            if_clause._codegen(state)
+-        inner_for_in = self.inner_for_in
+-        if inner_for_in is not None:
+-            inner_for_in._codegen(state)
++        with perfmark.region("lt-101"):
++            self.whitespace_before._codegen(state)
++            asynchronous = self.asynchronous
++            if asynchronous is not None:
++                asynchronous._codegen(state)
++            state.add_token("for")
++            self.whitespace_after_for._codegen(state)
++            self.target._codegen(state)
++            self.whitespace_before_in._codegen(state)
++            state.add_token("in")
++            self.whitespace_after_in._codegen(state)
++            self.iter._codegen(state)
++            ifs = self.ifs
++            for if_clause in ifs:
++                if_clause._codegen(state)
++            inner_for_in = self.inner_for_in
++            if inner_for_in is not None:
++                inner_for_in._codegen(state)
+ 
+ 
+ @add_slots

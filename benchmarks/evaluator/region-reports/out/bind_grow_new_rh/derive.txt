@@ -1,0 +1,41 @@
+derive ftl_directory_bind_batch   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4,blocks=0,superblocks=0,rehash=3 x2, requests=4,blocks=4,superblocks=1,rehash=7 x2, requests=4,blocks=8,superblocks=2,rehash=0 x2, requests=4,blocks=12,superblocks=3,rehash=14 x2, requests=4,blocks=16,superblocks=4,rehash=0 x2, requests=4,blocks=20,superblocks=5,rehash=0 x2, requests=4,blocks=24,superblocks=6,rehash=0 x2, requests=4,blocks=28,superblocks=7,rehash=0 x1, requests=4,blocks=28,superblocks=7,rehash=28 x1, requests=4,blocks=32,superblocks=8,rehash=0 x2, requests=4,blocks=36,superblocks=9,rehash=0 x2, requests=4,blocks=40,superblocks=10,rehash=0 x2, requests=4,blocks=44,superblocks=11,rehash=0 x2, requests=4,blocks=48,superblocks=12,rehash=0 x2, requests=4,blocks=52,superblocks=13,rehash=0 x2, requests=4,blocks=56,superblocks=14,rehash=0 x2, requests=4,blocks=60,superblocks=15,rehash=0 x2, requests=4,blocks=64,superblocks=16,rehash=0 x2, requests=4,blocks=68,superblocks=17,rehash=0 x2, requests=4,blocks=72,superblocks=18,rehash=0 x2, requests=4,blocks=76,superblocks=19,rehash=0 x2, requests=4,blocks=80,superblocks=20,rehash=0 x2, requests=4,blocks=84,superblocks=21,rehash=0 x2, requests=4,blocks=88,superblocks=22,rehash=0 x2, requests=4,blocks=92,superblocks=23,rehash=0 x2, requests=16,blocks=96,superblocks=24,rehash=0 x2, requests=16,blocks=112,superblocks=25,rehash=0 x1, requests=16,blocks=112,superblocks=25,rehash=112 x1, requests=16,blocks=128,superblocks=26,rehash=0 x2, requests=16,blocks=144,superblocks=27,rehash=0 x2, requests=16,blocks=160,superblocks=28,rehash=0 x2, requests=16,blocks=176,superblocks=29,rehash=0 x2, requests=16,blocks=192,superblocks=30,rehash=0 x2, requests=16,blocks=208,superblocks=31,rehash=0 x2, requests=16,blocks=224,superblocks=32,rehash=0 x2, requests=16,blocks=240,superblocks=33,rehash=0 x2, requests=16,blocks=256,superblocks=34,rehash=0 x2, requests=16,blocks=272,superblocks=35,rehash=0 x2, requests=16,blocks=288,superblocks=36,rehash=0 x2, requests=16,blocks=304,superblocks=37,rehash=0 x2, requests=16,blocks=320,superblocks=38,rehash=0 x2, requests=16,blocks=336,superblocks=39,rehash=0 x2, requests=16,blocks=352,superblocks=40,rehash=0 x2, requests=16,blocks=368,superblocks=41,rehash=0 x2, requests=16,blocks=384,superblocks=42,rehash=0 x2, requests=16,blocks=400,superblocks=43,rehash=0 x2, requests=16,blocks=416,superblocks=44,rehash=0 x2, requests=16,blocks=432,superblocks=45,rehash=0 x2, requests=16,blocks=448,superblocks=46,rehash=0 x1, requests=16,blocks=448,superblocks=46,rehash=448 x1, requests=16,blocks=464,superblocks=47,rehash=0 x2
+  cost(requests, blocks, superblocks, rehash) = 3,955.7*requests + -3.7*blocks + 133.2*superblocks + 0.35*rehash + 12,995.4        [all requests, blocks, superblocks, rehash]   blocks: 404 affine, 1246 constant, 157 irregular (53.1% of cost)
+    marker cost subtracted from the constant: 5,486.1 per call (calibrated)
+    irregular blocks, per call: 14,264 .. 159,334.5
+    per-requests coefficient by function:
+               641.8  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               401.4  _int_free  [libc.so.6]
+               183.5  __GI___libc_malloc  [libc.so.6]
+                 164  alloc::fmt::format::format_inner  [_ditto_ftl_core.abi3.so]
+               161.6  __free  [libc.so.6]
+               157.2  <_ditto_ftl_core::directory::DirectoryState>::rollback  [_ditto_ftl_core.abi3.so]
+    per-blocks coefficient by function:
+                -2.3  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+                -1.1  <_ditto_ftl_core::directory::DirectoryState>::rollback  [_ditto_ftl_core.abi3.so]
+               0.646  _int_malloc  [libc.so.6]
+              -0.489  _RINvXs4_NtNtCscdodAO9FK5_5alloc3vec9into_iterINtB6_8IntoIterTNtNtBa_6  [_ditto_ftl_core.abi3.so]
+              -0.309  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+              -0.254  <alloc::collections::btree::map::BTreeMap<alloc::string::String, _ditt  [_ditto_ftl_core.abi3.so]
+    per-superblocks coefficient by function:
+                68.5  <alloc::collections::btree::map::Iter<alloc::string::String, _ditto_ft  [_ditto_ftl_core.abi3.so]
+                20.7  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+                  12  <alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_  [_ditto_ftl_core.abi3.so]
+                11.4  <_ditto_ftl_core::directory::DirectoryState>::rollback  [_ditto_ftl_core.abi3.so]
+                 7.6  _RINvXs4_NtNtCscdodAO9FK5_5alloc3vec9into_iterINtB6_8IntoIterTNtNtBa_6  [_ditto_ftl_core.abi3.so]
+                 6.6  <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::  [_ditto_ftl_core.abi3.so]
+    per-rehash coefficient by function:
+               0.186  <_ditto_ftl_core::directory::Directory>::bind_batch::<<_ditto_ftl_core  [_ditto_ftl_core.abi3.so]
+               0.164  _int_free_merge_chunk  [libc.so.6]
+    constant by function:
+             2,800.9  _int_free  [libc.so.6]
+             1,526.9  __free  [libc.so.6]
+             1,277.5  __GI___libc_malloc  [libc.so.6]
+               1,087  <&str as <alloc::ffi::c_str::CString>::new::SpecNewImpl>::spec_new_imp  [_ditto_ftl_core.abi3.so]
+                 825  <perfmark::Region>::new_v  [_ditto_ftl_core.abi3.so]
+               815.3  _int_malloc  [libc.so.6]
+    irregular by function:
+            15,778.1  __memcmp_avx2_movbe  [libc.so.6]
+            14,515.4  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+             8,493.2  _int_malloc  [libc.so.6]
+

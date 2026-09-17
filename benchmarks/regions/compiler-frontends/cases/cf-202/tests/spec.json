@@ -1,0 +1,36 @@
+{
+  "case": "cf-202",
+  "phase": "semantic-analysis",
+  "scenario": "new-array-init-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_24{int n; X_24(int v):n(v){}}; int main(){X_24 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct X{int a;}; int f(){X x[4] = {}; return x[3].a;}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct X{int a;}; int f(){X x[16] = {}; return x[15].a;}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct X{int a;}; int f(){X x[64] = {}; return x[63].a;}\n"
+    }
+  ],
+  "target_symbol": "InitListChecker::CheckStructUnionTypes",
+  "target_source": "clang/lib/Sema/SemaInit.cpp",
+  "mapping_note": "Pinned source coverage observed InitListChecker::CheckStructUnionTypes in the combined run of witness cf-024; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "workload_phase": "ir-generation"
+}

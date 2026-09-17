@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -879,7 +879,7 @@
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0], first_chunk=False):
+         ## conv1
+-        with perfmark.region("wan-014"):
++        with perfmark.region("wan-014", frame_count=int(x.shape[2])):
+             if feat_cache is not None:
+                 idx = feat_idx[0]
+                 cache_x = x[:, :, -CACHE_T:, :, :].clone()

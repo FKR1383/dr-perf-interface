@@ -1,0 +1,21 @@
+# Inferix `partial_sync` result after CPU boundary correction
+
+The compact [evidence manifest](evidence/inferix-partial.json) records exact input and output hashes for this result.
+
+The corrected managed run passed: [`inferix-partial-fixed-1789609490786545754/result.json`](/home/ubuntu/GX/NEX/build/experiments/inferix-partial-fixed-1789609490786545754/result.json). It staged the isolated timeline client through `runtime.timeline_client`, and the worker log reported `GXVM_TIMELINE_CUDA_EXCLUSION exports=1551 calls=2498473 scopes=2167059`. The client is built at `out/causal-video/gxvm-timeline-exclude/build/libgxvm_timeline_client.so`; its [patch](gxvm_timeline_cuda_cpu_exclusion.patch) and [CPU-only regression](gxvm_timeline_exclusion_toy/run.py) are retained. The older native epoch-client patch does not affect `partial_sync`.
+
+| Marked iteration, model time | First diagnostic, CPU export exclusion absent | Corrected timeline client |
+| --- | ---: | ---: |
+| Virtual duration | 51.814447 s | **12.267723 s** |
+| CPU work, summed within marked worker interval | 45.396148 s | **4.728259 s** |
+| GPU work/busy, device 0 | 11.915228 s | **11.915589 s** |
+| GPU idle within marked virtual interval | 39.899220 s | **0.352133 s** |
+| Modeled device busy fraction | 23.00% | **97.13%** |
+
+The corrected capture's GPU timeline is structurally stable: both runs contain 228,522 report nodes, 110,959 GPU submissions/completions (97,779 compute, 8,838 cuBLAS surrogate, 4,342 memory copy), 110,958 nonzero prior-stream links, 3,301 synchronization dependencies, two iteration markers, and 106,617 prediction-bearing launches. Each has 106,449 hits, 168 misses, zero errors. The corrected run used the fresh native GPU database, while the first diagnostic used the earlier predictor database; the near-identical modeled GPU service is an observed cross-run comparison, not a controlled database ablation. GPU dependency events were still generated after the exclusion change. The counter excludes CPU debits and sampling inside `gx_cuda.so` exports; it does not skip API execution.
+
+The [native-versus-GX observable launch audit](/home/ubuntu/drperf/out/causal-video/inferix-partial-fixed-kernel-audit.json) **fails** despite exactly 106,617 total launches on each side and matching report config, source hashes, package versions, and asset identity. Seven missing GX signatures account for 168 cuDNN-plan launches and produce 14 signature count differences; 168 predictions have zero modeled service. No launch metadata mismatch, ambiguous signature, missing native sample, skipped native launch, or malformed trace event was found. This audit compares launch metadata, not tensor values or hidden kernel arguments. The 8,838 cuBLAS wrapper rows model opaque library work once: GX enqueues one surrogate task per intercepted cuBLAS call and does not emit nested `cuLaunch*` tasks. The fresh native DB's weighted median serial service is 10.3596 s for non-cuBLAS launches plus 2.2061 s for cuBLAS surrogates; overlap accounts for a GPU-busy interval below their 12.5657 s sum.
+
+The [full trace summary](/home/ubuntu/drperf/out/causal-video/inferix-partial-fixed-screen-full.md) and [no-trace report](/home/ubuntu/drperf/out/causal-video/inferix-partial-fixed-report-no-trace/summary.json) are reproducible from the completed run. Both report the same virtual duration. `GXVM_TIMELINE_SAMPLE_NS=0` left all 109,627 CPU segments unsampled, so no CPU function attribution follows from this capture. The replay CPU profile was collected on EPYC 7702P rather than the native EPYC 9554; 6,684 of 21,074 instruction samples (31.7%) were unresolved, with no binary-identity proof for path/page matches. Modeled 4.728 s CPU work should therefore be treated as approximate, not calibrated to a measured native critical path.
+
+This is an **optimistic dependency-timeline estimate**, not a guaranteed hardware lower bound. The trace models 4,342 copies with zero GPU service and leaves some CPU IPC/dependencies unobserved; the 168 prediction misses also cost zero. The 97.13% figure is modeled device occupancy within the virtual interval, not measured hardware utilization or proof that CPU work cannot be improved.

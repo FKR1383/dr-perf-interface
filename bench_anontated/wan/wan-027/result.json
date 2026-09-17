@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "wan-027",
+  "stage": "annotation",
+  "status": "qualified",
+  "attempts": 1,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "inference_steps",
+      "expression": "int(num_inference_steps)"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "passed-gate",
+    "gate": {
+      "case": "wan-027",
+      "validity_warnings": [],
+      "pcv_names": [
+        "inference_steps"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 18,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "inference_steps": 1
+          },
+          "calls": 3,
+          "instructions_per_call": 3929664.3333333335,
+          "unexplained_instructions_per_call": 48447.66666666668,
+          "unexplained_share": 0.012328703562721602
+        },
+        {
+          "state": {
+            "inference_steps": 2
+          },
+          "calls": 6,
+          "instructions_per_call": 3919289.5,
+          "unexplained_instructions_per_call": 37583.333333333336,
+          "unexplained_share": 0.009589323098825268
+        },
+        {
+          "state": {
+            "inference_steps": 3
+          },
+          "calls": 9,
+          "instructions_per_call": 3944633.3333333335,
+          "unexplained_instructions_per_call": 44195.22222222222,
+          "unexplained_share": 0.011203886011092425
+        }
+      ],
+      "max_unexplained_share": 0.012328703562721602,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": true,
+      "gate_reasons": [],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "inference_steps": 9492.777777777777
+        },
+        "constant": 3868801.4259259277,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 16.10926453396678,
+      "raw_files": [
+        "run.3200483.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-027\": 6}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-027\"}\n",
+    "correctness_seconds": 5.573,
+    "measurement_path": "measurements/attempt-1/metrics.json"
+  },
+  "notes": "One cheap entry-state value was selected from the current function arguments; no historical reference answer was used.",
+  "gate_pass": true,
+  "final_measurement": "measurements/attempt-1/metrics.json",
+  "optimization": {
+    "status": "eligible-for-review",
+    "reason": "Annotation passed the strict measurement gate."
+  }
+}

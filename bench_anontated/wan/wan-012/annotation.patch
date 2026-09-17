@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1343,7 +1343,7 @@
+                 If return_dict is True, a [`~models.vae.DecoderOutput`] is returned, otherwise a plain `tuple` is
+                 returned.
+         """
+-        with perfmark.region("wan-012"):
++        with perfmark.region("wan-012", frame_count=int(z.shape[2])):
+             _, _, num_frames, height, width = z.shape
+             sample_height = height * self.spatial_compression_ratio
+             sample_width = width * self.spatial_compression_ratio

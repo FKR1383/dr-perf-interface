@@ -1,0 +1,22 @@
+--- a/src/packaging/utils.py
++++ b/src/packaging/utils.py
+@@ -3,6 +3,7 @@
+ # for complete details.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from typing import NewType, cast
+@@ -119,8 +120,9 @@
+     # Much faster than re, and even faster than str.translate
+     value = name.lower().replace("_", "-").replace(".", "-")
+     # Condense repeats (faster than regex)
+-    while "--" in value:
+-        value = value.replace("--", "-")
++    with perfmark.region("gl-209"):
++        while "--" in value:
++            value = value.replace("--", "-")
+     return cast("NormalizedName", value)
+ 
+ 

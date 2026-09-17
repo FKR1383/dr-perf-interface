@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -7895,6 +7896,7 @@
+     DeclaratorContext DeclaratorCtx, ParsedAttributes &FirstArgAttrs,
+     SmallVectorImpl<DeclaratorChunk::ParamInfo> &ParamInfo,
+     SourceLocation &EllipsisLoc, bool IsACXXFunctionDeclaration) {
++      DRPERF_BENCH_REGION("cf-070");
+ 
+   // Avoid exceeding the maximum function scope depth.
+   // See https://bugs.llvm.org/show_bug.cgi?id=19607

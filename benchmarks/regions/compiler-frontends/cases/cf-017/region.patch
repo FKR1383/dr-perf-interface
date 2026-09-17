@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaExprCXX.cpp
++++ b/clang/lib/Sema/SemaExprCXX.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TreeTransform.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTContext.h"
+@@ -144,6 +145,7 @@
+                                    SourceLocation NameLoc, Scope *S,
+                                    CXXScopeSpec &SS, ParsedType ObjectTypePtr,
+                                    bool EnteringContext) {
++                                     DRPERF_BENCH_REGION("cf-017");
+   // Determine where to perform name lookup.
+ 
+   // FIXME: This area of the standard is very messy, and the current

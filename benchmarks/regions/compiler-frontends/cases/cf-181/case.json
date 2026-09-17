@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-181",
+  "title": "TypeFinder::run compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "llvm/lib/IR/TypeFinder.cpp",
+    "snapshot": "../../upstream/llvm-project/llvm/lib/IR/TypeFinder.cpp",
+    "sha256": "ddb1d7f7680a8947be0d3cf21ee179ec14bebd963adfc006cd368e9a9793b079"
+  },
+  "region": {
+    "symbol": "TypeFinder::run",
+    "start_line": 34,
+    "end_line": 111,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-181",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-construction",
+  "workload": {
+    "description": "Run the bounded ir-type-discovery fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:llvm/lib/IR/TypeFinder.cpp:TypeFinder::run",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/llvm/lib/IR/TypeFinder.cpp#L34-L111"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "663d0a58da7af9c7a7760bec1790e5167f97a941e38ec1d37c94ad7858ea51a3",
+      "patch_sha256": "2203d14604fe9dd374f237fb62a0cdfa79ac970c901fc87bbb2047370168ac9b"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

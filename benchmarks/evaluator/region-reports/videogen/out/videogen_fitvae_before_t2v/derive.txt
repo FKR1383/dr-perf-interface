@@ -1,0 +1,718 @@
+derive attach: only 1 state point(s) observed; need at least 3
+derive attn   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,seq_len=128,heads=4,kv_len=64 x48, batch=1,seq_len=128,heads=4,kv_len=128 x48, batch=1,seq_len=192,heads=4,kv_len=64 x48, batch=1,seq_len=192,heads=4,kv_len=192 x48, batch=1,seq_len=288,heads=4,kv_len=64 x48, batch=1,seq_len=288,heads=4,kv_len=288 x48, batch=1,seq_len=320,heads=4,kv_len=64 x48, batch=1,seq_len=320,heads=4,kv_len=320 x48, batch=1,seq_len=432,heads=4,kv_len=64 x48, batch=1,seq_len=432,heads=4,kv_len=432 x48, batch=1,seq_len=512,heads=4,kv_len=64 x48, batch=1,seq_len=512,heads=4,kv_len=512 x48, batch=1,seq_len=720,heads=4,kv_len=64 x48, batch=1,seq_len=720,heads=4,kv_len=720 x48, batch=1,seq_len=768,heads=4,kv_len=64 x48, batch=1,seq_len=768,heads=4,kv_len=768 x48, batch=1,seq_len=1,280,heads=4,kv_len=64 x48, batch=1,seq_len=1,280,heads=4,kv_len=1,280 x48
+  cost(batch, seq_len, heads, kv_len) = 0*batch + 419.1*seq_len + 0*heads + 460.1*kv_len + 470,508.2        [all batch, seq_len, heads, kv_len]   blocks: 1641 affine, 11220 constant, 1396 irregular (95.5% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: heads is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 6,437.6 per call (calibrated)
+    irregular blocks, per call: 1,644,540.2 .. 114,024,407.3
+    OpenMP runtime waiting, per call (excluded): 11,320,666.7 .. 61,477,372.8
+    per-seq_len coefficient by function:
+                 136  __logf_fma  [libm.so.6]
+                91.2  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  87  at::native::(anonymous namespace)::vectorized_inner_sum<>  [libtorch_cpu.so]
+                82.2  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  36  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  16  __expf_fma  [libm.so.6]
+    per-kv_len coefficient by function:
+                  91  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  87  at::native::(anonymous namespace)::vectorized_inner_sum<>  [libtorch_cpu.so]
+                82.2  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  36  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                11.2  _PyEval_EvalFrameDefault  [python3.12]
+                 3.1  at::TensorIteratorBase::compute_types  [libtorch_cpu.so]
+    constant by function:
+            66,750.2  _PyEval_EvalFrameDefault  [python3.12]
+            20,560.5  PyDict_Contains+?  [python3.12]
+            13,844.4  PyType_GetSlot+?  [python3.12]
+            11,492.8  PyEval_EvalCode+?  [python3.12]
+             6,195.1  _PyErr_ChainStackItem+?  [python3.12]
+             6,111.8  PyDict_SetItem  [python3.12]
+    irregular by function:
+           8,579,388  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+         2,596,039.2  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+         1,752,456.9  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+
+derive attn_out   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=904,seq_len=128,heads=4,batch=1 x96, tag=904,seq_len=192,heads=4,batch=1 x96, tag=904,seq_len=288,heads=4,batch=1 x96, tag=904,seq_len=320,heads=4,batch=1 x96, tag=904,seq_len=432,heads=4,batch=1 x96, tag=904,seq_len=512,heads=4,batch=1 x96, tag=904,seq_len=720,heads=4,batch=1 x96, tag=904,seq_len=768,heads=4,batch=1 x96, tag=904,seq_len=1,280,heads=4,batch=1 x96
+  cost(tag, seq_len, heads, batch) = 0*tag + 1,403.2*seq_len + 0*heads + 0*batch + 129,183.5        [all tag, seq_len, heads, batch]   blocks: 31 affine, 6259 constant, 0 irregular (0.0% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: heads is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    OpenMP runtime waiting, per call (excluded): 1,780,191.2 .. 6,528,543.8
+    per-seq_len coefficient by function:
+             1,010.1  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+               351.1  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+                41.1  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               0.319  void at::internal::invoke_parallel<at::parallel_for<at::TensorIterator  [libtorch_cpu.so]
+               0.223  mkl_blas_def_xsgemm_bdz  [libtorch_cpu.so]
+                0.22  __tls_get_addr  [ld-linux-x86-64.so.2]
+    constant by function:
+            16,019.1  _PyEval_EvalFrameDefault  [python3.12]
+               8,328  mkl_blas_def_sgemm_scopy_right16_bdz  [libtorch_cpu.so]
+             5,282.4  PyDict_Contains+?  [python3.12]
+             4,706.3  _PyObject_GenericGetAttrWithDict  [python3.12]
+             4,229.4  PyType_GetSlot+?  [python3.12]
+               2,801  _PyType_Lookup  [python3.12]
+
+derive attn_qkv   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=901,seq_len=128,kv_len=64,heads=4 x48, tag=901,seq_len=128,kv_len=128,heads=4 x48, tag=901,seq_len=192,kv_len=64,heads=4 x48, tag=901,seq_len=192,kv_len=192,heads=4 x48, tag=901,seq_len=288,kv_len=64,heads=4 x48, tag=901,seq_len=288,kv_len=288,heads=4 x48, tag=901,seq_len=320,kv_len=64,heads=4 x48, tag=901,seq_len=320,kv_len=320,heads=4 x48, tag=901,seq_len=432,kv_len=64,heads=4 x48, tag=901,seq_len=432,kv_len=432,heads=4 x48, tag=901,seq_len=512,kv_len=64,heads=4 x48, tag=901,seq_len=512,kv_len=512,heads=4 x48, tag=901,seq_len=720,kv_len=64,heads=4 x48, tag=901,seq_len=720,kv_len=720,heads=4 x48, tag=901,seq_len=768,kv_len=64,heads=4 x48, tag=901,seq_len=768,kv_len=768,heads=4 x48, tag=901,seq_len=1,280,kv_len=64,heads=4 x48, tag=901,seq_len=1,280,kv_len=1,280,heads=4 x48
+  cost(tag, seq_len, kv_len, heads) = 0*tag + 1,622.3*seq_len + 3,023*kv_len + 0*heads + 403,080.6        [all tag, seq_len, kv_len, heads]   blocks: 113 affine, 7836 constant, 96 irregular (1.5% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: heads is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 24,659.2 .. 57,383.2
+    OpenMP runtime waiting, per call (excluded): 5,949,371.5 .. 39,838,402
+    per-seq_len coefficient by function:
+             1,009.9  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+               350.9  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+                91.2  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  87  at::native::(anonymous namespace)::vectorized_inner_sum<>  [libtorch_cpu.so]
+                41.1  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  36  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+    per-kv_len coefficient by function:
+             2,019.9  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+                 702  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+                  91  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  87  at::native::(anonymous namespace)::vectorized_inner_sum<>  [libtorch_cpu.so]
+                  82  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  36  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+    constant by function:
+            29,513.1  _PyEval_EvalFrameDefault  [python3.12]
+              24,984  mkl_blas_def_sgemm_scopy_right16_bdz  [libtorch_cpu.so]
+            11,127.7  PyDict_Contains+?  [python3.12]
+               9,235  PyType_GetSlot+?  [python3.12]
+             9,177.6  _PyObject_GenericGetAttrWithDict  [python3.12]
+             6,719.4  _int_free  [libc.so.6]
+
+derive attn_rope   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=902,seq_len=128,head_dim=16,sh=512 x48, tag=902,seq_len=192,head_dim=16,sh=768 x48, tag=902,seq_len=288,head_dim=16,sh=1,152 x48, tag=902,seq_len=320,head_dim=16,sh=1,280 x48, tag=902,seq_len=432,head_dim=16,sh=1,728 x48, tag=902,seq_len=512,head_dim=16,sh=2,048 x48, tag=902,seq_len=720,head_dim=16,sh=2,880 x48, tag=902,seq_len=768,head_dim=16,sh=3,072 x48, tag=902,seq_len=1,280,head_dim=16,sh=5,120 x48
+  cost(tag, seq_len, head_dim, sh) = 0*tag + 5,764.1*seq_len + 0*head_dim + 0*sh + 316,356.3        [all tag, seq_len, head_dim, sh]   blocks: 92 affine, 6397 constant, 22 irregular (0.5% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: head_dim is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: sh is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 14,094.4 .. 25,139.1
+    OpenMP runtime waiting, per call (excluded): 3,844,772.4 .. 12,476,974.1
+    per-seq_len coefficient by function:
+               3,064  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+             1,264.3  at::internal::serial_for_each  [libtorch_cpu.so]
+                 896  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                 352  at::DimCounter::increment  [libtorch_cpu.so]
+                  88  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  56  __memcpy_avx_unaligned_erms  [libc.so.6]
+    constant by function:
+             7,442.8  _int_malloc  [libc.so.6]
+             7,020.4  _PyEval_EvalFrameDefault  [python3.12]
+             6,841.5  ___pthread_mutex_lock  [libc.so.6]
+             5,535.6  _int_free  [libc.so.6]
+             5,294.7  _PyArg_ParseStack+?  [python3.12]
+             4,941.2  ___pthread_mutex_unlock  [libc.so.6]
+
+derive attn_sdpa   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=903,seq_len=128,kv_len=64,heads=4 x48, tag=903,seq_len=128,kv_len=128,heads=4 x48, tag=903,seq_len=192,kv_len=64,heads=4 x48, tag=903,seq_len=192,kv_len=192,heads=4 x48, tag=903,seq_len=288,kv_len=64,heads=4 x48, tag=903,seq_len=288,kv_len=288,heads=4 x48, tag=903,seq_len=320,kv_len=64,heads=4 x48, tag=903,seq_len=320,kv_len=320,heads=4 x48, tag=903,seq_len=432,kv_len=64,heads=4 x48, tag=903,seq_len=432,kv_len=432,heads=4 x48, tag=903,seq_len=512,kv_len=64,heads=4 x48, tag=903,seq_len=512,kv_len=512,heads=4 x48, tag=903,seq_len=720,kv_len=64,heads=4 x48, tag=903,seq_len=720,kv_len=720,heads=4 x48, tag=903,seq_len=768,kv_len=64,heads=4 x48, tag=903,seq_len=768,kv_len=768,heads=4 x48, tag=903,seq_len=1,280,kv_len=64,heads=4 x48, tag=903,seq_len=1,280,kv_len=1,280,heads=4 x48
+  cost(tag, seq_len, kv_len, heads) = 0*tag + 157.1*seq_len + 1.8*kv_len + 0*heads + 95,963.4        [all tag, seq_len, kv_len, heads]   blocks: 40 affine, 5497 constant, 718 irregular (98.7% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: heads is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 747,914.1 .. 99,036,135.2
+    OpenMP runtime waiting, per call (excluded): 1,624,779.6 .. 6,198,188.4
+    per-seq_len coefficient by function:
+                 136  __logf_fma  [libm.so.6]
+                  16  __expf_fma  [libm.so.6]
+                   4  _init  [libtorch_cpu.so]
+               0.878  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+                0.23  void at::internal::invoke_parallel<at::parallel_for<at::native::(anony  [libtorch_cpu.so]
+               0.123  __memset_avx2_unaligned_erms  [libc.so.6]
+    per-kv_len coefficient by function:
+               0.354  ___pthread_mutex_lock  [libc.so.6]
+               0.339  ___pthread_mutex_unlock  [libc.so.6]
+                0.26  __GI___pthread_cond_signal  [libc.so.6]
+               0.238  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+               0.215  PyGILState_GetThisThreadState+?  [python3.12]
+               0.192  _PyArg_ParseStack+?  [python3.12]
+    constant by function:
+             9,108.9  _PyEval_EvalFrameDefault  [python3.12]
+             3,585.3  __tls_get_addr  [ld-linux-x86-64.so.2]
+             3,163.5  PyDict_SetItem  [python3.12]
+               2,402  at::detail::computeStorageNbytes  [libtorch_cpu.so]
+               2,384  c10::TensorImpl::set_sizes_and_strides  [libtorch_cpu.so]
+             2,146.5  PyDict_Contains+?  [python3.12]
+    irregular by function:
+         6,950,742.7  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+         2,596,039.2  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+         1,561,748.4  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 6  [libtorch_cpu.so]
+
+derive block   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,seq_len=128,text_len=64 x48, batch=1,seq_len=192,text_len=64 x48, batch=1,seq_len=288,text_len=64 x48, batch=1,seq_len=320,text_len=64 x48, batch=1,seq_len=432,text_len=64 x48, batch=1,seq_len=512,text_len=64 x48, batch=1,seq_len=720,text_len=64 x48, batch=1,seq_len=768,text_len=64 x48, batch=1,seq_len=1,280,text_len=64 x48
+  cost(batch, seq_len, text_len) = 0*batch + 12,424.4*seq_len + 0*text_len + 2,397,465.2        [all batch, seq_len, text_len]   blocks: 295 affine, 14606 constant, 919 irregular (79.2% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: text_len is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 15,639.4 per call (calibrated)
+    irregular blocks, per call: 4,187,999.9 .. 122,780,728.8
+    OpenMP runtime waiting, per call (excluded): 39,329,520.4 .. 142,475,670.6
+    per-seq_len coefficient by function:
+               3,531  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               2,176  Sleef_finz_tanhf8_u10avx2  [libtorch_cpu.so]
+               1,282  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+             1,278.5  at::internal::serial_for_each  [libtorch_cpu.so]
+             1,252.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                 804  at::native::AVX2::RowwiseMomentsImpl<>  [libtorch_cpu.so]
+    constant by function:
+           281,642.4  _PyEval_EvalFrameDefault  [python3.12]
+            68,325.1  PyDict_Contains+?  [python3.12]
+            61,166.5  _PyObject_GenericGetAttrWithDict  [python3.12]
+            59,846.5  __tls_get_addr  [ld-linux-x86-64.so.2]
+            45,205.5  PyType_GetSlot+?  [python3.12]
+            42,357.3  PyEval_EvalCode+?  [python3.12]
+    irregular by function:
+          19,216,936  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+         5,192,407.8  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+           4,040,576  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+
+derive cfg   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: frames=2,height=16,width=16,numel=8,192 x12, frames=2,height=24,width=24,numel=18,432 x12, frames=2,height=32,width=32,numel=32,768 x12, frames=3,height=16,width=16,numel=12,288 x12, frames=3,height=24,width=24,numel=27,648 x12, frames=3,height=32,width=32,numel=49,152 x12, frames=5,height=16,width=16,numel=20,480 x12, frames=5,height=24,width=24,numel=46,080 x12, frames=5,height=32,width=32,numel=81,920 x12
+  cost(frames, height, width, numel) = 54,004.8*frames + -805.8*height + 0*width + 433.6*numel + 6,320,722.5        [all frames, height, width, numel]   blocks: 537 affine, 20468 constant, 1073 irregular (76.7% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 40,735.1 per call (calibrated)
+    irregular blocks, per call: 8,877,756.7 .. 249,066,257.2
+    OpenMP runtime waiting, per call (excluded): 105,875,345 .. 336,356,720.9
+    per-frames coefficient by function:
+            25,242.9  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+             7,760.1  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+             5,049.4  at::internal::serial_for_each  [libtorch_cpu.so]
+               4,352  mkl_trans_mkl_somatcopy2  [libtorch_cpu.so]
+               3,968  MKL_Somatcopy2  [libtorch_cpu.so]
+               3,264  mkl_trans_errchk_mkl_somatcopy2  [libtorch_cpu.so]
+    per-height coefficient by function:
+                -257  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              -157.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              -142.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               118.1  _int_memalign  [libc.so.6]
+               -72.4  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 3  [libtorch_cpu.so]
+               -69.1  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+    per-numel coefficient by function:
+               111.7  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  68  Sleef_finz_tanhf8_u10avx2  [libtorch_cpu.so]
+                59.8  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                  49  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+                44.4  at::internal::serial_for_each  [libtorch_cpu.so]
+                29.3  at::native::AVX2::RowwiseMomentsImpl<>  [libtorch_cpu.so]
+    constant by function:
+           752,898.5  _PyEval_EvalFrameDefault  [python3.12]
+           185,809.3  PyDict_Contains+?  [python3.12]
+           164,673.2  _PyObject_GenericGetAttrWithDict  [python3.12]
+           149,069.4  __tls_get_addr  [ld-linux-x86-64.so.2]
+             121,865  PyType_GetSlot+?  [python3.12]
+           112,884.4  PyEval_EvalCode+?  [python3.12]
+    irregular by function:
+        39,493,623.6  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+        10,384,981.8  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+         8,290,839.1  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+
+derive cfg_combine   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=906,frames=2,height=16,numel=8,192 x12, tag=906,frames=2,height=24,numel=18,432 x12, tag=906,frames=2,height=32,numel=32,768 x12, tag=906,frames=3,height=16,numel=12,288 x12, tag=906,frames=3,height=24,numel=27,648 x12, tag=906,frames=3,height=32,numel=49,152 x12, tag=906,frames=5,height=16,numel=20,480 x12, tag=906,frames=5,height=24,numel=46,080 x12, tag=906,frames=5,height=32,numel=81,920 x12
+  cost(tag, frames, height, numel) = 0*tag + 0*frames + -19.8*height + 1.9*numel + 41,253.7        [all tag, frames, height, numel]   blocks: 43 affine, 2920 constant, 6 irregular (1.4% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 980 .. 2,402
+    OpenMP runtime waiting, per call (excluded): 1,408,059.4 .. 5,058,312.9
+    per-height coefficient by function:
+                -9.1  at::internal::serial_for_each  [libtorch_cpu.so]
+                -6.1  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                -4.6  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+    per-numel coefficient by function:
+                 1.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+                0.44  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              0.0197  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+              0.0139  at::internal::serial_for_each  [libtorch_cpu.so]
+             0.00841  void at::internal::invoke_parallel<at::parallel_for<at::TensorIterator  [libtorch_cpu.so]
+             0.00216  at::internal::set_thread_num  [libtorch_cpu.so]
+    constant by function:
+             1,796.9  _int_malloc  [libc.so.6]
+               1,363  at::detail::empty_generic  [libtorch_cpu.so]
+             1,285.1  _int_free  [libc.so.6]
+                 972  ___pthread_mutex_lock  [libc.so.6]
+                 895  at::TensorIteratorBase::populate_operands  [libtorch_cpu.so]
+                 866  at::TensorIteratorBase::compute_types  [libtorch_cpu.so]
+
+derive cond_embed: only 1 state point(s) observed; need at least 4
+derive denoise_step   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,frames=2,height=16,width=16 x12, batch=1,frames=2,height=24,width=24 x12, batch=1,frames=2,height=32,width=32 x12, batch=1,frames=3,height=16,width=16 x12, batch=1,frames=3,height=24,width=24 x12, batch=1,frames=3,height=32,width=32 x12, batch=1,frames=5,height=16,width=16 x12, batch=1,frames=5,height=24,width=24 x12, batch=1,frames=5,height=32,width=32 x12
+  cost(batch, frames, height, width) = 0*batch + 50,859.6*frames + 2,463*height + 0*width + 12,462,765.2        [all batch, frames, height, width]   blocks: 120 affine, 21039 constant, 1458 irregular (92.9% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 84,234.4 per call (calibrated)
+    irregular blocks, per call: 25,341,458.8 .. 569,925,287.3
+    OpenMP runtime waiting, per call (excluded): 212,499,520.2 .. 676,632,640.7
+    per-frames coefficient by function:
+               8,704  mkl_trans_mkl_somatcopy2  [libtorch_cpu.so]
+               7,936  MKL_Somatcopy2  [libtorch_cpu.so]
+             7,146.6  __tls_get_addr  [ld-linux-x86-64.so.2]
+               6,656  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+               6,528  mkl_trans_errchk_mkl_somatcopy2  [libtorch_cpu.so]
+               5,248  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+    per-height coefficient by function:
+               2,101  __tls_get_addr  [ld-linux-x86-64.so.2]
+               130.9  _init  [libtorch_cpu.so]
+                73.9  _init  [libc10.so]
+                  72  c10::intrusive_ptr<>::reset_not_null_  [libtorch_cpu.so]
+                44.6  __memset_avx2_unaligned_erms  [libc.so.6]
+                26.3  _PyTuple_Resize+?  [python3.12]
+    constant by function:
+         1,606,487.8  _PyEval_EvalFrameDefault  [python3.12]
+           392,688.3  PyDict_Contains+?  [python3.12]
+             345,494  _PyObject_GenericGetAttrWithDict  [python3.12]
+           257,499.9  PyType_GetSlot+?  [python3.12]
+           251,926.4  __tls_get_addr  [ld-linux-x86-64.so.2]
+           232,768.5  PyEval_EvalCode+?  [python3.12]
+    irregular by function:
+        78,987,247.1  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+        20,770,574.2  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+        16,581,678.2  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+
+derive encode_prompt: only 1 state point(s) observed; need at least 3
+derive postprocess_frames   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=930,pixels_k=80,frames=5,height=128 x2, tag=930,pixels_k=144,frames=9,height=128 x2, tag=930,pixels_k=180,frames=5,height=192 x2, tag=930,pixels_k=272,frames=17,height=128 x2, tag=930,pixels_k=320,frames=5,height=256 x2, tag=930,pixels_k=324,frames=9,height=192 x2, tag=930,pixels_k=576,frames=9,height=256 x2, tag=930,pixels_k=612,frames=17,height=192 x2, tag=930,pixels_k=1,088,frames=17,height=256 x2
+  cost(tag, pixels_k, frames, height) = 0*tag + 5,184.8*pixels_k + -8.5*frames + 0*height + 217,418.8        [all tag, pixels_k, frames, height]   blocks: 15 affine, 6253 constant, 4 irregular (0.1% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 3,928 per call (calibrated)
+    irregular blocks, per call: 1,674 .. 2,069
+    OpenMP runtime waiting, per call (excluded): 18,367,370 .. 21,431,325.5
+    per-pixels_k coefficient by function:
+               2,112  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,728  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,344  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               0.291  _int_free_merge_chunk  [libc.so.6]
+                0.25  _int_free_maybe_consolidate  [libc.so.6]
+               0.218  _int_memalign  [libc.so.6]
+    per-frames coefficient by function:
+                12.4  _int_malloc  [libc.so.6]
+               -10.9  PyObject_Free  [python3.12]
+                 -10  PyDict_Contains+?  [python3.12]
+    constant by function:
+            28,281.3  _PyEval_EvalFrameDefault  [python3.12]
+               5,988  __tls_get_addr  [ld-linux-x86-64.so.2]
+             4,645.4  _int_malloc  [libc.so.6]
+             4,604.5  PyObject_Free  [python3.12]
+               4,066  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+             4,050.7  PyEval_EvalCode+?  [python3.12]
+
+derive postprocess_video   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=931,pixels_k=80,frames=5,height=128 x2, tag=931,pixels_k=144,frames=9,height=128 x2, tag=931,pixels_k=180,frames=5,height=192 x2, tag=931,pixels_k=272,frames=17,height=128 x2, tag=931,pixels_k=320,frames=5,height=256 x2, tag=931,pixels_k=324,frames=9,height=192 x2, tag=931,pixels_k=576,frames=9,height=256 x2, tag=931,pixels_k=612,frames=17,height=192 x2, tag=931,pixels_k=1,088,frames=17,height=256 x2
+  cost(tag, pixels_k, frames, height) = 0*tag + 5,184.9*pixels_k + -28.8*frames + 0.111*height + 364,087.9        [all tag, pixels_k, frames, height]   blocks: 20 affine, 7855 constant, 10 irregular (16.6% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 7,274.1 per call (calibrated)
+    irregular blocks, per call: 93,968 .. 1,472,663
+    OpenMP runtime waiting, per call (excluded): 19,012,360.5 .. 24,496,594
+    per-pixels_k coefficient by function:
+               2,112  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,728  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,344  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               0.291  _int_free_merge_chunk  [libc.so.6]
+                0.25  _int_free_maybe_consolidate  [libc.so.6]
+               0.218  _int_memalign  [libc.so.6]
+    per-frames coefficient by function:
+               -23.3  PyObject_Free  [python3.12]
+               -13.9  PyObject_Malloc  [python3.12]
+                 7.2  _int_malloc  [libc.so.6]
+                 1.1  _PyEval_EvalFrameDefault  [python3.12]
+    per-height coefficient by function:
+               0.111  _PyEval_EvalFrameDefault  [python3.12]
+    constant by function:
+            59,364.7  _PyEval_EvalFrameDefault  [python3.12]
+             9,190.6  PyObject_Free  [python3.12]
+               8,785  PyEval_EvalCode+?  [python3.12]
+               8,652  __tls_get_addr  [ld-linux-x86-64.so.2]
+               8,247  _PyTuple_Resize+?  [python3.12]
+               7,395  PyDict_Contains+?  [python3.12]
+    irregular by function:
+           484,399.7  __memcpy_avx_unaligned_erms  [libc.so.6]
+             1,903.7  _int_malloc  [libc.so.6]
+
+derive pp_denorm   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=909,pixels_k=80,frames=5,height=128 x2, tag=909,pixels_k=144,frames=9,height=128 x2, tag=909,pixels_k=180,frames=5,height=192 x2, tag=909,pixels_k=272,frames=17,height=128 x2, tag=909,pixels_k=320,frames=5,height=256 x2, tag=909,pixels_k=324,frames=9,height=192 x2, tag=909,pixels_k=576,frames=9,height=256 x2, tag=909,pixels_k=612,frames=17,height=192 x2, tag=909,pixels_k=1,088,frames=17,height=256 x2
+  cost(tag, pixels_k, frames, height) = 0*tag + 5,184.9*pixels_k + -4.1*frames + 0*height + 86,639.6        [all tag, pixels_k, frames, height]   blocks: 13 affine, 3744 constant, 4 irregular (0.1% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 1,670 .. 2,069
+    OpenMP runtime waiting, per call (excluded): 3,842,130.5 .. 9,058,731.5
+    per-pixels_k coefficient by function:
+               2,112  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,728  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               1,344  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               0.291  _int_free_merge_chunk  [libc.so.6]
+                0.25  _int_free_maybe_consolidate  [libc.so.6]
+               0.218  _int_memalign  [libc.so.6]
+    per-frames coefficient by function:
+                 -10  PyDict_Contains+?  [python3.12]
+                 5.9  _int_malloc  [libc.so.6]
+    constant by function:
+             4,457.5  _int_malloc  [libc.so.6]
+               4,066  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+               3,420  __tls_get_addr  [ld-linux-x86-64.so.2]
+               2,426  at::internal::serial_for_each  [libtorch_cpu.so]
+             1,845.3  _int_free  [libc.so.6]
+               1,632  void at::internal::invoke_parallel<at::parallel_for<at::TensorIterator  [libtorch_cpu.so]
+
+derive pp_stack   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=912,pixels_k=80,batch=1,frames=5 x2, tag=912,pixels_k=144,batch=1,frames=9 x2, tag=912,pixels_k=180,batch=1,frames=5 x2, tag=912,pixels_k=272,batch=1,frames=17 x2, tag=912,pixels_k=320,batch=1,frames=5 x2, tag=912,pixels_k=324,batch=1,frames=9 x2, tag=912,pixels_k=576,batch=1,frames=9 x2, tag=912,pixels_k=612,batch=1,frames=17 x2, tag=912,pixels_k=1,088,batch=1,frames=17 x2
+  cost(tag, pixels_k, batch, frames) = 0*tag + 0*pixels_k + 0*batch + -8*frames + 26,177.8        [all tag, pixels_k, batch, frames]   blocks: 1 affine, 2155 constant, 6 irregular (94.9% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 92,136 .. 1,470,573
+    OpenMP runtime waiting, per call (excluded): 0 .. 1,982,841
+    per-frames coefficient by function:
+                  -8  _int_malloc  [libc.so.6]
+    constant by function:
+               4,176  _PyEval_EvalFrameDefault  [python3.12]
+               2,310  PyDict_Contains+?  [python3.12]
+                 986  PyEval_EvalCode+?  [python3.12]
+               715.4  _PyType_Lookup  [python3.12]
+               705.2  PyObject_Free  [python3.12]
+                 660  PyArray_NewFromDescr_int  [_multiarray_umath.cpython-312-x86_64-linux-gnu.so]
+    irregular by function:
+           484,399.7  __memcpy_avx_unaligned_erms  [libc.so.6]
+
+derive pp_tonumpy   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=910,frames=5,height=128,width=128 x2, tag=910,frames=5,height=192,width=192 x2, tag=910,frames=5,height=256,width=256 x2, tag=910,frames=9,height=128,width=128 x2, tag=910,frames=9,height=192,width=192 x2, tag=910,frames=9,height=256,width=256 x2, tag=910,frames=17,height=128,width=128 x2, tag=910,frames=17,height=192,width=192 x2, tag=910,frames=17,height=256,width=256 x2
+  cost(tag, frames, height, width) = 0*tag + 0*frames + 0*height + 0*width + 31,964.7        [all tag, frames, height, width]   blocks: 0 affine, 2549 constant, 0 irregular (0.0% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    OpenMP runtime waiting, per call (excluded): 11,502,474.5 .. 13,771,194.5
+    constant by function:
+               1,175  _PyEval_EvalFrameDefault  [python3.12]
+               1,128  __tls_get_addr  [ld-linux-x86-64.so.2]
+               1,093  __GI___libc_malloc  [libc.so.6]
+               1,026  _int_free  [libc.so.6]
+                 972  ___pthread_mutex_lock  [libc.so.6]
+                 882  _PyArg_ParseStack+?  [python3.12]
+
+derive prepare_latents   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_frames=5,height=128,width=128,batch=1 x2, num_frames=5,height=192,width=192,batch=1 x2, num_frames=5,height=256,width=256,batch=1 x2, num_frames=9,height=128,width=128,batch=1 x2, num_frames=9,height=192,width=192,batch=1 x2, num_frames=9,height=256,width=256,batch=1 x2, num_frames=17,height=128,width=128,batch=1 x2, num_frames=17,height=192,width=192,batch=1 x2, num_frames=17,height=256,width=256,batch=1 x2
+  cost(num_frames, height, width, batch) = 24.4*num_frames + 0*height + 0*width + 0*batch + 38,984.2        [all num_frames, height, width, batch]   blocks: 2 affine, 2753 constant, 14 irregular (97.6% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 405,189 .. 4,029,601
+    per-num_frames coefficient by function:
+                24.4  PyDict_Contains+?  [python3.12]
+    constant by function:
+               4,044  _PyEval_EvalFrameDefault  [python3.12]
+             3,434.8  PyDict_Contains+?  [python3.12]
+               1,315  _PyObject_GenericGetAttrWithDict  [python3.12]
+             1,204.7  _PyType_Lookup  [python3.12]
+                 810  _PyDict_DelItem_KnownHash+?  [python3.12]
+                 782  PyUnicode_FromFormatV  [python3.12]
+    irregular by function:
+           940,906.7  at::CPUGeneratorImpl::random  [libtorch_cpu.so]
+           377,379.7  at::native::(anonymous namespace)::normal_kernel  [libtorch_cpu.so]
+           272,213.3  at::native::templates::cpu::(anonymous namespace)::NormalFill16<>::ope  [libtorch_cpu.so]
+
+derive rope   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: frames=2,height=16,width=16 x24, frames=2,height=24,width=24 x24, frames=2,height=32,width=32 x24, frames=3,height=16,width=16 x24, frames=3,height=24,width=24 x24, frames=3,height=32,width=32 x24, frames=5,height=16,width=16 x24, frames=5,height=24,width=24 x24, frames=5,height=32,width=32 x24
+  cost(frames, height, width) = 0.5*frames + 0*height + 0*width + 45,000.1        [all frames, height, width]   blocks: 1 affine, 6307 constant, 29 irregular (22.8% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 3,730.8 .. 31,726.3
+    OpenMP runtime waiting, per call (excluded): 116,943 .. 181,167.3
+    per-frames coefficient by function:
+                 0.5  at::DimCounter::increment  [libtorch_cpu.so]
+    constant by function:
+             4,902.6  _PyEval_EvalFrameDefault  [python3.12]
+             2,286.4  PyDict_Contains+?  [python3.12]
+             1,565.8  _PyObject_GenericGetAttrWithDict  [python3.12]
+             1,442.2  PyType_GetSlot+?  [python3.12]
+               1,279  __tls_get_addr  [ld-linux-x86-64.so.2]
+               1,153  _PyType_Lookup  [python3.12]
+    irregular by function:
+            11,029.8  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+             1,975.3  at::internal::serial_for_each  [libtorch_cpu.so]
+               311.9  at::DimCounter::increment  [libtorch_cpu.so]
+
+derive sched_step   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,frames=2,numel=8,192 x12, batch=1,frames=2,numel=18,432 x12, batch=1,frames=2,numel=32,768 x12, batch=1,frames=3,numel=12,288 x12, batch=1,frames=3,numel=27,648 x12, batch=1,frames=3,numel=49,152 x12, batch=1,frames=5,numel=20,480 x12, batch=1,frames=5,numel=46,080 x12, batch=1,frames=5,numel=81,920 x12
+  cost(batch, frames, numel) = 0*batch + 0*frames + 1.1*numel + 63,487.7        [all batch, frames, numel]   blocks: 13 affine, 4103 constant, 2 irregular (0.1% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 0 .. 336
+    OpenMP runtime waiting, per call (excluded): 1,914,861 .. 7,431,269.5
+    per-numel coefficient by function:
+               0.687  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               0.437  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+              0.0085  __tls_get_addr  [ld-linux-x86-64.so.2]
+              0.0058  void at::internal::invoke_parallel<at::parallel_for<at::TensorIterator  [libtorch_cpu.so]
+             0.00246  at::internal::serial_for_each  [libtorch_cpu.so]
+             0.00224  at::TensorIteratorBase::serial_for_each  [libtorch_cpu.so]
+    constant by function:
+             3,791.2  _PyEval_EvalFrameDefault  [python3.12]
+             1,712.9  __tls_get_addr  [ld-linux-x86-64.so.2]
+             1,638.9  _PyType_Lookup  [python3.12]
+             1,609.5  _PyObject_GenericGetAttrWithDict  [python3.12]
+               1,554  PyUnicode_FromFormatV  [python3.12]
+             1,474.3  PyDict_Contains+?  [python3.12]
+
+derive set_timesteps   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: steps=4 x9, steps=8 x9
+  fewer than 3 state points: no relation claimed
+
+derive step_prep   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: tag=905,frames=2,numel=8,192,batch=1 x12, tag=905,frames=2,numel=18,432,batch=1 x12, tag=905,frames=2,numel=32,768,batch=1 x12, tag=905,frames=3,numel=12,288,batch=1 x12, tag=905,frames=3,numel=27,648,batch=1 x12, tag=905,frames=3,numel=49,152,batch=1 x12, tag=905,frames=5,numel=20,480,batch=1 x12, tag=905,frames=5,numel=46,080,batch=1 x12, tag=905,frames=5,numel=81,920,batch=1 x12
+  cost(tag, frames, numel, batch) = 0*tag + 0*frames + 0*numel + 0*batch + 20,728.8        [all tag, frames, numel, batch]   blocks: 0 affine, 2650 constant, 0 irregular (0.0% of cost)
+    note: tag is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    OpenMP runtime waiting, per call (excluded): 161,801 .. 253,006.8
+    constant by function:
+             1,110.4  _PyEval_EvalFrameDefault  [python3.12]
+                 777  PyUnicode_FromFormatV  [python3.12]
+                 728  __tls_get_addr  [ld-linux-x86-64.so.2]
+               606.6  _PyType_Lookup  [python3.12]
+                 540  ___pthread_mutex_lock  [libc.so.6]
+                 519  _PyObject_GenericGetAttrWithDict  [python3.12]
+
+derive transformer_forward   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,frames=2,seq_len=128 x24, batch=1,frames=2,seq_len=288 x24, batch=1,frames=2,seq_len=512 x24, batch=1,frames=3,seq_len=192 x24, batch=1,frames=3,seq_len=432 x24, batch=1,frames=3,seq_len=768 x24, batch=1,frames=5,seq_len=320 x24, batch=1,frames=5,seq_len=720 x24, batch=1,frames=5,seq_len=1,280 x24
+  cost(batch, frames, seq_len) = 0*batch + 54,296.1*frames + 27,604.8*seq_len + 6,093,446.7        [all batch, frames, seq_len]   blocks: 390 affine, 20043 constant, 1072 irregular (76.9% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 37,389 per call (calibrated)
+    irregular blocks, per call: 8,888,714.7 .. 249,085,876.5
+    OpenMP runtime waiting, per call (excluded): 102,081,440.8 .. 328,318,715
+    per-frames coefficient by function:
+            23,810.3  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+             7,784.9  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               4,869  at::internal::serial_for_each  [libtorch_cpu.so]
+               4,352  mkl_trans_mkl_somatcopy2  [libtorch_cpu.so]
+               3,968  MKL_Somatcopy2  [libtorch_cpu.so]
+               3,264  mkl_trans_errchk_mkl_somatcopy2  [libtorch_cpu.so]
+    per-seq_len coefficient by function:
+             7,109.3  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               4,352  Sleef_finz_tanhf8_u10avx2  [libtorch_cpu.so]
+             3,816.7  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               3,134  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+             2,829.4  at::internal::serial_for_each  [libtorch_cpu.so]
+               1,876  at::native::AVX2::RowwiseMomentsImpl<>  [libtorch_cpu.so]
+    constant by function:
+           708,139.6  _PyEval_EvalFrameDefault  [python3.12]
+           180,992.9  PyDict_Contains+?  [python3.12]
+             159,707  _PyObject_GenericGetAttrWithDict  [python3.12]
+           145,489.3  __tls_get_addr  [ld-linux-x86-64.so.2]
+             120,649  PyType_GetSlot+?  [python3.12]
+           106,624.4  at::internal::serial_for_each  [libtorch_cpu.so]
+    irregular by function:
+        39,493,623.6  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+          10,385,144  at::native::(anonymous namespace)::cpu_flash_attention<float, float, 2  [libtorch_cpu.so]
+         8,290,839.1  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+
+derive vae_clear_cache: only 1 state point(s) observed; need at least 3
+derive vae_decode   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,zdim=16,frames=2,height=16 x2, batch=1,zdim=16,frames=2,height=24 x2, batch=1,zdim=16,frames=2,height=32 x2, batch=1,zdim=16,frames=3,height=16 x2, batch=1,zdim=16,frames=3,height=24 x2, batch=1,zdim=16,frames=3,height=32 x2, batch=1,zdim=16,frames=5,height=16 x2, batch=1,zdim=16,frames=5,height=24 x2, batch=1,zdim=16,frames=5,height=32 x2
+  cost(batch, zdim, frames, height) = 0*batch + 0*zdim + 8,175,679.1*frames + 9,492.6*height + 479,836.4        [all batch, zdim, frames, height]   blocks: 16582 affine, 11882 constant, 8416 irregular (99.7% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: zdim is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 16,754.7 per call (calibrated)
+    irregular blocks, per call: 2,100,994,748.4 .. 27,543,055,569.7
+    OpenMP runtime waiting, per call (excluded): 1,239,556,613.4 .. 4,851,960,922.3
+    per-frames coefficient by function:
+           872,313.6  _PyEval_EvalFrameDefault  [python3.12]
+             721,752  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+           326,149.3  _PyObject_GenericGetAttrWithDict  [python3.12]
+           299,794.3  PyDict_Contains+?  [python3.12]
+           202,347.6  PyType_GetSlot+?  [python3.12]
+             201,022  _PyType_Lookup  [python3.12]
+    per-height coefficient by function:
+             3,711.2  Xbyak::CodeGenerator::vex  [libtorch_cpu.so]
+             1,433.3  Xbyak::Address::Address  [libtorch_cpu.so]
+               278.6  dnnl_primitive_attr::has_default_values  [libtorch_cpu.so]
+               269.8  dnnl::impl::conv_desc_init  [libtorch_cpu.so]
+               243.6  dnnl::impl::convolution_fwd_pd_t::convolution_fwd_pd_t  [libtorch_cpu.so]
+               226.4  dnnl::impl::md2fmt_tag_str[abi:cxx11](dnnl_memory_desc const*)  [libtorch_cpu.so]
+    constant by function:
+              56,160  Xbyak::operator+  [libtorch_cpu.so]
+            50,094.8  _PyEval_EvalFrameDefault  [python3.12]
+              46,176  dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll  [libtorch_cpu.so]
+            44,851.6  PyDict_Contains+?  [python3.12]
+            38,903.2  dnnl::impl::cpu::x64::jit_avx2_conv_fwd_kernel_f32_t::oh_step_unroll_k  [libtorch_cpu.so]
+              31,080  dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll  [libtorch_cpu.so]
+    irregular by function:
+       3,474,408,576  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+       1,858,997,316  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       495,869,372.4  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+
+derive vae_decode_chunk   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: height=16,width=16,first=0 x14, height=16,width=16,first=1 x6, height=24,width=24,first=0 x14, height=24,width=24,first=1 x6, height=32,width=32,first=0 x14, height=32,width=32,first=1 x6
+  cost(height, width, first) = 9,155.6*height + 0*width + -4,988,638.3*first + 18,604,091.4        [all height, width, first]   blocks: 14816 affine, 17827 constant, 3102 irregular (99.3% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 459,665,763.7 .. 6,419,099,084.3
+    OpenMP runtime waiting, per call (excluded): 592,730,111.7 .. 1,255,808,690
+    per-height coefficient by function:
+             3,643.9  __tls_get_addr  [ld-linux-x86-64.so.2]
+               379.6  _init  [libtorch_cpu.so]
+               177.7  _init  [libc10.so]
+                -147  mkl_blas_sgemm_omp_get_prototype  [libtorch_cpu.so]
+               145.4  void c10::function_ref<void (char**, long const*, long, long)>::callba  [libtorch_cpu.so]
+               141.9  malloc_consolidate  [libc.so.6]
+    per-first coefficient by function:
+            -715,896  mkl_trans_mkl_somatcopy  [libtorch_cpu.so]
+            -657,216  MKL_Somatcopy  [libtorch_cpu.so]
+            -652,032  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+            -498,432  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+            -481,176  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+            -352,080  mkl_trans_errchk_mkl_somatcopy  [libtorch_cpu.so]
+    constant by function:
+         1,519,642.4  mkl_trans_mkl_somatcopy  [libtorch_cpu.so]
+           1,395,072  MKL_Somatcopy  [libtorch_cpu.so]
+           1,389,888  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+           1,367,016  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+           1,021,392  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+           878,236.1  _PyEval_EvalFrameDefault  [python3.12]
+    irregular by function:
+         849,742,848  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+       464,910,591.3  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       120,434,682.7  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+
+derive vae_decode_frames   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: batch=1,frames=2,height=16 x2, batch=1,frames=2,height=24 x2, batch=1,frames=2,height=32 x2, batch=1,frames=3,height=16 x2, batch=1,frames=3,height=24 x2, batch=1,frames=3,height=32 x2, batch=1,frames=5,height=16 x2, batch=1,frames=5,height=24 x2, batch=1,frames=5,height=32 x2
+  cost(batch, frames, height) = 0*batch + 8,172,623.2*frames + 9,492.6*height + 440,354.5        [all batch, frames, height]   blocks: 16578 affine, 11868 constant, 8420 irregular (99.7% of cost)
+    note: batch is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 15,081.7 per call (calibrated)
+    irregular blocks, per call: 2,100,992,794.6 .. 27,543,056,817.5
+    OpenMP runtime waiting, per call (excluded): 1,238,780,969.4 .. 4,850,746,056.8
+    per-frames coefficient by function:
+           872,313.6  _PyEval_EvalFrameDefault  [python3.12]
+             721,752  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+           326,149.3  _PyObject_GenericGetAttrWithDict  [python3.12]
+           299,794.3  PyDict_Contains+?  [python3.12]
+           202,347.6  PyType_GetSlot+?  [python3.12]
+             201,022  _PyType_Lookup  [python3.12]
+    per-height coefficient by function:
+             3,711.2  Xbyak::CodeGenerator::vex  [libtorch_cpu.so]
+             1,433.3  Xbyak::Address::Address  [libtorch_cpu.so]
+               278.6  dnnl_primitive_attr::has_default_values  [libtorch_cpu.so]
+               269.8  dnnl::impl::conv_desc_init  [libtorch_cpu.so]
+               243.6  dnnl::impl::convolution_fwd_pd_t::convolution_fwd_pd_t  [libtorch_cpu.so]
+               226.4  dnnl::impl::md2fmt_tag_str[abi:cxx11](dnnl_memory_desc const*)  [libtorch_cpu.so]
+    constant by function:
+              56,160  Xbyak::operator+  [libtorch_cpu.so]
+              46,176  dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll  [libtorch_cpu.so]
+            44,246.6  PyDict_Contains+?  [python3.12]
+            39,885.8  _PyEval_EvalFrameDefault  [python3.12]
+            38,903.2  dnnl::impl::cpu::x64::jit_avx2_conv_fwd_kernel_f32_t::oh_step_unroll_k  [libtorch_cpu.so]
+              31,080  dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll  [libtorch_cpu.so]
+    irregular by function:
+       3,474,408,576  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+       1,858,997,316  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       495,869,372.4  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+
+derive vae_frame_loop   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: frames=2,height=16,width=16,zdim=16 x4, frames=2,height=24,width=24,zdim=16 x4, frames=2,height=32,width=32,zdim=16 x4, frames=3,height=16,width=16,zdim=16 x6, frames=3,height=24,width=24,zdim=16 x6, frames=3,height=32,width=32,zdim=16 x6, frames=5,height=16,width=16,zdim=16 x10, frames=5,height=24,width=24,zdim=16 x10, frames=5,height=32,width=32,zdim=16 x10
+  cost(frames, height, width, zdim) = 399,068*frames + 20,177.5*height + 0*width + 0*zdim + 15,382,588.8        [all frames, height, width, zdim]   blocks: 2815 affine, 30828 constant, 2587 irregular (99.4% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: zdim is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 2,255 per call (calibrated)
+    irregular blocks, per call: 1,042,190,210.6 .. 5,497,850,269
+    OpenMP runtime waiting, per call (excluded): 609,416,074.9 .. 1,073,099,935
+    per-frames coefficient by function:
+            68,180.6  mkl_trans_mkl_somatcopy  [libtorch_cpu.so]
+              62,592  MKL_Somatcopy  [libtorch_cpu.so]
+            61,714.3  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+            45,826.3  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+            33,531.4  mkl_trans_errchk_mkl_somatcopy  [libtorch_cpu.so]
+            13,412.6  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+    per-height coefficient by function:
+             4,308.4  mkl_blas_def_sgemm_scopy_right4_bdz  [libtorch_cpu.so]
+             3,588.1  __tls_get_addr  [ld-linux-x86-64.so.2]
+             1,232.4  mkl_blas_def_sgemm_scopy_down16_bdz  [libtorch_cpu.so]
+               559.9  c10::ParallelGuard::ParallelGuard  [libc10.so]
+               559.9  at::internal::set_thread_num  [libtorch_cpu.so]
+               534.2  _init  [libtorch_cpu.so]
+    constant by function:
+         1,045,784.2  mkl_trans_mkl_somatcopy  [libtorch_cpu.so]
+           960,057.6  MKL_Somatcopy  [libtorch_cpu.so]
+           956,941.7  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+           923,593.3  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+           876,613.1  _PyEval_EvalFrameDefault  [python3.12]
+           702,899.3  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+    irregular by function:
+       998,600,838.4  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+       537,043,644.2  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       142,466,116.4  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+
+derive vae_stage   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: zdim=16,frames=2,height=16,width=16 x2, zdim=16,frames=2,height=24,width=24 x2, zdim=16,frames=2,height=32,width=32 x2, zdim=16,frames=3,height=16,width=16 x2, zdim=16,frames=3,height=24,width=24 x2, zdim=16,frames=3,height=32,width=32 x2, zdim=16,frames=5,height=16,width=16 x2, zdim=16,frames=5,height=24,width=24 x2, zdim=16,frames=5,height=32,width=32 x2
+  cost(zdim, frames, height, width) = 0*zdim + 8,429,431.5*frames + 9,716.2*height + 0*width + 3,865,470.9        [all zdim, frames, height, width]   blocks: 16802 affine, 14263 constant, 8192 irregular (99.7% of cost)
+    note: zdim is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 26,793 per call (calibrated)
+    irregular blocks, per call: 2,101,185,581.1 .. 27,549,160,138.3
+    OpenMP runtime waiting, per call (excluded): 1,271,537,658.4 .. 4,889,513,258.8
+    per-frames coefficient by function:
+           893,263.5  _PyEval_EvalFrameDefault  [python3.12]
+             721,752  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+           326,149.3  _PyObject_GenericGetAttrWithDict  [python3.12]
+           299,730.8  PyDict_Contains+?  [python3.12]
+           203,365.1  PyType_GetSlot+?  [python3.12]
+           200,949.7  _PyType_Lookup  [python3.12]
+    per-height coefficient by function:
+             3,711.2  Xbyak::CodeGenerator::vex  [libtorch_cpu.so]
+             1,433.3  Xbyak::Address::Address  [libtorch_cpu.so]
+               278.6  dnnl_primitive_attr::has_default_values  [libtorch_cpu.so]
+               269.8  dnnl::impl::conv_desc_init  [libtorch_cpu.so]
+               243.6  dnnl::impl::convolution_fwd_pd_t::convolution_fwd_pd_t  [libtorch_cpu.so]
+               226.4  dnnl::impl::md2fmt_tag_str[abi:cxx11](dnnl_memory_desc const*)  [libtorch_cpu.so]
+    constant by function:
+           993,692.7  _PyEval_EvalFrameDefault  [python3.12]
+           264,722.1  PyDict_Contains+?  [python3.12]
+           183,450.1  PyType_GetSlot+?  [python3.12]
+           135,464.4  _PyObject_GenericGetAttrWithDict  [python3.12]
+           130,563.9  PyObject_Free  [python3.12]
+            97,165.7  _PyType_Lookup  [python3.12]
+    irregular by function:
+       3,474,408,576  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+       1,858,997,316  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       495,869,372.4  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+
+derive wan_call   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_frames=5,height=128,width=128,steps=4 x1, num_frames=5,height=128,width=128,steps=8 x1, num_frames=5,height=192,width=192,steps=4 x1, num_frames=5,height=192,width=192,steps=8 x1, num_frames=5,height=256,width=256,steps=4 x1, num_frames=5,height=256,width=256,steps=8 x1, num_frames=9,height=128,width=128,steps=4 x1, num_frames=9,height=128,width=128,steps=8 x1, num_frames=9,height=192,width=192,steps=4 x1, num_frames=9,height=192,width=192,steps=8 x1, num_frames=9,height=256,width=256,steps=4 x1, num_frames=9,height=256,width=256,steps=8 x1, num_frames=17,height=128,width=128,steps=4 x1, num_frames=17,height=128,width=128,steps=8 x1, num_frames=17,height=192,width=192,steps=4 x1, num_frames=17,height=192,width=192,steps=8 x1, num_frames=17,height=256,width=256,steps=4 x1, num_frames=17,height=256,width=256,steps=8 x1
+  cost(num_frames, height, width, steps) = 4,480,269.3*num_frames + 2,347.1*height + 0*width + 12,023,645.5*steps + 27,308,498.9        [all num_frames, height, width, steps]   blocks: 26502 affine, 21378 constant, 6406 irregular (98.7% of cost)
+    note: width is a linear function of the earlier states over the observed points; its coefficient cannot be separated (attributed to them)
+    marker cost subtracted from the constant: 545,438.5 per call (calibrated)
+    irregular blocks, per call: 2,191,119,102.6 .. 32,076,085,270
+    OpenMP runtime waiting, per call (excluded): 2,123,119,818.3 .. 8,551,881,259.1
+    per-num_frames coefficient by function:
+             379,908  mkl_trans_mkl_somatcopy  [libtorch_cpu.so]
+             356,088  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+             348,768  MKL_Somatcopy  [libtorch_cpu.so]
+             263,220  mkl_trans_def_mkl_somatcopy2_seq  [libtorch_cpu.so]
+             255,174  _ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOB  [libtorch_cpu.so]
+             223,805  _PyEval_EvalFrameDefault  [python3.12]
+    per-height coefficient by function:
+               463.9  Xbyak::CodeGenerator::vex  [libtorch_cpu.so]
+                 459  operator new  [libstdc++.so.6.0.33]
+               185.1  std::__once_callable+?  [libstdc++.so.6.0.33]
+               179.2  Xbyak::Address::Address  [libtorch_cpu.so]
+               108.5  operator delete  [libstdc++.so.6.0.33]
+                93.9  __GI___libc_malloc  [libc.so.6]
+    per-steps coefficient by function:
+           1,616,325  _PyEval_EvalFrameDefault  [python3.12]
+           393,027.1  PyDict_Contains+?  [python3.12]
+             346,633  _PyObject_GenericGetAttrWithDict  [python3.12]
+           257,492.3  PyType_GetSlot+?  [python3.12]
+           234,399.2  PyEval_EvalCode+?  [python3.12]
+             216,025  _PyType_Lookup  [python3.12]
+    constant by function:
+         5,764,323.9  _PyEval_EvalFrameDefault  [python3.12]
+         1,620,141.5  PyDict_Contains+?  [python3.12]
+         1,043,998.4  PyType_GetSlot+?  [python3.12]
+           955,950.3  _PyObject_GenericGetAttrWithDict  [python3.12]
+           768,887.5  PyObject_Free  [python3.12]
+           614,201.4  _PyType_Lookup  [python3.12]
+    irregular by function:
+      3,473,075,509.3  mkl_trans_def_mkl_somatcopy2_n  [libtorch_cpu.so]
+      2,332,920,798.7  mkl_blas_def_sgemm_kernel_0_zen  [libtorch_cpu.so]
+       495,920,548.4  at::TensorIteratorBase::TensorIteratorBase  [libtorch_cpu.so]
+

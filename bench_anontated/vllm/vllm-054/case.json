@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "vllm-054",
+  "title": "Sampler.apply_logits_processors body",
+  "language": "python",
+  "region": {
+    "symbol": "Sampler.apply_logits_processors",
+    "start_line": 379,
+    "end_line": 419,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-054",
+    "pcvs": [
+      "logits_rows"
+    ]
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/sample/sampler.py",
+    "sha256": "f95805b2c6d06218c724826aa5f881a606e8d0a534a566aee7c85948520dd216"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/driver.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Runs stochastic sampling with top-k and top-p constraints, three seeds, and varied output limits. Probe.finish requires the exact sampler marker; target-specific reachability is not yet verified."
+  }
+}

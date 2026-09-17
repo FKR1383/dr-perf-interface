@@ -1,0 +1,56 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -334,25 +335,26 @@
+         generator: torch.Generator | list[torch.Generator] | None = None,
+         latents: torch.Tensor | None = None,
+     ) -> torch.Tensor:
+-        if latents is not None:
+-            return latents.to(device=device, dtype=dtype)
+-
+-        num_latent_frames = (num_frames - 1) // self.vae_scale_factor_temporal + 1
+-        shape = (
+-            batch_size,
+-            num_channels_latents,
+-            num_latent_frames,
+-            int(height) // self.vae_scale_factor_spatial,
+-            int(width) // self.vae_scale_factor_spatial,
+-        )
+-        if isinstance(generator, list) and len(generator) != batch_size:
+-            raise ValueError(
+-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
+-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
+-            )
+-
+-        latents = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
+-        return latents
++        with perfmark.region("wan-036"):
++            if latents is not None:
++                return latents.to(device=device, dtype=dtype)
++
++            num_latent_frames = (num_frames - 1) // self.vae_scale_factor_temporal + 1
++            shape = (
++                batch_size,
++                num_channels_latents,
++                num_latent_frames,
++                int(height) // self.vae_scale_factor_spatial,
++                int(width) // self.vae_scale_factor_spatial,
++            )
++            if isinstance(generator, list) and len(generator) != batch_size:
++                raise ValueError(
++                    f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
++                    f" size of {batch_size}. Make sure the batch size matches the length of the generators."
++                )
++
++            latents = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
++            return latents
+ 
+     @property
+     def guidance_scale(self):

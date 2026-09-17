@@ -1,0 +1,35 @@
+--- a/Cython/Shadow.py
++++ b/Cython/Shadow.py
+@@ -1,5 +1,6 @@
+ # cython.* namespace for pure mode.
+ from __future__ import annotations
++import perfmark
+ 
+ # Possible version formats: "3.1.0", "3.1.0a1", "3.1.0a1.dev0"
+ __version__ = "3.3.0"
+@@ -413,15 +414,16 @@
+ class PointerType(CythonType):
+ 
+     def __init__(self, value=None):
+-        from .Shadow import cast
+-        if isinstance(value, (ArrayType, PointerType)):
+-            self._items = [cast(self._basetype, a) for a in value._items]
+-        elif isinstance(value, list):
+-            self._items = [cast(self._basetype, a) for a in value]
+-        elif value is None or value == 0:
+-            self._items = []
+-        else:
+-            raise ValueError
++        with perfmark.region("lt-237"):
++            from .Shadow import cast
++            if isinstance(value, (ArrayType, PointerType)):
++                self._items = [cast(self._basetype, a) for a in value._items]
++            elif isinstance(value, list):
++                self._items = [cast(self._basetype, a) for a in value]
++            elif value is None or value == 0:
++                self._items = []
++            else:
++                raise ValueError
+ 
+     def __getitem__(self, ix):
+         if ix < 0:

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "v8-interpreter-017",
+  "title": "variable declaration generation",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/v8/v8",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/interpreter/bytecode-generator.cc",
+    "snapshot": "../../upstream/src/interpreter/bytecode-generator.cc",
+    "sha256": "29b872095f18fe2fba0a6576f2f618aa0cc4a3421bd084260e57f3a312f205b0"
+  },
+  "region": {
+    "symbol": "v8::internal::interpreter::BytecodeGenerator::VisitVariableDeclaration",
+    "start_line": 2139,
+    "end_line": 2183
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-interpreter-017",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Compile a bounded script with local, context, and global variable declarations.",
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://github.com/v8/v8/blob/736a2cbec441e85b68c742215d15318abfeae707/src/interpreter/bytecode-generator.cc",
+    "https://github.com/v8/v8/commit/736a2cbec441e85b68c742215d15318abfeae707"
+  ],
+  "phase": "bytecode-generation",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "behavior-checked",
+      "details": "Public JavaScript assertions passed with host Node.js v18.19.1; this is not the pinned or instrumented V8 build, so region entry was not verified."
+    },
+    "coverage_note": "This test compiles and executes representative syntax, but region entry depends on V8 compilation decisions; the marked bytecode-generator function has not been observed in a patched build."
+  }
+}

@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-strings.cc
++++ b/src/runtime/runtime-strings.cc
+@@ -13,6 +13,7 @@
+ #include "src/runtime/runtime-utils.h"
+ #include "src/strings/string-builder-inl.h"
+ #include "src/strings/unicode-inl.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -638,6 +639,7 @@
+ }
+ 
+ RUNTIME_FUNCTION(Runtime_StringToWellFormed) {
++  DRPERF_BENCH_REGION("v8-interpreter-036");
+   HandleScope handle_scope(isolate);
+   DCHECK_EQ(1, args.length());
+   DirectHandle<String> source = args.at<String>(0);

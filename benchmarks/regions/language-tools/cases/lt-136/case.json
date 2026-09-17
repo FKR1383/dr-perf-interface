@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-136",
+  "title": "astroid is_decorated_with_attrs body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pylint-dev/astroid",
+    "revision": "5d1a0a2efabdc43f6cb8449375476b2915ede8fe",
+    "path": "astroid/brain/brain_attrs.py",
+    "snapshot": "../../upstream/astroid/astroid/brain/brain_attrs.py",
+    "sha256": "8866fa6ea306e984c10018804761183c9713a31fcea68a9734bd20df40b1d31e"
+  },
+  "region": {
+    "symbol": "is_decorated_with_attrs",
+    "start_line": 51,
+    "end_line": 62,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-136",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise is_decorated_with_attrs with bounded, varied astroid inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "astroid:astroid/brain/brain_attrs.py:is_decorated_with_attrs",
+  "citations": [
+    "https://github.com/pylint-dev/astroid/blob/5d1a0a2efabdc43f6cb8449375476b2915ede8fe/astroid/brain/brain_attrs.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

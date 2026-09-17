@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-134",
+  "title": "Selected block in pandas.to_arrays",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/pandas-dev/pandas",
+    "revision": "a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee",
+    "path": "pandas/core/internals/construction.py",
+    "snapshot": "../../upstream/pandas/pandas/core/internals/construction.py",
+    "sha256": "056c32d7cceb83b4ea51fda862e92bad3c392f5c3eca5bb204c3115162137527"
+  },
+  "region": {
+    "symbol": "to_arrays",
+    "start_line": 821,
+    "end_line": 850,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-134",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise to_arrays with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "pandas:pandas/core/internals/construction.py:to_arrays",
+  "citations": [
+    "https://github.com/pandas-dev/pandas/blob/a290443f9e0f1dee4ea6aa9d9a5effb8ba5dbaee/pandas/core/internals/construction.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/pandas/pandas/core/internals/construction.py",
+        "destination": "tests/original.py",
+        "sha256": "056c32d7cceb83b4ea51fda862e92bad3c392f5c3eca5bb204c3115162137527"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls pandas.core.internals.construction.to_arrays on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

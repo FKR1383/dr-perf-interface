@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-234",
+  "title": "GenerateFrontendArgs compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Frontend/CompilerInvocation.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Frontend/CompilerInvocation.cpp",
+    "sha256": "a76ce3f7ebdeaafd8eabc6e4d2a31e97bccaadea3c646d310b181c30aadecb5b"
+  },
+  "region": {
+    "symbol": "GenerateFrontendArgs",
+    "start_line": 2788,
+    "end_line": 2953,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-234",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Frontend/CompilerInvocation.cpp:GenerateFrontendArgs",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Frontend/CompilerInvocation.cpp#L2788-L2953"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "f0214ae24dee6b78e695f2ac43e535c1e5b8b995fcd276590c62b35c1e8d31d9",
+      "patch_sha256": "69b332878355c79bc335b5a8543a0697946b5883e6e948362484b400b5025d99"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

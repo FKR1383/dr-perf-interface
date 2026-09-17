@@ -1,0 +1,109 @@
+--- a/src/packaging/_ranges.py
++++ b/src/packaging/_ranges.py
+@@ -4,6 +4,7 @@
+ """Private version-range helpers used by :mod:`packaging.specifiers`."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import enum
+ import functools
+@@ -550,45 +551,25 @@
+     it is force-admitted in place, as ``prereleases=True`` would yield it. A
+     force-admitted pre-release is not a final, so it never suppresses the buffer.
+     """
+-    if prereleases is None:
+-        prerelease_buffer: list[Any] = []
+-        found_final = False
+-
+-        if len(ranges) == 1:
+-            # Hot path: most specifiers and small SpecifierSets reduce to
+-            # a single contiguous range.
+-            lower, upper = ranges[0]
+-            above = lower._above
+-            below = upper._below
+-            for item in iterable:
+-                parsed = coerce_version(item if key is None else key(item))
+-                if parsed is None:
+-                    continue
+-                if above is not None and not above(parsed):
+-                    continue
+-                if below is not None and not below(parsed):
+-                    continue
+-                if not parsed.is_prerelease:
+-                    found_final = True
+-                    yield item
+-                elif region and matches_bounds_only(region, parsed):
+-                    yield item
+-                elif not found_final:
+-                    prerelease_buffer.append(item)
+-            if not found_final:
+-                yield from prerelease_buffer
+-            return
+-
+-        for item in iterable:
+-            parsed = coerce_version(item if key is None else key(item))
+-            if parsed is None:
+-                continue
+-            for lower, upper in ranges:
++    with perfmark.region("gl-201"):
++        if prereleases is None:
++            prerelease_buffer: list[Any] = []
++            found_final = False
++    
++            if len(ranges) == 1:
++                # Hot path: most specifiers and small SpecifierSets reduce to
++                # a single contiguous range.
++                lower, upper = ranges[0]
+                 above = lower._above
+-                if above is not None and not above(parsed):
+-                    break
+                 below = upper._below
+-                if below is None or below(parsed):
++                for item in iterable:
++                    parsed = coerce_version(item if key is None else key(item))
++                    if parsed is None:
++                        continue
++                    if above is not None and not above(parsed):
++                        continue
++                    if below is not None and not below(parsed):
++                        continue
+                     if not parsed.is_prerelease:
+                         found_final = True
+                         yield item
+@@ -596,10 +577,31 @@
+                         yield item
+                     elif not found_final:
+                         prerelease_buffer.append(item)
+-                    break
+-        if not found_final:
+-            yield from prerelease_buffer
+-        return
++                if not found_final:
++                    yield from prerelease_buffer
++                return
++    
++            for item in iterable:
++                parsed = coerce_version(item if key is None else key(item))
++                if parsed is None:
++                    continue
++                for lower, upper in ranges:
++                    above = lower._above
++                    if above is not None and not above(parsed):
++                        break
++                    below = upper._below
++                    if below is None or below(parsed):
++                        if not parsed.is_prerelease:
++                            found_final = True
++                            yield item
++                        elif region and matches_bounds_only(region, parsed):
++                            yield item
++                        elif not found_final:
++                            prerelease_buffer.append(item)
++                        break
++            if not found_final:
++                yield from prerelease_buffer
++            return
+ 
+     exclude_prereleases = prereleases is False
+ 

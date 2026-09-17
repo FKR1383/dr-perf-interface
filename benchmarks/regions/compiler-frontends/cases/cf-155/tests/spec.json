@@ -1,0 +1,32 @@
+{
+  "case": "cf-155",
+  "phase": "static-analysis",
+  "scenario": "for-statement-analysis",
+  "compiler": "clang",
+  "flags": [
+    "--analyze",
+    "-Xanalyzer",
+    "-analyzer-output=text",
+    "-x",
+    "c"
+  ],
+  "expected_stdout": "",
+  "fixture": "int sum(const int *p, int n){int s=0; for(int i=0;i<n;i++) s+=p[i]; return s;}\nint main(void){int a[3]={1,2,3}; return sum(a,3)!=6;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(){int s=0;for(int i0=0;i0<3;++i0)s+=i0;for(int i1=0;i1<3;++i1)s+=i1;for(int i2=0;i2<3;++i2)s+=i2;for(int i3=0;i3<3;++i3)s+=i3;return s;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(){int s=0;for(int i0=0;i0<3;++i0)s+=i0;for(int i1=0;i1<3;++i1)s+=i1;for(int i2=0;i2<3;++i2)s+=i2;for(int i3=0;i3<3;++i3)s+=i3;for(int i4=0;i4<3;++i4)s+=i4;for(int i5=0;i5<3;++i5)s+=i5;for(int i6=0;i6<3;++i6)s+=i6;for(int i7=0;i7<3;++i7)s+=i7;for(int i8=0;i8<3;++i8)s+=i8;for(int i9=0;i9<3;++i9)s+=i9;for(int i10=0;i10<3;++i10)s+=i10;for(int i11=0;i11<3;++i11)s+=i11;for(int i12=0;i12<3;++i12)s+=i12;for(int i13=0;i13<3;++i13)s+=i13;for(int i14=0;i14<3;++i14)s+=i14;for(int i15=0;i15<3;++i15)s+=i15;return s;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(){int s=0;for(int i0=0;i0<3;++i0)s+=i0;for(int i1=0;i1<3;++i1)s+=i1;for(int i2=0;i2<3;++i2)s+=i2;for(int i3=0;i3<3;++i3)s+=i3;for(int i4=0;i4<3;++i4)s+=i4;for(int i5=0;i5<3;++i5)s+=i5;for(int i6=0;i6<3;++i6)s+=i6;for(int i7=0;i7<3;++i7)s+=i7;for(int i8=0;i8<3;++i8)s+=i8;for(int i9=0;i9<3;++i9)s+=i9;for(int i10=0;i10<3;++i10)s+=i10;for(int i11=0;i11<3;++i11)s+=i11;for(int i12=0;i12<3;++i12)s+=i12;for(int i13=0;i13<3;++i13)s+=i13;for(int i14=0;i14<3;++i14)s+=i14;for(int i15=0;i15<3;++i15)s+=i15;for(int i16=0;i16<3;++i16)s+=i16;for(int i17=0;i17<3;++i17)s+=i17;for(int i18=0;i18<3;++i18)s+=i18;for(int i19=0;i19<3;++i19)s+=i19;for(int i20=0;i20<3;++i20)s+=i20;for(int i21=0;i21<3;++i21)s+=i21;for(int i22=0;i22<3;++i22)s+=i22;for(int i23=0;i23<3;++i23)s+=i23;for(int i24=0;i24<3;++i24)s+=i24;for(int i25=0;i25<3;++i25)s+=i25;for(int i26=0;i26<3;++i26)s+=i26;for(int i27=0;i27<3;++i27)s+=i27;for(int i28=0;i28<3;++i28)s+=i28;for(int i29=0;i29<3;++i29)s+=i29;for(int i30=0;i30<3;++i30)s+=i30;for(int i31=0;i31<3;++i31)s+=i31;for(int i32=0;i32<3;++i32)s+=i32;for(int i33=0;i33<3;++i33)s+=i33;for(int i34=0;i34<3;++i34)s+=i34;for(int i35=0;i35<3;++i35)s+=i35;for(int i36=0;i36<3;++i36)s+=i36;for(int i37=0;i37<3;++i37)s+=i37;for(int i38=0;i38<3;++i38)s+=i38;for(int i39=0;i39<3;++i39)s+=i39;for(int i40=0;i40<3;++i40)s+=i40;for(int i41=0;i41<3;++i41)s+=i41;for(int i42=0;i42<3;++i42)s+=i42;for(int i43=0;i43<3;++i43)s+=i43;for(int i44=0;i44<3;++i44)s+=i44;for(int i45=0;i45<3;++i45)s+=i45;for(int i46=0;i46<3;++i46)s+=i46;for(int i47=0;i47<3;++i47)s+=i47;for(int i48=0;i48<3;++i48)s+=i48;for(int i49=0;i49<3;++i49)s+=i49;for(int i50=0;i50<3;++i50)s+=i50;for(int i51=0;i51<3;++i51)s+=i51;for(int i52=0;i52<3;++i52)s+=i52;for(int i53=0;i53<3;++i53)s+=i53;for(int i54=0;i54<3;++i54)s+=i54;for(int i55=0;i55<3;++i55)s+=i55;for(int i56=0;i56<3;++i56)s+=i56;for(int i57=0;i57<3;++i57)s+=i57;for(int i58=0;i58<3;++i58)s+=i58;for(int i59=0;i59<3;++i59)s+=i59;for(int i60=0;i60<3;++i60)s+=i60;for(int i61=0;i61<3;++i61)s+=i61;for(int i62=0;i62<3;++i62)s+=i62;for(int i63=0;i63<3;++i63)s+=i63;return s;}\n"
+    }
+  ],
+  "target_symbol": "CFGBuilder::VisitForStmt",
+  "target_source": "clang/lib/Analysis/CFG.cpp",
+  "mapping_note": "The for-statement-analysis construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

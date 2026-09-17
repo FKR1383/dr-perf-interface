@@ -1,0 +1,89 @@
+--- a/networkx/algorithms/community/modularity_max.py
++++ b/networkx/algorithms/community/modularity_max.py
+@@ -1,4 +1,5 @@
+ """Functions for detecting communities based on modularity."""
++import perfmark
+ 
+ from collections import defaultdict
+ 
+@@ -409,42 +410,43 @@
+     # Greedily merge communities until no improvement is possible
+     old_modularity = None
+     new_modularity = modularity(G, communities, resolution=resolution, weight=weight)
+-    while old_modularity is None or new_modularity > old_modularity:
+-        # Save modularity for comparison
+-        old_modularity = new_modularity
+-        # Find best pair to merge
+-        trial_communities = list(communities)
+-        to_merge = None
+-        for i, u in enumerate(communities):
+-            for j, v in enumerate(communities):
+-                # Skip i==j and empty communities
+-                if j <= i or len(u) == 0 or len(v) == 0:
+-                    continue
+-                # Merge communities u and v
+-                trial_communities[j] = u | v
+-                trial_communities[i] = frozenset([])
+-                trial_modularity = modularity(
+-                    G, trial_communities, resolution=resolution, weight=weight
+-                )
+-                if trial_modularity >= new_modularity:
+-                    # Check if strictly better or tie
+-                    if trial_modularity > new_modularity:
+-                        # Found new best, save modularity and group indexes
+-                        new_modularity = trial_modularity
+-                        to_merge = (i, j, new_modularity - old_modularity)
+-                    elif to_merge and min(i, j) < min(to_merge[0], to_merge[1]):
+-                        # Break ties by choosing pair with lowest min id
+-                        new_modularity = trial_modularity
+-                        to_merge = (i, j, new_modularity - old_modularity)
+-                # Un-merge
+-                trial_communities[i] = u
+-                trial_communities[j] = v
+-        if to_merge is not None:
+-            # If the best merge improves modularity, use it
+-            merges.append(to_merge)
+-            i, j, dq = to_merge
+-            u, v = communities[i], communities[j]
+-            communities[j] = u | v
+-            communities[i] = frozenset([])
++    with perfmark.region("gl-085"):
++        while old_modularity is None or new_modularity > old_modularity:
++            # Save modularity for comparison
++            old_modularity = new_modularity
++            # Find best pair to merge
++            trial_communities = list(communities)
++            to_merge = None
++            for i, u in enumerate(communities):
++                for j, v in enumerate(communities):
++                    # Skip i==j and empty communities
++                    if j <= i or len(u) == 0 or len(v) == 0:
++                        continue
++                    # Merge communities u and v
++                    trial_communities[j] = u | v
++                    trial_communities[i] = frozenset([])
++                    trial_modularity = modularity(
++                        G, trial_communities, resolution=resolution, weight=weight
++                    )
++                    if trial_modularity >= new_modularity:
++                        # Check if strictly better or tie
++                        if trial_modularity > new_modularity:
++                            # Found new best, save modularity and group indexes
++                            new_modularity = trial_modularity
++                            to_merge = (i, j, new_modularity - old_modularity)
++                        elif to_merge and min(i, j) < min(to_merge[0], to_merge[1]):
++                            # Break ties by choosing pair with lowest min id
++                            new_modularity = trial_modularity
++                            to_merge = (i, j, new_modularity - old_modularity)
++                    # Un-merge
++                    trial_communities[i] = u
++                    trial_communities[j] = v
++            if to_merge is not None:
++                # If the best merge improves modularity, use it
++                merges.append(to_merge)
++                i, j, dq = to_merge
++                u, v = communities[i], communities[j]
++                communities[j] = u | v
++                communities[i] = frozenset([])
+     # Remove empty communities and sort
+     return sorted((c for c in communities if len(c) > 0), key=len, reverse=True)

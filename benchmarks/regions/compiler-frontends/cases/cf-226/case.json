@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-226",
+  "title": "ContinuationIndenter::moveStateToNextToken compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/ContinuationIndenter.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/ContinuationIndenter.cpp",
+    "sha256": "74e86dc427c7f0fad90dd7d44fe71a5433716e3131f098cb5684c91ee0160b3f"
+  },
+  "region": {
+    "symbol": "ContinuationIndenter::moveStateToNextToken",
+    "start_line": 1575,
+    "end_line": 1753,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-226",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "formatting",
+  "workload": {
+    "description": "Run the bounded format-token-classification fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Format/ContinuationIndenter.cpp:ContinuationIndenter::moveStateToNextToken",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Format/ContinuationIndenter.cpp#L1575-L1753"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+      "spec_sha256": "d3cebf76a44b06213fc5f0d96734a9844709ac1376a9cf3bf73a30e1fc2ca508",
+      "patch_sha256": "60c351c9a846ea2acc6ebb181b93746d6f1520b140476682f07a73b6606edbf3"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

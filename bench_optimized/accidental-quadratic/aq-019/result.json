@@ -1,0 +1,6 @@
+{
+  "case": "aq-019",
+  "accepted": false,
+  "status": "reviewed-no-safe-candidate",
+  "reason": "The region is primarily orchestration around get_phrase and parse_mime_parameters; its own loop is small and the costly scanning occurs in delegated parsers. Optimizing those helpers would move the change outside this region, while changing token assembly locally offers no justified instruction benefit."
+}

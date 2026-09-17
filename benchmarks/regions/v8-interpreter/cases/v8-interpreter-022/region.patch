@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -3347,6 +3348,7 @@
+ //   %FinalizeIteration(iterator, done, iteration_continuation)
+ // }
+ void BytecodeGenerator::VisitForOfStatement(ForOfStatement* stmt) {
++  DRPERF_BENCH_REGION("v8-interpreter-022");
+   EffectResultScope effect_scope(this);
+ 
+   builder()->SetExpressionAsStatementPosition(stmt->subject());

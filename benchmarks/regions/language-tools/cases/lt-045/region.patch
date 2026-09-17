@@ -1,0 +1,291 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -5004,145 +5005,146 @@
+         parse_partition: bool = False,
+         consume_pipe: bool = False,
+     ) -> exp.Expr | None:
+-        if not schema and not is_db_reference and not consume_pipe and not joins:
+-            index = self._index
+-            table = self._parse_table_parts(fast=True)
+-
+-            if table is not None:
+-                curr_tt = self._curr.token_type
+-                next_tt = self._next.token_type
+-
+-                fast_terminators = self.TABLE_TERMINATORS
+-
+-                # only return the table if we're sure there are no other operators
+-                # MATCH_CONDITION is a special case because it accepts any alias before it like LIMIT
+-                if curr_tt in fast_terminators and next_tt != TokenType.MATCH_CONDITION:
+-                    return table
+-
+-                postfix_tokens = self.TABLE_POSTFIX_TOKENS
+-
+-                if curr_tt not in postfix_tokens and next_tt not in postfix_tokens:
+-                    if alias := self._parse_table_alias(
+-                        alias_tokens=alias_tokens or self.TABLE_ALIAS_TOKENS
+-                    ):
+-                        table.set("alias", alias)
+-
+-                    if self._curr.token_type in fast_terminators:
++        with perfmark.region("lt-045"):
++            if not schema and not is_db_reference and not consume_pipe and not joins:
++                index = self._index
++                table = self._parse_table_parts(fast=True)
++
++                if table is not None:
++                    curr_tt = self._curr.token_type
++                    next_tt = self._next.token_type
++
++                    fast_terminators = self.TABLE_TERMINATORS
++
++                    # only return the table if we're sure there are no other operators
++                    # MATCH_CONDITION is a special case because it accepts any alias before it like LIMIT
++                    if curr_tt in fast_terminators and next_tt != TokenType.MATCH_CONDITION:
+                         return table
+ 
+-                self._retreat(index)
+-
+-        if stream := self._parse_stream():
+-            return stream
+-
+-        if lateral := self._parse_lateral():
+-            return lateral
+-
+-        if unnest := self._parse_unnest():
+-            return unnest
+-
+-        if values := self._parse_derived_table_values():
+-            return values
+-
+-        if subquery := self._parse_select(table=True, consume_pipe=consume_pipe):
+-            if not subquery.args.get("pivots"):
+-                subquery.set("pivots", self._parse_pivots())
++                    postfix_tokens = self.TABLE_POSTFIX_TOKENS
++
++                    if curr_tt not in postfix_tokens and next_tt not in postfix_tokens:
++                        if alias := self._parse_table_alias(
++                            alias_tokens=alias_tokens or self.TABLE_ALIAS_TOKENS
++                        ):
++                            table.set("alias", alias)
++
++                        if self._curr.token_type in fast_terminators:
++                            return table
++
++                    self._retreat(index)
++
++            if stream := self._parse_stream():
++                return stream
++
++            if lateral := self._parse_lateral():
++                return lateral
++
++            if unnest := self._parse_unnest():
++                return unnest
++
++            if values := self._parse_derived_table_values():
++                return values
++
++            if subquery := self._parse_select(table=True, consume_pipe=consume_pipe):
++                if not subquery.args.get("pivots"):
++                    subquery.set("pivots", self._parse_pivots())
++                if joins:
++                    for join in self._parse_joins():
++                        subquery.append("joins", join)
++                return subquery
++
++            bracket = parse_bracket and self._parse_bracket(None)
++            bracket = self.expression(exp.Table(this=bracket)) if bracket else None
++
++            rows_from_tables = (
++                self._parse_wrapped_csv(self._parse_table)
++                if self._match_text_seq("ROWS", "FROM")
++                else None
++            )
++            rows_from = (
++                self.expression(exp.Table(rows_from=rows_from_tables)) if rows_from_tables else None
++            )
++
++            only = self._match(TokenType.ONLY)
++
++            this = t.cast(
++                exp.Expr,
++                bracket
++                or rows_from
++                or self._parse_bracket(
++                    self._parse_table_parts(schema=schema, is_db_reference=is_db_reference)
++                ),
++            )
++
++            if only:
++                this.set("only", only)
++
++            # Postgres supports a wildcard (table) suffix operator, which is a no-op in this context
++            self._match(TokenType.STAR)
++
++            parse_partition = parse_partition or self.SUPPORTS_PARTITION_SELECTION
++            if parse_partition and self._match(TokenType.PARTITION, advance=False):
++                this.set("partition", self._parse_partition())
++
++            if schema:
++                return self._parse_schema(this=this)
++
++            if self.dialect.ALIAS_POST_VERSION:
++                this.set("version", self._parse_version())
++
++            if self.dialect.ALIAS_POST_TABLESAMPLE:
++                this.set("sample", self._parse_table_sample())
++
++            alias = self._parse_table_alias(alias_tokens=alias_tokens or self.TABLE_ALIAS_TOKENS)
++            if alias:
++                this.set("alias", alias)
++
++                # DuckDB requires the time-travel clause to come after the alias, e.g.
++                # SELECT * FROM t AS a AT (VERSION => 1)
++                if isinstance(this, exp.Table) and not this.args.get("when"):
++                    this.set("when", self._parse_historical_data())
++
++            if self._match(TokenType.INDEXED_BY):
++                this.set("indexed", self._parse_table_parts())
++            elif self._match_text_seq("NOT", "INDEXED"):
++                this.set("indexed", False)
++
++            if isinstance(this, exp.Table) and self._match_text_seq("AT"):
++                return self.expression(
++                    exp.AtIndex(this=this.to_column(copy=False), expression=self._parse_id_var())
++                )
++
++            this.set("hints", self._parse_table_hints())
++
++            if not this.args.get("pivots"):
++                this.set("pivots", self._parse_pivots())
++
++            if not self.dialect.ALIAS_POST_TABLESAMPLE:
++                this.set("sample", self._parse_table_sample())
++
++            if not self.dialect.ALIAS_POST_VERSION:
++                this.set("version", self._parse_version())
++
+             if joins:
+-                for join in self._parse_joins():
+-                    subquery.append("joins", join)
+-            return subquery
+-
+-        bracket = parse_bracket and self._parse_bracket(None)
+-        bracket = self.expression(exp.Table(this=bracket)) if bracket else None
+-
+-        rows_from_tables = (
+-            self._parse_wrapped_csv(self._parse_table)
+-            if self._match_text_seq("ROWS", "FROM")
+-            else None
+-        )
+-        rows_from = (
+-            self.expression(exp.Table(rows_from=rows_from_tables)) if rows_from_tables else None
+-        )
+-
+-        only = self._match(TokenType.ONLY)
+-
+-        this = t.cast(
+-            exp.Expr,
+-            bracket
+-            or rows_from
+-            or self._parse_bracket(
+-                self._parse_table_parts(schema=schema, is_db_reference=is_db_reference)
+-            ),
+-        )
+-
+-        if only:
+-            this.set("only", only)
+-
+-        # Postgres supports a wildcard (table) suffix operator, which is a no-op in this context
+-        self._match(TokenType.STAR)
+-
+-        parse_partition = parse_partition or self.SUPPORTS_PARTITION_SELECTION
+-        if parse_partition and self._match(TokenType.PARTITION, advance=False):
+-            this.set("partition", self._parse_partition())
+-
+-        if schema:
+-            return self._parse_schema(this=this)
+-
+-        if self.dialect.ALIAS_POST_VERSION:
+-            this.set("version", self._parse_version())
+-
+-        if self.dialect.ALIAS_POST_TABLESAMPLE:
+-            this.set("sample", self._parse_table_sample())
+-
+-        alias = self._parse_table_alias(alias_tokens=alias_tokens or self.TABLE_ALIAS_TOKENS)
+-        if alias:
+-            this.set("alias", alias)
+-
+-            # DuckDB requires the time-travel clause to come after the alias, e.g.
+-            # SELECT * FROM t AS a AT (VERSION => 1)
+-            if isinstance(this, exp.Table) and not this.args.get("when"):
+-                this.set("when", self._parse_historical_data())
+-
+-        if self._match(TokenType.INDEXED_BY):
+-            this.set("indexed", self._parse_table_parts())
+-        elif self._match_text_seq("NOT", "INDEXED"):
+-            this.set("indexed", False)
+-
+-        if isinstance(this, exp.Table) and self._match_text_seq("AT"):
+-            return self.expression(
+-                exp.AtIndex(this=this.to_column(copy=False), expression=self._parse_id_var())
+-            )
+-
+-        this.set("hints", self._parse_table_hints())
+-
+-        if not this.args.get("pivots"):
+-            this.set("pivots", self._parse_pivots())
+-
+-        if not self.dialect.ALIAS_POST_TABLESAMPLE:
+-            this.set("sample", self._parse_table_sample())
+-
+-        if not self.dialect.ALIAS_POST_VERSION:
+-            this.set("version", self._parse_version())
+-
+-        if joins:
+-            for join in self._parse_joins(alias_tokens=alias_tokens):
+-                this.append("joins", join)
+-
+-        if self._match_pair(TokenType.WITH, TokenType.ORDINALITY):
+-            this.set("ordinality", True)
+-            this.set("alias", self._parse_table_alias())
+-
+-        # TABLE(<tvf>) is parsed into a Table wrapping exp.TableFromRows, so we
+-        # hoist the table args onto the latter and return it instead
+-        if isinstance(this, exp.Table) and isinstance(this.this, exp.TableFromRows):
+-            table_from_rows = this.this
+-            for arg in exp.TableFromRows.arg_types:
+-                if arg != "this":
+-                    table_from_rows.set(arg, this.args.get(arg))
+-
+-            this = table_from_rows
+-
+-        return this
++                for join in self._parse_joins(alias_tokens=alias_tokens):
++                    this.append("joins", join)
++
++            if self._match_pair(TokenType.WITH, TokenType.ORDINALITY):
++                this.set("ordinality", True)
++                this.set("alias", self._parse_table_alias())
++
++            # TABLE(<tvf>) is parsed into a Table wrapping exp.TableFromRows, so we
++            # hoist the table args onto the latter and return it instead
++            if isinstance(this, exp.Table) and isinstance(this.this, exp.TableFromRows):
++                table_from_rows = this.this
++                for arg in exp.TableFromRows.arg_types:
++                    if arg != "this":
++                        table_from_rows.set(arg, this.args.get(arg))
++
++                this = table_from_rows
++
++            return this
+ 
+     def _parse_version(self) -> exp.Version | None:
+         for phrase, this in self.VERSION_PHRASES.items():

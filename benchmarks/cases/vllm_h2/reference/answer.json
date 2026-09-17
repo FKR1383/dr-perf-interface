@@ -1,0 +1,19 @@
+{
+  "case": "vllm_h2",
+  "factors": [
+    {
+      "id": "f1",
+      "criterion": "all batch rows versus rows requesting logprobs"
+    },
+    {
+      "id": "f2",
+      "criterion": "enabling logprobs for one request triggers work across the batch"
+    },
+    {
+      "id": "f3",
+      "criterion": "stop-string/min-token paths are cheap in recorded regime; do not invent a dominant term"
+    }
+  ],
+  "grading": "Semantic review against the record and code, not keyword matching. Equivalent expressions and well-supported alternative decompositions count. Historical coefficients are not acceptance thresholds.",
+  "scope": "Observed historical workloads, not an all-input guarantee. Read shared follow-up records for measurement corrections and GPU limits."
+}

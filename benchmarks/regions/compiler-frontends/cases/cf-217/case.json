@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-217",
+  "title": "ASTWriter::WriteSpecialDeclRecords compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Serialization/ASTWriter.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Serialization/ASTWriter.cpp",
+    "sha256": "0999c3d462951ca99e9fdbbd139a4f3ee02ef38625b15c68d9ea590ef8255050"
+  },
+  "region": {
+    "symbol": "ASTWriter::WriteSpecialDeclRecords",
+    "start_line": 5687,
+    "end_line": 5850,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-217",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "serialization",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Serialization/ASTWriter.cpp:ASTWriter::WriteSpecialDeclRecords",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Serialization/ASTWriter.cpp#L5687-L5850"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "47b50eb94266455845915c8a82435b42e30a0c7a0233c936ef593b0dc7c6acae",
+      "patch_sha256": "717991a42354d4209da90e6980d5d8fb9fc6cde2c83933fa20e4112b5f093bc6"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

@@ -1,0 +1,39 @@
+--- a/sympy/polys/polyconfig.py
++++ b/sympy/polys/polyconfig.py
+@@ -1,6 +1,7 @@
+ """Configuration utilities for polynomial manipulation algorithms. """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from typing import Literal, overload
+ 
+@@ -78,17 +79,18 @@
+ 
+ def configure():
+     """Initialized configuration of polys module. """
+-    from os import getenv
++    with perfmark.region("lt-044"):
++        from os import getenv
+ 
+-    for key, default in _default_config.items():
+-        value = getenv('SYMPY_' + key)
++        for key, default in _default_config.items():
++            value = getenv('SYMPY_' + key)
+ 
+-        if value is not None:
+-            try:
+-                _current_config[key] = eval(value)
+-            except NameError:
+-                _current_config[key] = value
+-        else:
+-            _current_config[key] = default
++            if value is not None:
++                try:
++                    _current_config[key] = eval(value)
++                except NameError:
++                    _current_config[key] = value
++            else:
++                _current_config[key] = default
+ 
+ configure()

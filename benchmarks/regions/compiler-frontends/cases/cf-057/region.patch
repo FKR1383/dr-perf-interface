@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExpr.cpp
++++ b/clang/lib/CodeGen/CGExpr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ABIInfoImpl.h"
+ #include "CGCUDARuntime.h"
+ #include "CGCXXABI.h"
+@@ -5981,6 +5982,7 @@
+                                  llvm::Value *Chain,
+                                  llvm::CallBase **CallOrInvoke,
+                                  CGFunctionInfo const **ResolvedFnInfo) {
++                                   DRPERF_BENCH_REGION("cf-057");
+   // Get the actual function type. The callee type will always be a pointer to
+   // function type or a block pointer type.
+   assert(CalleeType->isFunctionPointerType() &&

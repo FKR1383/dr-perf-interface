@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReader.cpp
++++ b/clang/lib/Serialization/ASTReader.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "TemplateArgumentHasher.h"
+@@ -3022,6 +3023,7 @@
+                             SmallVectorImpl<ImportedModule> &Loaded,
+                             const ModuleFile *ImportedBy,
+                             unsigned ClientLoadCapabilities) {
++                              DRPERF_BENCH_REGION("cf-179");
+   BitstreamCursor &Stream = F.Stream;
+ 
+   if (llvm::Error Err = Stream.EnterSubBlock(CONTROL_BLOCK_ID)) {

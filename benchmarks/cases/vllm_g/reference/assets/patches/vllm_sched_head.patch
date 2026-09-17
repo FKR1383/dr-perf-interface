@@ -1,0 +1,152 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -189,6 +189,20 @@
+         self.waiting = create_request_queue(self.policy)
+         # requests skipped in waiting flow due async deps or constraints.
+         self.skipped_waiting = create_request_queue(self.policy)
++
++        # Head-of-queue admission memo.  When allocate_slots() refuses the head
++        # of the waiting queue the loop breaks, so at most one request is
++        # refused per step and a single slot captures all of the reuse.
++        # The refusal is `required_blocks > free_blocks - reserved`, and
++        # required_blocks is a function of the request's own state, the prefix
++        # -cache hit and num_new_tokens.  So while the request has not moved,
++        # the prefix cache has not changed (`block_pool.pool_generation`) and
++        # the pool has not *grown* (a free would need re-evaluating; an
++        # allocation cannot turn a refusal into an admission), the outcome
++        # cannot differ and the probe and the allocation can be skipped.
++        # Slot: (request_id, key, free_blocks, pool_generation,
++        #        num_computed_tokens_probed, num_new_tokens)
++        self._waiting_admit_memo: tuple | None = None
+         self.running: list[Request] = []
+ 
+         # The request IDs that are finished in between the previous and the
+@@ -752,6 +766,21 @@
+                 step_skipped_waiting = create_request_queue(self.policy)
+ 
+                 with perfmark.region("sched_waiting_loop", waiting=len(self.waiting), skipped=len(self.skipped_waiting), running=len(self.running)):
++                    # Configurations in which a refused admission depends only on
++                    # the memo key below.  Anything else (connectors, LoRA, mamba
++                    # alignment, spec padding, MTP prefill lookahead, prefill
++                    # deferral) falls through to the full evaluation.
++                    memo_config_ok = (
++                        self.connector is None
++                        and self.ec_connector is None
++                        and self.lora_config is None
++                        and not self.need_mamba_block_aligned_split
++                        and self.num_spec_tokens == 0
++                        and self.num_prefill_lookahead == 0
++                        and self.scheduler_config.enable_chunked_prefill
++                        and not defer_prefills
++                    )
++                    memo_pool = self.kv_cache_manager.block_pool
+                     while (self.waiting or self.skipped_waiting) and token_budget > 0:
+                         if input_budget <= draft_slots:
+                             break
+@@ -767,6 +796,48 @@
+                         request = request_queue.peek_request()
+                         request_id = request.request_id
+ 
++                        # --- head-of-queue admission memo (fast path) -------------
++                        # allocate_slots() refused this request on an earlier
++                        # step and nothing it reads has moved in a direction
++                        # that could admit it: reproduce the refusal without
++                        # the prefix-cache probe and the allocation.
++                        memo_key = None
++                        if (
++                            memo_config_ok
++                            and not request.has_encoder_inputs
++                            and request.num_stale_output_tokens == 0
++                            and (
++                                request.status is RequestStatus.WAITING
++                                or request.status is RequestStatus.PREEMPTED
++                            )
++                        ):
++                            memo_key = (
++                                request_id,
++                                request.num_computed_tokens,
++                                request.num_tokens,
++                                not not self.running,
++                                request.status,
++                            )
++                            memo = self._waiting_admit_memo
++                            if (
++                                memo is not None
++                                and memo[0] == memo_key
++                                and memo_pool.get_num_free_blocks() <= memo[1]
++                                and memo_pool.pool_generation == memo[2]
++                            ):
++                                memo_new_tokens = request.num_tokens - memo[3]
++                                memo_threshold = (
++                                    self.scheduler_config.long_prefill_token_threshold
++                                )
++                                if 0 < memo_threshold < memo_new_tokens:
++                                    memo_new_tokens = memo_threshold
++                                if memo_new_tokens > token_budget:
++                                    memo_new_tokens = token_budget
++                                if memo_new_tokens > input_budget - draft_slots:
++                                    memo_new_tokens = input_budget - draft_slots
++                                if memo_new_tokens == memo[4]:
++                                    # identical inputs -> identical refusal
++                                    break
+                         with perfmark.region("sched_waiting_eval", num_tokens=request.num_tokens, num_computed=request.num_computed_tokens, waiting=len(self.waiting)):
+                             # try to promote blocked statuses while traversing skipped queue.
+                             if self._is_blocked_waiting_status(
+@@ -1050,7 +1121,17 @@
+                             )
+ 
+                             if new_blocks is None:
+-                                # The request cannot be scheduled.
++                                # The request cannot be scheduled.  Remember the
++                                # refusal and the pool state that produced it
++                                # (allocate_slots may itself have freed blocks).
++                                if memo_key is not None:
++                                    self._waiting_admit_memo = (
++                                        memo_key,
++                                        memo_pool.get_num_free_blocks(),
++                                        memo_pool.pool_generation,
++                                        num_computed_tokens,
++                                        num_new_tokens,
++                                    )
+ 
+                                 # NOTE: we need to untouch the request from the encode cache
+                                 # manager
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -190,6 +190,12 @@
+         self.null_block = self.free_block_queue.popleft()
+         self.null_block.is_null = True
+ 
++        # Bumped on every mutation of `cached_block_hash_to_block`, so a caller
++        # that memoises a prefix-cache lookup can tell whether the answer could
++        # have changed since it looked.  Free-block moves are already visible
++        # through `get_num_free_blocks()`.
++        self.pool_generation = 0
++
+         self.enable_kv_cache_events = enable_kv_cache_events
+         self.kv_event_queue: list[KVCacheEvent] = []
+ 
+@@ -586,6 +592,7 @@
+                 is not None
+             ):
+                 removed_hashes.append(block_hash)
++        self.pool_generation += 1
+         block.reset_hash()
+         return removed_hashes
+ 
+@@ -625,6 +632,7 @@
+                 block_hash_with_group_id
+             )
+         self.cached_block_hash_to_block.insert(block_hash_with_group_id, block)
++        self.pool_generation += 1
+ 
+     def move_block_hashes(
+         self,
+@@ -782,6 +790,7 @@
+         # Remove all hashes so that no new blocks will hit.
+         self.cached_block_hash_to_block = BlockHashToBlockMap()
+         self.cached_block_hashes_by_block.clear()
++        self.pool_generation += 1
+ 
+         # Remove all hashes from all blocks.
+         for block in self.blocks:

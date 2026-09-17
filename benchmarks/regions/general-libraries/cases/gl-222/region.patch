@@ -1,0 +1,45 @@
+--- a/jsonschema/_keywords.py
++++ b/jsonschema/_keywords.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from fractions import Fraction
+ import re
+ 
+@@ -39,21 +40,22 @@
+ 
+     extras = set(find_additional_properties(instance, schema))
+ 
+-    if validator.is_type(aP, "object"):
+-        for extra in extras:
+-            yield from validator.descend(instance[extra], aP, path=extra)
+-    elif not aP and extras:
+-        if "patternProperties" in schema:
+-            verb = "does" if len(extras) == 1 else "do"
+-            joined = ", ".join(repr(each) for each in sorted(extras))
+-            patterns = ", ".join(
+-                repr(each) for each in sorted(schema["patternProperties"])
+-            )
+-            error = f"{joined} {verb} not match any of the regexes: {patterns}"
+-            yield ValidationError(error)
+-        else:
+-            error = "Additional properties are not allowed (%s %s unexpected)"
+-            yield ValidationError(error % extras_msg(sorted(extras, key=str)))
++    with perfmark.region("gl-222"):
++        if validator.is_type(aP, "object"):
++            for extra in extras:
++                yield from validator.descend(instance[extra], aP, path=extra)
++        elif not aP and extras:
++            if "patternProperties" in schema:
++                verb = "does" if len(extras) == 1 else "do"
++                joined = ", ".join(repr(each) for each in sorted(extras))
++                patterns = ", ".join(
++                    repr(each) for each in sorted(schema["patternProperties"])
++                )
++                error = f"{joined} {verb} not match any of the regexes: {patterns}"
++                yield ValidationError(error)
++            else:
++                error = "Additional properties are not allowed (%s %s unexpected)"
++                yield ValidationError(error % extras_msg(sorted(extras, key=str)))
+ 
+ 
+ def items(validator, items, instance, schema):

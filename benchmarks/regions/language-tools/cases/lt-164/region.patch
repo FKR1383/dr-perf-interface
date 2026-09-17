@@ -1,0 +1,50 @@
+--- a/src/jinja2/nodes.py
++++ b/src/jinja2/nodes.py
+@@ -2,6 +2,7 @@
+ some node tree helper functions used by the parser and compiler in order
+ to normalize nodes.
+ """
++import perfmark
+ 
+ import inspect
+ import operator
+@@ -714,22 +715,23 @@
+ def args_as_const(
+     node: t.Union["_FilterTestCommon", "Call"], eval_ctx: EvalContext | None
+ ) -> tuple[list[t.Any], dict[t.Any, t.Any]]:
+-    args = [x.as_const(eval_ctx) for x in node.args]
+-    kwargs = dict(x.as_const(eval_ctx) for x in node.kwargs)
+-
+-    if node.dyn_args is not None:
+-        try:
+-            args.extend(node.dyn_args.as_const(eval_ctx))
+-        except Exception as e:
+-            raise Impossible() from e
+-
+-    if node.dyn_kwargs is not None:
+-        try:
+-            kwargs.update(node.dyn_kwargs.as_const(eval_ctx))
+-        except Exception as e:
+-            raise Impossible() from e
+-
+-    return args, kwargs
++    with perfmark.region("lt-164"):
++        args = [x.as_const(eval_ctx) for x in node.args]
++        kwargs = dict(x.as_const(eval_ctx) for x in node.kwargs)
++
++        if node.dyn_args is not None:
++            try:
++                args.extend(node.dyn_args.as_const(eval_ctx))
++            except Exception as e:
++                raise Impossible() from e
++
++        if node.dyn_kwargs is not None:
++            try:
++                kwargs.update(node.dyn_kwargs.as_const(eval_ctx))
++            except Exception as e:
++                raise Impossible() from e
++
++        return args, kwargs
+ 
+ 
+ class _FilterTestCommon(Expr):

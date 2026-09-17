@@ -1,0 +1,80 @@
+--- a/src/requests/utils.py
++++ b/src/requests/utils.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import codecs
+ import contextlib
+@@ -166,37 +167,38 @@
+         # of latin-1 (iso-8859-1) like http.client.
+         o = o.encode("utf-8")
+ 
+-    if hasattr(o, "__len__"):
+-        total_length = len(o)
+-
+-    elif hasattr(o, "len"):
+-        total_length = o.len
+-
+-    elif hasattr(o, "fileno"):
+-        try:
+-            fileno = o.fileno()
+-        except (io.UnsupportedOperation, AttributeError):
+-            # AttributeError is a surprising exception, seeing as how we've just checked
+-            # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
+-            # `Tarfile.extractfile()`, per issue 5229.
+-            pass
+-        else:
+-            total_length = os.fstat(fileno).st_size
+-
+-            # Having used fstat to determine the file length, we need to
+-            # confirm that this file was opened up in binary mode.
+-            if "b" not in o.mode:
+-                warnings.warn(
+-                    (
+-                        "Requests has determined the content-length for this "
+-                        "request using the binary size of the file: however, the "
+-                        "file has been opened in text mode (i.e. without the 'b' "
+-                        "flag in the mode). This may lead to an incorrect "
+-                        "content-length. In Requests 3.0, support will be removed "
+-                        "for files in text mode."
+-                    ),
+-                    FileModeWarning,
+-                )
++    with perfmark.region("gl-192"):
++        if hasattr(o, "__len__"):
++            total_length = len(o)
++    
++        elif hasattr(o, "len"):
++            total_length = o.len
++    
++        elif hasattr(o, "fileno"):
++            try:
++                fileno = o.fileno()
++            except (io.UnsupportedOperation, AttributeError):
++                # AttributeError is a surprising exception, seeing as how we've just checked
++                # that `hasattr(o, 'fileno')`.  It happens for objects obtained via
++                # `Tarfile.extractfile()`, per issue 5229.
++                pass
++            else:
++                total_length = os.fstat(fileno).st_size
++    
++                # Having used fstat to determine the file length, we need to
++                # confirm that this file was opened up in binary mode.
++                if "b" not in o.mode:
++                    warnings.warn(
++                        (
++                            "Requests has determined the content-length for this "
++                            "request using the binary size of the file: however, the "
++                            "file has been opened in text mode (i.e. without the 'b' "
++                            "flag in the mode). This may lead to an incorrect "
++                            "content-length. In Requests 3.0, support will be removed "
++                            "for files in text mode."
++                        ),
++                        FileModeWarning,
++                    )
+ 
+     if hasattr(o, "tell"):
+         try:

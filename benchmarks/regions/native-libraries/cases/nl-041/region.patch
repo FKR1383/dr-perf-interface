@@ -1,0 +1,18 @@
+--- a/include/rapidjson/allocators.h
++++ b/include/rapidjson/allocators.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_ALLOCATORS_H_
+ #define RAPIDJSON_ALLOCATORS_H_
+ 
++#include "drperf_bench_region.h"
+ #include "rapidjson.h"
+ #include "internal/meta.h"
+ 
+@@ -319,6 +320,7 @@
+ 
+     //! Allocates a memory block. (concept Allocator)
+     void* Malloc(size_t size) {
++        DRPERF_BENCH_REGION("nl-041");
+         RAPIDJSON_NOEXCEPT_ASSERT(shared_->refcount > 0);
+         if (!size)
+             return NULL;

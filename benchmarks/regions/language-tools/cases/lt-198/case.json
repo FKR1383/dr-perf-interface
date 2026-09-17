@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "id": "lt-198",
+  "title": "lark calculate_sets body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/lark-parser/lark",
+    "revision": "9a4fb9c7458e8155636773a3cded0016d52516da",
+    "path": "lark/parsers/grammar_analysis.py",
+    "snapshot": "../../upstream/lark/lark/parsers/grammar_analysis.py",
+    "sha256": "ad0e129fd10ff208d719365712258b5b4281c8f3e978aa4de6148841980d9772"
+  },
+  "region": {
+    "symbol": "calculate_sets",
+    "start_line": 82,
+    "end_line": 137,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "lt-198",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "phase": "language-tooling",
+  "workload": {
+    "description": "Exercise calculate_sets with bounded, varied lark inputs and assert stable output or round-trip behavior.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "lark:lark/parsers/grammar_analysis.py:calculate_sets",
+  "citations": [
+    "https://github.com/lark-parser/lark/blob/9a4fb9c7458e8155636773a3cded0016d52516da/lark/parsers/grammar_analysis.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../test-support/workloads.py",
+        "destination": "tests/workloads.py",
+        "sha256": "670bd3b3c74c9ebbd94b5d6266d21e40837efb797ad0691a2bfb0e9f826116bb"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed in the pinned editable project checkout under Python 3.12. Varied valid inputs passed concrete value or round-trip assertions and marker_probe observed the named region."
+    },
+    "coverage_note": "Runs pinned parser/compiler/rewriter APIs, checks concrete results, and requires named marker entry."
+  }
+}

@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -3349,6 +3350,7 @@
+ static bool ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args,
+                                   DiagnosticsEngine &Diags,
+                                   const std::string &WorkingDir) {
++                                    DRPERF_BENCH_REGION("cf-146");
+   unsigned NumErrorsBefore = Diags.getNumErrors();
+ 
+   HeaderSearchOptions *HeaderSearchOpts = &Opts;

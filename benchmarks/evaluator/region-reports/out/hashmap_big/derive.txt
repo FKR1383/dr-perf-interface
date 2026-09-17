@@ -1,0 +1,26 @@
+derive hm_insert   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: n=4,size=20,rehash=20 x8, n=4,size=30,rehash=0 x8, n=4,size=45,rehash=0 x8, n=4,size=70,rehash=0 x8, n=4,size=90,rehash=0 x8, n=4,size=110,rehash=0 x8, n=4,size=130,rehash=0 x8, n=4,size=150,rehash=0 x8, n=4,size=170,rehash=170 x8, n=4,size=180,rehash=0 x8, n=4,size=190,rehash=0 x8, n=4,size=210,rehash=0 x8, n=4,size=230,rehash=0 x8, n=4,size=260,rehash=0 x8, n=4,size=280,rehash=0 x8, n=4,size=320,rehash=0 x8, n=4,size=360,rehash=0 x8, n=4,size=400,rehash=0 x8, n=4,size=500,rehash=0 x8, n=4,size=700,rehash=0 x8, n=4,size=1,000,rehash=0 x8, n=4,size=1,500,rehash=0 x8, n=12,size=20,rehash=20 x8, n=12,size=30,rehash=0 x8, n=12,size=45,rehash=0 x8, n=12,size=70,rehash=0 x8, n=12,size=90,rehash=0 x8, n=12,size=110,rehash=0 x8, n=12,size=130,rehash=0 x8, n=12,size=150,rehash=0 x8, n=12,size=170,rehash=170 x8, n=12,size=180,rehash=0 x8, n=12,size=190,rehash=0 x8, n=12,size=210,rehash=0 x8, n=12,size=230,rehash=0 x8, n=12,size=260,rehash=0 x8, n=12,size=280,rehash=0 x8, n=12,size=320,rehash=0 x8, n=12,size=360,rehash=0 x8, n=12,size=400,rehash=0 x8, n=12,size=500,rehash=0 x8, n=12,size=700,rehash=0 x8, n=12,size=1,000,rehash=0 x8, n=12,size=1,500,rehash=0 x8, n=24,size=20,rehash=20 x8, n=24,size=30,rehash=30 x8, n=24,size=45,rehash=0 x8, n=24,size=70,rehash=70 x8, n=24,size=90,rehash=0 x8, n=24,size=110,rehash=0 x8, n=24,size=130,rehash=0 x8, n=24,size=150,rehash=150 x8, n=24,size=170,rehash=170 x8, n=24,size=180,rehash=0 x8, n=24,size=190,rehash=0 x8, n=24,size=210,rehash=0 x8, n=24,size=230,rehash=0 x8, n=24,size=260,rehash=0 x8, n=24,size=280,rehash=0 x8, n=24,size=320,rehash=320 x8, n=24,size=360,rehash=0 x8, n=24,size=400,rehash=0 x8, n=24,size=500,rehash=0 x8, n=24,size=700,rehash=0 x8, n=24,size=1,000,rehash=0 x8, n=24,size=1,500,rehash=0 x8, n=48,size=20,rehash=20 x8, n=48,size=30,rehash=30 x8, n=48,size=45,rehash=45 x8, n=48,size=70,rehash=70 x8, n=48,size=90,rehash=0 x8, n=48,size=110,rehash=0 x8, n=48,size=130,rehash=130 x8, n=48,size=150,rehash=150 x8, n=48,size=170,rehash=170 x8, n=48,size=180,rehash=0 x8, n=48,size=190,rehash=0 x8, n=48,size=210,rehash=0 x8, n=48,size=230,rehash=0 x8, n=48,size=260,rehash=0 x8, n=48,size=280,rehash=0 x8, n=48,size=320,rehash=320 x8, n=48,size=360,rehash=0 x8, n=48,size=400,rehash=0 x8, n=48,size=500,rehash=0 x8, n=48,size=700,rehash=0 x8, n=48,size=1,000,rehash=0 x8, n=48,size=1,500,rehash=0 x8, n=64,size=20,rehash=20 x8, n=64,size=30,rehash=30 x8, n=64,size=45,rehash=45 x8, n=64,size=70,rehash=70 x8, n=64,size=90,rehash=0 x8, n=64,size=110,rehash=110 x8, n=64,size=130,rehash=130 x8, n=64,size=150,rehash=150 x8, n=64,size=170,rehash=170 x8, n=64,size=180,rehash=0 x8, n=64,size=190,rehash=0 x8, n=64,size=210,rehash=0 x8, n=64,size=230,rehash=0 x8, n=64,size=260,rehash=0 x8, n=64,size=280,rehash=280 x8, n=64,size=320,rehash=320 x8, n=64,size=360,rehash=0 x8, n=64,size=400,rehash=0 x8, n=64,size=500,rehash=0 x8, n=64,size=700,rehash=0 x8, n=64,size=1,000,rehash=0 x8, n=64,size=1,500,rehash=0 x8
+  cost(n, size, rehash) = 1,957.8*n + 0*size + 1.7*rehash + 1,428        [all n, size, rehash]   blocks: 264 affine, 532 constant, 44 irregular (10.5% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 689 .. 21,856.8
+    per-n coefficient by function:
+                 332  _PyEval_EvalFrameDefault  [python3.12]
+                 289  PyDict_Contains+?  [python3.12]
+                 242  _PyUnicode_JoinArray  [python3.12]
+                 222  PyDict_SetItem  [python3.12]
+               180.7  PyLong_AsLongAndOverflow  [python3.12]
+               117.1  PyObject_Malloc  [python3.12]
+    per-rehash coefficient by function:
+                 1.7  PyDict_SetItem  [python3.12]
+    constant by function:
+               406.5  _PyEval_EvalFrameDefault  [python3.12]
+               263.6  PyDict_Contains+?  [python3.12]
+                 192  _PyMem_Strdup+?  [python3.12]
+               161.7  PyObject_Free  [python3.12]
+               146.5  PyDict_SetItem  [python3.12]
+                85.9  PyObject_Malloc  [python3.12]
+    irregular by function:
+             2,756.9  PyDict_Contains+?  [python3.12]
+             2,144.8  _Py_HashBytes  [python3.12]
+             1,154.3  PyDict_SetItem  [python3.12]
+

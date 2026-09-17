@@ -1,0 +1,22 @@
+--- a/networkx/generators/line.py
++++ b/networkx/generators/line.py
+@@ -1,4 +1,5 @@
+ """Functions for generating line graphs."""
++import perfmark
+ 
+ from collections import defaultdict
+ from functools import partial
+@@ -305,9 +306,10 @@
+     H = nx.Graph()
+     H.add_nodes_from(P)
+     H.add_nodes_from(W)
+-    for a, b in combinations(H.nodes, 2):
+-        if any(a_bit in b for a_bit in a):
+-            H.add_edge(a, b)
++    with perfmark.region("gl-055"):
++        for a, b in combinations(H.nodes, 2):
++            if any(a_bit in b for a_bit in a):
++                H.add_edge(a, b)
+     return H
+ 
+ 

@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/InitPreprocessor.cpp
++++ b/clang/lib/Frontend/InitPreprocessor.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/FileManager.h"
+ #include "clang/Basic/HLSLRuntime.h"
+ #include "clang/Basic/MacroBuilder.h"
+@@ -1543,6 +1544,7 @@
+                                    const PCHContainerReader &PCHContainerRdr,
+                                    const FrontendOptions &FEOpts,
+                                    const CodeGenOptions &CodeGenOpts) {
++                                     DRPERF_BENCH_REGION("cf-158");
+   const LangOptions &LangOpts = PP.getLangOpts();
+   std::string PredefineBuffer;
+   PredefineBuffer.reserve(4080);

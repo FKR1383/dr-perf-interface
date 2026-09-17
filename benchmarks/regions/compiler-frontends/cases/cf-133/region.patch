@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -2295,6 +2296,7 @@
+ /// errors), we probably won't have to create file entries for any of
+ /// the files in the AST.
+ void ASTWriter::WriteSourceManagerBlock(SourceManager &SourceMgr) {
++  DRPERF_BENCH_REGION("cf-133");
+   RecordData Record;
+ 
+   // Enter the source manager block.

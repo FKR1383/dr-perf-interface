@@ -1,0 +1,14 @@
+vllm-024 = 3010.811*incoming_count + 3758.1605 + unexplained
+  unexplained 3205.52 instr/call: _PyEval_EvalFrameDefault [python3.12]
+  unexplained 199.8 instr/call: PyType_GetSlot+? [python3.12]
+  unexplained 72.16 instr/call: PyDict_Contains+? [python3.12]
+  unexplained 26.8 instr/call: _Py_HashBytes [python3.12]
+  incoming_count coefficient 1420.4959: _PyEval_EvalFrameDefault [python3.12]
+  incoming_count coefficient 455.89315: PyEval_EvalCode+? [python3.12]
+  incoming_count coefficient 216.22603: _PyErr_ChainStackItem+? [python3.12]
+  incoming_count coefficient 177.24658: PyObject_RichCompareBool [python3.12]
+  incoming_count coefficient 153.80959: PyInterpreterState_Get+? [python3.12]
+  incoming_count coefficient 144.40959: PyType_GetSlot+? [python3.12]
+  incoming_count coefficient 108: PyList_SetSlice+? [python3.12]
+  incoming_count coefficient 95.205479: PyInit__heapq+? [python3.12]
+gate: unexplained share exceeds 5% at an observed state

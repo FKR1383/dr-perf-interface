@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "vllm-029",
+  "title": "Scheduler._update_after_schedule body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/core/sched/scheduler.py",
+    "snapshot": "../../upstream/vllm/v1/core/sched/scheduler.py",
+    "sha256": "4b79ab760c3864af6838d555c01335deea3aac97c9be2be415fa0e5dab32f07e"
+  },
+  "region": {
+    "symbol": "Scheduler._update_after_schedule",
+    "start_line": 1389,
+    "end_line": 1427,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-029",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "vllm:vllm/v1/core/sched/scheduler.py:Scheduler._update_after_schedule",
+  "citations": [
+    "https://github.com/vllm-project/vllm/blob/2cf0a6915ce544dc493a0990f2ea38d81601128a/vllm/v1/core/sched/scheduler.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/driver.py",
+        "destination": "tests/driver.py",
+        "sha256": "ced29c2f484b8c7cb0d10a9712a6a9f0d5cb00bed7f7d9c11f5389913668e2cd"
+      },
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "not-run",
+      "details": "Concrete bounded scenario is provided, but this target was not run with its individual patch; target-specific marker reachability remains unverified."
+    },
+    "coverage_note": "Runs a concrete cached-model CPU workload with varied prompts, token limits, and a repeated prefix. It may reach the target, but vLLM configuration and fast-path choices can bypass the marked block; Probe.finish requires observed marker entry."
+  }
+}

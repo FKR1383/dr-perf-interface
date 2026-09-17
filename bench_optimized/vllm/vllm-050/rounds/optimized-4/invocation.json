@@ -1,0 +1,24 @@
+{
+  "case": "vllm-050",
+  "command": [
+    "/home/ubuntu/drperf/third_party/vllm-cpu/.venv/bin/python",
+    "tests/test_case.py",
+    "--source-root",
+    "/tmp/drperf-vllm-annot-source"
+  ],
+  "workspace": "/home/ubuntu/drperf/bench_optimized/vllm/vllm-050",
+  "timeout_seconds": 120.0,
+  "source_hashes": {
+    "tests/marker_probe.py": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19",
+    "tests/driver.py": "7ba22c6684963f70bbbc7ac2101761644ed447c5087b9c93e68cb060cf9fcbc3",
+    "tests/test_case.py": "428d71928ad21f61cd984578f5d9e95551b96b5f0917d2f71767169bc2a7afd0",
+    "vllm/v1/sample/ops/penalties.py": "ab6b9b564f013a66e71e6f03ed0940fe8606677b586bac4bffefe38baf1d551b"
+  },
+  "environment": {
+    "HF_HOME": "/home/ubuntu/drperf/third_party/hf",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0"
+  }
+}

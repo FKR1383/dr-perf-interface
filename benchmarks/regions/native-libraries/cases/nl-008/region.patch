@@ -1,0 +1,18 @@
+--- a/include/rapidjson/document.h
++++ b/include/rapidjson/document.h
+@@ -17,6 +17,7 @@
+ 
+ /*! \file document.h */
+ 
++#include "drperf_bench_region.h"
+ #include "reader.h"
+ #include "internal/meta.h"
+ #include "internal/strfunc.h"
+@@ -1591,6 +1592,7 @@
+         \note Linear time complexity.
+     */
+     MemberIterator EraseMember(ConstMemberIterator first, ConstMemberIterator last) {
++        DRPERF_BENCH_REGION("nl-008");
+         RAPIDJSON_ASSERT(IsObject());
+         RAPIDJSON_ASSERT(data_.o.size > 0);
+         RAPIDJSON_ASSERT(GetMembersPointer() != 0);

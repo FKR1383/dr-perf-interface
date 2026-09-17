@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaTemplate.cpp
++++ b/clang/lib/Sema/SemaTemplate.cpp
+@@ -8,6 +8,7 @@
+ //  This file implements semantic analysis for C++ templates.
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TreeTransform.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -2713,6 +2714,7 @@
+     TemplateIdAnnotation *TemplateId,
+     ArrayRef<TemplateParameterList *> ParamLists, bool IsFriend,
+     bool &IsMemberSpecialization, bool &Invalid, bool SuppressDiagnostic) {
++      DRPERF_BENCH_REGION("cf-052");
+   IsMemberSpecialization = false;
+   Invalid = false;
+ 

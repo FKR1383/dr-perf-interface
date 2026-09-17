@@ -1,0 +1,34 @@
+{
+  "case": "cf-075",
+  "phase": "parsing",
+  "scenario": "objc-key-value-completion",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "objective-c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "@interface NSDictionary + (instancetype)dictionaryWithObjects:(const id[])o forKeys:(const id[])k count:(unsigned long)n; @end\nvoid f(){ id value = @{ (id)0: (id)0, __COMPLETE__ }; (void)value; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "@interface NSDictionary + (instancetype)dictionaryWithObjects:(const id[])o forKeys:(const id[])k count:(unsigned long)n; @end\nvoid f(){ id value = @{ (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, __COMPLETE__ }; (void)value; }\n"
+    },
+    {
+      "size": 16,
+      "source": "@interface NSDictionary + (instancetype)dictionaryWithObjects:(const id[])o forKeys:(const id[])k count:(unsigned long)n; @end\nvoid f(){ id value = @{ (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, __COMPLETE__ }; (void)value; }\n"
+    },
+    {
+      "size": 64,
+      "source": "@interface NSDictionary + (instancetype)dictionaryWithObjects:(const id[])o forKeys:(const id[])k count:(unsigned long)n; @end\nvoid f(){ id value = @{ (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, (id)0: (id)0, __COMPLETE__ }; (void)value; }\n"
+    }
+  ],
+  "target_symbol": "Parser::ParseObjCAtInterfaceDeclaration",
+  "target_source": "clang/lib/Parse/ParseObjc.cpp",
+  "mapping_note": "Pinned source coverage observed Parser::ParseObjCAtInterfaceDeclaration in the combined run of witness cf-003; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "expected_completions": [],
+  "requires_completion_output": false,
+  "workload_phase": "semantic-analysis"
+}

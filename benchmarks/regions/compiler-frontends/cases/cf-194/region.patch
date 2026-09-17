@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/DeclSpec.cpp
++++ b/clang/lib/Sema/DeclSpec.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Sema/DeclSpec.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclCXX.h"
+@@ -1152,6 +1153,7 @@
+ /// "_Complex" (lacking an FP type). After calling this method, DeclSpec is
+ /// guaranteed to be self-consistent, even if an error occurred.
+ void DeclSpec::Finish(Sema &S, const PrintingPolicy &Policy) {
++  DRPERF_BENCH_REGION("cf-194");
+   // Before possibly changing their values, save specs as written.
+   SaveWrittenBuiltinSpecs();
+ 

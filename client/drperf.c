@@ -23,6 +23,7 @@
  * Options (client args):  -o FILE  -top N  -max_slots N  -trace N (records,
  *   0 = off)  -blocks (dump per-region per-basic-block counts to FILE.blocks
  *   and the block table to FILE.slots)  -no_rep_expand  -no_symbols  -verbose
+ *   -exclude_cuda_module BASENAME  -no_follow_threads
  */
 #include "dr_api.h"
 #include "drmgr.h"
@@ -52,7 +53,7 @@
 /* Counter arrays are mapped, not committed: a key only faults in the pages of
  * the blocks it actually runs, so this bounds address space, not memory. */
 #define COUNTER_BUDGET (96ULL << 30)
-#define KEY_STATES 4        /* declared states that form a key (perfmark_begin_v) */
+#define STACK_KEY_STATES 8  /* allocation-free marker fast path, not a limit */
 
 /* ------------------------------------------------------------------ types */
 
@@ -66,9 +67,9 @@ typedef struct _rkey_t {
     char state_name[RNAME_MAX]; /* first declared state (kept for readers of the JSON) */
     int64 state_value;
     bool overflow;              /* the "<other>" bucket: state combinations beyond the budget */
-    int nkstates;               /* declared states in the key: 0 (none) .. KEY_STATES */
-    char kname[KEY_STATES][STATE_NAME_MAX];
-    int64 kval[KEY_STATES];
+    int nkstates;               /* all declared states in the aggregation key */
+    char (*kname)[STATE_NAME_MAX];
+    int64 *kval;
     char parent[RNAME_MAX]; /* enclosing region at first instance */
     char root[RNAME_MAX];   /* outermost open region when begun; part of the key */
     int index;
@@ -114,6 +115,7 @@ typedef struct _thread_t {
     volatile uint64 *total_ptr; /* raw TLS slot 0 of this thread */
     uint64 *followed;           /* what the leader last installed for this thread */
     uint64 final_total;
+    uint64 excluded_total;
     uint64 sys;
     thread_id_t tid;
     int index;
@@ -154,6 +156,10 @@ static bool opt_symbols = true;
 static bool opt_verbose = false;
 static bool opt_block_counters = true;   /* -no_block_counters: keep only the thread total */
 static bool opt_blocks = false;
+static bool opt_follow_threads = true;
+static char opt_exclude_cuda_module[128];
+static int excluded_wrappers;
+static int64 excluded_calls;
 static file_t blocks_file = INVALID_FILE;
 static byte *slot_used;          /* slots referenced by any region (for the .slots table) */
 
@@ -162,6 +168,8 @@ static reg_id_t tls_seg;
 static uint tls_offs;
 #define TLS_TOTAL (tls_offs)
 #define TLS_CUR (tls_offs + sizeof(void *))
+#define TLS_EXCLUDE_DEPTH (tls_offs + 2 * sizeof(void *))
+#define TLS_EXCLUDE_COUNT (tls_offs + 3 * sizeof(void *))
 
 static void *threads_rw;     /* thread list: readers = marker path, writers = thread init/exit */
 static void *keys_lock;      /* key creation, lazy per-thread arrays */
@@ -350,7 +358,7 @@ key_matches(rkey_t *k, const char *region, int nk, const char *const *names, con
     if (k->overflow || k->nkstates != want || strcmp(k->region, region) != 0 ||
         strcmp(k->root, root) != 0)
         return false;
-    for (i = 0; i < want && i < KEY_STATES; i++) {
+    for (i = 0; i < want; i++) {
         if (k->kval[i] != vals[i] || strcmp(k->kname[i], names[i]) != 0)
             return false;
     }
@@ -368,7 +376,9 @@ static rkey_t *
 get_key(thread_t *t, const char *region, int nk, const char *const *names, const int64 *vals,
         const char *parent, rkey_t *rootkey)
 {
-    char kbuf[2 * RNAME_MAX + KEY_STATES * (STATE_NAME_MAX + 24) + 32];
+    char stack_kbuf[2 * RNAME_MAX + STACK_KEY_STATES * (STATE_NAME_MAX + 24) + 32];
+    char *kbuf = stack_kbuf;
+    size_t kbuf_size = sizeof(stack_kbuf), pos;
     char nbuf[STATE_NAME_MAX];
     const char *root = rootkey != NULL ? rootkey->region : "";
     bool overflow = false;
@@ -378,7 +388,7 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     uint h;
     uint64 hv;
     const char *cp;
-    int i, pos, w;
+    int i, w;
     bool hit;
     /* Fast path.  The marker fires once per region and building the string key
      * below costs microseconds, so hash the contents and verify against the
@@ -390,7 +400,7 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
     for (cp = root; *cp != '\0'; cp++)
         hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
-    for (i = 0; i < nk && i < KEY_STATES; i++) {
+    for (i = 0; i < nk; i++) {
         for (cp = names[i]; *cp != '\0'; cp++)
             hv = (hv ^ (unsigned char)*cp) * 1099511628211ULL;
         hv = (hv ^ (uint64)vals[i]) * 1099511628211ULL;
@@ -401,20 +411,34 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     if (hit)
         return t->fast[h].key;
 
-    pos = 0;
-    w = dr_snprintf(kbuf, sizeof(kbuf), "%s", region);
-    pos = w < 0 ? (int)sizeof(kbuf) - 1 : w;
-    for (i = 0; i < nk && pos < (int)sizeof(kbuf) - 1; i++) {
-        safe_strcpy(nbuf, names[i], STATE_NAME_MAX);
-        w = dr_snprintf(kbuf + pos, sizeof(kbuf) - pos, "\1%s=%lld", nbuf, (long long)vals[i]);
-        pos = w < 0 ? (int)sizeof(kbuf) - 1 : pos + w;
+    if (nk > STACK_KEY_STATES) {
+        if ((size_t)nk > (SIZE_MAX - 2 * RNAME_MAX - 32) / (STATE_NAME_MAX + 24)) {
+            dr_fprintf(STDERR, "drperf: declared state key is too large\n");
+            dr_abort();
+        }
+        kbuf_size = 2 * RNAME_MAX + (size_t)nk * (STATE_NAME_MAX + 24) + 32;
+        kbuf = dr_thread_alloc(dr_get_current_drcontext(), kbuf_size);
+        if (kbuf == NULL) {
+            dr_fprintf(STDERR, "drperf: out of memory for declared state key\n");
+            dr_abort();
+        }
     }
-    if (pos < (int)sizeof(kbuf) - 1)
-        dr_snprintf(kbuf + pos, sizeof(kbuf) - pos, "\1%s", root);
-    kbuf[sizeof(kbuf) - 1] = '\0';
+    pos = 0;
+    w = dr_snprintf(kbuf, kbuf_size, "%s", region);
+    pos = w < 0 ? kbuf_size - 1 : (size_t)w;
+    for (i = 0; i < nk && pos < kbuf_size - 1; i++) {
+        safe_strcpy(nbuf, names[i], STATE_NAME_MAX);
+        w = dr_snprintf(kbuf + pos, kbuf_size - pos, "\1%s=%lld", nbuf, (long long)vals[i]);
+        pos = w < 0 ? kbuf_size - 1 : pos + (size_t)w;
+    }
+    if (pos < kbuf_size - 1)
+        dr_snprintf(kbuf + pos, kbuf_size - pos, "\1%s", root);
+    kbuf[kbuf_size - 1] = '\0';
     k = hashtable_lookup(&t->key_cache, kbuf);
     if (k != NULL) {
         remember_key(t, h, hv, k);
+        if (kbuf != stack_kbuf)
+            dr_thread_free(dr_get_current_drcontext(), kbuf, kbuf_size);
         return k;
     }
     dr_mutex_lock(keys_lock);
@@ -423,8 +447,8 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         (counter_bytes + opt_max_slots * sizeof(uint64) > COUNTER_BUDGET || !region_key_budget(region))) {
         overflow = true;
         /* out of budget: one shared bucket per region, not counted per state */
-        dr_snprintf(kbuf, sizeof(kbuf), "%s\1<other>", region);
-        kbuf[sizeof(kbuf) - 1] = '\0';
+        dr_snprintf(kbuf, kbuf_size, "%s\1<other>", region);
+        kbuf[kbuf_size - 1] = '\0';
         k = hashtable_lookup(&key_table, kbuf);
         nk = 0;
         names = &empty_name;
@@ -441,7 +465,15 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
         k->state_value = nk > 0 ? vals[0] : 0;
         k->nkstates = (nk == 1 && names[0][0] == '\0') ? 0 : nk;
         k->overflow = overflow;
-        for (i = 0; i < nk && i < KEY_STATES; i++) {
+        if (k->nkstates > 0) {
+            k->kname = dr_global_alloc((size_t)k->nkstates * sizeof(*k->kname));
+            k->kval = dr_global_alloc((size_t)k->nkstates * sizeof(*k->kval));
+            if (k->kname == NULL || k->kval == NULL) {
+                dr_fprintf(STDERR, "drperf: out of memory for declared states\n");
+                dr_abort();
+            }
+        }
+        for (i = 0; i < k->nkstates; i++) {
             safe_strcpy(k->kname[i], names[i], STATE_NAME_MAX);
             k->kval[i] = vals[i];
         }
@@ -463,6 +495,8 @@ get_key(thread_t *t, const char *region, int nk, const char *const *names, const
     dr_mutex_unlock(keys_lock);
     hashtable_add(&t->key_cache, kbuf, k);
     remember_key(t, h, hv, k);
+    if (kbuf != stack_kbuf)
+        dr_thread_free(dr_get_current_drcontext(), kbuf, kbuf_size);
     return k;
 }
 
@@ -482,7 +516,7 @@ update_shared(thread_t *self)
         /* a thread with no region of its own counts into the shared key, as in
          * the general path below: instructions between regions belong to no one */
         if (self != NULL && self->depth == 0)
-            set_thread_cur(self, slots_for(shared_key, self));
+            set_thread_cur(self, slots_for(opt_follow_threads ? shared_key : NULL, self));
         return;
     }
     dr_mutex_lock(leader_lock);
@@ -496,7 +530,7 @@ update_shared(thread_t *self)
         /* only when the region the followers count into actually changed */
         dr_rwlock_read_lock(threads_rw);
         for (t = threads; t != NULL; t = t->next) {
-            if (t->alive && t->depth == 0)
+            if (opt_follow_threads && t->alive && t->depth == 0)
                 steer_follower(t, slots_for(nk, t));
         }
         dr_rwlock_read_unlock(threads_rw);
@@ -623,8 +657,8 @@ pre_begin(void *wrapcxt, void **user_data)
     begin_common(t, total, region, 1, &sname, &sval);
 }
 
-/* perfmark_begin_v(region, n, names[], values[]): up to KEY_STATES declared
- * states; all of them form the key, so block counts are kept per combination
+/* perfmark_begin_v(region, n, names[], values[]): all n declared
+ * states form the key, so block counts are kept per combination
  * of their values and a formula can be derived in all of them. */
 static void
 pre_begin_v(void *wrapcxt, void **user_data)
@@ -636,12 +670,22 @@ pre_begin_v(void *wrapcxt, void **user_data)
     int n = (int)(ptr_int_t)drwrap_get_arg(wrapcxt, 1);
     const char *const *anames = (const char *const *)drwrap_get_arg(wrapcxt, 2);
     const int64 *avals = (const int64 *)drwrap_get_arg(wrapcxt, 3);
-    const char *names[KEY_STATES];
-    int64 vals[KEY_STATES];
+    const char *stack_names[STACK_KEY_STATES];
+    int64 stack_vals[STACK_KEY_STATES];
+    const char **names = stack_names;
+    int64 *vals = stack_vals;
     int i, nk = 0;
-    if (n > KEY_STATES) {
-        dr_atomic_add64_return_sum(&state_overflows, 1);
-        n = KEY_STATES;
+    if (n > STACK_KEY_STATES) {
+        if ((size_t)n > SIZE_MAX / sizeof(*names) || (size_t)n > SIZE_MAX / sizeof(*vals)) {
+            dr_fprintf(STDERR, "drperf: too many declared states\n");
+            dr_abort();
+        }
+        names = dr_thread_alloc(drcontext, (size_t)n * sizeof(*names));
+        vals = dr_thread_alloc(drcontext, (size_t)n * sizeof(*vals));
+        if (names == NULL || vals == NULL) {
+            dr_fprintf(STDERR, "drperf: out of memory for marker states\n");
+            dr_abort();
+        }
     }
     for (i = 0; i < n; i++) {
         const char *nm = NULL;
@@ -659,6 +703,10 @@ pre_begin_v(void *wrapcxt, void **user_data)
         nk = 1;
     }
     begin_common(t, total, region, nk, names, vals);
+    if (n > STACK_KEY_STATES) {
+        dr_thread_free(drcontext, names, (size_t)n * sizeof(*names));
+        dr_thread_free(drcontext, vals, (size_t)n * sizeof(*vals));
+    }
 }
 
 static void
@@ -692,7 +740,7 @@ pre_end(void *wrapcxt, void **user_data)
     if (t->depth > 0)
         set_thread_cur(t, t->stack[t->depth - 1].cur);
     else
-        set_thread_cur(t, slots_for(shared_key, t));
+        set_thread_cur(t, slots_for(opt_follow_threads ? shared_key : NULL, t));
     if (leader == t)
         update_shared(t);
 }
@@ -720,6 +768,52 @@ pre_state(void *wrapcxt, void **user_data)
 
 /* ------------------------------------------------------------- modules */
 
+/* Suppress synchronous work below explicitly selected emulator CUDA exports.
+ * The depth is thread-local: independent work on other threads stays counted. */
+static void
+pre_excluded_cuda(void *wrapcxt, void **user_data)
+{
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    (*(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))++;
+    dr_atomic_add64_return_sum(&excluded_calls, 1);
+    *user_data = (void *)1;
+}
+
+static void
+post_excluded_cuda(void *wrapcxt, void *user_data)
+{
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    ptr_uint_t *depth = (ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH);
+    if (user_data != NULL && *depth > 0)
+        --*depth;
+}
+
+static bool
+exclude_cuda_symbol(const char *name, size_t offset, void *data)
+{
+    const module_data_t *mod = (const module_data_t *)data;
+    const char *n = name;
+    app_pc address;
+    if (n && strncmp(n, "__cuda", 6) == 0)
+        n += 2;
+    if (!n || n[0] != 'c' || n[1] != 'u' ||
+        !((n[2] >= 'A' && n[2] <= 'Z') || strncmp(n, "cuda", 4) == 0 ||
+          strncmp(n, "cublas", 6) == 0 || strncmp(n, "cudnn", 5) == 0 ||
+          strncmp(n, "cusolver", 8) == 0 || strncmp(n, "cusparse", 8) == 0 ||
+          strncmp(n, "cufft", 5) == 0 || strncmp(n, "curand", 6) == 0 ||
+          strncmp(n, "cutensor", 8) == 0))
+        return true;
+    address = (app_pc)dr_get_proc_address(mod->handle, name);
+    if (address == NULL || drwrap_is_wrapped(address, pre_excluded_cuda, post_excluded_cuda))
+        return true;
+    if (!drwrap_wrap(address, pre_excluded_cuda, post_excluded_cuda)) {
+        dr_fprintf(STDERR, "drperf: cannot exclude CUDA export %s\n", name);
+        dr_abort();
+    }
+    excluded_wrappers++;
+    return true;
+}
+
 static void
 event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
 {
@@ -743,6 +837,15 @@ event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
         nmodules++;
     }
     dr_mutex_unlock(slots_lock);
+    if (opt_exclude_cuda_module[0] && name && strcmp(name, opt_exclude_cuda_module) == 0) {
+        /* DR 11.3's ELF export iterator misses symbols in some GNU-hash
+         * libraries. Enumerate on-disk symbols, then resolve exported APIs. */
+        if (drsym_enumerate_symbols(mod->full_path, exclude_cuda_symbol, (void *)mod,
+                                    DRSYM_DEFAULT_FLAGS) != DRSYM_SUCCESS) {
+            dr_fprintf(STDERR, "drperf: cannot enumerate CUDA module %s\n", name);
+            dr_abort();
+        }
+    }
     /* Only walk the export table of modules that can carry the markers:
      * libperfmark.so itself or the main executable (static linking).
      * Walking every module's dynamic section crashes DR on some torch libs. */
@@ -788,6 +891,8 @@ event_thread_init(void *drcontext)
     memset(t, 0, sizeof(*t));
     t->total_ptr = (volatile uint64 *)(base + TLS_TOTAL);
     *t->total_ptr = 0;
+    *(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH) = 0;
+    *(uint64 *)(base + TLS_EXCLUDE_COUNT) = 0;
     t->tid = dr_get_thread_id(drcontext);
     t->alive = true;
     hashtable_init_ex(&t->key_cache, 6, HASH_STRING, true, false, NULL, NULL, NULL);
@@ -798,7 +903,7 @@ event_thread_init(void *drcontext)
     t->next = threads;
     threads = t;
     dr_rwlock_write_unlock(threads_rw);
-    set_thread_cur(t, slots_for(shared_key, t));
+    set_thread_cur(t, slots_for(opt_follow_threads ? shared_key : NULL, t));
 }
 
 static void
@@ -812,6 +917,7 @@ event_thread_exit(void *drcontext)
         close_frame(t, total, seq_end, t_end, true);
     dr_rwlock_write_lock(threads_rw);
     t->final_total = total;
+    t->excluded_total = *(uint64 *)((byte *)t->total_ptr + 3 * sizeof(void *));
     t->alive = false;
     dr_rwlock_write_unlock(threads_rw);
     if (leader == t)
@@ -828,6 +934,9 @@ static bool
 event_pre_syscall(void *drcontext, int sysnum)
 {
     thread_t *t = cur_thread(drcontext);
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    if (opt_exclude_cuda_module[0] && *(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))
+        return true;
     t->sys++;
     return true;
 }
@@ -886,6 +995,7 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
     uint64 slot = packed >> 32;
     uint n = (uint)(packed & 0xffffffffu);
     reg_id_t reg;
+    instr_t *excluded = NULL, *done = NULL;
     drmgr_disable_auto_predication(drcontext, bb);
     if (!drmgr_is_first_instr(drcontext, inst))
         return DR_EMIT_DEFAULT;
@@ -894,6 +1004,20 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
     if (drreg_reserve_aflags(drcontext, bb, inst) != DRREG_SUCCESS ||
         drreg_reserve_register(drcontext, bb, inst, NULL, &reg) != DRREG_SUCCESS)
         DR_ASSERT(false);
+    if (opt_exclude_cuda_module[0]) {
+        int mod = slot_mod[slot];
+        excluded = INSTR_CREATE_label(drcontext);
+        done = INSTR_CREATE_label(drcontext);
+        /* Also suppress module entry/exit blocks around drwrap callbacks and
+         * module-private helpers. Export wrappers extend exclusion into callees. */
+        if (mod >= 0 && strcmp(modules[mod].name, opt_exclude_cuda_module) == 0) {
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jmp(drcontext, opnd_create_instr(excluded)));
+        } else {
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_cmp(drcontext,
+                dr_raw_tls_opnd(drcontext, tls_seg, TLS_EXCLUDE_DEPTH), OPND_CREATE_INT8(0)));
+            instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jcc(drcontext, OP_jnz, opnd_create_instr(excluded)));
+        }
+    }
     instrlist_meta_preinsert(
         bb, inst,
         INSTR_CREATE_add(drcontext, dr_raw_tls_opnd(drcontext, tls_seg, TLS_TOTAL),
@@ -904,6 +1028,13 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
             bb, inst,
             INSTR_CREATE_add(drcontext, OPND_CREATE_MEM64(reg, (int)(slot * sizeof(uint64))),
                              OPND_CREATE_INT32(n)));
+    }
+    if (excluded != NULL) {
+        instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jmp(drcontext, opnd_create_instr(done)));
+        instrlist_meta_preinsert(bb, inst, excluded);
+        instrlist_meta_preinsert(bb, inst, INSTR_CREATE_add(drcontext,
+            dr_raw_tls_opnd(drcontext, tls_seg, TLS_EXCLUDE_COUNT), OPND_CREATE_INT32(n)));
+        instrlist_meta_preinsert(bb, inst, done);
     }
     if (drreg_unreserve_register(drcontext, bb, inst, reg) != DRREG_SUCCESS ||
         drreg_unreserve_aflags(drcontext, bb, inst) != DRREG_SUCCESS)
@@ -1300,6 +1431,7 @@ event_exit(void)
     rkey_t *k;
     thread_t *t, *tn;
     uint64 total = 0;
+    uint64 excluded_total = 0;
     int i, n = 0, ti;
     if (f == INVALID_FILE) {
         dr_fprintf(STDERR, "drperf: cannot open output file %s\n", opt_out);
@@ -1312,6 +1444,13 @@ event_exit(void)
     dr_fprintf(f, "{\n  \"drperf\": {\"version\": \"%s\", \"pid\": %d, \"app\": ", DRPERF_VERSION,
                dr_get_process_id());
     json_str(f, dr_get_application_name());
+    for (t = threads; t != NULL; t = t->next)
+        excluded_total += t->alive ? *(uint64 *)((byte *)t->total_ptr + 3 * sizeof(void *)) : t->excluded_total;
+    dr_fprintf(f, ",\n    \"excluded_cuda_module\": ");
+    json_str(f, opt_exclude_cuda_module);
+    dr_fprintf(f, ", \"follow_unmarked_threads\": %s", opt_follow_threads ? "true" : "false");
+    dr_fprintf(f, ", \"excluded_cuda_exports\": %d, \"excluded_cuda_calls\": %lld, \"excluded_instructions\": %llu",
+               excluded_wrappers, (long long)excluded_calls, (unsigned long long)excluded_total);
     dr_fprintf(f, ",\n    \"rep_expand\": %s, \"symbols\": %s, \"max_slots\": %llu, "
                "\"slots_used\": %llu, \"slots_overflow\": %llu, \"counter_denied\": %lld,\n",
                opt_rep_expand ? "true" : "false", opt_symbols ? "true" : "false",
@@ -1389,6 +1528,10 @@ event_exit(void)
                 dr_raw_mem_free(k->tslots[ti], opt_max_slots * sizeof(uint64));
         }
         dr_global_free(k->tslots, MAX_THREADS * sizeof(uint64 *));
+        if (k->nkstates > 0) {
+            dr_global_free(k->kname, (size_t)k->nkstates * sizeof(*k->kname));
+            dr_global_free(k->kval, (size_t)k->nkstates * sizeof(*k->kval));
+        }
         dr_global_free(k, sizeof(*k));
         k = kn;
     }
@@ -1415,7 +1558,7 @@ event_exit(void)
     dr_raw_mem_free(slot_mod, opt_max_slots * sizeof(int));
     dr_raw_mem_free(slot_sym, opt_max_slots * sizeof(int));
     dr_raw_mem_free(dummy_slots, opt_max_slots * sizeof(uint64));
-    dr_raw_tls_cfree(tls_offs, 2);
+    dr_raw_tls_cfree(tls_offs, 4);
     drmgr_unregister_tls_field(tls_idx);
     dr_mutex_destroy(keys_lock);
     dr_mutex_destroy(leader_lock);
@@ -1466,6 +1609,10 @@ parse_options(int argc, const char *argv[])
             opt_block_counters = false;
         } else if (strcmp(argv[i], "-no_symbols") == 0) {
             opt_symbols = false;
+        } else if (strcmp(argv[i], "-exclude_cuda_module") == 0 && i + 1 < argc) {
+            safe_strcpy(opt_exclude_cuda_module, argv[++i], sizeof(opt_exclude_cuda_module));
+        } else if (strcmp(argv[i], "-no_follow_threads") == 0) {
+            opt_follow_threads = false;
         } else if (strcmp(argv[i], "-verbose") == 0) {
             opt_verbose = true;
         } else {
@@ -1485,7 +1632,11 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     if (!drmgr_init() || drreg_init(&ops) != DRREG_SUCCESS || !drwrap_init() || !drutil_init() ||
         !drx_init())
         DR_ASSERT(false);
-    if (opt_symbols && drsym_init(0) != DRSYM_SUCCESS) {
+    if ((opt_symbols || opt_exclude_cuda_module[0]) && drsym_init(0) != DRSYM_SUCCESS) {
+        if (opt_exclude_cuda_module[0]) {
+            dr_fprintf(STDERR, "drperf: drsym_init failed; requested CUDA exclusion unavailable\n");
+            dr_abort();
+        }
         dr_fprintf(STDERR, "drperf: drsym_init failed; symbols disabled\n");
         opt_symbols = false;
     }
@@ -1506,7 +1657,7 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     DR_ASSERT_MSG(slot_pc != NULL && slot_mod != NULL && slot_sym != NULL && dummy_slots != NULL,
                   "drperf: allocation failed");
     tls_idx = drmgr_register_tls_field();
-    if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, 2, 0))
+    if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, 4, 0))
         DR_ASSERT(false);
     tsc0 = rdtsc();
     us0 = dr_get_microseconds();

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-005",
+  "title": "Environment token expansion",
+  "language": "python",
+  "region": {
+    "symbol": "expandvars",
+    "start_line": 403,
+    "end_line": 509
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-005",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Expand a long path-like value containing many adjacent environment-variable references.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "81cec22a9bd0090bdcf037bd8eafab1d5b58b582",
+    "path": "Lib/ntpath.py",
+    "sha256": "1d4a3c8a81cac964e683070848a6c5eab6885284a3b0016a56b40065ad8c2333"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises expandvars with bounded input, and verifies entry into the empty region marker."
+  }
+}

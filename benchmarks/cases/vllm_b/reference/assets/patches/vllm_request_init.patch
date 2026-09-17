@@ -1,0 +1,119 @@
+--- a/vllm/v1/request.py
++++ b/vllm/v1/request.py
+@@ -56,7 +56,45 @@
+         )
+ 
+ 
++class _LazyBlockHashes:
++    """Non-data descriptor backing `Request.block_hashes`.
++
++    The prompt's block hashes cost one pickle + SHA-256 per `hash_block_size`
++    tokens, and no consumer needs them until the request is first scheduled
++    (`KVCacheManager.get_computed_blocks`, `BlockPool.cache_full_blocks`, and
++    the KV connectors, all of which run from `Scheduler.schedule`).  Computing
++    them on the first read instead of in `Request.__init__` keeps admission
++    linear in the prompt length instead of paying that staircase per block.
++
++    This is deliberately a *non-data* descriptor (no `__set__`): the instance
++    attribute installed by the first read shadows it, so every later
++    `request.block_hashes` is a plain instance-dict lookup, exactly as when
++    the list was assigned in `__init__`.
++    """
++
++    __slots__ = ()
++
++    def __get__(self, request, owner=None):
++        if request is None:
++            return self
++        block_hashes = []
++        # Install the list *before* calling the hasher: the hasher reads
++        # `request.block_hashes` (its length, and its last element as the
++        # parent hash) and must see the same empty list it saw when this ran
++        # at the end of `__init__`.
++        request.__dict__["block_hashes"] = block_hashes
++        block_hasher = request._block_hasher
++        if block_hasher is not None:
++            block_hashes.extend(block_hasher(request))
++        return block_hashes
++
++
+ class Request:
++    # Hashes of this request's full blocks, in block order.  Computed on the
++    # first read (see `_LazyBlockHashes`), and an ordinary instance attribute
++    # from then on.
++    block_hashes: "list[BlockHash]" = _LazyBlockHashes()  # type: ignore[assignment]
++
+     def __init__(
+         self,
+         request_id: str,
+@@ -203,12 +241,17 @@
+ 
+         self.prefill_stats: PrefillStats | None = PrefillStats()
+ 
+-        self.block_hashes: list[BlockHash] = []
++        # NB: `self.block_hashes` is deliberately NOT assigned here.  It is a
++        # lazy class attribute (see `_LazyBlockHashes`) that hashes the prompt's
++        # full blocks on its first read -- `get_computed_blocks` /
++        # `cache_full_blocks`, i.e. when the request is first scheduled.  Doing
++        # it here charged the admission path one pickle+SHA per block of the
++        # prompt (~40k instructions per 128-token block) for a result nothing
++        # looks at until the request is scheduled.
+         # Store the block hasher without binding self to avoid creating a
+         # reference cycle (Request -> partial -> Request) that prevents
+         # immediate garbage collection via reference counting.
+         self._block_hasher: Callable[[Request], list[BlockHash]] | None = block_hasher
+-        self.update_block_hashes()
+ 
+         self.skip_reading_prefix_cache = self.get_skip_reading_prefix_cache()
+ 
+@@ -253,6 +296,12 @@
+         self,
+         token_ids: int | list[int],
+     ) -> None:
++        if "block_hashes" not in self.__dict__:
++            # Hash the prompt's full blocks now, while `_all_token_ids` still
++            # holds exactly the prompt: a pending lazy hash must start from
++            # the same state (and the same `curr_mm_idx` walk) the eager
++            # constructor started from.  One dict probe per appended token.
++            self.hash_pending_blocks()
+         if isinstance(token_ids, int):
+             self._output_token_ids.append(token_ids)
+             self._all_token_ids.append(token_ids)
+@@ -262,6 +311,10 @@
+ 
+         self.update_block_hashes()
+ 
++    def hash_pending_blocks(self) -> "list[BlockHash]":
++        """Force the lazy `block_hashes` (a no-op once they exist)."""
++        return self.block_hashes
++
+     def update_block_hashes(self) -> None:
+         """Compute block hashes for any new full blocks and append them."""
+         if self._block_hasher is not None:
+--- a/vllm/v1/core/kv_cache_utils.py
++++ b/vllm/v1/core/kv_cache_utils.py
+@@ -725,6 +725,10 @@
+ 
+         return new_block_hashes
+ 
++    # Published so that callers -- and the perfmark `request_init` region --
++    # can see the granularity the hashes are computed at without reopening the
++    # closure.  Read-only; the hasher itself keeps using the closure variable.
++    request_block_hasher.hash_block_size = hash_block_size  # type: ignore[attr-defined]
+     return request_block_hasher
+ 
+ 
+--- a/vllm/v1/core/block_pool.py
++++ b/vllm/v1/core/block_pool.py
+@@ -237,8 +237,9 @@
+         metadata to be updated and cached. Given a request, it updates the
+         metadata for each block and caching it in the
+         `cached_block_hash_to_block`.
+-        The block hashes values are computed by the Request object immediately
+-        when it is created and when new tokens are appended.
++        The block hash values are computed by the Request object on the first
++        read of `request.block_hashes` (the `resolve_block_hashes` call below
++        is one such reader) and when new tokens are appended.
+ 
+         Args:
+             request: The request to cache the blocks.

@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -2898,6 +2899,7 @@
+ Parser::DeclGroupPtrTy Parser::ParseCXXClassMemberDeclaration(
+     AccessSpecifier AS, ParsedAttributes &AccessAttrs,
+     ParsedTemplateInfo &TemplateInfo, ParsingDeclRAIIObject *TemplateDiags) {
++      DRPERF_BENCH_REGION("cf-016");
+   assert(getLangOpts().CPlusPlus &&
+          "ParseCXXClassMemberDeclaration should only be called in C++ mode");
+   if (Tok.is(tok::at)) {

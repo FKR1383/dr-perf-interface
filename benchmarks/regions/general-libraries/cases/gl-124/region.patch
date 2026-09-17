@@ -1,0 +1,22 @@
+--- a/numpy/ma/mrecords.py
++++ b/numpy/ma/mrecords.py
+@@ -8,6 +8,7 @@
+ .. moduleauthor:: Pierre Gerard-Marchant
+ 
+ """
++import perfmark
+ #  We should make sure that no field is called '_mask','mask','_fieldmask',
+ #  or whatever restricted keywords.  An idea would be to no bother in the
+ #  first place, and then rename the invalid fields with a trailing
+@@ -720,8 +721,9 @@
+     newdtype = np.dtype(_data.dtype.descr + [(newfieldname, newfield.dtype)])
+     newdata = np.recarray(_data.shape, newdtype)
+     # Add the existing field
+-    [newdata.setfield(_data.getfield(*f), *f)
+-     for f in _data.dtype.fields.values()]
++    with perfmark.region("gl-124"):
++        [newdata.setfield(_data.getfield(*f), *f)
++         for f in _data.dtype.fields.values()]
+     # Add the new field
+     newdata.setfield(newfield._data, *newdata.dtype.fields[newfieldname])
+     newdata = newdata.view(MaskedRecords)

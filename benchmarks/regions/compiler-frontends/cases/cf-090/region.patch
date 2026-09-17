@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclCXX.cpp
++++ b/clang/lib/Sema/SemaDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -17685,6 +17686,7 @@
+ 
+ NamedDecl *Sema::ActOnFriendFunctionDecl(Scope *S, Declarator &D,
+                                         MultiTemplateParamsArg TemplateParams) {
++                                          DRPERF_BENCH_REGION("cf-090");
+   const DeclSpec &DS = D.getDeclSpec();
+ 
+   assert(DS.isFriendSpecified());

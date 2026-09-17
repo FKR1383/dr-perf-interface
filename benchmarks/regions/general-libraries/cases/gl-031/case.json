@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-031",
+  "title": "Selected block in networkx.to_numpy_array",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/networkx/networkx",
+    "revision": "4e74880b0da01977da79915167c64e5c2af38b47",
+    "path": "networkx/convert_matrix.py",
+    "snapshot": "../../upstream/networkx/networkx/convert_matrix.py",
+    "sha256": "704777808d7ebe0dcc09412066d25a1564e5ac4a83f8ecac3c78ccea0b82570e"
+  },
+  "region": {
+    "symbol": "to_numpy_array",
+    "start_line": 1089,
+    "end_line": 1121,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-031",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise to_numpy_array with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "networkx:networkx/convert_matrix.py:to_numpy_array",
+  "citations": [
+    "https://github.com/networkx/networkx/blob/4e74880b0da01977da79915167c64e5c2af38b47/networkx/convert_matrix.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/networkx/networkx/convert_matrix.py",
+        "destination": "tests/original.py",
+        "sha256": "704777808d7ebe0dcc09412066d25a1564e5ac4a83f8ecac3c78ccea0b82570e"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls networkx.convert_matrix.to_numpy_array on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

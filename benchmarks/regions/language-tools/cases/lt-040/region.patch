@@ -1,0 +1,55 @@
+--- a/sympy/physics/units/quantities.py
++++ b/sympy/physics/units/quantities.py
+@@ -2,6 +2,7 @@
+ Physical quantities.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ from sympy.core.expr import AtomicExpr
+ from sympy.core.symbol import Symbol
+@@ -28,26 +29,27 @@
+                 is_prefixed=False,
+                 **assumptions):
+ 
+-        if not isinstance(name, Symbol):
+-            name = Symbol(name)
++        with perfmark.region("lt-040"):
++            if not isinstance(name, Symbol):
++                name = Symbol(name)
+ 
+-        if abbrev is None:
+-            abbrev = name
+-        elif isinstance(abbrev, str):
+-            abbrev = Symbol(abbrev)
++            if abbrev is None:
++                abbrev = name
++            elif isinstance(abbrev, str):
++                abbrev = Symbol(abbrev)
+ 
+-        # HACK: These are here purely for type checking. They actually get assigned below.
+-        cls._is_prefixed = is_prefixed
++            # HACK: These are here purely for type checking. They actually get assigned below.
++            cls._is_prefixed = is_prefixed
+ 
+-        obj = AtomicExpr.__new__(cls, name, abbrev)
+-        obj._name = name
+-        obj._abbrev = abbrev
+-        obj._latex_repr = latex_repr
+-        obj._unicode_repr = pretty_unicode_repr
+-        obj._ascii_repr = pretty_ascii_repr
+-        obj._mathml_repr = mathml_presentation_repr
+-        obj._is_prefixed = is_prefixed
+-        return obj
++            obj = AtomicExpr.__new__(cls, name, abbrev)
++            obj._name = name
++            obj._abbrev = abbrev
++            obj._latex_repr = latex_repr
++            obj._unicode_repr = pretty_unicode_repr
++            obj._ascii_repr = pretty_ascii_repr
++            obj._mathml_repr = mathml_presentation_repr
++            obj._is_prefixed = is_prefixed
++            return obj
+ 
+     def set_global_dimension(self, dimension):
+         _QuantityMapper._quantity_dimension_global[self] = dimension

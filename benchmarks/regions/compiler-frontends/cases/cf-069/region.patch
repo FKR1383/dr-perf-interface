@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDeclCXX.cpp
++++ b/clang/lib/Parse/ParseDeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -1718,6 +1719,7 @@
+                                  AccessSpecifier AS, bool EnteringContext,
+                                  DeclSpecContext DSC,
+                                  ParsedAttributes &Attributes) {
++                                   DRPERF_BENCH_REGION("cf-069");
+   DeclSpec::TST TagType;
+   if (TagTokKind == tok::kw_struct)
+     TagType = DeclSpec::TST_struct;

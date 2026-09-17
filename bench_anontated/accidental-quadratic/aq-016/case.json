@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "aq-016",
+  "title": "Invalid parameter recovery",
+  "language": "python",
+  "region": {
+    "symbol": "get_invalid_parameter",
+    "start_line": 2248,
+    "end_line": 2264
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "aq-016",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Recover from a long malformed MIME parameter.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/python/cpython",
+    "revision": "5ab66a882d1b5e44ec50b25df116ab209d65863f",
+    "path": "Lib/email/_header_value_parser.py",
+    "sha256": "f63e90ce5f1d418cce74cd036e224f226f0ccd1ec94e2b771899a4199581e2d4"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Ran natively with Python 3.12 against a public export of the pinned patched snapshot at sizes 1, 2, 4, 8, and 16; correctness assertions passed and marker_probe observed the target region."
+    },
+    "coverage_note": "Loads the pinned source file, asserts its resolved path, exercises get_invalid_parameter with bounded input, and verifies entry into the empty region marker."
+  }
+}

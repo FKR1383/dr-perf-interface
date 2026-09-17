@@ -1,0 +1,42 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1060,18 +1061,19 @@
+         return comments
+ 
+     def append(self, arg_key: str, value: t.Any) -> None:
+-        node: Expr | None = self
+-        while node and node._hash is not None:
+-            node._hash = None
+-            node = node.parent
+-
+-        if type(self.args.get(arg_key)) is not list:
+-            self.args[arg_key] = []
+-        self._set_parent(arg_key, value)
+-        values = self.args[arg_key]
+-        if isinstance(value, Expr):
+-            value.index = len(values)
+-        values.append(value)
++        with perfmark.region("lt-080"):
++            node: Expr | None = self
++            while node and node._hash is not None:
++                node._hash = None
++                node = node.parent
++
++            if type(self.args.get(arg_key)) is not list:
++                self.args[arg_key] = []
++            self._set_parent(arg_key, value)
++            values = self.args[arg_key]
++            if isinstance(value, Expr):
++                value.index = len(values)
++            values.append(value)
+ 
+     def set(
+         self,

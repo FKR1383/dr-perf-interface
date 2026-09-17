@@ -1,0 +1,11 @@
+--- a/vllm/entrypoints/offline_utils.py
++++ b/vllm/entrypoints/offline_utils.py
+@@ -578,7 +578,7 @@
+         use_tqdm: bool | Callable[..., tqdm] = True,
+     ) -> list[_O]:
+         # Initialize tqdm.
+-        with perfmark.region("vllm-003"):
++        with perfmark.region("vllm-003", use_tqdm=int(bool(use_tqdm))):
+             if use_tqdm:
+                 num_requests = self.llm_engine.get_num_unfinished_requests()
+                 tqdm_func = use_tqdm if callable(use_tqdm) else tqdm

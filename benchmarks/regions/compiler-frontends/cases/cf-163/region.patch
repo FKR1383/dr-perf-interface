@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/PPLexerChange.cpp
++++ b/clang/lib/Lex/PPLexerChange.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/FileManager.h"
+ #include "clang/Basic/SourceManager.h"
+ #include "clang/Lex/HeaderSearch.h"
+@@ -329,6 +330,7 @@
+ /// the current file.  This either returns the EOF token or pops a level off
+ /// the include stack and keeps going.
+ bool Preprocessor::HandleEndOfFile(Token &Result, bool isEndOfMacro) {
++  DRPERF_BENCH_REGION("cf-163");
+   assert(!CurTokenLexer &&
+          "Ending a file when currently in a macro!");
+ 

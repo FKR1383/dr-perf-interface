@@ -1,0 +1,29 @@
+--- a/networkx/readwrite/json_graph/node_link.py
++++ b/networkx/readwrite/json_graph/node_link.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from itertools import count
+ 
+ import networkx as nx
+@@ -129,13 +130,14 @@
+         "graph": G.graph,
+         nodes: [{**G.nodes[n], name: n} for n in G],
+     }
+-    if multigraph:
+-        data[edges] = [
+-            {**d, source: u, target: v, key: k}
+-            for u, v, k, d in G.edges(keys=True, data=True)
+-        ]
+-    else:
+-        data[edges] = [{**d, source: u, target: v} for u, v, d in G.edges(data=True)]
++    with perfmark.region("gl-079"):
++        if multigraph:
++            data[edges] = [
++                {**d, source: u, target: v, key: k}
++                for u, v, k, d in G.edges(keys=True, data=True)
++            ]
++        else:
++            data[edges] = [{**d, source: u, target: v} for u, v, d in G.edges(data=True)]
+     return data
+ 
+ 

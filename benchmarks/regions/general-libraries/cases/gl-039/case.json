@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-039",
+  "title": "Selected block in networkx.minimum_node_cut",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/networkx/networkx",
+    "revision": "4e74880b0da01977da79915167c64e5c2af38b47",
+    "path": "networkx/algorithms/connectivity/cuts.py",
+    "snapshot": "../../upstream/networkx/networkx/algorithms/connectivity/cuts.py",
+    "sha256": "dd02bb430c3c919edc9f705b23279a3f54a48f65efd6b14453bb9a9dc9d66de5"
+  },
+  "region": {
+    "symbol": "minimum_node_cut",
+    "start_line": 482,
+    "end_line": 486,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-039",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise minimum_node_cut with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "networkx:networkx/algorithms/connectivity/cuts.py:minimum_node_cut",
+  "citations": [
+    "https://github.com/networkx/networkx/blob/4e74880b0da01977da79915167c64e5c2af38b47/networkx/algorithms/connectivity/cuts.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/networkx/networkx/algorithms/connectivity/cuts.py",
+        "destination": "tests/original.py",
+        "sha256": "dd02bb430c3c919edc9f705b23279a3f54a48f65efd6b14453bb9a9dc9d66de5"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls networkx.algorithms.connectivity.cuts.minimum_node_cut on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

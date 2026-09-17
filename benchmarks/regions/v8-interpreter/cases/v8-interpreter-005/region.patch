@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -306,6 +307,7 @@
+ }
+ 
+ RUNTIME_FUNCTION(Runtime_DisposeDisposableStack) {
++  DRPERF_BENCH_REGION("v8-interpreter-005");
+   HandleScope scope(isolate);
+   DCHECK_EQ(5, args.length());
+ 

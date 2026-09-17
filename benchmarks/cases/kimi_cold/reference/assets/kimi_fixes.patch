@@ -1,0 +1,84 @@
+Four edits to kimi-cli 1.50.0 that halve cold start (2.083s -> 0.923s, -53% instructions).
+Generated from the pristine package by startup/fix.py.
+--- a/kimi_cli/tools/file/read_media.py
++++ b/kimi_cli/tools/file/read_media.py
+@@ -4,7 +4,6 @@
+ from typing import override
+ 
+ from kaos.path import KaosPath
+-from kosong.chat_provider.kimi import Kimi
+ from kosong.tooling import CallableTool2, ToolError, ToolOk, ToolReturnValue
+ from pydantic import BaseModel, Field
+ 
+@@ -118,6 +117,8 @@
+                 image_size = _extract_image_size(data)
+             case "video":
+                 data = await path.read_bytes()
++                from kosong.chat_provider.kimi import Kimi
++
+                 if (llm := self._runtime.llm) and isinstance(llm.chat_provider, Kimi):
+                     part = await llm.chat_provider.files.upload_video(
+                         data=data,
+--- a/kimi_cli/tools/web/fetch.py
++++ b/kimi_cli/tools/web/fetch.py
+@@ -2,7 +2,6 @@
+ from typing import override
+ 
+ import aiohttp
+-import trafilatura
+ from kosong.tooling import CallableTool2, ToolReturnValue
+ from pydantic import BaseModel, Field
+ 
+@@ -99,6 +98,8 @@
+                 brief="Empty response body",
+             )
+ 
++        import trafilatura
++
+         extracted_text = trafilatura.extract(
+             resp_text,
+             include_comments=True,
+--- a/kimi_cli/soul/toolset.py
++++ b/kimi_cli/soul/toolset.py
+@@ -26,7 +26,6 @@
+     ToolParseError,
+     ToolRuntimeError,
+ )
+-from kosong.tooling.mcp import convert_mcp_content
+ from kosong.utils.typing import JsonType
+ 
+ from kimi_cli import logger
+@@ -1049,6 +1048,9 @@
+     char_budget = MCP_MAX_OUTPUT_CHARS
+     truncated = False
+ 
++    # Deferred: importing this helper pulls in the whole MCP package.
++    from kosong.tooling.mcp import convert_mcp_content
++
+     for part in result.content:
+         try:
+             converted = convert_mcp_content(part)
+--- a/kosong/tooling/__init__.py
++++ b/kosong/tooling/__init__.py
+@@ -27,9 +27,20 @@
+     parameters: ParametersType
+     """The parameters of the tool, in JSON Schema format."""
+ 
++    _META_VALIDATOR: ClassVar[Any] = None
++
+     @model_validator(mode="after")
+     def _validate_parameters(self) -> Self:
+-        jsonschema.validate(self.parameters, jsonschema.Draft202012Validator.META_SCHEMA)
++        # jsonschema.validate() re-validates the meta-schema against its own
++        # meta-schema on every call; build the validator once and reuse it.
++        cls = type(self)
++        validator = cls._META_VALIDATOR
++        if validator is None:
++            validator = jsonschema.Draft202012Validator(
++                jsonschema.Draft202012Validator.META_SCHEMA
++            )
++            cls._META_VALIDATOR = validator
++        validator.validate(self.parameters)
+         return self
+ 
+ 

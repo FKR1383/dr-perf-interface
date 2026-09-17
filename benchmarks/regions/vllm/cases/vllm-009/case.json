@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "vllm-009",
+  "title": "KVCacheManager.allocate_slots region",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/core/kv_cache_manager.py",
+    "snapshot": "../../upstream/vllm/v1/core/kv_cache_manager.py",
+    "sha256": "2d20c3d98845cfd8d88a2f66b8fc6402ea1fcfbee16879d2364a4a9e45b8fa47"
+  },
+  "region": {
+    "symbol": "KVCacheManager.allocate_slots",
+    "start_line": 545,
+    "end_line": 550,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-009",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "vllm:vllm/v1/core/kv_cache_manager.py:KVCacheManager.allocate_slots",
+  "citations": [
+    "https://github.com/vllm-project/vllm/blob/2cf0a6915ce544dc493a0990f2ea38d81601128a/vllm/v1/core/kv_cache_manager.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/driver.py",
+        "destination": "tests/driver.py",
+        "sha256": "ced29c2f484b8c7cb0d10a9712a6a9f0d5cb00bed7f7d9c11f5389913668e2cd"
+      },
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "not-run",
+      "details": "Concrete bounded scenario is provided, but this target was not run with its individual patch; target-specific marker reachability remains unverified."
+    },
+    "coverage_note": "Runs explicitly enabled prefix caching with three prompts sharing a prefix longer than a cache block, then a second shared-prefix batch. Cache state and scheduling still determine the marked-path choice; Probe.finish requires observed entry."
+  }
+}

@@ -1,0 +1,47 @@
+--- a/sympy/multipledispatch/core.py
++++ b/sympy/multipledispatch/core.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ from typing import Any
+ 
+ import inspect
+@@ -54,23 +55,24 @@
+     ...     def __init__(self, datum): # noqa: F811
+     ...         self.data = [datum]
+     """
+-    types = tuple(types)
++    with perfmark.region("lt-034"):
++        types = tuple(types)
+ 
+-    def _(func):
+-        name = func.__name__
++        def _(func):
++            name = func.__name__
+ 
+-        if ismethod(func):
+-            dispatcher = inspect.currentframe().f_back.f_locals.get(
+-                name,
+-                MethodDispatcher(name))
+-        else:
+-            if name not in namespace:
+-                namespace[name] = Dispatcher(name)
+-            dispatcher = namespace[name]
++            if ismethod(func):
++                dispatcher = inspect.currentframe().f_back.f_locals.get(
++                    name,
++                    MethodDispatcher(name))
++            else:
++                if name not in namespace:
++                    namespace[name] = Dispatcher(name)
++                dispatcher = namespace[name]
+ 
+-        dispatcher.add(types, func, on_ambiguity=on_ambiguity)
+-        return dispatcher
+-    return _
++            dispatcher.add(types, func, on_ambiguity=on_ambiguity)
++            return dispatcher
++        return _
+ 
+ 
+ def ismethod(func):

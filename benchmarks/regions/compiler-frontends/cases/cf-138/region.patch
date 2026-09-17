@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/PPMacroExpansion.cpp
++++ b/clang/lib/Lex/PPMacroExpansion.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/AttributeCommonInfo.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/Builtins.h"
+@@ -752,6 +753,7 @@
+ MacroArgs *Preprocessor::ReadMacroCallArgumentList(Token &MacroName,
+                                                    MacroInfo *MI,
+                                                    SourceLocation &MacroEnd) {
++                                                     DRPERF_BENCH_REGION("cf-138");
+   // The number of fixed arguments to parse.
+   unsigned NumFixedArgsLeft = MI->getNumParams();
+   bool isVariadic = MI->isVariadic();

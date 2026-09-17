@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-006",
+  "title": "ASTReader::ReadDeclRecord compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Serialization/ASTReaderDecl.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Serialization/ASTReaderDecl.cpp",
+    "sha256": "8e8842a53d00aaa3bc2f4da4b4e29e4a95673ebca6d1efd7f1ab206fd06c81db"
+  },
+  "region": {
+    "symbol": "ASTReader::ReadDeclRecord",
+    "start_line": 3872,
+    "end_line": 4281,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-006",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "serialization",
+  "workload": {
+    "description": "Run the bounded pch-reading-shape fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Serialization/ASTReaderDecl.cpp:ASTReader::ReadDeclRecord",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Serialization/ASTReaderDecl.cpp#L3872-L4281"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "866af0187461e2554dc91070ff8c5fa726bec12d47061b8ab9d0eec530395705",
+      "patch_sha256": "280f89b56c3d836e2f99f9e85b0471b231632f110530eea48a3813ef8464a511"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

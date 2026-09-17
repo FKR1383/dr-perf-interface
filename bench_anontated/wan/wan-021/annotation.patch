@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -394,7 +394,7 @@
+         self.register_buffer("freqs_sin", torch.cat(freqs_sin, dim=1), persistent=False)
+ 
+     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+-        with perfmark.region("wan-021"):
++        with perfmark.region("wan-021", token_count=int(hidden_states.shape[2] * (hidden_states.shape[3] // self.patch_size[1]) * (hidden_states.shape[4] // self.patch_size[2]))):
+             batch_size, num_channels, num_frames, height, width = hidden_states.shape
+             p_t, p_h, p_w = self.patch_size
+             ppf, pph, ppw = num_frames // p_t, height // p_h, width // p_w

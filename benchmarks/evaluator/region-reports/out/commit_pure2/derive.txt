@@ -1,0 +1,24 @@
+derive ftl_directory_bind_commit   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: requests=4 x150, requests=8 x151, requests=12 x150, requests=16 x151, requests=20 x150, requests=24 x1058
+  cost(requests) = 2,237.6*requests + 3,877.5        [all requests]   blocks: 192 affine, 648 constant, 33 irregular (19.5% of cost)
+    marker cost subtracted from the constant: 577.9 per call (calibrated)
+    irregular blocks, per call: 1,870.8 .. 16,851.2
+    per-requests coefficient by function:
+               387.1  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               288.1  _int_malloc  [libc.so.6]
+               195.5  <_ditto_ftl_core::directory::DirectoryState>::unmap_logged  [_ditto_ftl_core.abi3.so]
+               188.8  __GI___libc_malloc  [libc.so.6]
+                 170  <std::hash::random::RandomState as core::hash::BuildHasher>::hash_one:  [_ditto_ftl_core.abi3.so]
+               118.2  __memcmp_avx2_movbe  [libc.so.6]
+    constant by function:
+               614.6  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+               445.9  __realloc  [libc.so.6]
+                 438  _int_realloc  [libc.so.6]
+               385.7  <alloc::raw_vec::RawVecInner>::finish_grow  [_ditto_ftl_core.abi3.so]
+              -377.4  _int_malloc  [libc.so.6]
+               335.5  <_ditto_ftl_core::directory::DirectoryState>::unmap_logged  [_ditto_ftl_core.abi3.so]
+    irregular by function:
+             3,889.9  _int_malloc  [libc.so.6]
+             1,551.8  malloc_consolidate  [libc.so.6]
+             1,526.7  <_ditto_ftl_core::directory::Directory>::apply_batch  [_ditto_ftl_core.abi3.so]
+

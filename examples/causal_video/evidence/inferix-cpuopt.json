@@ -1,0 +1,89 @@
+{
+  "schema": "inferix-cpuopt-result-v1",
+  "scope": "Full pretrained Inferix, 21 latent frames, one segment, GPU-resident KV, full same-size warmup, five measured native requests",
+  "sources": {
+    "baseline_native_report": "out/causal-video/inferix-native/combined-refresh-report.json",
+    "candidate_native_report": "out/causal-video/inferix-native/cpuopt-report.json",
+    "native_equivalence": "out/causal-video/inferix-native/inferix-cpuopt-native-equivalence.json",
+    "multisegment_equivalence": "out/causal-video/inferix-native/inferix-cpuopt-multisegment-equivalence.json",
+    "baseline_drperf_summary": "out/causal-video/inferix-combined-drperf-summary.json",
+    "candidate_drperf_summary": "out/causal-video/inferix-cpuopt-drperf-summary.json"
+  },
+  "native": {
+    "baseline_seconds": [
+      12.553271196,
+      12.634749635,
+      12.688059104,
+      12.726927423,
+      12.762348055
+    ],
+    "candidate_seconds": [
+      12.569639639,
+      12.639044245,
+      12.694004179,
+      12.742029321,
+      12.775117992
+    ],
+    "baseline_median_seconds": 12.688059104,
+    "candidate_median_seconds": 12.694004179,
+    "candidate_minus_baseline_median_seconds": 0.005945074999999633,
+    "baseline_peak_gpu_allocated_bytes": 30990772224,
+    "candidate_peak_gpu_allocated_bytes": 31024916480,
+    "allocated_delta_bytes": 34144256,
+    "baseline_peak_gpu_reserved_bytes": 32260489216,
+    "candidate_peak_gpu_reserved_bytes": 33608957952,
+    "reserved_delta_bytes": 1348468736,
+    "candidate_cache_stats": {
+      "enabled": true,
+      "entries": 7,
+      "max_entries": 8,
+      "hits": 12593,
+      "misses": 7,
+      "evictions": 0,
+      "bytes": 33546240
+    },
+    "same_harness_sha256": {
+      "inferix_runner.py": "74bb01cbbf216a39523eaf5b24aa8c3a16d309f1343c182d684b2006905d03fb",
+      "compat.py": "7786a380c384177542fd08fce99f9c9a0e97ed33b5c2b8d21a775a6b2ceb302a"
+    },
+    "same_asset_identity": true
+  },
+  "semantic_equivalence": {
+    "full_native_passed": true,
+    "full_video_shape": [
+      1,
+      63,
+      480,
+      832,
+      3
+    ],
+    "full_video_max_abs_error": 0.0,
+    "multisegment_passed": true,
+    "multisegment_settings": {
+      "role": "native",
+      "latent_frames": 6,
+      "segments": 2,
+      "seed": 42,
+      "prompt": "A cat walks on the grass, realistic style",
+      "warmup_frames": 6,
+      "streaming_mode": "TRUE_STREAMING",
+      "low_memory": false,
+      "clock": "host_perf_counter_ns"
+    }
+  },
+  "drperf": {
+    "baseline_validity": [],
+    "candidate_validity": [],
+    "baseline_total_marked_exclusive_instructions": 5227639115,
+    "candidate_total_marked_exclusive_instructions": 4955856063,
+    "total_reduction_instructions": 271783052,
+    "total_reduction_fraction": 0.05198963547811773,
+    "rope_calls": 2100,
+    "baseline_rope_exclusive_instructions": 752732316,
+    "candidate_rope_exclusive_instructions": 498905046,
+    "rope_reduction_instructions": 253827270,
+    "rope_reduction_fraction": 0.33720788201153834,
+    "excluded_cuda_module": "gx_cuda.so"
+  },
+  "interpretation": "The opt-in cache reduces marked host instructions but shows no native A100 latency improvement in these five sequential observations."
+}

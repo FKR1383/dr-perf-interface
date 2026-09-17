@@ -1,0 +1,74 @@
+--- a/numpy/lib/recfunctions.py
++++ b/numpy/lib/recfunctions.py
+@@ -5,6 +5,7 @@
+ matplotlib.  They have been rewritten and extended for convenience.
+ 
+ """
++import perfmark
+ import itertools
+ 
+ import numpy as np
+@@ -1029,34 +1030,35 @@
+     # strides, because we know it won't work with, for example, np.matrix nor
+     # np.ma.MaskedArray.
+     can_view = type(arr) in (np.ndarray, np.recarray, np.memmap)
+-    if (not copy) and can_view and all(dt.base == out_dtype for dt in dts):
+-        # all elements have the right dtype already; if they have a common
+-        # stride, we can just return a view
+-        common_stride = _common_stride(offsets, counts, out_dtype.itemsize)
+-        if common_stride is not None:
+-            wrap = arr.__array_wrap__
+-
+-            new_shape = arr.shape + (sum(counts), out_dtype.itemsize)
+-            new_strides = arr.strides + (abs(common_stride), 1)
+-
+-            arr = arr[..., np.newaxis].view(np.uint8)  # view as bytes
+-            arr = arr[..., min(offsets):]  # remove the leading unused data
+-            arr = np.lib.stride_tricks.as_strided(arr,
+-                                                  new_shape,
+-                                                  new_strides,
+-                                                  subok=True)
+-
+-            # cast and drop the last dimension again
+-            arr = arr.view(out_dtype)[..., 0]
+-
+-            if common_stride < 0:
+-                arr = arr[..., ::-1]  # reverse, if the stride was negative
+-            if type(arr) is not type(wrap.__self__):
+-                # Some types (e.g. recarray) turn into an ndarray along the
+-                # way, so we have to wrap it again in order to match the
+-                # behavior with copy=True.
+-                arr = wrap(arr)
+-            return arr
++    with perfmark.region("gl-105"):
++        if (not copy) and can_view and all(dt.base == out_dtype for dt in dts):
++            # all elements have the right dtype already; if they have a common
++            # stride, we can just return a view
++            common_stride = _common_stride(offsets, counts, out_dtype.itemsize)
++            if common_stride is not None:
++                wrap = arr.__array_wrap__
++    
++                new_shape = arr.shape + (sum(counts), out_dtype.itemsize)
++                new_strides = arr.strides + (abs(common_stride), 1)
++    
++                arr = arr[..., np.newaxis].view(np.uint8)  # view as bytes
++                arr = arr[..., min(offsets):]  # remove the leading unused data
++                arr = np.lib.stride_tricks.as_strided(arr,
++                                                      new_shape,
++                                                      new_strides,
++                                                      subok=True)
++    
++                # cast and drop the last dimension again
++                arr = arr.view(out_dtype)[..., 0]
++    
++                if common_stride < 0:
++                    arr = arr[..., ::-1]  # reverse, if the stride was negative
++                if type(arr) is not type(wrap.__self__):
++                    # Some types (e.g. recarray) turn into an ndarray along the
++                    # way, so we have to wrap it again in order to match the
++                    # behavior with copy=True.
++                    arr = wrap(arr)
++                return arr
+ 
+     # next cast to a packed format with all fields converted to new dtype
+     packed_fields = np.dtype({'names': names,

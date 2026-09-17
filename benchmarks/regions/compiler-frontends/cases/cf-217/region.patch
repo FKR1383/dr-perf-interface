@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTWriter.cpp
++++ b/clang/lib/Serialization/ASTWriter.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "MultiOnDiskHashTable.h"
+@@ -5685,6 +5686,7 @@
+ }
+ 
+ void ASTWriter::WriteSpecialDeclRecords(Sema &SemaRef) {
++  DRPERF_BENCH_REGION("cf-217");
+   ASTContext &Context = SemaRef.Context;
+ 
+   bool isModule = WritingModule != nullptr;

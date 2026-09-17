@@ -1,0 +1,18 @@
+--- a/clang/lib/Analysis/CFG.cpp
++++ b/clang/lib/Analysis/CFG.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Analysis/CFG.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Attr.h"
+@@ -3076,6 +3077,7 @@
+ }
+ 
+ CFGBlock *CFGBuilder::VisitIfStmt(IfStmt *I) {
++  DRPERF_BENCH_REGION("cf-061");
+   // We may see an if statement in the middle of a basic block, or it may be the
+   // first statement we are processing.  In either case, we create a new basic
+   // block.  First, we create the blocks for the then...else statements, and

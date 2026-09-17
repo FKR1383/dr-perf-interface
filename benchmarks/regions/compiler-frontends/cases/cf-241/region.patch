@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -7402,6 +7403,7 @@
+ ///                    parameter-type-list[opt] ')'
+ ///
+ void Parser::ParseParenDeclarator(Declarator &D) {
++  DRPERF_BENCH_REGION("cf-241");
+   BalancedDelimiterTracker T(*this, tok::l_paren);
+   T.consumeOpen();
+ 

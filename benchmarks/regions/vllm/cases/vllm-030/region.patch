@@ -1,0 +1,60 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import itertools
+ import time
+ from collections import defaultdict, deque
+@@ -2299,28 +2300,29 @@
+         return self.kv_cache_manager.usage
+ 
+     def add_request(self, request: Request) -> None:
+-        existing = self.requests.get(request.request_id)
+-        if existing is not None:
+-            update = StreamingUpdate.from_request(request)
+-            if existing.status != RequestStatus.WAITING_FOR_STREAMING_REQ:
+-                assert existing.streaming_queue is not None, "duplicate request id"
+-                # Queue next input chunk (or finished sentinel).
+-                existing.streaming_queue.append(update)
+-            elif update is not None:
+-                # Commence next input chunk.
+-                self._update_request_as_session(existing, update)
++        with perfmark.region("vllm-030"):
++            existing = self.requests.get(request.request_id)
++            if existing is not None:
++                update = StreamingUpdate.from_request(request)
++                if existing.status != RequestStatus.WAITING_FOR_STREAMING_REQ:
++                    assert existing.streaming_queue is not None, "duplicate request id"
++                    # Queue next input chunk (or finished sentinel).
++                    existing.streaming_queue.append(update)
++                elif update is not None:
++                    # Commence next input chunk.
++                    self._update_request_as_session(existing, update)
++                else:
++                    # Streaming-input session finished.
++                    self.finish_requests(request.request_id, RequestStatus.FINISHED_ABORTED)
+             else:
+-                # Streaming-input session finished.
+-                self.finish_requests(request.request_id, RequestStatus.FINISHED_ABORTED)
+-        else:
+-            if request.resumable:
+-                request.streaming_queue = deque()
+-            self._enqueue_waiting_request(request)
+-            self.requests[request.request_id] = request
+-            if self.connector is not None:
+-                self.connector.on_new_request(request)
+-            if self.log_stats:
+-                request.record_event(EngineCoreEventType.QUEUED)
++                if request.resumable:
++                    request.streaming_queue = deque()
++                self._enqueue_waiting_request(request)
++                self.requests[request.request_id] = request
++                if self.connector is not None:
++                    self.connector.on_new_request(request)
++                if self.log_stats:
++                    request.record_event(EngineCoreEventType.QUEUED)
+ 
+     def finish_requests(
+         self, request_ids: str | Iterable[str] | None, finished_status: RequestStatus

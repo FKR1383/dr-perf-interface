@@ -1,0 +1,86 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import torch
+ import torch.nn as nn
+ import torch.nn.functional as F
+@@ -878,40 +879,41 @@
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0], first_chunk=False):
+         ## conv1
+-        if feat_cache is not None:
+-            idx = feat_idx[0]
+-            cache_x = x[:, :, -CACHE_T:, :, :].clone()
+-            if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
+-                # cache last frame of last two chunk
+-                cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
+-            x = self.conv_in(x, feat_cache[idx])
+-            feat_cache[idx] = cache_x
+-            feat_idx[0] += 1
+-        else:
+-            x = self.conv_in(x)
+-
+-        ## middle
+-        x = self.mid_block(x, feat_cache=feat_cache, feat_idx=feat_idx)
+-
+-        ## upsamples
+-        for up_block in self.up_blocks:
+-            x = up_block(x, feat_cache=feat_cache, feat_idx=feat_idx, first_chunk=first_chunk)
+-
+-        ## head
+-        x = self.norm_out(x)
+-        x = self.nonlinearity(x)
+-        if feat_cache is not None:
+-            idx = feat_idx[0]
+-            cache_x = x[:, :, -CACHE_T:, :, :].clone()
+-            if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
+-                # cache last frame of last two chunk
+-                cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
+-            x = self.conv_out(x, feat_cache[idx])
+-            feat_cache[idx] = cache_x
+-            feat_idx[0] += 1
+-        else:
+-            x = self.conv_out(x)
+-        return x
++        with perfmark.region("wan-014"):
++            if feat_cache is not None:
++                idx = feat_idx[0]
++                cache_x = x[:, :, -CACHE_T:, :, :].clone()
++                if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
++                    # cache last frame of last two chunk
++                    cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
++                x = self.conv_in(x, feat_cache[idx])
++                feat_cache[idx] = cache_x
++                feat_idx[0] += 1
++            else:
++                x = self.conv_in(x)
++
++            ## middle
++            x = self.mid_block(x, feat_cache=feat_cache, feat_idx=feat_idx)
++
++            ## upsamples
++            for up_block in self.up_blocks:
++                x = up_block(x, feat_cache=feat_cache, feat_idx=feat_idx, first_chunk=first_chunk)
++
++            ## head
++            x = self.norm_out(x)
++            x = self.nonlinearity(x)
++            if feat_cache is not None:
++                idx = feat_idx[0]
++                cache_x = x[:, :, -CACHE_T:, :, :].clone()
++                if cache_x.shape[2] < 2 and feat_cache[idx] is not None:
++                    # cache last frame of last two chunk
++                    cache_x = torch.cat([feat_cache[idx][:, :, -1, :, :].unsqueeze(2).to(cache_x.device), cache_x], dim=2)
++                x = self.conv_out(x, feat_cache[idx])
++                feat_cache[idx] = cache_x
++                feat_idx[0] += 1
++            else:
++                x = self.conv_out(x)
++            return x
+ 
+ 
+ def patchify(x, patch_size):

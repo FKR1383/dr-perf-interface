@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -603,7 +603,7 @@
+                     current_model = self.transformer_2
+                     current_guidance_scale = guidance_scale_2
+ 
+-                with perfmark.region("wan-029"):
++                with perfmark.region("wan-029", inference_steps=int(num_inference_steps)):
+                     latent_model_input = latents.to(transformer_dtype)
+                     if self.config.expand_timesteps:
+                         # seq_len: num_latent_frames * latent_height//2 * latent_width//2

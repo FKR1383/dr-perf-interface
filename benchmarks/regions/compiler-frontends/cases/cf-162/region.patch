@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/UnwrappedLineParser.cpp
++++ b/clang/lib/Format/UnwrappedLineParser.cpp
+@@ -12,6 +12,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "UnwrappedLineParser.h"
+ #include "FormatToken.h"
+ #include "FormatTokenLexer.h"
+@@ -4035,6 +4036,7 @@
+ }
+ 
+ void UnwrappedLineParser::parseRecord(bool ParseAsExpr) {
++  DRPERF_BENCH_REGION("cf-162");
+   const FormatToken &InitialToken = *FormatTok;
+   nextToken();
+ 

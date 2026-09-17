@@ -1,0 +1,130 @@
+--- a/networkx/algorithms/dag.py
++++ b/networkx/algorithms/dag.py
+@@ -4,6 +4,7 @@
+ In general, these functions do not check for acyclic-ness, so it is up
+ to the user to check for that.
+ """
++import perfmark
+ 
+ import heapq
+ from collections import deque
+@@ -583,64 +584,65 @@
+     current_sort = []
+ 
+     # do-while construct
+-    while True:
+-        assert all(count[v] == 0 for v in D)
+-
+-        if len(current_sort) == len(G):
+-            yield list(current_sort)
+-
+-            # clean-up stack
+-            while len(current_sort) > 0:
+-                assert len(bases) == len(current_sort)
+-                q = current_sort.pop()
+-
+-                # "restores" all edges (q, x)
++    with perfmark.region("gl-046"):
++        while True:
++            assert all(count[v] == 0 for v in D)
++    
++            if len(current_sort) == len(G):
++                yield list(current_sort)
++    
++                # clean-up stack
++                while len(current_sort) > 0:
++                    assert len(bases) == len(current_sort)
++                    q = current_sort.pop()
++    
++                    # "restores" all edges (q, x)
++                    # NOTE: it is important to iterate over edges instead
++                    # of successors, so count is updated correctly in multigraphs
++                    for _, j in G.out_edges(q):
++                        count[j] += 1
++                        assert count[j] >= 0
++                    # remove entries from D
++                    while len(D) > 0 and count[D[-1]] > 0:
++                        D.pop()
++    
++                    # corresponds to a circular shift of the values in D
++                    # if the first value chosen (the base) is in the first
++                    # position of D again, we are done and need to consider the
++                    # previous condition
++                    D.appendleft(q)
++                    if D[-1] == bases[-1]:
++                        # all possible values have been chosen at current position
++                        # remove corresponding marker
++                        bases.pop()
++                    else:
++                        # there are still elements that have not been fixed
++                        # at the current position in the topological sort
++                        # stop removing elements, escape inner loop
++                        break
++    
++            else:
++                if len(D) == 0:
++                    raise nx.NetworkXUnfeasible("Graph contains a cycle.")
++    
++                # choose next node
++                q = D.pop()
++                # "erase" all edges (q, x)
+                 # NOTE: it is important to iterate over edges instead
+                 # of successors, so count is updated correctly in multigraphs
+                 for _, j in G.out_edges(q):
+-                    count[j] += 1
++                    count[j] -= 1
+                     assert count[j] >= 0
+-                # remove entries from D
+-                while len(D) > 0 and count[D[-1]] > 0:
+-                    D.pop()
+-
+-                # corresponds to a circular shift of the values in D
+-                # if the first value chosen (the base) is in the first
+-                # position of D again, we are done and need to consider the
+-                # previous condition
+-                D.appendleft(q)
+-                if D[-1] == bases[-1]:
+-                    # all possible values have been chosen at current position
+-                    # remove corresponding marker
+-                    bases.pop()
+-                else:
+-                    # there are still elements that have not been fixed
+-                    # at the current position in the topological sort
+-                    # stop removing elements, escape inner loop
+-                    break
+-
+-        else:
+-            if len(D) == 0:
+-                raise nx.NetworkXUnfeasible("Graph contains a cycle.")
+-
+-            # choose next node
+-            q = D.pop()
+-            # "erase" all edges (q, x)
+-            # NOTE: it is important to iterate over edges instead
+-            # of successors, so count is updated correctly in multigraphs
+-            for _, j in G.out_edges(q):
+-                count[j] -= 1
+-                assert count[j] >= 0
+-                if count[j] == 0:
+-                    D.append(j)
+-            current_sort.append(q)
+-
+-            # base for current position might _not_ be fixed yet
+-            if len(bases) < len(current_sort):
+-                bases.append(q)
+-
+-        if len(bases) == 0:
+-            break
++                    if count[j] == 0:
++                        D.append(j)
++                current_sort.append(q)
++    
++                # base for current position might _not_ be fixed yet
++                if len(bases) < len(current_sort):
++                    bases.append(q)
++    
++            if len(bases) == 0:
++                break
+ 
+ 
+ @not_implemented_for("undirected")

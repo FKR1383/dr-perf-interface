@@ -1,0 +1,18 @@
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Frontend/CompilerInvocation.h"
+ #include "TestModuleFileExtension.h"
+ #include "clang/Basic/Builtins.h"
+@@ -5064,6 +5065,7 @@
+ }
+ 
+ std::string CompilerInvocation::getModuleHash() const {
++  DRPERF_BENCH_REGION("cf-110");
+   // FIXME: Consider using SHA1 instead of MD5.
+   llvm::HashBuilder<llvm::MD5, llvm::endianness::native> HBuilder;
+ 

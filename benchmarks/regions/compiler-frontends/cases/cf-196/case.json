@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-196",
+  "title": "PointerExprEvaluator::VisitCastExpr compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/AST/ExprConstant.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/AST/ExprConstant.cpp",
+    "sha256": "b61a3ddcb74d4c576936f74caee8404386203e199c597c42dbab79c6d018908b"
+  },
+  "region": {
+    "symbol": "PointerExprEvaluator::VisitCastExpr",
+    "start_line": 9606,
+    "end_line": 9763,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-196",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ast-processing",
+  "workload": {
+    "description": "Run the bounded constexpr-evaluation fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/AST/ExprConstant.cpp:PointerExprEvaluator::VisitCastExpr",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/AST/ExprConstant.cpp#L9606-L9763"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "cfe75305ba87c9933b4c6c909741e00811828f8c68d1a2e64ac7d22a760fee20",
+      "patch_sha256": "e1df127416d7314044b789e3cd4c6e478fa58cf70af7e9490406cb60f0187cdf"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

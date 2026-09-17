@@ -1,0 +1,35 @@
+--- a/astroid/brain/helpers.py
++++ b/astroid/brain/helpers.py
+@@ -3,6 +3,7 @@
+ # Copyright (c) https://github.com/pylint-dev/astroid/blob/main/CONTRIBUTORS.txt
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections.abc import Callable
+ from typing import TYPE_CHECKING
+@@ -18,15 +19,16 @@
+ def register_module_extender(
+     manager: AstroidManager, module_name: str, get_extension_mod: Callable[[], Module]
+ ) -> None:
+-    def transform(node: Module) -> None:
+-        extension_module = get_extension_mod()
+-        for name, objs in extension_module.locals.items():
+-            node.locals[name] = objs
+-            for obj in objs:
+-                if obj.parent is extension_module:
+-                    obj.parent = node
++    with perfmark.region("lt-137"):
++        def transform(node: Module) -> None:
++            extension_module = get_extension_mod()
++            for name, objs in extension_module.locals.items():
++                node.locals[name] = objs
++                for obj in objs:
++                    if obj.parent is extension_module:
++                        obj.parent = node
+ 
+-    manager.register_transform(Module, transform, lambda n: n.name == module_name)
++        manager.register_transform(Module, transform, lambda n: n.name == module_name)
+ 
+ 
+ # pylint: disable-next=too-many-locals

@@ -1,0 +1,89 @@
+--- a/src/requests/utils.py
++++ b/src/requests/utils.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import codecs
+ import contextlib
+@@ -242,42 +243,43 @@
+     else:
+         netrc_locations = (f"~/{f}" for f in NETRC_FILES)
+ 
+-    try:
+-        from netrc import NetrcParseError, netrc
+-
+-        netrc_path = None
+-
+-        for f in netrc_locations:
+-            loc = os.path.expanduser(f)
+-            if os.path.exists(loc):
+-                netrc_path = loc
+-                break
+-
+-        # Abort early if there isn't one.
+-        if netrc_path is None:
+-            return
+-
+-        ri = urlparse(url)
+-        host = ri.hostname
+-
+-        if host is None:
+-            return
+-
++    with perfmark.region("gl-184"):
+         try:
+-            _netrc = netrc(netrc_path).authenticators(host)
+-            if _netrc and any(_netrc):
+-                # Return with login / password
+-                login_i = 0 if _netrc[0] else 1
+-                return (_netrc[login_i] or "", _netrc[2] or "")
+-        except (NetrcParseError, OSError):
+-            # If there was a parsing error or a permissions issue reading the file,
+-            # we'll just skip netrc auth unless explicitly asked to raise errors.
+-            if raise_errors:
+-                raise
+-
+-    # App Engine hackiness.
+-    except (ImportError, AttributeError):
+-        pass
++            from netrc import NetrcParseError, netrc
++    
++            netrc_path = None
++    
++            for f in netrc_locations:
++                loc = os.path.expanduser(f)
++                if os.path.exists(loc):
++                    netrc_path = loc
++                    break
++    
++            # Abort early if there isn't one.
++            if netrc_path is None:
++                return
++    
++            ri = urlparse(url)
++            host = ri.hostname
++    
++            if host is None:
++                return
++    
++            try:
++                _netrc = netrc(netrc_path).authenticators(host)
++                if _netrc and any(_netrc):
++                    # Return with login / password
++                    login_i = 0 if _netrc[0] else 1
++                    return (_netrc[login_i] or "", _netrc[2] or "")
++            except (NetrcParseError, OSError):
++                # If there was a parsing error or a permissions issue reading the file,
++                # we'll just skip netrc auth unless explicitly asked to raise errors.
++                if raise_errors:
++                    raise
++    
++        # App Engine hackiness.
++        except (ImportError, AttributeError):
++            pass
+ 
+ 
+ def guess_filename(obj: Any) -> str | None:

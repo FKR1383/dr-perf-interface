@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/InlineAsm.cpp
++++ b/llvm/lib/IR/InlineAsm.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/InlineAsm.h"
+ #include "ConstantsContext.h"
+ #include "LLVMContextImpl.h"
+@@ -78,6 +79,7 @@
+ /// return true, otherwise return false.
+ bool InlineAsm::ConstraintInfo::Parse(StringRef Str,
+                      InlineAsm::ConstraintInfoVector &ConstraintsSoFar) {
++                       DRPERF_BENCH_REGION("cf-218");
+   StringRef::iterator I = Str.begin(), E = Str.end();
+   unsigned multipleAlternativeCount = Str.count('|') + 1;
+   unsigned multipleAlternativeIndex = 0;

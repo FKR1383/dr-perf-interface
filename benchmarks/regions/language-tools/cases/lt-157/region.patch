@@ -1,0 +1,50 @@
+--- a/src/jinja2/nodes.py
++++ b/src/jinja2/nodes.py
+@@ -2,6 +2,7 @@
+ some node tree helper functions used by the parser and compiler in order
+ to normalize nodes.
+ """
++import perfmark
+ 
+ import inspect
+ import operator
+@@ -127,22 +128,23 @@
+     environment: t.Optional["Environment"]
+ 
+     def __init__(self, *fields: t.Any, **attributes: t.Any) -> None:
+-        if self.abstract:
+-            raise TypeError("abstract nodes are not instantiable")
+-        if fields:
+-            if len(fields) != len(self.fields):
+-                if not self.fields:
+-                    raise TypeError(f"{type(self).__name__!r} takes 0 arguments")
+-                raise TypeError(
+-                    f"{type(self).__name__!r} takes 0 or {len(self.fields)}"
+-                    f" argument{'s' if len(self.fields) != 1 else ''}"
+-                )
+-            for name, arg in zip(self.fields, fields, strict=False):
+-                setattr(self, name, arg)
+-        for attr in self.attributes:
+-            setattr(self, attr, attributes.pop(attr, None))
+-        if attributes:
+-            raise TypeError(f"unknown attribute {next(iter(attributes))!r}")
++        with perfmark.region("lt-157"):
++            if self.abstract:
++                raise TypeError("abstract nodes are not instantiable")
++            if fields:
++                if len(fields) != len(self.fields):
++                    if not self.fields:
++                        raise TypeError(f"{type(self).__name__!r} takes 0 arguments")
++                    raise TypeError(
++                        f"{type(self).__name__!r} takes 0 or {len(self.fields)}"
++                        f" argument{'s' if len(self.fields) != 1 else ''}"
++                    )
++                for name, arg in zip(self.fields, fields, strict=False):
++                    setattr(self, name, arg)
++            for attr in self.attributes:
++                setattr(self, attr, attributes.pop(attr, None))
++            if attributes:
++                raise TypeError(f"unknown attribute {next(iter(attributes))!r}")
+ 
+     def iter_fields(
+         self,

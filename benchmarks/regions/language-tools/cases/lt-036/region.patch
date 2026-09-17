@@ -1,0 +1,84 @@
+--- a/sympy/external/pythonmpq.py
++++ b/sympy/external/pythonmpq.py
+@@ -30,6 +30,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ import operator
+ from math import gcd
+ from decimal import Decimal
+@@ -55,39 +56,40 @@
+ 
+     def __new__(cls, numerator, denominator=None):
+         """Construct PythonMPQ with gcd computation and checks"""
+-        if denominator is not None:
+-            #
+-            # PythonMPQ(n, d): require n and d to be int and d != 0
+-            #
+-            if isinstance(numerator, int) and isinstance(denominator, int):
+-                # This is the slow part:
+-                divisor = gcd(numerator, denominator)
+-                numerator //= divisor
+-                denominator //= divisor
+-                return cls._new_check(numerator, denominator)
+-        else:
+-            #
+-            # PythonMPQ(q)
+-            #
+-            # Here q can be PythonMPQ, int, Decimal, float, Fraction or str
+-            #
+-            if isinstance(numerator, int):
+-                return cls._new(numerator, 1)
+-            elif isinstance(numerator, PythonMPQ):
+-                return cls._new(numerator.numerator, numerator.denominator)
+-
+-            # Let Fraction handle Decimal/float conversion and str parsing
+-            if isinstance(numerator, (Decimal, float, str)):
+-                numerator = Fraction(numerator)
+-            if isinstance(numerator, Fraction):
+-                return cls._new(numerator.numerator, numerator.denominator)
+-        #
+-        # Reject everything else. This is more strict than mpq which allows
+-        # things like mpq(Fraction, Fraction) or mpq(Decimal, any). The mpq
+-        # behaviour is somewhat inconsistent so we choose to accept only a
+-        # more strict subset of what mpq allows.
+-        #
+-        raise TypeError("PythonMPQ() requires numeric or string argument")
++        with perfmark.region("lt-036"):
++            if denominator is not None:
++                #
++                # PythonMPQ(n, d): require n and d to be int and d != 0
++                #
++                if isinstance(numerator, int) and isinstance(denominator, int):
++                    # This is the slow part:
++                    divisor = gcd(numerator, denominator)
++                    numerator //= divisor
++                    denominator //= divisor
++                    return cls._new_check(numerator, denominator)
++            else:
++                #
++                # PythonMPQ(q)
++                #
++                # Here q can be PythonMPQ, int, Decimal, float, Fraction or str
++                #
++                if isinstance(numerator, int):
++                    return cls._new(numerator, 1)
++                elif isinstance(numerator, PythonMPQ):
++                    return cls._new(numerator.numerator, numerator.denominator)
++
++                # Let Fraction handle Decimal/float conversion and str parsing
++                if isinstance(numerator, (Decimal, float, str)):
++                    numerator = Fraction(numerator)
++                if isinstance(numerator, Fraction):
++                    return cls._new(numerator.numerator, numerator.denominator)
++            #
++            # Reject everything else. This is more strict than mpq which allows
++            # things like mpq(Fraction, Fraction) or mpq(Decimal, any). The mpq
++            # behaviour is somewhat inconsistent so we choose to accept only a
++            # more strict subset of what mpq allows.
++            #
++            raise TypeError("PythonMPQ() requires numeric or string argument")
+ 
+     @classmethod
+     def _new_check(cls, numerator, denominator):

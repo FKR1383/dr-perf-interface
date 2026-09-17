@@ -1,0 +1,40 @@
+{
+  "scope": "GX emulation without GX timing; Inferix host-KV baseline, one 21-latent-frame measured request after full warmup",
+  "source_run": "/home/ubuntu/GX/NEX/build/experiments/inferix-drperf2-1789607752127483780/host-0",
+  "summary": "out/causal-video/inferix-drperf2-summary.json",
+  "summary_sha256": "03d3c4f6288f97a909120b4559f301009c0a46b0e947d24a0b5676d8eb5503b1",
+  "raw_sha256": {
+    "run.265.json": "1b6fde65181ff3544eaf5684dc867860a82c0713bdfe0328bc57b2713ba39f5b",
+    "run.265.json.blocks": "bd859130f8477e60b150ec987dedd3ddb193eccf7944ce0a6c99d12df0876c37",
+    "run.265.json.slots": "628bc1c0b9a089473dc6b2059014a6a6cbee4b215bb75b805b651980e8203ece"
+  },
+  "validity": [],
+  "gx_module_instructions": 0,
+  "dropped_state_calls": 0,
+  "total_marked_exclusive_instructions": 5583431458,
+  "largest_regions": {
+    "inferix_self_attention": 1547674440,
+    "inferix_block": 1207777307,
+    "inferix_cross_attention": 911990548,
+    "inferix_causal_rope": 749846300,
+    "inferix_vae_decoder": 643134590,
+    "inferix_kv_set": 137220281
+  },
+  "self_attention_conditional_relation": {
+    "calls": 1050,
+    "condition": {"tokens": 4680},
+    "observed_context_tokens": [4680, 9360, 14040, 18720, 23400, 28080, 32760],
+    "calls_per_state": 150,
+    "mean_exclusive_instructions_by_state": [1476949, 1474838, 1476270, 1473481, 1473197, 1477628, 1465467],
+    "coefficient_instructions_per_context_token": -0.00996021571021571,
+    "constant_instructions_per_call": 1457698.5066666615,
+    "max_unexplained_fraction": 0.011894007002970546,
+    "full_declared_pcv_model_identifiable": false,
+    "interpretation": "A conditional fit with fixed query tokens, not a discovered dependence on query length; the tiny negative slope is not evidence that larger context reduces CPU work."
+  },
+  "limitations": [
+    "Instruction counts exclude gx_cuda.so and do not measure PCIe copy service or GPU execution time.",
+    "Marked exclusive regions do not cover all host work; the marked sum is not an end-to-end CPU cost.",
+    "One request and seven context states do not establish a general cost law or critical-path bottleneck."
+  ]
+}

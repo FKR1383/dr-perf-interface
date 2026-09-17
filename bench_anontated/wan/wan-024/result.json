@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "wan-024",
+  "stage": "annotation",
+  "status": "annotation-not-qualified",
+  "attempts": 2,
+  "max_attempts": 3,
+  "pcvs": [
+    {
+      "name": "attention_pairs",
+      "expression": "int(hidden_states.shape[1] * hidden_states.shape[1])"
+    }
+  ],
+  "evidence": {
+    "correctness": "passed",
+    "measurement": "failed-gate",
+    "gate": {
+      "case": "wan-024",
+      "validity_warnings": [],
+      "pcv_names": [
+        "attention_pairs"
+      ],
+      "distinct_states": 3,
+      "required_states": 3,
+      "calls": 9,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "attention_pairs": 81
+          },
+          "calls": 3,
+          "instructions_per_call": 2393770.3333333335,
+          "unexplained_instructions_per_call": 294376.99999999994,
+          "unexplained_share": 0.12297629221182592
+        },
+        {
+          "state": {
+            "attention_pairs": 1024
+          },
+          "calls": 3,
+          "instructions_per_call": 2818747.0,
+          "unexplained_instructions_per_call": 735860.6666666667,
+          "unexplained_share": 0.261059494401827
+        },
+        {
+          "state": {
+            "attention_pairs": 2304
+          },
+          "calls": 3,
+          "instructions_per_call": 3208410.3333333335,
+          "unexplained_instructions_per_call": 1096319.666666667,
+          "unexplained_share": 0.3417018251302229
+        }
+      ],
+      "max_unexplained_share": 0.3417018251302229,
+      "threshold": 0.05,
+      "sufficient_points": true,
+      "gate_pass": false,
+      "gate_reasons": [
+        "unexplained share exceeds 5% at an observed state"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "formula": {
+        "coefficients": {
+          "attention_pairs": 13.799996242435885
+        },
+        "constant": 2082442.0487142955,
+        "dependent_columns": []
+      },
+      "returncode": 0,
+      "instrumented_wall_seconds": 13.698092898936011,
+      "raw_files": [
+        "run.3227027.json"
+      ]
+    },
+    "correctness_details": "{\"marker_hits\": {\"wan-024\": 3}, \"measurement\": \"native correctness and reachability only\", \"target\": \"wan-024\"}\n",
+    "correctness_seconds": 5.112,
+    "measurement_path": "measurements/attempt-2/metrics.json"
+  },
+  "notes": "Second bounded refinement used a structural entry-state work dimension. Final marker: with perfmark.region(\"wan-024\", attention_pairs=int(hidden_states.shape[1] * hidden_states.shape[1])):",
+  "gate_pass": false,
+  "final_measurement": "measurements/attempt-2/metrics.json",
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Refined annotation still did not pass the strict 5% gate."
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-063",
+  "title": "MicrosoftCXXABI::EmitGuardedInit compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/CodeGen/MicrosoftCXXABI.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/CodeGen/MicrosoftCXXABI.cpp",
+    "sha256": "b056150f71aaf669b1200aa5d308bdb894e76cd2b6cca6f72fb904040311b312"
+  },
+  "region": {
+    "symbol": "MicrosoftCXXABI::EmitGuardedInit",
+    "start_line": 2608,
+    "end_line": 2773,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-063",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "ir-generation",
+  "workload": {
+    "description": "Run the bounded guarded-static-init-ir fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/CodeGen/MicrosoftCXXABI.cpp:MicrosoftCXXABI::EmitGuardedInit",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/CodeGen/MicrosoftCXXABI.cpp#L2608-L2773"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "5a531387b30449bef38874672628cdbbb71da52d88ae0b0efc5a3279e73c3387",
+      "patch_sha256": "6d2ae8ffacbf8b5b134fd7e0af889bbff1a785880f532a40a56193a71173bc2a"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

@@ -1,0 +1,39 @@
+--- a/networkx/algorithms/clique.py
++++ b/networkx/algorithms/clique.py
+@@ -7,6 +7,7 @@
+ .. _clique_wiki: https://en.wikipedia.org/wiki/Clique_problem
+ 
+ """
++import perfmark
+ 
+ from collections import Counter, defaultdict, deque
+ from itertools import chain, combinations, islice
+@@ -85,17 +86,18 @@
+     # 1. len(base) is nondecreasing.
+     # 2. (base + cnbrs) is sorted with respect to the iteration order of G.
+     # 3. cnbrs is a set of common neighbors of nodes in base.
+-    while queue:
+-        base, cnbrs = map(list, queue.popleft())
+-        yield base
+-        for i, u in enumerate(cnbrs):
+-            # Use generators to reduce memory consumption.
+-            queue.append(
+-                (
+-                    chain(base, [u]),
+-                    filter(nbrs[u].__contains__, islice(cnbrs, i + 1, None)),
++    with perfmark.region("gl-083"):
++        while queue:
++            base, cnbrs = map(list, queue.popleft())
++            yield base
++            for i, u in enumerate(cnbrs):
++                # Use generators to reduce memory consumption.
++                queue.append(
++                    (
++                        chain(base, [u]),
++                        filter(nbrs[u].__contains__, islice(cnbrs, i + 1, None)),
++                    )
+                 )
+-            )
+ 
+ 
+ @not_implemented_for("directed")

@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-compiler.cc
++++ b/src/regexp/regexp-compiler.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-compiler.h"
++#include "drperf_bench_region.h"
+ 
+ #include <algorithm>
+ #include <optional>
+@@ -675,6 +676,7 @@
+ // discarded, and also don't update the current position.
+ EmitResult Trace::Flush(Compiler* compiler, Node* successor,
+                         Trace::FlushMode mode) {
++  DRPERF_BENCH_REGION("v8-regexp-020");
+   RegExpMacroAssembler* assembler = compiler->macro_assembler();
+ #ifdef V8_ENABLE_REGEXP_DIAGNOSTICS
+   if (V8_UNLIKELY(v8_flags.trace_regexp_compiler)) {

@@ -1,0 +1,108 @@
+--- a/src/jinja2/parser.py
++++ b/src/jinja2/parser.py
+@@ -1,4 +1,5 @@
+ """Parse tokens from the lexer into nodes for the compiler."""
++import perfmark
+ 
+ import typing
+ import typing as t
+@@ -871,53 +872,54 @@
+         nodes.Expr | None,
+         nodes.Expr | None,
+     ]:
+-        token = self.stream.expect("lparen")
+-        args = []
+-        kwargs = []
+-        dyn_args = None
+-        dyn_kwargs = None
+-        require_comma = False
+-
+-        def ensure(expr: bool) -> None:
+-            if not expr:
+-                self.fail("invalid syntax for function call expression", token.lineno)
+-
+-        while self.stream.current.type != "rparen":
+-            if require_comma:
+-                self.stream.expect("comma")
+-
+-                # support for trailing comma
+-                if self.stream.current.type == "rparen":
+-                    break
+-
+-            if self.stream.current.type == "mul":
+-                ensure(dyn_args is None and dyn_kwargs is None)
+-                next(self.stream)
+-                dyn_args = self.parse_expression()
+-            elif self.stream.current.type == "pow":
+-                ensure(dyn_kwargs is None)
+-                next(self.stream)
+-                dyn_kwargs = self.parse_expression()
+-            else:
+-                if (
+-                    self.stream.current.type == "name"
+-                    and self.stream.look().type == "assign"
+-                ):
+-                    # Parsing a kwarg
++        with perfmark.region("lt-151"):
++            token = self.stream.expect("lparen")
++            args = []
++            kwargs = []
++            dyn_args = None
++            dyn_kwargs = None
++            require_comma = False
++
++            def ensure(expr: bool) -> None:
++                if not expr:
++                    self.fail("invalid syntax for function call expression", token.lineno)
++
++            while self.stream.current.type != "rparen":
++                if require_comma:
++                    self.stream.expect("comma")
++
++                    # support for trailing comma
++                    if self.stream.current.type == "rparen":
++                        break
++
++                if self.stream.current.type == "mul":
++                    ensure(dyn_args is None and dyn_kwargs is None)
++                    next(self.stream)
++                    dyn_args = self.parse_expression()
++                elif self.stream.current.type == "pow":
+                     ensure(dyn_kwargs is None)
+-                    key = self.stream.current.value
+-                    self.stream.skip(2)
+-                    value = self.parse_expression()
+-                    kwargs.append(nodes.Keyword(key, value, lineno=value.lineno))
++                    next(self.stream)
++                    dyn_kwargs = self.parse_expression()
+                 else:
+-                    # Parsing an arg
+-                    ensure(dyn_args is None and dyn_kwargs is None and not kwargs)
+-                    args.append(self.parse_expression())
+-
+-            require_comma = True
+-
+-        self.stream.expect("rparen")
+-        return args, kwargs, dyn_args, dyn_kwargs
++                    if (
++                        self.stream.current.type == "name"
++                        and self.stream.look().type == "assign"
++                    ):
++                        # Parsing a kwarg
++                        ensure(dyn_kwargs is None)
++                        key = self.stream.current.value
++                        self.stream.skip(2)
++                        value = self.parse_expression()
++                        kwargs.append(nodes.Keyword(key, value, lineno=value.lineno))
++                    else:
++                        # Parsing an arg
++                        ensure(dyn_args is None and dyn_kwargs is None and not kwargs)
++                        args.append(self.parse_expression())
++
++                require_comma = True
++
++            self.stream.expect("rparen")
++            return args, kwargs, dyn_args, dyn_kwargs
+ 
+     def parse_call(self, node: nodes.Expr) -> nodes.Call:
+         # The lparen will be expected in parse_call_args, but the lineno

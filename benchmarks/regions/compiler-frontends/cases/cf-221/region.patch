@@ -1,0 +1,18 @@
+--- a/clang/lib/Tooling/Tooling.cpp
++++ b/clang/lib/Tooling/Tooling.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Tooling/Tooling.h"
+ #include "clang/Basic/Diagnostic.h"
+ #include "clang/Basic/DiagnosticIDs.h"
+@@ -517,6 +518,7 @@
+ }
+ 
+ int ClangTool::run(ToolAction *Action) {
++  DRPERF_BENCH_REGION("cf-221");
+   // Exists solely for the purpose of lookup of the resource path.
+   // This just needs to be some symbol in the binary.
+   static int StaticSymbol;

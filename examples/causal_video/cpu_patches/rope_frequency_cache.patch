@@ -1,0 +1,101 @@
+--- a/inferix/models/self_forcing/causal_model.py
++++ b/inferix/models/self_forcing/causal_model.py
+@@ -16,6 +16,9 @@
+ import torch
+ import math
+ import torch.distributed as dist
++import os
++import threading
++from collections import OrderedDict
+ from typing import Optional, List
+ from inferix.models.wan_base import ParallelConfig
+ from inferix.kvcache_manager.kvcache_manager import KVCacheManager, KVCacheRequest
+@@ -29,12 +32,71 @@
+ flex_attention = torch.compile(
+     flex_attention, dynamic=False, mode="max-autotune-no-cudagraphs")
+ 
++_rope_frequency_cache_enabled = os.environ.get("INFERIX_ROPE_FREQ_CACHE") == "1"
++_rope_frequency_cache = OrderedDict()
++_rope_frequency_cache_lock = threading.Lock()
++_rope_frequency_cache_limit = 8
++_rope_frequency_cache_hits = 0
++_rope_frequency_cache_misses = 0
++_rope_frequency_cache_evictions = 0
++
++
++def rope_frequency_cache_stats():
++    with _rope_frequency_cache_lock:
++        return dict(enabled=_rope_frequency_cache_enabled,
++                    entries=len(_rope_frequency_cache),
++                    max_entries=_rope_frequency_cache_limit,
++                    hits=_rope_frequency_cache_hits,
++                    misses=_rope_frequency_cache_misses,
++                    evictions=_rope_frequency_cache_evictions,
++                    bytes=sum(entry[2].numel() * entry[2].element_size()
++                              for entry in _rope_frequency_cache.values()))
++
++
++def _causal_rope_frequencies(freqs, f, h, w, start_frame, c):
++    """Reuse immutable position multipliers across query/key and denoise calls.
++
++    This is opt-in because it changes GPU launch inventory. Keep the source
++    tensor alive in each entry so an allocator cannot reuse its identity.
++    """
++    use_cache = _rope_frequency_cache_enabled and not torch.is_grad_enabled()
++    if use_cache:
++        # A frequency tensor moved to CUDA under inference_mode has no version
++        # counter. The model only assigns/replaces self.freqs; it never mutates it.
++        version = None if freqs.is_inference() else freqs._version
++        # Reuse only on the stream that produced the grid. Keep the stream in
++        # the entry so its identity remains valid for the cached tensor.
++        stream = torch.cuda.current_stream(freqs.device) if freqs.is_cuda else None
++        stream_id = stream.cuda_stream if stream is not None else None
++        key = (id(freqs), version, f, h, w, start_frame, c, stream_id)
++        with _rope_frequency_cache_lock:
++            entry = _rope_frequency_cache.get(key)
++            if entry is not None and entry[0] is freqs:
++                global _rope_frequency_cache_hits
++                _rope_frequency_cache_hits += 1
++                _rope_frequency_cache.move_to_end(key)
++                return entry[2]
++
++    split = freqs.split([c - 2 * (c // 3), c // 3, c // 3], dim=1)
++    expanded = torch.cat([
++        split[0][start_frame:start_frame + f].view(f, 1, 1, -1).expand(f, h, w, -1),
++        split[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
++        split[2][:w].view(1, 1, w, -1).expand(f, h, w, -1),
++    ], dim=-1).reshape(f * h * w, 1, -1)
++    if use_cache:
++        with _rope_frequency_cache_lock:
++            global _rope_frequency_cache_misses, _rope_frequency_cache_evictions
++            _rope_frequency_cache_misses += 1
++            _rope_frequency_cache[key] = (freqs, stream, expanded)
++            _rope_frequency_cache.move_to_end(key)
++            if len(_rope_frequency_cache) > _rope_frequency_cache_limit:
++                _rope_frequency_cache.popitem(last=False)
++                _rope_frequency_cache_evictions += 1
++    return expanded
++
+ 
+ def causal_rope_apply(x, grid_sizes, freqs, start_frame=0):
+     n, c = x.size(2), x.size(3) // 2
+-
+-    # split freqs
+-    freqs = freqs.split([c - 2 * (c // 3), c // 3, c // 3], dim=1)
+ 
+     # loop over samples
+     output = []
+@@ -45,12 +107,7 @@
+         # precompute multipliers
+         x_i = torch.view_as_complex(x[i, :seq_len].to(torch.float64).reshape(
+             seq_len, n, -1, 2))
+-        freqs_i = torch.cat([
+-            freqs[0][start_frame:start_frame + f].view(f, 1, 1, -1).expand(f, h, w, -1),
+-            freqs[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
+-            freqs[2][:w].view(1, 1, w, -1).expand(f, h, w, -1)
+-        ],
+-            dim=-1).reshape(seq_len, 1, -1)
++        freqs_i = _causal_rope_frequencies(freqs, f, h, w, start_frame, c)
+ 
+         # apply rotary embedding
+         x_i = torch.view_as_real(x_i * freqs_i).flatten(2)

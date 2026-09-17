@@ -1,0 +1,135 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -4861,67 +4862,68 @@
+         )
+ 
+     def _parse_table_parts_fast(self) -> exp.Table | None:
+-        index = self._index
+-        parts: list[exp.Identifier] | None = None
+-        all_comments: list[str] | None = None
+-
+-        while self._match_set(self.IDENTIFIER_TOKENS):
+-            token = self._prev
+-            comments = self._prev_comments
+-
+-            has_dot = self._match(TokenType.DOT)
+-            curr_tt = self._curr.token_type
+-
+-            if not has_dot:
+-                if curr_tt in self.TABLE_POSTFIX_TOKENS:
++        with perfmark.region("lt-077"):
++            index = self._index
++            parts: list[exp.Identifier] | None = None
++            all_comments: list[str] | None = None
++
++            while self._match_set(self.IDENTIFIER_TOKENS):
++                token = self._prev
++                comments = self._prev_comments
++
++                has_dot = self._match(TokenType.DOT)
++                curr_tt = self._curr.token_type
++
++                if not has_dot:
++                    if curr_tt in self.TABLE_POSTFIX_TOKENS:
++                        self._retreat(index)
++                        return None
++                elif curr_tt not in self.IDENTIFIER_TOKENS:
+                     self._retreat(index)
+                     return None
+-            elif curr_tt not in self.IDENTIFIER_TOKENS:
++
++                if parts is None:
++                    parts = []
++
++                if comments:
++                    if all_comments is None:
++                        all_comments = []
++                    all_comments.extend(comments)
++                    self._prev_comments = []
++
++                parts.append(
++                    self.expression(
++                        exp.Identifier(
++                            this=token.text, quoted=token.token_type == TokenType.IDENTIFIER
++                        ),
++                        token,
++                    )
++                )
++
++                if not has_dot:
++                    break
++
++            if parts is None:
++                return None
++
++            n = len(parts)
++
++            if n == 1:
++                table: exp.Table = exp.Table(this=parts[0])
++            elif n == 2:
++                table = exp.Table(this=parts[1], db=parts[0])
++            elif n >= 3:
++                this: exp.Identifier | exp.Dot = parts[2]
++                for i in range(3, n):
++                    this = exp.Dot(this=this, expression=parts[i])
++
++                table = exp.Table(this=this, db=parts[1], catalog=parts[0])
++
++            if table is None:
+                 self._retreat(index)
+-                return None
+-
+-            if parts is None:
+-                parts = []
+-
+-            if comments:
+-                if all_comments is None:
+-                    all_comments = []
+-                all_comments.extend(comments)
+-                self._prev_comments = []
+-
+-            parts.append(
+-                self.expression(
+-                    exp.Identifier(
+-                        this=token.text, quoted=token.token_type == TokenType.IDENTIFIER
+-                    ),
+-                    token,
+-                )
+-            )
+-
+-            if not has_dot:
+-                break
+-
+-        if parts is None:
+-            return None
+-
+-        n = len(parts)
+-
+-        if n == 1:
+-            table: exp.Table = exp.Table(this=parts[0])
+-        elif n == 2:
+-            table = exp.Table(this=parts[1], db=parts[0])
+-        elif n >= 3:
+-            this: exp.Identifier | exp.Dot = parts[2]
+-            for i in range(3, n):
+-                this = exp.Dot(this=this, expression=parts[i])
+-
+-            table = exp.Table(this=this, db=parts[1], catalog=parts[0])
+-
+-        if table is None:
+-            self._retreat(index)
+-        elif all_comments:
+-            table.add_comments(all_comments)
+-        return table
++            elif all_comments:
++                table.add_comments(all_comments)
++            return table
+ 
+     def _parse_table_parts(
+         self,

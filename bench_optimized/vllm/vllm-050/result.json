@@ -1,0 +1,37 @@
+{
+  "case": "vllm-050",
+  "status": "accepted",
+  "accepted": true,
+  "pcvs": [
+    "batch_size"
+  ],
+  "baseline_measurement": "../../../bench_anontated/vllm/vllm-050/rounds/round-2/metrics.json",
+  "optimized_measurement": "rounds/optimized-4/metrics.json",
+  "baseline_weighted_instructions": 616760.0,
+  "optimized_weighted_instructions": 587249.0,
+  "instruction_change_fraction": -0.047848433750567465,
+  "gate_pass": true,
+  "correctness": "Same three batch states passed exact tensor shape and value assertions in both runs. Non-CPU behavior retains the original tensor transfer.",
+  "native_timing": "Not reported because concurrent agent workloads make wall-clock comparisons unreliable.",
+  "reason": "With the original region boundary preserved and the fast path restricted to unindexed CPU devices, every observed state improved and weighted instructions fell by 4.78%.",
+  "attempts": [
+    {
+      "baseline": "../../../bench_anontated/vllm/vllm-050/rounds/round-1/metrics.json",
+      "optimized": "rounds/optimized-1/metrics.json",
+      "valid": false,
+      "reason": "optimized source accidentally changed region indentation"
+    },
+    {
+      "baseline": "../../../bench_anontated/vllm/vllm-050/rounds/round-2/metrics.json",
+      "optimized": "rounds/optimized-2/metrics.json",
+      "valid": false,
+      "reason": "optimized source accidentally changed region indentation"
+    },
+    {
+      "baseline": "../../../bench_anontated/vllm/vllm-050/rounds/round-2/metrics.json",
+      "optimized": "rounds/optimized-4/metrics.json",
+      "valid": true,
+      "reason": "identical region boundary; unindexed CPU guard; strengthened exact value assertions"
+    }
+  ]
+}

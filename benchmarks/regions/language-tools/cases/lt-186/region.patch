@@ -1,0 +1,57 @@
+--- a/pyparsing/results.py
++++ b/pyparsing/results.py
+@@ -1,6 +1,7 @@
+ # results.py
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ from collections.abc import (
+@@ -256,26 +257,27 @@
+         return ParseResults([v.result for v in self._tokdict[i]])
+ 
+     def __setitem__(self, k, v, isinstance=isinstance):
+-        no_value = object()
+-        if isinstance(v, _ParseResultsWithOffset):
+-            cur_tokdict_value = self._tokdict.get(k, no_value)
+-            if cur_tokdict_value is no_value:
+-                self._tokdict[k] = [v]
++        with perfmark.region("lt-186"):
++            no_value = object()
++            if isinstance(v, _ParseResultsWithOffset):
++                cur_tokdict_value = self._tokdict.get(k, no_value)
++                if cur_tokdict_value is no_value:
++                    self._tokdict[k] = [v]
++                else:
++                    cur_tokdict_value.append(v)
++                sub = v.result
++            elif isinstance(k, (int, slice)):
++                self._toklist[k] = v
++                sub = v
+             else:
+-                cur_tokdict_value.append(v)
+-            sub = v.result
+-        elif isinstance(k, (int, slice)):
+-            self._toklist[k] = v
+-            sub = v
+-        else:
+-            cur_tokdict_value = self._tokdict.get(k, no_value)
+-            if cur_tokdict_value is no_value:
+-                self._tokdict[k] = [_ParseResultsWithOffset(v, 0)]
+-            else:
+-                cur_tokdict_value.append(_ParseResultsWithOffset(v, 0))
+-            sub = v
+-        if isinstance(sub, ParseResults):
+-            sub._parent = self
++                cur_tokdict_value = self._tokdict.get(k, no_value)
++                if cur_tokdict_value is no_value:
++                    self._tokdict[k] = [_ParseResultsWithOffset(v, 0)]
++                else:
++                    cur_tokdict_value.append(_ParseResultsWithOffset(v, 0))
++                sub = v
++            if isinstance(sub, ParseResults):
++                sub._parent = self
+ 
+     def __delitem__(self, i):
+         if not isinstance(i, (int, slice)):

@@ -1,0 +1,31 @@
+{
+  "case": "cf-122",
+  "phase": "preprocessing",
+  "scenario": "literal-escape-lexing",
+  "compiler": "clang",
+  "flags": [
+    "-E",
+    "-P",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "value",
+  "fixture": "const char *value = \"line\\n\\x41\";\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "const char *value_0=\"line\\n\\x41-0\";\nconst char *value_1=\"line\\n\\x41-1\";\nconst char *value_2=\"line\\n\\x41-2\";\nconst char *value_3=\"line\\n\\x41-3\";\n"
+    },
+    {
+      "size": 16,
+      "source": "const char *value_0=\"line\\n\\x41-0\";\nconst char *value_1=\"line\\n\\x41-1\";\nconst char *value_2=\"line\\n\\x41-2\";\nconst char *value_3=\"line\\n\\x41-3\";\nconst char *value_4=\"line\\n\\x41-4\";\nconst char *value_5=\"line\\n\\x41-5\";\nconst char *value_6=\"line\\n\\x41-6\";\nconst char *value_7=\"line\\n\\x41-7\";\nconst char *value_8=\"line\\n\\x41-8\";\nconst char *value_9=\"line\\n\\x41-9\";\nconst char *value_10=\"line\\n\\x41-10\";\nconst char *value_11=\"line\\n\\x41-11\";\nconst char *value_12=\"line\\n\\x41-12\";\nconst char *value_13=\"line\\n\\x41-13\";\nconst char *value_14=\"line\\n\\x41-14\";\nconst char *value_15=\"line\\n\\x41-15\";\n"
+    },
+    {
+      "size": 64,
+      "source": "const char *value_0=\"line\\n\\x41-0\";\nconst char *value_1=\"line\\n\\x41-1\";\nconst char *value_2=\"line\\n\\x41-2\";\nconst char *value_3=\"line\\n\\x41-3\";\nconst char *value_4=\"line\\n\\x41-4\";\nconst char *value_5=\"line\\n\\x41-5\";\nconst char *value_6=\"line\\n\\x41-6\";\nconst char *value_7=\"line\\n\\x41-7\";\nconst char *value_8=\"line\\n\\x41-8\";\nconst char *value_9=\"line\\n\\x41-9\";\nconst char *value_10=\"line\\n\\x41-10\";\nconst char *value_11=\"line\\n\\x41-11\";\nconst char *value_12=\"line\\n\\x41-12\";\nconst char *value_13=\"line\\n\\x41-13\";\nconst char *value_14=\"line\\n\\x41-14\";\nconst char *value_15=\"line\\n\\x41-15\";\nconst char *value_16=\"line\\n\\x41-16\";\nconst char *value_17=\"line\\n\\x41-17\";\nconst char *value_18=\"line\\n\\x41-18\";\nconst char *value_19=\"line\\n\\x41-19\";\nconst char *value_20=\"line\\n\\x41-20\";\nconst char *value_21=\"line\\n\\x41-21\";\nconst char *value_22=\"line\\n\\x41-22\";\nconst char *value_23=\"line\\n\\x41-23\";\nconst char *value_24=\"line\\n\\x41-24\";\nconst char *value_25=\"line\\n\\x41-25\";\nconst char *value_26=\"line\\n\\x41-26\";\nconst char *value_27=\"line\\n\\x41-27\";\nconst char *value_28=\"line\\n\\x41-28\";\nconst char *value_29=\"line\\n\\x41-29\";\nconst char *value_30=\"line\\n\\x41-30\";\nconst char *value_31=\"line\\n\\x41-31\";\nconst char *value_32=\"line\\n\\x41-32\";\nconst char *value_33=\"line\\n\\x41-33\";\nconst char *value_34=\"line\\n\\x41-34\";\nconst char *value_35=\"line\\n\\x41-35\";\nconst char *value_36=\"line\\n\\x41-36\";\nconst char *value_37=\"line\\n\\x41-37\";\nconst char *value_38=\"line\\n\\x41-38\";\nconst char *value_39=\"line\\n\\x41-39\";\nconst char *value_40=\"line\\n\\x41-40\";\nconst char *value_41=\"line\\n\\x41-41\";\nconst char *value_42=\"line\\n\\x41-42\";\nconst char *value_43=\"line\\n\\x41-43\";\nconst char *value_44=\"line\\n\\x41-44\";\nconst char *value_45=\"line\\n\\x41-45\";\nconst char *value_46=\"line\\n\\x41-46\";\nconst char *value_47=\"line\\n\\x41-47\";\nconst char *value_48=\"line\\n\\x41-48\";\nconst char *value_49=\"line\\n\\x41-49\";\nconst char *value_50=\"line\\n\\x41-50\";\nconst char *value_51=\"line\\n\\x41-51\";\nconst char *value_52=\"line\\n\\x41-52\";\nconst char *value_53=\"line\\n\\x41-53\";\nconst char *value_54=\"line\\n\\x41-54\";\nconst char *value_55=\"line\\n\\x41-55\";\nconst char *value_56=\"line\\n\\x41-56\";\nconst char *value_57=\"line\\n\\x41-57\";\nconst char *value_58=\"line\\n\\x41-58\";\nconst char *value_59=\"line\\n\\x41-59\";\nconst char *value_60=\"line\\n\\x41-60\";\nconst char *value_61=\"line\\n\\x41-61\";\nconst char *value_62=\"line\\n\\x41-62\";\nconst char *value_63=\"line\\n\\x41-63\";\n"
+    }
+  ],
+  "target_symbol": "StringLiteralParser::init",
+  "target_source": "clang/lib/Lex/LiteralSupport.cpp",
+  "mapping_note": "The literal-escape-lexing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

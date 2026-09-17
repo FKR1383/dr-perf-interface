@@ -1,0 +1,32 @@
+{
+  "case": "cf-143",
+  "phase": "formatting",
+  "scenario": "format-token-classification",
+  "compiler": "clang-format",
+  "flags": [
+    "-Xclang",
+    "-dump-tokens",
+    "-fsyntax-only",
+    "-x",
+    "c++"
+  ],
+  "expected_stdout": "",
+  "fixture": "template<class T> constexpr T fold_143(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_143 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_143(2)==14);\nint main() { Item_143 a{7}; return a.get()!=7; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct Scale_143_0 { int value[1]; };\nstruct Scale_143_1 { int value[2]; };\nstruct Scale_143_2 { int value[3]; };\nstruct Scale_143_3 { int value[4]; };\ntemplate<class T> constexpr T fold_143(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_143 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_143(2)==14);\nint main() { Item_143 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 16,
+      "source": "struct Scale_143_0 { int value[1]; };\nstruct Scale_143_1 { int value[2]; };\nstruct Scale_143_2 { int value[3]; };\nstruct Scale_143_3 { int value[4]; };\nstruct Scale_143_4 { int value[1]; };\nstruct Scale_143_5 { int value[2]; };\nstruct Scale_143_6 { int value[3]; };\nstruct Scale_143_7 { int value[4]; };\nstruct Scale_143_8 { int value[1]; };\nstruct Scale_143_9 { int value[2]; };\nstruct Scale_143_10 { int value[3]; };\nstruct Scale_143_11 { int value[4]; };\nstruct Scale_143_12 { int value[1]; };\nstruct Scale_143_13 { int value[2]; };\nstruct Scale_143_14 { int value[3]; };\nstruct Scale_143_15 { int value[4]; };\ntemplate<class T> constexpr T fold_143(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_143 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_143(2)==14);\nint main() { Item_143 a{7}; return a.get()!=7; }\n"
+    },
+    {
+      "size": 64,
+      "source": "struct Scale_143_0 { int value[1]; };\nstruct Scale_143_1 { int value[2]; };\nstruct Scale_143_2 { int value[3]; };\nstruct Scale_143_3 { int value[4]; };\nstruct Scale_143_4 { int value[1]; };\nstruct Scale_143_5 { int value[2]; };\nstruct Scale_143_6 { int value[3]; };\nstruct Scale_143_7 { int value[4]; };\nstruct Scale_143_8 { int value[1]; };\nstruct Scale_143_9 { int value[2]; };\nstruct Scale_143_10 { int value[3]; };\nstruct Scale_143_11 { int value[4]; };\nstruct Scale_143_12 { int value[1]; };\nstruct Scale_143_13 { int value[2]; };\nstruct Scale_143_14 { int value[3]; };\nstruct Scale_143_15 { int value[4]; };\nstruct Scale_143_16 { int value[1]; };\nstruct Scale_143_17 { int value[2]; };\nstruct Scale_143_18 { int value[3]; };\nstruct Scale_143_19 { int value[4]; };\nstruct Scale_143_20 { int value[1]; };\nstruct Scale_143_21 { int value[2]; };\nstruct Scale_143_22 { int value[3]; };\nstruct Scale_143_23 { int value[4]; };\nstruct Scale_143_24 { int value[1]; };\nstruct Scale_143_25 { int value[2]; };\nstruct Scale_143_26 { int value[3]; };\nstruct Scale_143_27 { int value[4]; };\nstruct Scale_143_28 { int value[1]; };\nstruct Scale_143_29 { int value[2]; };\nstruct Scale_143_30 { int value[3]; };\nstruct Scale_143_31 { int value[4]; };\nstruct Scale_143_32 { int value[1]; };\nstruct Scale_143_33 { int value[2]; };\nstruct Scale_143_34 { int value[3]; };\nstruct Scale_143_35 { int value[4]; };\nstruct Scale_143_36 { int value[1]; };\nstruct Scale_143_37 { int value[2]; };\nstruct Scale_143_38 { int value[3]; };\nstruct Scale_143_39 { int value[4]; };\nstruct Scale_143_40 { int value[1]; };\nstruct Scale_143_41 { int value[2]; };\nstruct Scale_143_42 { int value[3]; };\nstruct Scale_143_43 { int value[4]; };\nstruct Scale_143_44 { int value[1]; };\nstruct Scale_143_45 { int value[2]; };\nstruct Scale_143_46 { int value[3]; };\nstruct Scale_143_47 { int value[4]; };\nstruct Scale_143_48 { int value[1]; };\nstruct Scale_143_49 { int value[2]; };\nstruct Scale_143_50 { int value[3]; };\nstruct Scale_143_51 { int value[4]; };\nstruct Scale_143_52 { int value[1]; };\nstruct Scale_143_53 { int value[2]; };\nstruct Scale_143_54 { int value[3]; };\nstruct Scale_143_55 { int value[4]; };\nstruct Scale_143_56 { int value[1]; };\nstruct Scale_143_57 { int value[2]; };\nstruct Scale_143_58 { int value[3]; };\nstruct Scale_143_59 { int value[4]; };\nstruct Scale_143_60 { int value[1]; };\nstruct Scale_143_61 { int value[2]; };\nstruct Scale_143_62 { int value[3]; };\nstruct Scale_143_63 { int value[4]; };\ntemplate<class T> constexpr T fold_143(T x) { T s{}; for(int i=0;i<4;i++) s += x+i; return s; }\nstruct Item_143 { int x; constexpr int get() const { return x; } };\nstatic_assert(fold_143(2)==14);\nint main() { Item_143 a{7}; return a.get()!=7; }\n"
+    }
+  ],
+  "target_symbol": "TokenAnnotator::calculateFormattingInformation",
+  "target_source": "clang/lib/Format/TokenAnnotator.cpp",
+  "mapping_note": "The format-token-classification construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

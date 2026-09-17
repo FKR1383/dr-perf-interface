@@ -1,0 +1,78 @@
+{
+  "case": "vllm-004",
+  "status": "annotation-not-qualified",
+  "pcvs": [
+    {
+      "name": "query_count",
+      "expression": "query.shape[0]"
+    },
+    {
+      "name": "query_width",
+      "expression": "query.shape[-1]"
+    }
+  ],
+  "gate_pass": false,
+  "final_measurement": "measurements/screen-1/metrics.json",
+  "attempts": 1,
+  "evidence": {
+    "budget": "one DRPerf attempt, 60 second timeout",
+    "metrics": {
+      "case": "vllm-004",
+      "validity_warnings": [],
+      "pcv_names": [
+        "query_count",
+        "query_width"
+      ],
+      "distinct_states": 3,
+      "required_states": 4,
+      "calls": 84,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "query_count": 1,
+            "query_width": 64
+          },
+          "calls": 36,
+          "instructions_per_call": 203494.61111111112
+        },
+        {
+          "state": {
+            "query_count": 34,
+            "query_width": 64
+          },
+          "calls": 36,
+          "instructions_per_call": 1754603.4166666667
+        },
+        {
+          "state": {
+            "query_count": 68,
+            "query_width": 64
+          },
+          "calls": 12,
+          "instructions_per_call": 3400471.25
+        }
+      ],
+      "max_unexplained_share": null,
+      "threshold": 0.05,
+      "sufficient_points": false,
+      "gate_pass": false,
+      "gate_reasons": [
+        "insufficient state points: 3; need 4"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "returncode": 0,
+      "instrumented_wall_seconds": 27.49493727297522,
+      "raw_files": [
+        "run.3216848.json"
+      ]
+    },
+    "wrapper_output": "{\"out\": \"/home/ubuntu/drperf/bench_anontated/vllm/vllm-004/measurements/screen-1\", \"returncode\": 0, \"gate_pass\": false, \"max_unexplained_share\": null, \"gate_reasons\": [\"insufficient state points: 3; need 4\"]}\n"
+  },
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict gate in its single budgeted attempt."
+  }
+}

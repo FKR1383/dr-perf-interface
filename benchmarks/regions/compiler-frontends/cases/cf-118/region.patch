@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseObjc.cpp
++++ b/clang/lib/Parse/ParseObjc.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ExprObjC.h"
+ #include "clang/AST/ODRDiagsEmitter.h"
+@@ -642,6 +643,7 @@
+ ///
+ void Parser::ParseObjCInterfaceDeclList(tok::ObjCKeywordKind contextKey,
+                                         Decl *CDecl) {
++                                          DRPERF_BENCH_REGION("cf-118");
+   SmallVector<Decl *, 32> allMethods;
+   SmallVector<DeclGroupPtrTy, 8> allTUVariables;
+   tok::ObjCKeywordKind MethodImplKind = tok::objc_not_keyword;

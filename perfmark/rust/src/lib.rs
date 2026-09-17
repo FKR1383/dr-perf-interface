@@ -34,7 +34,7 @@ impl Region {
         Region { name }
     }
 
-    /// Region with several declared integer states (at most 4); the cost
+    /// Region with several declared integer states; the cost
     /// formula is derived in all of them.
     pub fn new_v(name: &str, states: &[(&str, i64)]) -> Region {
         let name = CString::new(name).expect("region name without NUL");
@@ -42,7 +42,8 @@ impl Region {
             states.iter().map(|(k, _)| CString::new(*k).expect("state name without NUL")).collect();
         let ptrs: Vec<*const c_char> = cnames.iter().map(|c| c.as_ptr()).collect();
         let vals: Vec<i64> = states.iter().map(|(_, v)| *v).collect();
-        unsafe { perfmark_begin_v(name.as_ptr(), ptrs.len() as i32, ptrs.as_ptr(), vals.as_ptr()) };
+        let n = i32::try_from(ptrs.len()).expect("number of states fits the C marker ABI");
+        unsafe { perfmark_begin_v(name.as_ptr(), n, ptrs.as_ptr(), vals.as_ptr()) };
         Region { name }
     }
 

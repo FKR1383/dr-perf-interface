@@ -1,0 +1,26 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1252,10 +1252,19 @@
+     def blend_h(self, a: torch.Tensor, b: torch.Tensor, blend_extent: int) -> torch.Tensor:
+         with perfmark.region("wan-007", blend_extent=int(blend_extent)):
+             blend_extent = min(a.shape[-1], b.shape[-1], blend_extent)
+-            for x in range(blend_extent):
+-                b[:, :, :, :, x] = a[:, :, :, :, -blend_extent + x] * (1 - x / blend_extent) + b[:, :, :, :, x] * (
+-                    x / blend_extent
+-                )
++            if blend_extent <= 0:
++                return b
++            if blend_extent == 1 or torch._C._overlaps(a, b):
++                for x in range(blend_extent):
++                    b[:, :, :, :, x] = a[:, :, :, :, -blend_extent + x] * (1 - x / blend_extent) + b[
++                        :, :, :, :, x
++                    ] * (x / blend_extent)
++                return b
++            weights = torch.arange(blend_extent, device=b.device, dtype=torch.float32).to(b.dtype) / blend_extent
++            weights = weights.view(1, 1, 1, 1, -1)
++            b[:, :, :, :, :blend_extent] = (
++                a[:, :, :, :, -blend_extent:] * (1 - weights) + b[:, :, :, :, :blend_extent] * weights
++            )
+             return b
+ 
+     def tiled_encode(self, x: torch.Tensor) -> AutoencoderKLOutput:

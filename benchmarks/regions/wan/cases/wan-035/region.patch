@@ -1,0 +1,99 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -234,48 +235,49 @@
+             dtype: (`torch.dtype`, *optional*):
+                 torch dtype
+         """
+-        device = device or self._execution_device
+-
+-        prompt = [prompt] if isinstance(prompt, str) else prompt
+-        if prompt is not None:
+-            batch_size = len(prompt)
+-        else:
+-            batch_size = prompt_embeds.shape[0]
+-
+-        if prompt_embeds is None:
+-            prompt_embeds = self._get_t5_prompt_embeds(
+-                prompt=prompt,
+-                num_videos_per_prompt=num_videos_per_prompt,
+-                max_sequence_length=max_sequence_length,
+-                device=device,
+-                dtype=dtype,
+-            )
+-
+-        if do_classifier_free_guidance and negative_prompt_embeds is None:
+-            negative_prompt = negative_prompt or ""
+-            negative_prompt = batch_size * [negative_prompt] if isinstance(negative_prompt, str) else negative_prompt
+-
+-            if prompt is not None and type(prompt) is not type(negative_prompt):
+-                raise TypeError(
+-                    f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
+-                    f" {type(prompt)}."
++        with perfmark.region("wan-035"):
++            device = device or self._execution_device
++
++            prompt = [prompt] if isinstance(prompt, str) else prompt
++            if prompt is not None:
++                batch_size = len(prompt)
++            else:
++                batch_size = prompt_embeds.shape[0]
++
++            if prompt_embeds is None:
++                prompt_embeds = self._get_t5_prompt_embeds(
++                    prompt=prompt,
++                    num_videos_per_prompt=num_videos_per_prompt,
++                    max_sequence_length=max_sequence_length,
++                    device=device,
++                    dtype=dtype,
+                 )
+-            elif batch_size != len(negative_prompt):
+-                raise ValueError(
+-                    f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
+-                    f" {prompt} has batch size {batch_size}. Please make sure that passed `negative_prompt` matches"
+-                    " the batch size of `prompt`."
++
++            if do_classifier_free_guidance and negative_prompt_embeds is None:
++                negative_prompt = negative_prompt or ""
++                negative_prompt = batch_size * [negative_prompt] if isinstance(negative_prompt, str) else negative_prompt
++
++                if prompt is not None and type(prompt) is not type(negative_prompt):
++                    raise TypeError(
++                        f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
++                        f" {type(prompt)}."
++                    )
++                elif batch_size != len(negative_prompt):
++                    raise ValueError(
++                        f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
++                        f" {prompt} has batch size {batch_size}. Please make sure that passed `negative_prompt` matches"
++                        " the batch size of `prompt`."
++                    )
++
++                negative_prompt_embeds = self._get_t5_prompt_embeds(
++                    prompt=negative_prompt,
++                    num_videos_per_prompt=num_videos_per_prompt,
++                    max_sequence_length=max_sequence_length,
++                    device=device,
++                    dtype=dtype,
+                 )
+ 
+-            negative_prompt_embeds = self._get_t5_prompt_embeds(
+-                prompt=negative_prompt,
+-                num_videos_per_prompt=num_videos_per_prompt,
+-                max_sequence_length=max_sequence_length,
+-                device=device,
+-                dtype=dtype,
+-            )
+-
+-        return prompt_embeds, negative_prompt_embeds
++            return prompt_embeds, negative_prompt_embeds
+ 
+     def check_inputs(
+         self,

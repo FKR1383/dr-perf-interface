@@ -1,0 +1,11 @@
+--- a/vllm/v1/engine/output_processor.py
++++ b/vllm/v1/engine/output_processor.py
+@@ -286,7 +286,7 @@
+         kv_transfer_params: dict[str, Any] | None = None,
+         ec_transfer_params: dict[str, Any] | None = None,
+     ) -> RequestOutput | PoolingRequestOutput | None:
+-        with perfmark.region("vllm-048"):
++        with perfmark.region("vllm-048", new_token_count=len(new_token_ids), finished=int(finish_reason is not None)):
+             finished = finish_reason is not None
+             final_only = self.output_kind == RequestOutputKind.FINAL_ONLY
+ 

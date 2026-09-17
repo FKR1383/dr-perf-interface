@@ -1,0 +1,178 @@
+--- a/sqlglot/generator.py
++++ b/sqlglot/generator.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import logging
+ import re
+@@ -3362,88 +3363,89 @@
+         return [locks, self.sql(expression, "sample")]
+ 
+     def select_sql(self, expression: exp.Select) -> str:
+-        into = expression.args.get("into")
+-        if not self.SUPPORTS_SELECT_INTO and into:
+-            into.pop()
+-
+-        hint = self.sql(expression, "hint")
+-        distinct = self.sql(expression, "distinct")
+-        distinct = f" {distinct}" if distinct else ""
+-        kind = self.sql(expression, "kind")
+-
+-        limit = expression.args.get("limit")
+-        if isinstance(limit, exp.Limit) and self.LIMIT_IS_TOP:
+-            top = self.limit_sql(limit, top=True)
+-            limit.pop()
+-        else:
+-            top = ""
+-
+-        expressions = self.expressions(expression)
+-
+-        if kind:
+-            if kind in self.SELECT_KINDS:
+-                kind = f" AS {kind}"
++        with perfmark.region("lt-050"):
++            into = expression.args.get("into")
++            if not self.SUPPORTS_SELECT_INTO and into:
++                into.pop()
++
++            hint = self.sql(expression, "hint")
++            distinct = self.sql(expression, "distinct")
++            distinct = f" {distinct}" if distinct else ""
++            kind = self.sql(expression, "kind")
++
++            limit = expression.args.get("limit")
++            if isinstance(limit, exp.Limit) and self.LIMIT_IS_TOP:
++                top = self.limit_sql(limit, top=True)
++                limit.pop()
+             else:
+-                if kind == "STRUCT":
+-                    expressions = self.expressions(
+-                        sqls=[
+-                            self.sql(
+-                                exp.Struct(
+-                                    expressions=[
+-                                        exp.PropertyEQ(this=e.args.get("alias"), expression=e.this)
+-                                        if isinstance(e, exp.Alias)
+-                                        else e
+-                                        for e in expression.expressions
+-                                    ]
++                top = ""
++
++            expressions = self.expressions(expression)
++
++            if kind:
++                if kind in self.SELECT_KINDS:
++                    kind = f" AS {kind}"
++                else:
++                    if kind == "STRUCT":
++                        expressions = self.expressions(
++                            sqls=[
++                                self.sql(
++                                    exp.Struct(
++                                        expressions=[
++                                            exp.PropertyEQ(this=e.args.get("alias"), expression=e.this)
++                                            if isinstance(e, exp.Alias)
++                                            else e
++                                            for e in expression.expressions
++                                        ]
++                                    )
+                                 )
+-                            )
+-                        ]
+-                    )
+-                kind = ""
+-
+-        operation_modifiers = self.expressions(expression, key="operation_modifiers", sep=" ")
+-        operation_modifiers = f"{self.sep()}{operation_modifiers}" if operation_modifiers else ""
+-
+-        exclude = expression.args.get("exclude")
+-
+-        if not self.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE and exclude:
+-            exclude_sql = self.expressions(sqls=exclude, flat=True)
+-            expressions = f"{expressions}{self.seg('EXCLUDE')} ({exclude_sql})"
+-
+-        # We use LIMIT_IS_TOP as a proxy for whether DISTINCT should go first because tsql and Teradata
+-        # are the only dialects that use LIMIT_IS_TOP and both place DISTINCT first.
+-        top_distinct = f"{distinct}{hint}{top}" if self.LIMIT_IS_TOP else f"{top}{hint}{distinct}"
+-        expressions = f"{self.sep()}{expressions}" if expressions else expressions
+-        sql = self.query_modifiers(
+-            expression,
+-            f"SELECT{top_distinct}{operation_modifiers}{kind}{expressions}",
+-            self.sql(expression, "into", comment=False),
+-            self.sql(expression, "from_", comment=False),
+-        )
+-
+-        # If both the CTE and SELECT clauses have comments, generate the latter earlier
+-        if expression.args.get("with_"):
+-            sql = self.maybe_comment(sql, expression)
+-            expression.pop_comments()
+-
+-        sql = self.prepend_ctes(expression, sql)
+-
+-        if self.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE and exclude:
+-            expression.set("exclude", None)
+-            subquery = expression.subquery(copy=False)
+-            star = exp.Star(except_=exclude)
+-            sql = self.sql(exp.select(star).from_(subquery, copy=False))
+-
+-        if not self.SUPPORTS_SELECT_INTO and into:
+-            if into.args.get("temporary"):
+-                table_kind = " TEMPORARY"
+-            elif self.SUPPORTS_UNLOGGED_TABLES and into.args.get("unlogged"):
+-                table_kind = " UNLOGGED"
+-            else:
+-                table_kind = ""
+-            sql = f"CREATE{table_kind} TABLE {self.sql(into.this)} AS {sql}"
+-
+-        return sql
++                            ]
++                        )
++                    kind = ""
++
++            operation_modifiers = self.expressions(expression, key="operation_modifiers", sep=" ")
++            operation_modifiers = f"{self.sep()}{operation_modifiers}" if operation_modifiers else ""
++
++            exclude = expression.args.get("exclude")
++
++            if not self.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE and exclude:
++                exclude_sql = self.expressions(sqls=exclude, flat=True)
++                expressions = f"{expressions}{self.seg('EXCLUDE')} ({exclude_sql})"
++
++            # We use LIMIT_IS_TOP as a proxy for whether DISTINCT should go first because tsql and Teradata
++            # are the only dialects that use LIMIT_IS_TOP and both place DISTINCT first.
++            top_distinct = f"{distinct}{hint}{top}" if self.LIMIT_IS_TOP else f"{top}{hint}{distinct}"
++            expressions = f"{self.sep()}{expressions}" if expressions else expressions
++            sql = self.query_modifiers(
++                expression,
++                f"SELECT{top_distinct}{operation_modifiers}{kind}{expressions}",
++                self.sql(expression, "into", comment=False),
++                self.sql(expression, "from_", comment=False),
++            )
++
++            # If both the CTE and SELECT clauses have comments, generate the latter earlier
++            if expression.args.get("with_"):
++                sql = self.maybe_comment(sql, expression)
++                expression.pop_comments()
++
++            sql = self.prepend_ctes(expression, sql)
++
++            if self.STAR_EXCLUDE_REQUIRES_DERIVED_TABLE and exclude:
++                expression.set("exclude", None)
++                subquery = expression.subquery(copy=False)
++                star = exp.Star(except_=exclude)
++                sql = self.sql(exp.select(star).from_(subquery, copy=False))
++
++            if not self.SUPPORTS_SELECT_INTO and into:
++                if into.args.get("temporary"):
++                    table_kind = " TEMPORARY"
++                elif self.SUPPORTS_UNLOGGED_TABLES and into.args.get("unlogged"):
++                    table_kind = " UNLOGGED"
++                else:
++                    table_kind = ""
++                sql = f"CREATE{table_kind} TABLE {self.sql(into.this)} AS {sql}"
++
++            return sql
+ 
+     def schema_sql(self, expression: exp.Schema) -> str:
+         this = self.sql(expression, "this")

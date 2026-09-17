@@ -1,0 +1,43 @@
+--- a/jsonschema/_utils.py
++++ b/jsonschema/_utils.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from collections.abc import Mapping, MutableMapping, Sequence
+ from urllib.parse import urlsplit
+ import re
+@@ -219,20 +220,21 @@
+     seen_keys = set()
+     unsupported = []
+ 
+-    for element in container:
+-        key = _uniq_key(element)
+-
+-        if key is _UNSUPPORTED:
+-            for previous in unsupported:
+-                if equal(previous, element):
+-                    return False
+-            unsupported.append(element)
+-            continue
+-
+-        if key in seen_keys:
+-            return False
+-
+-        seen_keys.add(key)
++    with perfmark.region("gl-230"):
++        for element in container:
++            key = _uniq_key(element)
++    
++            if key is _UNSUPPORTED:
++                for previous in unsupported:
++                    if equal(previous, element):
++                        return False
++                unsupported.append(element)
++                continue
++    
++            if key in seen_keys:
++                return False
++    
++            seen_keys.add(key)
+ 
+     return True
+ 

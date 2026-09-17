@@ -1,0 +1,32 @@
+--- a/sqlglot/trie.py
++++ b/sqlglot/trie.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import typing as t
+ from enum import Enum, auto
+ from collections.abc import Sequence, Iterable
+@@ -29,16 +30,17 @@
+     Returns:
+         The trie corresponding to `keywords`.
+     """
+-    trie = {} if trie is None else trie
++    with perfmark.region("lt-052"):
++        trie = {} if trie is None else trie
+ 
+-    for key in keywords:
+-        current = trie
+-        for char in key:
+-            current = current.setdefault(char, {})
++        for key in keywords:
++            current = trie
++            for char in key:
++                current = current.setdefault(char, {})
+ 
+-        current[0] = True
++            current[0] = True
+ 
+-    return trie
++        return trie
+ 
+ 
+ def in_trie(trie: dict, key: key) -> tuple[TrieResult, dict]:

@@ -1,0 +1,38 @@
+--- a/Cython/Plex/Regexps.py
++++ b/Cython/Plex/Regexps.py
+@@ -3,6 +3,7 @@
+ 
+ Regular Expressions
+ """
++import perfmark
+ 
+ import types
+ 
+@@ -462,16 +463,17 @@
+     Range(s) where |s| is a string of even length is an RE which matches
+     any single character in the ranges |s[0]| to |s[1]|, |s[2]| to |s[3]|,...
+     """
+-    if s2:
+-        result = CodeRange(ord(s1), ord(s2) + 1)
+-        result.str = "Range(%s,%s)" % (s1, s2)
+-    else:
+-        ranges = []
+-        for i in range(0, len(s1), 2):
+-            ranges.append(CodeRange(ord(s1[i]), ord(s1[i + 1]) + 1))
+-        result = Alt(*ranges)
+-        result.str = "Range(%s)" % repr(s1)
+-    return result
++    with perfmark.region("lt-234"):
++        if s2:
++            result = CodeRange(ord(s1), ord(s2) + 1)
++            result.str = "Range(%s,%s)" % (s1, s2)
++        else:
++            ranges = []
++            for i in range(0, len(s1), 2):
++                ranges.append(CodeRange(ord(s1[i]), ord(s1[i + 1]) + 1))
++            result = Alt(*ranges)
++            result.str = "Range(%s)" % repr(s1)
++        return result
+ 
+ 
+ def Opt(re):

@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -3139,6 +3140,7 @@
+ 
+ void BytecodeGenerator::VisitIterationBody(IterationStatement* stmt,
+                                            LoopBuilder* loop_builder) {
++  DRPERF_BENCH_REGION("v8-interpreter-020");
+   loop_builder->LoopBody();
+   ControlScopeForIteration execution_control(this, stmt, loop_builder);
+   {

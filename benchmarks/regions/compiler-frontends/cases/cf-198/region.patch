@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/DeclCXX.cpp
++++ b/clang/lib/AST/DeclCXX.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/DeclCXX.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTLambda.h"
+@@ -194,6 +195,7 @@
+ void
+ CXXRecordDecl::setBases(CXXBaseSpecifier const * const *Bases,
+                         unsigned NumBases) {
++                          DRPERF_BENCH_REGION("cf-198");
+   ASTContext &C = getASTContext();
+ 
+   if (!data().Bases.isOffset() && data().NumBases > 0)

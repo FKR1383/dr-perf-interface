@@ -1,0 +1,48 @@
+--- a/numpy/ctypeslib/_ctypeslib.py
++++ b/numpy/ctypeslib/_ctypeslib.py
+@@ -49,6 +49,7 @@
+ >>> _lib.foo_func(out, len(out))                #doctest: +SKIP
+ 
+ """
++import perfmark
+ __all__ = ['load_library', 'ndpointer', 'c_intp', 'as_ctypes', 'as_array',
+            'as_ctypes_type']
+ 
+@@ -306,21 +307,22 @@
+ 
+     # normalize flags to int | None
+     num = None
+-    if flags is not None:
+-        if isinstance(flags, str):
+-            flags = flags.split(',')
+-        elif isinstance(flags, (int, np.integer)):
+-            num = flags
+-            flags = _flags_fromnum(num)
+-        elif isinstance(flags, mu.flagsobj):
+-            num = flags.num
+-            flags = _flags_fromnum(num)
+-        if num is None:
+-            try:
+-                flags = [x.strip().upper() for x in flags]
+-            except Exception as e:
+-                raise TypeError("invalid flags specification") from e
+-            num = _num_fromflags(flags)
++    with perfmark.region("gl-123"):
++        if flags is not None:
++            if isinstance(flags, str):
++                flags = flags.split(',')
++            elif isinstance(flags, (int, np.integer)):
++                num = flags
++                flags = _flags_fromnum(num)
++            elif isinstance(flags, mu.flagsobj):
++                num = flags.num
++                flags = _flags_fromnum(num)
++            if num is None:
++                try:
++                    flags = [x.strip().upper() for x in flags]
++                except Exception as e:
++                    raise TypeError("invalid flags specification") from e
++                num = _num_fromflags(flags)
+ 
+     # normalize shape to tuple | None
+     if shape is not None:

@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -548,6 +549,7 @@
+                                           DirectHandle<JSFunction> callee,
+                                           T parameters,
+                                           uint32_t argument_count) {
++  DRPERF_BENCH_REGION("v8-interpreter-008");
+   CHECK(!IsDerivedConstructor(callee->shared()->kind()));
+   CHECK(callee->shared()->has_simple_parameters());
+   DirectHandle<JSObject> result =

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "vllm-017",
+  "title": "FCFSRequestQueue.prepend_request body",
+  "language": "python",
+  "region": {
+    "symbol": "FCFSRequestQueue.prepend_request",
+    "start_line": 94,
+    "end_line": 94,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-017",
+    "pcvs": [
+      "request_priority"
+    ]
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/core/sched/request_queue.py",
+    "sha256": "4b8d938e5fb8152fe61030b8aa991f983fcac9a405c37ed8908045e05e82ae5e"
+  },
+  "tests": {
+    "files": [
+      "tests/test_case.py",
+      "tests/driver.py",
+      "tests/marker_probe.py"
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Directly invokes the marked Python function with several bounded inputs; exact marker reachability was verified with this individual patch."
+  }
+}

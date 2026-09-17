@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-interpreter.cc
++++ b/src/regexp/regexp-interpreter.cc
+@@ -5,6 +5,7 @@
+ // A simple interpreter for the Irregexp byte code.
+ 
+ #include "src/regexp/regexp-interpreter.h"
++#include "drperf_bench_region.h"
+ 
+ #include <limits>
+ 
+@@ -61,6 +62,7 @@
+ 
+ bool BackRefMatchesNoCase(Isolate* isolate, int from, int current, int len,
+                           base::Vector<const uint8_t> subject, bool unicode) {
++  DRPERF_BENCH_REGION("v8-regexp-002");
+   // For Latin1 characters the unicode flag makes no difference.
+   for (int i = 0; i < len; i++) {
+     unsigned int old_char = subject[from++];

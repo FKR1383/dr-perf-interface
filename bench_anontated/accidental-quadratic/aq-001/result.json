@@ -1,0 +1,33 @@
+{
+  "case": "aq-001",
+  "status": "annotation-gate-failed",
+  "attempts": 2,
+  "pcvs": [
+    "members_before"
+  ],
+  "pcv_expressions": "members_before=len(enum_class._member_map_)",
+  "gate_pass": false,
+  "gates": {
+    "threshold": 0.05,
+    "distinct_states": 16,
+    "required_states": 3,
+    "max_unexplained_share": 0.1576529461227671,
+    "reasons": [
+      "unexplained share exceeds 5% at an observed state"
+    ],
+    "validity_warnings": []
+  },
+  "final_measurement": "evidence/round2b/metrics.json",
+  "evidence": [
+    "evidence/round1/metrics.json",
+    "evidence/round2/metrics.json",
+    "evidence/round2b/metrics.json"
+  ],
+  "notes": [
+    "evidence/round2/metrics.json records an initial warmup/attachment infrastructure failure and is excluded from the annotation-attempt count."
+  ],
+  "optimization": {
+    "status": "not-qualified",
+    "reason": "The final annotation did not pass the strict measurement gate."
+  }
+}

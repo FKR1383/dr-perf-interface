@@ -1,0 +1,60 @@
+{
+  "case": "vllm-050",
+  "validity_warnings": [],
+  "pcv_names": [
+    "batch_size"
+  ],
+  "distinct_states": 3,
+  "required_states": 3,
+  "calls": 15,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "batch_size": 1
+      },
+      "calls": 5,
+      "instructions_per_call": 33232.4,
+      "unexplained_instructions_per_call": 324.8,
+      "unexplained_share": 0.009773594443976361
+    },
+    {
+      "state": {
+        "batch_size": 2
+      },
+      "calls": 5,
+      "instructions_per_call": 35300.8,
+      "unexplained_instructions_per_call": 324.8,
+      "unexplained_share": 0.009200924624937677
+    },
+    {
+      "state": {
+        "batch_size": 3
+      },
+      "calls": 5,
+      "instructions_per_call": 47918.4,
+      "unexplained_instructions_per_call": 831.1999999999999,
+      "unexplained_share": 0.017346155130388324
+    }
+  ],
+  "max_unexplained_share": 0.017346155130388324,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": true,
+  "gate_reasons": [],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "batch_size": 3289.8
+    },
+    "constant": 31744.00000000003,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 10.297142368974164,
+  "raw_files": [
+    "run.3202337.json"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "case": "vllm-024",
+  "status": "rejected",
+  "accepted": false,
+  "baseline_measurement": "../../../bench_anontated/vllm/vllm-024/rounds/round-1/metrics.json",
+  "optimized_measurement": "rounds/optimized-1/metrics.json",
+  "baseline_weighted_instructions": 165204.0,
+  "optimized_weighted_instructions": 170722.0,
+  "instruction_change_fraction": 0.03340112830197817,
+  "reason": "Bulk extend plus heapify increased weighted instructions by 3.34% on the original workload. Expanded size states were nonlinear and failed the strict gate; tie-order, self-alias, and empty-input semantics were not fully established, so the change is rejected.",
+  "additional_evidence": [
+    "../../../bench_anontated/vllm/vllm-024/rounds/round-2/metrics.json",
+    "rounds/optimized-2/metrics.json"
+  ]
+}

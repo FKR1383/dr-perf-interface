@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -5054,6 +5055,7 @@
+                                        bool IsExplicitInstantiation,
+                                        RecordDecl *&AnonRecord,
+                                        SourceLocation EllipsisLoc) {
++                                         DRPERF_BENCH_REGION("cf-005");
+   Decl *TagD = nullptr;
+   TagDecl *Tag = nullptr;
+   if (DS.getTypeSpecType() == DeclSpec::TST_class ||

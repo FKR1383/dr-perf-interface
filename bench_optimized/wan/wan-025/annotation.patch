@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -476,7 +476,7 @@
+                 indicating whether the corresponding generated image contains "not-safe-for-work" (nsfw) content.
+         """
+ 
+-        with perfmark.region("wan-025"):
++        with perfmark.region("wan-025", inference_steps=int(num_inference_steps)):
+             if isinstance(callback_on_step_end, (PipelineCallback, MultiPipelineCallbacks)):
+                 callback_on_step_end_tensor_inputs = callback_on_step_end.tensor_inputs
+ 

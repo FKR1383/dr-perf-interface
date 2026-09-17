@@ -1,0 +1,32 @@
+--- a/numpy/ma/core.py
++++ b/numpy/ma/core.py
+@@ -19,6 +19,7 @@
+ .. moduleauthor:: Pierre Gerard-Marchant
+ 
+ """
++import perfmark
+ import builtins
+ import datetime as dt
+ import functools
+@@ -2599,13 +2600,14 @@
+     a = np.asanyarray(a)
+     inishape = a.shape
+     a = a.ravel()
+-    if isinstance(a, MaskedArray):
+-        out = np.array([tuple(flatten_sequence(d.item())) for d in a._data])
+-        out = out.view(MaskedArray)
+-        out._mask = np.array([tuple(flatten_sequence(d.item()))
+-                              for d in getmaskarray(a)])
+-    else:
+-        out = np.array([tuple(flatten_sequence(d.item())) for d in a])
++    with perfmark.region("gl-115"):
++        if isinstance(a, MaskedArray):
++            out = np.array([tuple(flatten_sequence(d.item())) for d in a._data])
++            out = out.view(MaskedArray)
++            out._mask = np.array([tuple(flatten_sequence(d.item()))
++                                  for d in getmaskarray(a)])
++        else:
++            out = np.array([tuple(flatten_sequence(d.item())) for d in a])
+     if len(inishape) > 1:
+         newshape = list(out.shape)
+         newshape[0] = inishape

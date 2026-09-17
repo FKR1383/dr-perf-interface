@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "v8-interpreter-003",
+  "title": "disposable stack initialization",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/v8/v8",
+    "revision": "736a2cbec441e85b68c742215d15318abfeae707",
+    "path": "src/runtime/runtime-scopes.cc",
+    "snapshot": "../../upstream/src/runtime/runtime-scopes.cc",
+    "sha256": "9955d138e927e2899e0d22fb4b35a15d7db0272575ed6eee04dadf5acf811bb3"
+  },
+  "region": {
+    "symbol": "v8::internal::Runtime_InitializeDisposableStack",
+    "start_line": 238,
+    "end_line": 247
+  },
+  "marker": {
+    "kind": "cpp-raii",
+    "name": "v8-interpreter-003",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Evaluate a bounded script that creates explicit resource-management scopes.",
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ]
+  },
+  "citations": [
+    "https://github.com/v8/v8/blob/736a2cbec441e85b68c742215d15318abfeae707/src/runtime/runtime-scopes.cc",
+    "https://github.com/v8/v8/commit/736a2cbec441e85b68c742215d15318abfeae707"
+  ],
+  "phase": "javascript-runtime",
+  "tests": {
+    "files": [
+      "tests/test_case.js"
+    ],
+    "command": [
+      "{d8}",
+      "tests/test_case.js"
+    ],
+    "validation": {
+      "status": "not-run",
+      "details": "Host Node 18.19.1 lacks explicit resource management syntax. The test now fails explicitly on that host; run the pinned patched d8 build to verify behavior and marker entry."
+    },
+    "coverage_note": "This test exercises representative public JavaScript behavior, but V8 may use optimized builtins or fast paths instead of the marked native runtime fallback; region entry has not been observed in a patched build."
+  }
+}

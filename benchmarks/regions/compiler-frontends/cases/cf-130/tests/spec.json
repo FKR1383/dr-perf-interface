@@ -1,0 +1,33 @@
+{
+  "case": "cf-130",
+  "phase": "ast-processing",
+  "scenario": "inline-asm-parsing",
+  "compiler": "clang",
+  "flags": [
+    "-Xclang",
+    "-ast-dump",
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "TranslationUnitDecl",
+  "fixture": "int main(){int x=3; asm(\"\" : \"+r\"(x)); return x!=3;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 16,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    },
+    {
+      "size": 64,
+      "source": "int f(int x){\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nasm(\"\" : \"+r\"(x));\nreturn x;}\n"
+    }
+  ],
+  "target_symbol": "ASTContext::getFunctionFeatureMap",
+  "target_source": "clang/lib/AST/ASTContext.cpp",
+  "mapping_note": "The inline-asm-parsing construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

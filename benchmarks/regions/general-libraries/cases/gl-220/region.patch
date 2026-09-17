@@ -1,0 +1,25 @@
+--- a/jsonschema/_legacy_keywords.py
++++ b/jsonschema/_legacy_keywords.py
+@@ -1,3 +1,4 @@
++import perfmark
+ import re
+ 
+ from referencing.jsonschema import lookup_recursive_ref
+@@ -299,11 +300,12 @@
+                 validator, instance, schema["else"],
+             )
+ 
+-    for keyword in ["contains", "unevaluatedItems"]:
+-        if keyword in schema:
+-            for k, v in enumerate(instance):
+-                if validator.evolve(schema=schema[keyword]).is_valid(v):
+-                    evaluated_indexes.append(k)
++    with perfmark.region("gl-220"):
++        for keyword in ["contains", "unevaluatedItems"]:
++            if keyword in schema:
++                for k, v in enumerate(instance):
++                    if validator.evolve(schema=schema[keyword]).is_valid(v):
++                        evaluated_indexes.append(k)
+ 
+     for keyword in ["allOf", "oneOf", "anyOf"]:
+         if keyword in schema:

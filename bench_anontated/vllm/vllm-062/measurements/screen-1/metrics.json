@@ -1,0 +1,45 @@
+{
+  "case": "vllm-062",
+  "validity_warnings": [],
+  "pcv_names": [
+    "batch_size",
+    "removed_count"
+  ],
+  "distinct_states": 2,
+  "required_states": 4,
+  "calls": 7,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "batch_size": 1,
+        "removed_count": 0
+      },
+      "calls": 6,
+      "instructions_per_call": 3722.5
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "removed_count": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 3188.0
+    }
+  ],
+  "max_unexplained_share": null,
+  "threshold": 0.05,
+  "sufficient_points": false,
+  "gate_pass": false,
+  "gate_reasons": [
+    "insufficient state points: 2; need 4"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "returncode": 0,
+  "instrumented_wall_seconds": 25.752426782040857,
+  "raw_files": [
+    "run.3225527.json"
+  ]
+}

@@ -1,0 +1,116 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
++import perfmark
+ import itertools
+ import time
+ from collections import defaultdict, deque
+@@ -1477,56 +1478,57 @@
+         spec_decode_tokens: dict[str, list[int]],
+         req_to_new_blocks: dict[str, KVCacheBlocks],
+     ) -> CachedRequestData:
+-        req_ids: list[str] = []
+-        new_token_ids: list[list[int]] = []
+-        new_block_ids: list[tuple[list[int], ...] | None] = []
+-        all_token_ids: dict[str, list[int]] = {}
+-        num_computed_tokens: list[int] = []
+-        num_output_tokens: list[int] = []
+-        resumed_req_ids = set()
+-
+-        num_running_reqs = len(running_reqs)
+-        for idx, req in enumerate(itertools.chain(running_reqs, resumed_reqs)):
+-            req_id = req.request_id
+-            req_ids.append(req_id)
+-            # NOTE: In PP+async scheduling, we consume token ids via a direct GPU
+-            # broadcast path (`input_batch.prev_sampled_token_ids`), so we can
+-            # omit this payload.
+-            if self.use_pp and not self.scheduler_config.async_scheduling:
+-                # When using PP, the scheduler sends the sampled tokens back,
+-                # because there's no direct communication between the first-
+-                # stage worker and the last-stage worker. Otherwise, we don't
+-                # need to send the sampled tokens back because the model runner
+-                # will cache them.
+-                num_tokens = num_scheduled_tokens[req_id] - len(
+-                    spec_decode_tokens.get(req_id, ())
++        with perfmark.region("vllm-027"):
++            req_ids: list[str] = []
++            new_token_ids: list[list[int]] = []
++            new_block_ids: list[tuple[list[int], ...] | None] = []
++            all_token_ids: dict[str, list[int]] = {}
++            num_computed_tokens: list[int] = []
++            num_output_tokens: list[int] = []
++            resumed_req_ids = set()
++
++            num_running_reqs = len(running_reqs)
++            for idx, req in enumerate(itertools.chain(running_reqs, resumed_reqs)):
++                req_id = req.request_id
++                req_ids.append(req_id)
++                # NOTE: In PP+async scheduling, we consume token ids via a direct GPU
++                # broadcast path (`input_batch.prev_sampled_token_ids`), so we can
++                # omit this payload.
++                if self.use_pp and not self.scheduler_config.async_scheduling:
++                    # When using PP, the scheduler sends the sampled tokens back,
++                    # because there's no direct communication between the first-
++                    # stage worker and the last-stage worker. Otherwise, we don't
++                    # need to send the sampled tokens back because the model runner
++                    # will cache them.
++                    num_tokens = num_scheduled_tokens[req_id] - len(
++                        spec_decode_tokens.get(req_id, ())
++                    )
++                    token_ids = req.all_token_ids[
++                        req.num_computed_tokens : req.num_computed_tokens + num_tokens
++                    ]
++                    new_token_ids.append(token_ids)
++                if idx >= num_running_reqs:
++                    resumed_req_ids.add(req_id)
++                if not self.use_v2_model_runner:  # noqa: SIM102
++                    if req_id not in self.prev_step_scheduled_req_ids:
++                        all_token_ids[req_id] = req.all_token_ids.copy()
++                new_block_ids.append(
++                    req_to_new_blocks[req_id].get_block_ids(allow_none=True)
+                 )
+-                token_ids = req.all_token_ids[
+-                    req.num_computed_tokens : req.num_computed_tokens + num_tokens
+-                ]
+-                new_token_ids.append(token_ids)
+-            if idx >= num_running_reqs:
+-                resumed_req_ids.add(req_id)
+-            if not self.use_v2_model_runner:  # noqa: SIM102
+-                if req_id not in self.prev_step_scheduled_req_ids:
+-                    all_token_ids[req_id] = req.all_token_ids.copy()
+-            new_block_ids.append(
+-                req_to_new_blocks[req_id].get_block_ids(allow_none=True)
+-            )
+-            num_computed_tokens.append(req.num_computed_tokens)
+-            num_output_tokens.append(
+-                req.num_output_tokens + req.num_output_placeholders
+-            )
+-
+-        return CachedRequestData(
+-            req_ids=req_ids,
+-            resumed_req_ids=resumed_req_ids,
+-            new_token_ids=new_token_ids,
+-            all_token_ids=all_token_ids,
+-            new_block_ids=new_block_ids,
+-            num_computed_tokens=num_computed_tokens,
+-            num_output_tokens=num_output_tokens,
+-        )
++                num_computed_tokens.append(req.num_computed_tokens)
++                num_output_tokens.append(
++                    req.num_output_tokens + req.num_output_placeholders
++                )
++
++            return CachedRequestData(
++                req_ids=req_ids,
++                resumed_req_ids=resumed_req_ids,
++                new_token_ids=new_token_ids,
++                all_token_ids=all_token_ids,
++                new_block_ids=new_block_ids,
++                num_computed_tokens=num_computed_tokens,
++                num_output_tokens=num_output_tokens,
++            )
+ 
+     def _try_schedule_encoder_inputs(
+         self,

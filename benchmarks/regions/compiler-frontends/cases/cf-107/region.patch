@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseExprCXX.cpp
++++ b/clang/lib/Parse/ParseExprCXX.cpp
+@@ -9,6 +9,7 @@
+ // This file implements the Expression parsing implementation for C++.
+ //
+ //===----------------------------------------------------------------------===//
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/Decl.h"
+ #include "clang/AST/DeclTemplate.h"
+@@ -2145,6 +2146,7 @@
+ Parser::ParseCXXCondition(StmtResult *InitStmt, SourceLocation Loc,
+                           Sema::ConditionKind CK, bool MissingOK,
+                           ForRangeInfo *FRI, bool EnterForConditionScope) {
++                            DRPERF_BENCH_REGION("cf-107");
+   // Helper to ensure we always enter a continue/break scope if requested.
+   struct ForConditionScopeRAII {
+     Scope *S;

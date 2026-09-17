@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGOpenMPRuntime.cpp
++++ b/clang/lib/CodeGen/CGOpenMPRuntime.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGOpenMPRuntime.h"
+ #include "ABIInfoImpl.h"
+ #include "CGCXXABI.h"
+@@ -11075,6 +11076,7 @@
+ 
+ Address CGOpenMPRuntime::getAddressOfLocalVariable(CodeGenFunction &CGF,
+                                                    const VarDecl *VD) {
++                                                     DRPERF_BENCH_REGION("cf-102");
+   if (!VD)
+     return Address::invalid();
+   Address UntiedAddr = Address::invalid();

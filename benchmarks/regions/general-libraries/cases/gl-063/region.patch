@@ -1,0 +1,30 @@
+--- a/networkx/algorithms/isomorphism/isomorph.py
++++ b/networkx/algorithms/isomorphism/isomorph.py
+@@ -1,6 +1,7 @@
+ """
+ Graph isomorphism functions.
+ """
++import perfmark
+ 
+ import itertools
+ from collections import Counter
+@@ -66,12 +67,13 @@
+     properties_to_check = set(properties)
+     G1_props, G2_props = [], []
+ 
+-    def _properties_consistent():
+-        # Ravel the properties into a table with # nodes rows and # properties columns
+-        G1_ptable = [tuple(p[n] for p in G1_props) for n in G1]
+-        G2_ptable = [tuple(p[n] for p in G2_props) for n in G2]
+-
+-        return sorted(G1_ptable) == sorted(G2_ptable)
++    with perfmark.region("gl-063"):
++        def _properties_consistent():
++            # Ravel the properties into a table with # nodes rows and # properties columns
++            G1_ptable = [tuple(p[n] for p in G1_props) for n in G1]
++            G2_ptable = [tuple(p[n] for p in G2_props) for n in G2]
++    
++            return sorted(G1_ptable) == sorted(G2_ptable)
+ 
+     # The property table is built and checked as each individual property is
+     # added. The reason for this is the building/checking the property table

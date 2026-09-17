@@ -1,0 +1,93 @@
+{
+  "id": "cf-143",
+  "status": "region-verified",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Format/TokenAnnotator.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Format/TokenAnnotator.cpp",
+    "sha256": "0d1f08b7e6f04965aa6859e6a1c9cfbcaa3564b139b5873d78f1845c288bc164"
+  },
+  "region": {
+    "symbol": "TokenAnnotator::calculateFormattingInformation",
+    "start_line": 3941,
+    "end_line": 4168,
+    "kind": "function"
+  },
+  "patch_sha256": "c251c73da1bffeaa92f95442a083768dca203619604d4a690400c569d9b98de2",
+  "test_assets_sha256": {
+    "tests/spec.json": "32d11ba87791568bf188d77a1fc0aab355369af97b9e5de83fe38ebb5ed23650",
+    "tests/run_case.py": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+  },
+  "spec_sha256": "32d11ba87791568bf188d77a1fc0aab355369af97b9e5de83fe38ebb5ed23650",
+  "binary": "/tmp/drperf-growth-llvm-build/bin/clang-format",
+  "binary_sha256": "3c977222b223e65ebd463a1881e7e6376030c4ce1a8dba28c43968a19b1acda4",
+  "rows": [
+    {
+      "size": 4,
+      "returncode": 0,
+      "target_entries": 60,
+      "observed_region_count": 13,
+      "observed_entries": {
+        "cf-201": 959,
+        "cf-247": 959,
+        "cf-176": 959,
+        "cf-162": 42,
+        "cf-206": 49,
+        "cf-180": 21,
+        "cf-143": 60,
+        "cf-248": 214,
+        "cf-226": 274,
+        "cf-230": 274,
+        "cf-200": 218,
+        "cf-219": 2,
+        "cf-243": 2
+      },
+      "output": "PASS cf-143 format-token-classification sizes=4,16,64 with clang-format\n"
+    },
+    {
+      "size": 16,
+      "returncode": 0,
+      "target_entries": 132,
+      "observed_region_count": 13,
+      "observed_entries": {
+        "cf-201": 1883,
+        "cf-247": 1883,
+        "cf-176": 1883,
+        "cf-162": 126,
+        "cf-206": 49,
+        "cf-180": 21,
+        "cf-143": 132,
+        "cf-248": 406,
+        "cf-226": 538,
+        "cf-230": 538,
+        "cf-200": 410,
+        "cf-219": 2,
+        "cf-243": 2
+      },
+      "output": "PASS cf-143 format-token-classification sizes=4,16,64 with clang-format\n"
+    },
+    {
+      "size": 64,
+      "returncode": 0,
+      "target_entries": 420,
+      "observed_region_count": 13,
+      "observed_entries": {
+        "cf-201": 5579,
+        "cf-247": 5579,
+        "cf-176": 5579,
+        "cf-162": 462,
+        "cf-206": 49,
+        "cf-180": 21,
+        "cf-143": 420,
+        "cf-248": 1174,
+        "cf-226": 1594,
+        "cf-230": 1594,
+        "cf-200": 1178,
+        "cf-219": 2,
+        "cf-243": 2
+      },
+      "output": "PASS cf-143 format-token-classification sizes=4,16,64 with clang-format\n"
+    }
+  ]
+}

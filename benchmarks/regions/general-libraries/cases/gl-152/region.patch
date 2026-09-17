@@ -1,0 +1,32 @@
+--- a/pandas/core/reshape/melt.py
++++ b/pandas/core/reshape/melt.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import re
+ from typing import TYPE_CHECKING
+@@ -347,14 +348,15 @@
+     pivot_cols = []
+     all_cols: set[Hashable] = set()
+     K = len(next(iter(groups.values())))
+-    for target, names in groups.items():
+-        if len(names) != K:
+-            raise ValueError("All column lists must be same length")
+-        to_concat = [data[col]._values for col in names]
+-
+-        mdata[target] = concat_compat(to_concat)
+-        pivot_cols.append(target)
+-        all_cols = all_cols.union(names)
++    with perfmark.region("gl-152"):
++        for target, names in groups.items():
++            if len(names) != K:
++                raise ValueError("All column lists must be same length")
++            to_concat = [data[col]._values for col in names]
++    
++            mdata[target] = concat_compat(to_concat)
++            pivot_cols.append(target)
++            all_cols = all_cols.union(names)
+ 
+     id_cols = list(data.columns.difference(all_cols))  # type: ignore[arg-type]
+     for col in id_cols:

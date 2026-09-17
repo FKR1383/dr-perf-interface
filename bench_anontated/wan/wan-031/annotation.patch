@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -164,7 +164,7 @@
+         device: torch.device | None = None,
+         dtype: torch.dtype | None = None,
+     ):
+-        with perfmark.region("wan-031"):
++        with perfmark.region("wan-031", prompt_words=sum(len(u.split()) for u in ([prompt] if isinstance(prompt, str) else prompt))):
+             device = device or self._execution_device
+             dtype = dtype or self.text_encoder.dtype
+ 

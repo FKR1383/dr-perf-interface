@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ b/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1268,7 +1268,7 @@
+                 The latent representation of the encoded videos.
+         """
+ 
+-        with perfmark.region("wan-013"):
++        with perfmark.region("wan-013", frame_count=int(x.shape[2])):
+             _, _, num_frames, height, width = x.shape
+             encode_spatial_compression_ratio = self.spatial_compression_ratio
+             if self.config.patch_size is not None:

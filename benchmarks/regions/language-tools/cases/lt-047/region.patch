@@ -1,0 +1,172 @@
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ from enum import IntEnum, auto
+@@ -918,86 +919,87 @@
+         return True
+ 
+     def _scan_number(self) -> None:
+-        if self._char == "0":
+-            peek = _CHAR_UPPER.get(self._peek, self._peek)
+-            if peek == "B":
+-                return self._scan_bits() if self.has_bit_strings else self._add(TokenType.NUMBER)
+-            elif peek == "X":
+-                return self._scan_hex() if self.has_hex_strings else self._add(TokenType.NUMBER)
+-
+-        decimal = False
+-        scientific = 0
+-        numbers_can_be_underscore_separated = self.numbers_can_be_underscore_separated
+-        single_tokens = self.single_tokens
+-        keywords = self.keywords
+-        numeric_literals = self.numeric_literals
+-        identifiers_can_start_with_digit = self.identifiers_can_start_with_digit
+-
+-        is_underscore_separated: bool = False
+-        number_text: str = ""
+-        numeric_literal: str = ""
+-        numeric_type: TokenType | None = None
+-
+-        while True:
+-            if self._peek in _DIGIT_CHARS:
+-                # Batch consecutive digits: scan ahead to find how many
+-                sql = self.sql
+-                end = self._current + 1
+-                size = self.size
+-                while end < size and sql[end] in _DIGIT_CHARS:
+-                    end += 1
+-                self._advance(end - self._current)
+-            elif self._peek == "." and not decimal:
+-                if (
+-                    self.tokens and self.tokens[-1].token_type == TokenType.PARAMETER
+-                ) or not self.numbers_can_have_decimals:
+-                    break
+-                decimal = True
+-                self._advance()
+-            elif self._peek in ("-", "+") and scientific == 1:
+-                # Only consume +/- if followed by a digit
+-                if self._current + 1 < self.size and self.sql[self._current + 1] in _DIGIT_CHARS:
++        with perfmark.region("lt-047"):
++            if self._char == "0":
++                peek = _CHAR_UPPER.get(self._peek, self._peek)
++                if peek == "B":
++                    return self._scan_bits() if self.has_bit_strings else self._add(TokenType.NUMBER)
++                elif peek == "X":
++                    return self._scan_hex() if self.has_hex_strings else self._add(TokenType.NUMBER)
++
++            decimal = False
++            scientific = 0
++            numbers_can_be_underscore_separated = self.numbers_can_be_underscore_separated
++            single_tokens = self.single_tokens
++            keywords = self.keywords
++            numeric_literals = self.numeric_literals
++            identifiers_can_start_with_digit = self.identifiers_can_start_with_digit
++
++            is_underscore_separated: bool = False
++            number_text: str = ""
++            numeric_literal: str = ""
++            numeric_type: TokenType | None = None
++
++            while True:
++                if self._peek in _DIGIT_CHARS:
++                    # Batch consecutive digits: scan ahead to find how many
++                    sql = self.sql
++                    end = self._current + 1
++                    size = self.size
++                    while end < size and sql[end] in _DIGIT_CHARS:
++                        end += 1
++                    self._advance(end - self._current)
++                elif self._peek == "." and not decimal:
++                    if (
++                        self.tokens and self.tokens[-1].token_type == TokenType.PARAMETER
++                    ) or not self.numbers_can_have_decimals:
++                        break
++                    decimal = True
++                    self._advance()
++                elif self._peek in ("-", "+") and scientific == 1:
++                    # Only consume +/- if followed by a digit
++                    if self._current + 1 < self.size and self.sql[self._current + 1] in _DIGIT_CHARS:
++                        scientific += 1
++                        self._advance()
++                    else:
++                        break
++                elif _CHAR_UPPER.get(self._peek, self._peek) == "E" and not scientific:
+                     scientific += 1
+                     self._advance()
++                elif self._peek == "_" and numbers_can_be_underscore_separated:
++                    is_underscore_separated = True
++                    self._advance()
++                elif self._peek.isidentifier():
++                    number_text = self._text
++
++                    while self._peek and not self._peek.isspace() and self._peek not in single_tokens:
++                        numeric_literal += self._peek
++                        self._advance()
++
++                    numeric_type = keywords.get(numeric_literals.get(numeric_literal.upper(), ""))
++
++                    if numeric_type:
++                        break
++                    elif identifiers_can_start_with_digit:
++                        return self._add(TokenType.VAR)
++
++                    self._advance(-len(numeric_literal))
++                    break
+                 else:
+                     break
+-            elif _CHAR_UPPER.get(self._peek, self._peek) == "E" and not scientific:
+-                scientific += 1
+-                self._advance()
+-            elif self._peek == "_" and numbers_can_be_underscore_separated:
+-                is_underscore_separated = True
+-                self._advance()
+-            elif self._peek.isidentifier():
+-                number_text = self._text
+-
+-                while self._peek and not self._peek.isspace() and self._peek not in single_tokens:
+-                    numeric_literal += self._peek
+-                    self._advance()
+-
+-                numeric_type = keywords.get(numeric_literals.get(numeric_literal.upper(), ""))
+-
+-                if numeric_type:
+-                    break
+-                elif identifiers_can_start_with_digit:
+-                    return self._add(TokenType.VAR)
+-
+-                self._advance(-len(numeric_literal))
+-                break
+-            else:
+-                break
+-
+-        number_text = number_text or self.sql[self._start : self._current]
+-
+-        # Normalize inputs such as 100_000 to 100000
+-        if is_underscore_separated:
+-            number_text = number_text.replace("_", "")
+-
+-        self._add(TokenType.NUMBER, number_text)
+-
+-        # Normalize inputs such as 123L to 123::BIGINT so that they're parsed as casts
+-        if numeric_type:
+-            self._add(TokenType.DCOLON, "::")
+-            self._add(numeric_type, numeric_literal)
++
++            number_text = number_text or self.sql[self._start : self._current]
++
++            # Normalize inputs such as 100_000 to 100000
++            if is_underscore_separated:
++                number_text = number_text.replace("_", "")
++
++            self._add(TokenType.NUMBER, number_text)
++
++            # Normalize inputs such as 123L to 123::BIGINT so that they're parsed as casts
++            if numeric_type:
++                self._add(TokenType.DCOLON, "::")
++                self._add(numeric_type, numeric_literal)
+ 
+     def _scan_bits(self) -> None:
+         self._advance()

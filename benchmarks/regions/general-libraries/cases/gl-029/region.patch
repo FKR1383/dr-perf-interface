@@ -1,0 +1,18 @@
+--- a/networkx/algorithms/connectivity/disjoint_paths.py
++++ b/networkx/algorithms/connectivity/disjoint_paths.py
+@@ -1,4 +1,5 @@
+ """Flow based node and edge disjoint paths."""
++import perfmark
+ 
+ from itertools import filterfalse as _filterfalse
+ 
+@@ -201,7 +202,8 @@
+     ]
+     # This is equivalent of what flow.utils.build_flow_dict returns, but
+     # only for the nodes with saturated edges and without reporting 0 flows.
+-    flow_dict = {n: {} for edge in cutset for n in edge}
++    with perfmark.region("gl-029"):
++        flow_dict = {n: {} for edge in cutset for n in edge}
+     for u, v in cutset:
+         flow_dict[u][v] = 1
+ 

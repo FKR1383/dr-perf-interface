@@ -1,0 +1,17 @@
+--- a/numpy/_core/shape_base.py
++++ b/numpy/_core/shape_base.py
+@@ -1,3 +1,4 @@
++import perfmark
+ __all__ = ['atleast_1d', 'atleast_2d', 'atleast_3d', 'block', 'hstack',
+            'stack', 'unstack', 'vstack']
+ 
+@@ -447,7 +448,8 @@
+            [3, 6]])
+ 
+     """
+-    arrays = [asanyarray(arr) for arr in arrays]
++    with perfmark.region("gl-125"):
++        arrays = [asanyarray(arr) for arr in arrays]
+     if not arrays:
+         raise ValueError('need at least one array to stack')
+ 

@@ -1,0 +1,12 @@
+diff --git a/Cython/Compiler/ModuleNode.py b/Cython/Compiler/ModuleNode.py
+--- a/Cython/Compiler/ModuleNode.py
++++ b/Cython/Compiler/ModuleNode.py
+@@ -614,7 +614,7 @@
+     def sort_types_by_inheritance(self, type_dict, type_order, getkey):
+         # copy the types into a list moving each parent type before
+         # its first child
+-        with perfmark.region('aq-002'):
++        with perfmark.region('aq-002', type_count=len(type_order), type_pairs=len(type_order) * len(type_order)):
+             type_list = []
+             for i, key in enumerate(type_order):
+                 new_entry = type_dict[key]

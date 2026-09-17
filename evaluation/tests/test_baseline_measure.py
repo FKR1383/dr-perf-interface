@@ -72,7 +72,6 @@ class BaselineMeasurementTests(unittest.TestCase):
 
     def test_known_native_limits_do_not_launch_instrumenter_or_drop_features(self):
         cases = [([], "insufficient_state_variation"),
-                 (["a", "b", "c", "d", "e"], "unsupported_state_count"),
                  (["x" * 64], "unsupported_state_name"),
                  (["é" * 32], "unsupported_state_name"),
                  (["x\0y"], "unsupported_state_name")]
@@ -86,9 +85,19 @@ class BaselineMeasurementTests(unittest.TestCase):
                 self.assertIsNone(value["irregularity"])
                 instrumented.assert_not_called()
                 measured.assert_not_called()
-        # The discovery contract still accepts more than four features.
-        self.assertEqual(len(validate_result({"variables": ["a", "b", "c", "d", "e"]},
-                                            "agent_only")["variables"]), 5)
+
+    def test_many_features_are_bound_and_measured_in_full(self):
+        names = [f"s{i}" for i in range(9)]
+        failure = drperf_measure.failed("insufficient_state_variation", "needs 11 distinct states")
+        with patch.object(codex_runner, "invoke", return_value=ready(names)) as instrumented, \
+             patch.object(drperf_measure, "measure", return_value=failure) as measured:
+            value = self.measure(names)
+        instrumented.assert_called_once()
+        self.assertIn(json.dumps(names), instrumented.call_args.args[4])
+        self.assertEqual(measured.call_args.args[-1], names)
+        self.assertEqual(value["variables"], names)
+        self.assertEqual(value["status"], "insufficient_state_variation")
+        self.assertTrue(baseline.retryable(value))
 
     def test_unsupported_pointer_and_binding_changes_are_not_measured(self):
         answers = [({"status": "unsupported", "reason": "input is a buffer pointer", "advice": "Define a scalar.", "bindings": []},
@@ -266,6 +275,66 @@ class MeasurabilityLoopTests(unittest.TestCase):
 @unittest.skipUnless(os.environ.get("DRPERF_EVAL_INTEGRATION") == "1",
                      "set DRPERF_EVAL_INTEGRATION=1 for native frozen-answer measurements")
 class NativeBaselineTests(unittest.TestCase):
+    def test_nine_features_through_both_adapters_and_result_validation(self):
+        drperf_measure.check_build()
+        root = drperf_measure.ROOT
+        names = [f"s{i}" for i in range(9)]
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp)
+            workspace = base / "workspace"
+            workspace.mkdir()
+            source = workspace / "driver.c"
+            source.write_text('''#include "perfmark.h"
+volatile unsigned long total;
+int main(void) {
+    const char *names[] = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"};
+    for (int point = 0; point < 19; ++point) {
+        int64_t values[9];
+        for (int j = 0; j < 9; ++j)
+            values[j] = 10 + (point > 0 && (point-1)/2 == j ? (point%2 ? 7 : 31) : 0);
+        /* STATES */
+        for (int j = 0; j < 9; ++j)
+            for (int64_t i = 0; i < values[j]; ++i) total += i;
+        perfmark_end("work");
+    }
+    return 0;
+}
+''')
+
+            def instrument(*args, **kwargs):
+                source.write_text(source.read_text().replace(
+                    '/* STATES */', 'perfmark_begin_v("work", 9, names, values);'))
+                subprocess.run(["cc", "-O2", "-I" + str(root / "perfmark"), "driver.c",
+                                "-L" + str(root / "build"), "-lperfmark",
+                                "-Wl,-rpath," + str(root / "build"), "-o", "program"],
+                               cwd=workspace, check=True)
+                return ready(names)
+
+            with patch.object(codex_runner, "invoke", side_effect=instrument) as instrumented:
+                baseline_value = baseline.measure("codex", workspace, base / "control",
+                                                  base / "baseline", "work", ["./program"], names)
+            instrumented.assert_called_once()
+            self.assertEqual(baseline_value["status"], "ok", baseline_value)
+            self.assertEqual(baseline_value["variables"], names)
+            config = {"workspace": str(workspace), "journal": str(base / "journal"),
+                      "region": "work", "command": ["./program"], "max_attempts": 1}
+            previous = Path.cwd()
+            try:
+                os.chdir(workspace)
+                experimental = drperf_measure.attempt(config, names)
+            finally:
+                os.chdir(previous)
+            self.assertEqual(experimental["status"], "ok", experimental)
+            self.assertEqual(experimental["formula"], baseline_value["formula"])
+            self.assertEqual(experimental["irregularity"], baseline_value["irregularity"])
+            self.assertEqual(experimental["details"]["calls"], 19)
+            self.assertEqual(experimental["details"]["regimes"][0]["dependent_states"], [])
+            records = drperf_measure.recorded_attempts(config)
+            answer = {"attempts": records, "selected_variables": names,
+                      "final_formula": experimental["formula"],
+                      "final_irregularity": experimental["irregularity"]}
+            self.assertEqual(validate_result(answer, "agent_drperf")["selected_variables"], names)
+
     def test_frozen_derived_expression_uses_real_drperf(self):
         drperf_measure.check_build()
         root = drperf_measure.ROOT

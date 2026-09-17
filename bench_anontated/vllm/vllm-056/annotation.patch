@@ -1,0 +1,11 @@
+--- a/vllm/v1/spec_decode/ngram_proposer.py
++++ b/vllm/v1/spec_decode/ngram_proposer.py
+@@ -89,7 +89,7 @@
+                 A list where each element is a list of proposed
+                 token IDs for the corresponding request.
+         """
+-        with perfmark.region("vllm-056"):
++        with perfmark.region("vllm-056", request_count=num_requests):
+             draft_token_ids: list[list[int]] = []
+ 
+             # Only run batch propose if there are requests needing ngram proposals.

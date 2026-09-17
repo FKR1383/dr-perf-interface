@@ -1,0 +1,18 @@
+--- a/include/rapidjson/pointer.h
++++ b/include/rapidjson/pointer.h
+@@ -15,6 +15,7 @@
+ #ifndef RAPIDJSON_POINTER_H_
+ #define RAPIDJSON_POINTER_H_
+ 
++#include "drperf_bench_region.h"
+ #include "document.h"
+ #include "uri.h"
+ #include "internal/itoa.h"
+@@ -831,6 +832,7 @@
+         \note Erasing with an empty pointer \c Pointer(""), i.e. the root, always fail and return false.
+     */
+     bool Erase(ValueType& root) const {
++        DRPERF_BENCH_REGION("nl-035");
+         RAPIDJSON_ASSERT(IsValid());
+         if (tokenCount_ == 0) // Cannot erase the root
+             return false;

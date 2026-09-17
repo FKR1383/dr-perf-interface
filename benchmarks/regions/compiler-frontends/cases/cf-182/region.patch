@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaLookup.cpp
++++ b/clang/lib/Sema/SemaLookup.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/CXXInheritance.h"
+ #include "clang/AST/Decl.h"
+@@ -482,6 +483,7 @@
+ 
+ /// Resolves the result kind of this lookup.
+ void LookupResult::resolveKind() {
++  DRPERF_BENCH_REGION("cf-182");
+   unsigned N = Decls.size();
+ 
+   // Fast case: no possible ambiguity.

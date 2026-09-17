@@ -1,0 +1,35 @@
+{
+  "case": "cf-086",
+  "phase": "semantic-analysis",
+  "scenario": "ordinary-name-completion",
+  "compiler": "clang",
+  "flags": [
+    "-fsyntax-only",
+    "-x",
+    "c++",
+    "-std=c++20"
+  ],
+  "expected_stdout": "",
+  "fixture": "int global_name; void use(){ __COMPLETE__; }\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "int global_name; void use(){ int local_0=0; int local_1=0; int local_2=0; int local_3=0; __COMPLETE__; }\n"
+    },
+    {
+      "size": 16,
+      "source": "int global_name; void use(){ int local_0=0; int local_1=0; int local_2=0; int local_3=0; int local_4=0; int local_5=0; int local_6=0; int local_7=0; int local_8=0; int local_9=0; int local_10=0; int local_11=0; int local_12=0; int local_13=0; int local_14=0; int local_15=0; __COMPLETE__; }\n"
+    },
+    {
+      "size": 64,
+      "source": "int global_name; void use(){ int local_0=0; int local_1=0; int local_2=0; int local_3=0; int local_4=0; int local_5=0; int local_6=0; int local_7=0; int local_8=0; int local_9=0; int local_10=0; int local_11=0; int local_12=0; int local_13=0; int local_14=0; int local_15=0; int local_16=0; int local_17=0; int local_18=0; int local_19=0; int local_20=0; int local_21=0; int local_22=0; int local_23=0; int local_24=0; int local_25=0; int local_26=0; int local_27=0; int local_28=0; int local_29=0; int local_30=0; int local_31=0; int local_32=0; int local_33=0; int local_34=0; int local_35=0; int local_36=0; int local_37=0; int local_38=0; int local_39=0; int local_40=0; int local_41=0; int local_42=0; int local_43=0; int local_44=0; int local_45=0; int local_46=0; int local_47=0; int local_48=0; int local_49=0; int local_50=0; int local_51=0; int local_52=0; int local_53=0; int local_54=0; int local_55=0; int local_56=0; int local_57=0; int local_58=0; int local_59=0; int local_60=0; int local_61=0; int local_62=0; int local_63=0; __COMPLETE__; }\n"
+    }
+  ],
+  "target_symbol": "Sema::CheckCompleteVariableDeclaration",
+  "target_source": "clang/lib/Sema/SemaDecl.cpp",
+  "mapping_note": "Pinned source coverage observed Sema::CheckCompleteVariableDeclaration in the combined run of witness cf-001; per-size native entry must be checked separately. Counts and hashes are recorded in tools/replacements.json.",
+  "expected_completions": [
+    "local_0"
+  ],
+  "workload_phase": "semantic-analysis"
+}

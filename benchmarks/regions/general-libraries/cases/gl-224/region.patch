@@ -1,0 +1,66 @@
+--- a/jsonschema/exceptions.py
++++ b/jsonschema/exceptions.py
+@@ -2,6 +2,7 @@
+ Validation errors, and some surrounding helpers.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import defaultdict, deque
+ from pprint import pformat
+@@ -510,30 +511,31 @@
+     if best is None:
+         return
+ 
+-    while best.context:
+-        # Group the errors by the subschema which produced them.
+-        by_subschema: dict[Any, list[_Error]] = defaultdict(list)
+-        for error in best.context:
+-            index = error.schema_path[0] if error.schema_path else None
+-            by_subschema[index].append(error)
+-
+-        # Rank each subschema by how deep its most relevant error is,
+-        # and amongst those equally deep, by how few errors it produced
+-        # (i.e. how close it was to being valid). Lower ranks are better.
+-        best_rank, best_in_subschema, tied = None, None, False
+-        for errors_in_subschema in by_subschema.values():
+-            error_key, error = _most_relevant(errors_in_subschema, key=key)
+-            rank = error_key, len(errors_in_subschema)
+-            if best_rank is None or rank < best_rank:
+-                best_rank, best_in_subschema, tied = rank, error, False
+-            elif rank == best_rank:
+-                tied = True
+-
+-        # If multiple subschemas rank equally we can't tell which was
+-        # intended, so we stop here rather than descend into one of them.
+-        if tied:
+-            break
+-        best = best_in_subschema
++    with perfmark.region("gl-224"):
++        while best.context:
++            # Group the errors by the subschema which produced them.
++            by_subschema: dict[Any, list[_Error]] = defaultdict(list)
++            for error in best.context:
++                index = error.schema_path[0] if error.schema_path else None
++                by_subschema[index].append(error)
++    
++            # Rank each subschema by how deep its most relevant error is,
++            # and amongst those equally deep, by how few errors it produced
++            # (i.e. how close it was to being valid). Lower ranks are better.
++            best_rank, best_in_subschema, tied = None, None, False
++            for errors_in_subschema in by_subschema.values():
++                error_key, error = _most_relevant(errors_in_subschema, key=key)
++                rank = error_key, len(errors_in_subschema)
++                if best_rank is None or rank < best_rank:
++                    best_rank, best_in_subschema, tied = rank, error, False
++                elif rank == best_rank:
++                    tied = True
++    
++            # If multiple subschemas rank equally we can't tell which was
++            # intended, so we stop here rather than descend into one of them.
++            if tied:
++                break
++            best = best_in_subschema
+     return best
+ 
+ 

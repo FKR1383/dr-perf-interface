@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReader.cpp
++++ b/clang/lib/Serialization/ASTReader.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "TemplateArgumentHasher.h"
+@@ -10186,6 +10187,7 @@
+ }
+ 
+ void ASTReader::finishPendingActions() {
++  DRPERF_BENCH_REGION("cf-072");
+   while (
+       !PendingIdentifierInfos.empty() || !PendingDeducedFunctionTypes.empty() ||
+       !PendingDeducedVarTypes.empty() || !PendingIncompleteDeclChains.empty() ||

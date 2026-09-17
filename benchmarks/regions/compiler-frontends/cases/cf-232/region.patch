@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/Parser.cpp
++++ b/clang/lib/Parse/Parser.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Parse/Parser.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -627,6 +628,7 @@
+ /// [C++20]   module-import-declaration
+ bool Parser::ParseTopLevelDecl(DeclGroupPtrTy &Result,
+                                Sema::ModuleImportState &ImportState) {
++                                 DRPERF_BENCH_REGION("cf-232");
+   DestroyTemplateIdAnnotationsRAIIObj CleanupRAII(*this);
+ 
+   Result = nullptr;

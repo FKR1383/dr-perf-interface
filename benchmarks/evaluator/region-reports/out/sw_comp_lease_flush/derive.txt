@@ -1,0 +1,20 @@
+derive vllm_compaction_lease_flush   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: entries=1 x24, entries=2 x24, entries=4 x24, entries=8 x24, entries=16 x24, entries=32 x24
+  cost(entries) = 4,017.6*entries + 14,273.8        [all entries]   blocks: 531 affine, 1480 constant, 1 irregular (0.2% of cost)
+    marker cost subtracted from the constant: 581.9 per call (calibrated)
+    irregular blocks, per call: 0 .. 490
+    per-entries coefficient by function:
+             1,640.5  _PyEval_EvalFrameDefault  [python3.12]
+                 260  PyUnicode_Substring+?  [python3.12]
+                 230  PyObject_Free  [python3.12]
+               156.4  PyObject_Malloc  [python3.12]
+                 128  PyDict_Clear+?  [python3.12]
+                 110  _PyObject_GC_New  [python3.12]
+    constant by function:
+             5,934.4  _PyEval_EvalFrameDefault  [python3.12]
+               788.8  PyDict_Contains+?  [python3.12]
+               522.7  PyObject_Free  [python3.12]
+               503.8  PyObject_Malloc  [python3.12]
+               403.7  PyTuple_GetItem  [python3.12]
+                 401  _PyObject_GC_New  [python3.12]
+

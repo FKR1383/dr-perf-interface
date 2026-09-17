@@ -1,0 +1,20 @@
+--- a/sympy/strategies/tree.py
++++ b/sympy/strategies/tree.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ from functools import partial
+ from sympy.strategies import chain, minimize
+ from sympy.strategies.core import identity
+@@ -107,8 +108,9 @@
+ 
+     the choice between running ``a`` or ``b`` is made without foresight to c
+     """
+-    optimize = partial(minimize, objective=objective)
+-    return treeapply(tree, {list: optimize, tuple: chain}, **kwargs)
++    with perfmark.region("lt-037"):
++        optimize = partial(minimize, objective=objective)
++        return treeapply(tree, {list: optimize, tuple: chain}, **kwargs)
+ 
+ 
+ def allresults(tree, leaf=yieldify):

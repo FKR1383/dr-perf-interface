@@ -1,0 +1,28 @@
+--- a/jsonschema/validators.py
++++ b/jsonschema/validators.py
+@@ -2,6 +2,7 @@
+ Creation and extension of validators, with implementations for existing drafts.
+ """
+ from __future__ import annotations
++import perfmark
+ 
+ from collections import deque
+ from collections.abc import Iterable, Mapping, Sequence
+@@ -501,11 +502,12 @@
+             error = next(self.iter_errors(instance), None)
+             return error is None
+ 
+-    evolve_fields = [
+-        (field.name, field.alias)
+-        for field in fields(Validator)
+-        if field.init
+-    ]
++    with perfmark.region("gl-217"):
++        evolve_fields = [
++            (field.name, field.alias)
++            for field in fields(Validator)
++            if field.init
++        ]
+ 
+     if version is not None:
+         safe = version.title().replace(" ", "").replace("-", "")

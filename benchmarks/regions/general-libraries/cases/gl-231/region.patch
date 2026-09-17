@@ -1,0 +1,25 @@
+--- a/jsonschema/_utils.py
++++ b/jsonschema/_utils.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from collections.abc import Mapping, MutableMapping, Sequence
+ from urllib.parse import urlsplit
+ import re
+@@ -83,11 +84,12 @@
+     """
+     properties = schema.get("properties", {})
+     patterns = "|".join(schema.get("patternProperties", {}))
+-    for property in instance:
+-        if property not in properties:
+-            if patterns and re.search(patterns, property):
+-                continue
+-            yield property
++    with perfmark.region("gl-231"):
++        for property in instance:
++            if property not in properties:
++                if patterns and re.search(patterns, property):
++                    continue
++                yield property
+ 
+ 
+ def extras_msg(extras):

@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGStmt.cpp
++++ b/clang/lib/CodeGen/CGStmt.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGDebugInfo.h"
+ #include "CGOpenMPRuntime.h"
+ #include "CodeGenFunction.h"
+@@ -2696,6 +2697,7 @@
+ }
+ 
+ void CodeGenFunction::EmitAsmStmt(const AsmStmt &S) {
++  DRPERF_BENCH_REGION("cf-078");
+   // Pop all cleanup blocks at the end of the asm statement.
+   CodeGenFunction::RunCleanupsScope Cleanups(*this);
+ 

@@ -1,0 +1,36 @@
+--- a/libcst/_nodes/deep_equals.py
++++ b/libcst/_nodes/deep_equals.py
+@@ -6,6 +6,7 @@
+ """
+ Provides the implementation of `CSTNode.deep_equals`.
+ """
++import perfmark
+ 
+ from dataclasses import fields
+ from typing import Sequence
+@@ -43,14 +44,15 @@
+ 
+ 
+ def _deep_equals_cst_node(a: "CSTNode", b: "CSTNode") -> bool:
+-    if type(a) is not type(b):
+-        return False
+-    if a is b:  # short-circuit
++    with perfmark.region("lt-088"):
++        if type(a) is not type(b):
++            return False
++        if a is b:  # short-circuit
++            return True
++        # Ignore metadata and other hidden fields
++        for field in (f for f in fields(a) if f.compare is True):
++            a_value = getattr(a, field.name)
++            b_value = getattr(b, field.name)
++            if not deep_equals(a_value, b_value):
++                return False
+         return True
+-    # Ignore metadata and other hidden fields
+-    for field in (f for f in fields(a) if f.compare is True):
+-        a_value = getattr(a, field.name)
+-        b_value = getattr(b, field.name)
+-        if not deep_equals(a_value, b_value):
+-            return False
+-    return True

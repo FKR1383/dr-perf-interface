@@ -1,0 +1,18 @@
+--- a/clang/lib/Lex/PPDirectives.cpp
++++ b/clang/lib/Lex/PPDirectives.cpp
+@@ -11,6 +11,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Basic/AttributeCommonInfo.h"
+ #include "clang/Basic/Attributes.h"
+ #include "clang/Basic/CharInfo.h"
+@@ -2245,6 +2246,7 @@
+     SourceLocation HashLoc, Token &IncludeTok, Token &FilenameTok,
+     SourceLocation EndLoc, ConstSearchDirIterator LookupFrom,
+     const FileEntry *LookupFromFile) {
++      DRPERF_BENCH_REGION("cf-159");
+   SmallString<128> FilenameBuffer;
+   StringRef Filename = getSpelling(FilenameTok, FilenameBuffer);
+   SourceLocation CharEnd = FilenameTok.getEndLoc();

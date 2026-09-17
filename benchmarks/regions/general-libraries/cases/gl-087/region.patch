@@ -1,0 +1,62 @@
+--- a/networkx/algorithms/richclub.py
++++ b/networkx/algorithms/richclub.py
+@@ -1,4 +1,5 @@
+ """Functions for computing rich-club coefficients."""
++import perfmark
+ 
+ from itertools import accumulate
+ 
+@@ -100,29 +101,30 @@
+         raise ValueError("n_samples must be >= 1 if 'normalized' = True")
+ 
+     rc = _compute_rc(G)
+-    if normalized:
+-        # make R a copy of G, randomize with Q*|E| double edge swaps
+-        # and use rich_club coefficient of R to normalize
+-        averages = {k: 0 for k in rc}
+-        E = G.number_of_edges()
+-
+-        for _ in range(n_samples):
+-            R = G.copy()
+-            nx.double_edge_swap(R, Q * E, max_tries=Q * E * 10, seed=seed)
+-            rcran = _compute_rc(R)
+-            for deg, coef in rcran.items():
+-                averages[deg] += coef / n_samples
+-
+-        for deg, coef in averages.items():
+-            if coef == 0:
+-                # Zero average means normalization is undefined at this threshold
+-                raise nx.NetworkXError(
+-                    f"Rich-club coefficient normalization failed at degree {deg}. "
+-                    f"The average rich-club coefficient of {n_samples} random "
+-                    f"graphs is zero. Try increasing n_samples."
+-                )
+-
+-        rc = {deg: coef / averages[deg] for deg, coef in rc.items()}
++    with perfmark.region("gl-087"):
++        if normalized:
++            # make R a copy of G, randomize with Q*|E| double edge swaps
++            # and use rich_club coefficient of R to normalize
++            averages = {k: 0 for k in rc}
++            E = G.number_of_edges()
++    
++            for _ in range(n_samples):
++                R = G.copy()
++                nx.double_edge_swap(R, Q * E, max_tries=Q * E * 10, seed=seed)
++                rcran = _compute_rc(R)
++                for deg, coef in rcran.items():
++                    averages[deg] += coef / n_samples
++    
++            for deg, coef in averages.items():
++                if coef == 0:
++                    # Zero average means normalization is undefined at this threshold
++                    raise nx.NetworkXError(
++                        f"Rich-club coefficient normalization failed at degree {deg}. "
++                        f"The average rich-club coefficient of {n_samples} random "
++                        f"graphs is zero. Try increasing n_samples."
++                    )
++    
++            rc = {deg: coef / averages[deg] for deg, coef in rc.items()}
+     return rc
+ 
+ 

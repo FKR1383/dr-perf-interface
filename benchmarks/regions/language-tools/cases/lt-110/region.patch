@@ -1,0 +1,41 @@
+--- a/libcst/_nodes/statement.py
++++ b/libcst/_nodes/statement.py
+@@ -1,3 +1,4 @@
++import perfmark
+ # Copyright (c) Meta Platforms, Inc. and affiliates.
+ #
+ # This source code is licensed under the MIT license found in the
+@@ -397,19 +398,20 @@
+                 )
+ 
+     def _codegen_impl(self, state: CodegenState) -> None:
+-        body = self.body
+-        if body:
+-            laststmt = len(body) - 1
+-            with state.record_syntactic_position(self, end_node=body[laststmt]):
+-                for idx, stmt in enumerate(body):
+-                    stmt._codegen(state, default_semicolon=(idx != laststmt))
+-        else:
+-            # Empty simple statement blocks are not syntactically valid in Python
+-            # unless they contain a 'pass' statement, so add one here.
+-            with state.record_syntactic_position(self):
+-                state.add_token("pass")
+-
+-        self.trailing_whitespace._codegen(state)
++        with perfmark.region("lt-110"):
++            body = self.body
++            if body:
++                laststmt = len(body) - 1
++                with state.record_syntactic_position(self, end_node=body[laststmt]):
++                    for idx, stmt in enumerate(body):
++                        stmt._codegen(state, default_semicolon=(idx != laststmt))
++            else:
++                # Empty simple statement blocks are not syntactically valid in Python
++                # unless they contain a 'pass' statement, so add one here.
++                with state.record_syntactic_position(self):
++                    state.add_token("pass")
++
++            self.trailing_whitespace._codegen(state)
+ 
+ 
+ @add_slots

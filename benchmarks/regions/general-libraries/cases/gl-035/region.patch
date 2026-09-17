@@ -1,0 +1,48 @@
+--- a/networkx/algorithms/cycles.py
++++ b/networkx/algorithms/cycles.py
+@@ -3,6 +3,7 @@
+ Cycle finding algorithms
+ ========================
+ """
++import perfmark
+ 
+ from collections import defaultdict
+ from itertools import combinations, product
+@@ -859,21 +860,22 @@
+     # Johnson's algorithm requires some ordering of the nodes.
+     # They might not be sortable so we assign an arbitrary ordering.
+     ordering = dict(zip(G, range(len(G))))
+-    for s in ordering:
+-        # Build the subgraph induced by s and following nodes in the ordering
+-        subgraph = G.subgraph(node for node in G if ordering[node] >= ordering[s])
+-        # Find the strongly connected component in the subgraph
+-        # that contains the least node according to the ordering
+-        strongcomp = nx.strongly_connected_components(subgraph)
+-        mincomp = min(strongcomp, key=lambda ns: min(ordering[n] for n in ns))
+-        component = G.subgraph(mincomp)
+-        if len(component) > 1:
+-            # smallest node in the component according to the ordering
+-            startnode = min(component, key=ordering.__getitem__)
+-            for node in component:
+-                blocked[node] = False
+-                B[node][:] = []
+-            dummy = circuit(startnode, startnode, component)
++    with perfmark.region("gl-035"):
++        for s in ordering:
++            # Build the subgraph induced by s and following nodes in the ordering
++            subgraph = G.subgraph(node for node in G if ordering[node] >= ordering[s])
++            # Find the strongly connected component in the subgraph
++            # that contains the least node according to the ordering
++            strongcomp = nx.strongly_connected_components(subgraph)
++            mincomp = min(strongcomp, key=lambda ns: min(ordering[n] for n in ns))
++            component = G.subgraph(mincomp)
++            if len(component) > 1:
++                # smallest node in the component according to the ordering
++                startnode = min(component, key=ordering.__getitem__)
++                for node in component:
++                    blocked[node] = False
++                    B[node][:] = []
++                dummy = circuit(startnode, startnode, component)
+     return result
+ 
+ 

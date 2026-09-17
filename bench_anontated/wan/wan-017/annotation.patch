@@ -1,0 +1,11 @@
+--- a/src/diffusers/models/transformers/transformer_wan.py
++++ b/src/diffusers/models/transformers/transformer_wan.py
+@@ -84,7 +84,7 @@
+         attention_mask: torch.Tensor | None = None,
+         rotary_emb: tuple[torch.Tensor, torch.Tensor] | None = None,
+     ) -> torch.Tensor:
+-        with perfmark.region("wan-017"):
++        with perfmark.region("wan-017", context_length=0 if encoder_hidden_states is None else int(encoder_hidden_states.shape[1])):
+             encoder_hidden_states_img = None
+             if attn.add_k_proj is not None:
+                 # 512 is the context length of the text encoder, hardcoded for now

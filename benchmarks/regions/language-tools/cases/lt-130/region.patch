@@ -1,0 +1,91 @@
+--- a/astroid/nodes/_base_nodes.py
++++ b/astroid/nodes/_base_nodes.py
+@@ -8,6 +8,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ from collections.abc import Callable, Generator, Iterator
+@@ -670,43 +671,44 @@
+         This is used by both normal binary operations and augmented binary
+         operations, the only difference is the flow factory used.
+         """
+-        from astroid import helpers  # pylint: disable=import-outside-toplevel
+-
+-        context, reverse_context = OperatorNode._get_binop_contexts(
+-            context, left, right
+-        )
+-        left_type = helpers.object_type(left)
+-        right_type = helpers.object_type(right)
+-        methods = flow_factory(
+-            left, left_type, binary_opnode, right, right_type, context, reverse_context
+-        )
+-        for method in methods:
+-            try:
+-                results = list(method())
+-            except AttributeError:
+-                continue
+-            except AttributeInferenceError:
+-                continue
+-            except InferenceError:
+-                yield util.Uninferable
+-                return
+-            else:
+-                if any(isinstance(result, util.UninferableBase) for result in results):
++        with perfmark.region("lt-130"):
++            from astroid import helpers  # pylint: disable=import-outside-toplevel
++
++            context, reverse_context = OperatorNode._get_binop_contexts(
++                context, left, right
++            )
++            left_type = helpers.object_type(left)
++            right_type = helpers.object_type(right)
++            methods = flow_factory(
++                left, left_type, binary_opnode, right, right_type, context, reverse_context
++            )
++            for method in methods:
++                try:
++                    results = list(method())
++                except AttributeError:
++                    continue
++                except AttributeInferenceError:
++                    continue
++                except InferenceError:
+                     yield util.Uninferable
+                     return
+-
+-                if all(map(OperatorNode._is_not_implemented, results)):
+-                    continue
+-                not_implemented = sum(
+-                    1 for result in results if OperatorNode._is_not_implemented(result)
+-                )
+-                if not_implemented and not_implemented != len(results):
+-                    # Can't infer yet what this is.
+-                    yield util.Uninferable
++                else:
++                    if any(isinstance(result, util.UninferableBase) for result in results):
++                        yield util.Uninferable
++                        return
++
++                    if all(map(OperatorNode._is_not_implemented, results)):
++                        continue
++                    not_implemented = sum(
++                        1 for result in results if OperatorNode._is_not_implemented(result)
++                    )
++                    if not_implemented and not_implemented != len(results):
++                        # Can't infer yet what this is.
++                        yield util.Uninferable
++                        return
++
++                    yield from results
+                     return
+ 
+-                yield from results
+-                return
+-
+-        # The operation doesn't seem to be supported so let the caller know about it
+-        yield util.BadBinaryOperationMessage(left_type, binary_opnode.op, right_type)
++            # The operation doesn't seem to be supported so let the caller know about it
++            yield util.BadBinaryOperationMessage(left_type, binary_opnode.op, right_type)

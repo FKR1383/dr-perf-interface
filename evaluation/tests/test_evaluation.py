@@ -65,13 +65,18 @@ class ResultsTests(unittest.TestCase):
         self.assertEqual(parsed["selected_variables"], ["n", "z"])
         self.assertEqual(parsed["final_irregularity"], 0.00123)
 
+    def test_both_contracts_accept_many_features(self):
+        names = [f"s{i}" for i in range(9)]
+        self.assertEqual(validate_result({"variables": names}, "agent_only")["variables"], names)
+        parsed = validate_result(result([fitted(names=names)]), "agent_drperf")
+        self.assertEqual(parsed["selected_variables"], names)
+
     def test_reject_incomplete_or_fabricated_results(self):
         cases = [{"attempts": [], "selected_variables": [],
                   "final_formula": None, "final_irregularity": None}]
         for change in ({"attempt": 2}, {"attempt": True}, {"irregularity": "0%"},
                        {"irregularity": -0.1}, {"irregularity": 1.1}, {"irregularity": float("nan")},
-                       {"irregularity": True}, {"formula": None}, {"status": "invented"},
-                       {"variables": ["a", "b", "c", "d", "e"]}):
+                       {"irregularity": True}, {"formula": None}, {"status": "invented"}):
             cases.append(result([{**fitted(), **change}]))
         mismatch = result()
         mismatch["selected_variables"] = ["invented"]
@@ -109,10 +114,10 @@ class ResultsTests(unittest.TestCase):
         text = summary(data).split("=== Agent + Dr. Perf ===")[0]
         self.assertIn("formula:      4*n + 20", text)
         self.assertIn("irregularity: 12.34%", text)
-        data["agent_only_measurement"] = measurement.failed("unsupported_state_count", "five features")
+        data["agent_only_measurement"] = measurement.failed("unsupported_features", "array-valued feature")
         text = summary(data).split("=== Agent + Dr. Perf ===")[0]
         self.assertIn("irregularity: n/a", text)
-        self.assertIn("reason:       five features", text)
+        self.assertIn("reason:       array-valued feature", text)
 
     def test_summary_distinguishes_revised_baseline_from_initial_answer(self):
         data = {"agent_only_initial": {"variables": ["array"]},
@@ -145,6 +150,19 @@ class MeasurementTests(unittest.TestCase):
                          "region_not_reached")
         self.assertEqual(measurement.analyze(self.directory / "raw", "parse", ["alias"])["status"],
                          "state_mismatch")
+
+    def test_many_features_reach_measurement_without_truncation(self):
+        names = [f"s{i}" for i in range(9)]
+        config = {"workspace": str(Path.cwd()), "journal": str(self.directory / "journal"),
+                  "region": "parse", "command": ["program"], "max_attempts": 1}
+        failure = measurement.failed("insufficient_state_variation", "needs 11 distinct states")
+        with patch.object(measurement, "measure", return_value=failure) as measured:
+            value = measurement.attempt(config, names)
+        self.assertEqual(measured.call_args.args[-1], names)
+        self.assertEqual(value["variables"], names)
+        self.assertEqual(value["status"], "insufficient_state_variation")
+        request = json.loads((self.directory / "journal/attempt-001/request.json").read_text())
+        self.assertEqual(request["variables"], names)
 
     def test_invalid_and_insufficient_variation(self):
         raw_run([], self.directory / "raw")

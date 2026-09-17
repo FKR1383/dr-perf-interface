@@ -1,0 +1,48 @@
+--- a/networkx/algorithms/broadcasting.py
++++ b/networkx/algorithms/broadcasting.py
+@@ -11,6 +11,7 @@
+ - A node can only participate in one call per unit of time.
+ - Each call only involves two adjacent nodes: a sender and a receiver.
+ """
++import perfmark
+ 
+ import networkx as nx
+ from networkx.utils import not_implemented_for
+@@ -85,21 +86,22 @@
+     values.update((w, G.degree[w] - 1) for w in W)
+ 
+     # step 3
+-    while len(T) >= 2:
+-        # step 4
+-        w = min(W, key=values.get)
+-        v = next(T.neighbors(w))
+-
+-        # step 5
+-        U.add(w)
+-        W.remove(w)
+-        T.remove_node(w)
+-
+-        # step 6
+-        if T.degree(v) == 1:
+-            # update t(v)
+-            values.update({v: _get_max_broadcast_value(G, U, v, values)})
+-            W.add(v)
++    with perfmark.region("gl-059"):
++        while len(T) >= 2:
++            # step 4
++            w = min(W, key=values.get)
++            v = next(T.neighbors(w))
++    
++            # step 5
++            U.add(w)
++            W.remove(w)
++            T.remove_node(w)
++    
++            # step 6
++            if T.degree(v) == 1:
++                # update t(v)
++                values.update({v: _get_max_broadcast_value(G, U, v, values)})
++                W.add(v)
+ 
+     # step 7
+     v = nx.utils.arbitrary_element(T)

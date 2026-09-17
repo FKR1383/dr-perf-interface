@@ -1,0 +1,88 @@
+--- a/astroid/rebuilder.py
++++ b/astroid/rebuilder.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import ast
+ import itertools
+@@ -858,41 +859,42 @@
+         self, node: ast.ClassDef, parent: nodes.NodeNG
+     ) -> nodes.ClassDef:
+         """Visit a ClassDef node to become astroid."""
+-        node, doc_ast_node = self._get_doc(node)
+-        newnode = nodes.ClassDef(
+-            name=node.name,
+-            lineno=node.lineno,
+-            col_offset=node.col_offset,
+-            end_lineno=node.end_lineno,
+-            end_col_offset=node.end_col_offset,
+-            parent=parent,
+-        )
+-        metaclass = None
+-        for keyword in node.keywords:
+-            if keyword.arg == "metaclass":
+-                metaclass = self.visit(keyword, newnode).value
+-                break
+-        decorators = self.visit_decorators(node, newnode)
+-        newnode.postinit(
+-            [self.visit(child, newnode) for child in node.bases],
+-            [self.visit(child, newnode) for child in node.body],
+-            decorators,
+-            metaclass=metaclass,
+-            keywords=[
+-                self.visit(kwd, newnode)
+-                for kwd in node.keywords
+-                if kwd.arg != "metaclass"
+-            ],
+-            position=self._get_position_info(node, newnode),
+-            doc_node=self.visit(doc_ast_node, newnode),
+-            type_params=(
+-                [self.visit(param, newnode) for param in node.type_params]
+-                if PY312_PLUS
+-                else []
+-            ),
+-        )
+-        parent.set_local(newnode.name, newnode)
+-        return newnode
++        with perfmark.region("lt-129"):
++            node, doc_ast_node = self._get_doc(node)
++            newnode = nodes.ClassDef(
++                name=node.name,
++                lineno=node.lineno,
++                col_offset=node.col_offset,
++                end_lineno=node.end_lineno,
++                end_col_offset=node.end_col_offset,
++                parent=parent,
++            )
++            metaclass = None
++            for keyword in node.keywords:
++                if keyword.arg == "metaclass":
++                    metaclass = self.visit(keyword, newnode).value
++                    break
++            decorators = self.visit_decorators(node, newnode)
++            newnode.postinit(
++                [self.visit(child, newnode) for child in node.bases],
++                [self.visit(child, newnode) for child in node.body],
++                decorators,
++                metaclass=metaclass,
++                keywords=[
++                    self.visit(kwd, newnode)
++                    for kwd in node.keywords
++                    if kwd.arg != "metaclass"
++                ],
++                position=self._get_position_info(node, newnode),
++                doc_node=self.visit(doc_ast_node, newnode),
++                type_params=(
++                    [self.visit(param, newnode) for param in node.type_params]
++                    if PY312_PLUS
++                    else []
++                ),
++            )
++            parent.set_local(newnode.name, newnode)
++            return newnode
+ 
+     def visit_continue(
+         self, node: ast.Continue, parent: nodes.NodeNG

@@ -67,8 +67,6 @@ def frozen_predictions(discovery_raw, validation_raw):
 
 
 def instrument(workspace, names):
-    if len(names) > 4:
-        raise ValueError("the selected answer exceeds the four-state measurement limit")
     if "input" in names:
         raise ValueError("'input' is a byte-buffer pointer, not an integer feature describing its contents. "
                          "The static answer cannot be measured as returned; no pointer-address proxy was substituted.")

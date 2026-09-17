@@ -1,0 +1,18 @@
+--- a/src/interpreter/bytecode-generator.cc
++++ b/src/interpreter/bytecode-generator.cc
+@@ -47,6 +47,7 @@
+ 
+ #ifdef DEBUG
+ #include "absl/container/flat_hash_map.h"
++#include "drperf_bench_region.h"
+ #endif
+ 
+ namespace v8 {
+@@ -1696,6 +1697,7 @@
+ }  // namespace
+ 
+ void BytecodeGenerator::GenerateBytecode(uintptr_t stack_limit) {
++  DRPERF_BENCH_REGION("v8-interpreter-013");
+   InitializeAstVisitor(stack_limit);
+   if (V8_UNLIKELY(v8_flags.stress_lazy_compilation) &&
+       local_isolate_->is_main_thread() &&

@@ -1,0 +1,44 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import html
+ from typing import Any, Callable
+ 
+@@ -170,19 +171,20 @@
+         prompt = [prompt_clean(u) for u in prompt]
+         batch_size = len(prompt)
+ 
+-        text_inputs = self.tokenizer(
+-            prompt,
+-            padding="max_length",
+-            max_length=max_sequence_length,
+-            truncation=True,
+-            add_special_tokens=True,
+-            return_attention_mask=True,
+-            return_tensors="pt",
+-        )
+-        text_input_ids, mask = text_inputs.input_ids, text_inputs.attention_mask
+-        seq_lens = mask.gt(0).sum(dim=1).long()
+-
+-        prompt_embeds = self.text_encoder(text_input_ids.to(device), mask.to(device)).last_hidden_state
++        with perfmark.region("wan-033"):
++            text_inputs = self.tokenizer(
++                prompt,
++                padding="max_length",
++                max_length=max_sequence_length,
++                truncation=True,
++                add_special_tokens=True,
++                return_attention_mask=True,
++                return_tensors="pt",
++            )
++            text_input_ids, mask = text_inputs.input_ids, text_inputs.attention_mask
++            seq_lens = mask.gt(0).sum(dim=1).long()
++
++            prompt_embeds = self.text_encoder(text_input_ids.to(device), mask.to(device)).last_hidden_state
+         prompt_embeds = prompt_embeds.to(dtype=dtype, device=device)
+         prompt_embeds = [u[:v] for u, v in zip(prompt_embeds, seq_lens)]
+         prompt_embeds = torch.stack(

@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/request_queue.py
++++ b/vllm/v1/core/sched/request_queue.py
+@@ -175,7 +175,7 @@
+ 
+     def remove_request(self, request: Request) -> None:
+         """Remove a specific request from the queue."""
+-        with perfmark.region("vllm-025"):
++        with perfmark.region("vllm-025", request_priority=request.priority):
+             self._heap.remove(request)
+             heapq.heapify(self._heap)
+ 

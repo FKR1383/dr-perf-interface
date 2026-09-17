@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "vllm-025",
+  "title": "PriorityRequestQueue.remove_request body",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm",
+    "revision": "2cf0a6915ce544dc493a0990f2ea38d81601128a",
+    "path": "vllm/v1/core/sched/request_queue.py",
+    "snapshot": "../../upstream/vllm/v1/core/sched/request_queue.py",
+    "sha256": "4b8d938e5fb8152fe61030b8aa991f983fcac9a405c37ed8908045e05e82ae5e"
+  },
+  "region": {
+    "symbol": "PriorityRequestQueue.remove_request",
+    "start_line": 177,
+    "end_line": 178,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "vllm-025",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named vLLM CPU execution path with a small cached model and bounded request batches. Adjust request options to reach this method; no particular dependency is supplied.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "vllm:vllm/v1/core/sched/request_queue.py:PriorityRequestQueue.remove_request",
+  "citations": [
+    "https://github.com/vllm-project/vllm/blob/2cf0a6915ce544dc493a0990f2ea38d81601128a/vllm/v1/core/sched/request_queue.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/driver.py",
+        "destination": "tests/driver.py",
+        "sha256": "ced29c2f484b8c7cb0d10a9712a6a9f0d5cb00bed7f7d9c11f5389913668e2cd"
+      },
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Value assertions passed and Probe.finish observed the exact marker after applying this case patch alone to a detached-file hardlink clone of the pinned checkout."
+    },
+    "coverage_note": "Directly invokes the marked Python function with several bounded inputs; exact marker reachability was verified with this individual patch."
+  }
+}

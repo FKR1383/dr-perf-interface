@@ -1,0 +1,11 @@
+--- a/vllm/v1/core/sched/scheduler.py
++++ b/vllm/v1/core/sched/scheduler.py
+@@ -1478,7 +1478,7 @@
+         spec_decode_tokens: dict[str, list[int]],
+         req_to_new_blocks: dict[str, KVCacheBlocks],
+     ) -> CachedRequestData:
+-        with perfmark.region("vllm-027"):
++        with perfmark.region("vllm-027", running_count=len(running_reqs), resumed_count=len(resumed_reqs)):
+             req_ids: list[str] = []
+             new_token_ids: list[list[int]] = []
+             new_block_ids: list[tuple[list[int], ...] | None] = []

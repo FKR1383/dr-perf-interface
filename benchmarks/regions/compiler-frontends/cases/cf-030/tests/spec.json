@@ -1,0 +1,35 @@
+{
+  "case": "cf-030",
+  "phase": "ir-generation",
+  "scenario": "thread-local-init-ir",
+  "compiler": "clang",
+  "flags": [
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_30{int n; X_30(int v):n(v){}}; int main(){X_30 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct X{X();};\nthread_local X value_0;\nthread_local X value_1;\nthread_local X value_2;\nthread_local X value_3;\nint f(){return 0;}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct X{X();};\nthread_local X value_0;\nthread_local X value_1;\nthread_local X value_2;\nthread_local X value_3;\nthread_local X value_4;\nthread_local X value_5;\nthread_local X value_6;\nthread_local X value_7;\nthread_local X value_8;\nthread_local X value_9;\nthread_local X value_10;\nthread_local X value_11;\nthread_local X value_12;\nthread_local X value_13;\nthread_local X value_14;\nthread_local X value_15;\nint f(){return 0;}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct X{X();};\nthread_local X value_0;\nthread_local X value_1;\nthread_local X value_2;\nthread_local X value_3;\nthread_local X value_4;\nthread_local X value_5;\nthread_local X value_6;\nthread_local X value_7;\nthread_local X value_8;\nthread_local X value_9;\nthread_local X value_10;\nthread_local X value_11;\nthread_local X value_12;\nthread_local X value_13;\nthread_local X value_14;\nthread_local X value_15;\nthread_local X value_16;\nthread_local X value_17;\nthread_local X value_18;\nthread_local X value_19;\nthread_local X value_20;\nthread_local X value_21;\nthread_local X value_22;\nthread_local X value_23;\nthread_local X value_24;\nthread_local X value_25;\nthread_local X value_26;\nthread_local X value_27;\nthread_local X value_28;\nthread_local X value_29;\nthread_local X value_30;\nthread_local X value_31;\nthread_local X value_32;\nthread_local X value_33;\nthread_local X value_34;\nthread_local X value_35;\nthread_local X value_36;\nthread_local X value_37;\nthread_local X value_38;\nthread_local X value_39;\nthread_local X value_40;\nthread_local X value_41;\nthread_local X value_42;\nthread_local X value_43;\nthread_local X value_44;\nthread_local X value_45;\nthread_local X value_46;\nthread_local X value_47;\nthread_local X value_48;\nthread_local X value_49;\nthread_local X value_50;\nthread_local X value_51;\nthread_local X value_52;\nthread_local X value_53;\nthread_local X value_54;\nthread_local X value_55;\nthread_local X value_56;\nthread_local X value_57;\nthread_local X value_58;\nthread_local X value_59;\nthread_local X value_60;\nthread_local X value_61;\nthread_local X value_62;\nthread_local X value_63;\nint f(){return 0;}\n"
+    }
+  ],
+  "target_symbol": "ItaniumCXXABI::EmitThreadLocalInitFuncs",
+  "target_source": "clang/lib/CodeGen/ItaniumCXXABI.cpp",
+  "mapping_note": "The thread-local-init-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

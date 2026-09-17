@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/CGExprScalar.cpp
++++ b/clang/lib/CodeGen/CGExprScalar.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+ #include "CGDebugInfo.h"
+@@ -2273,6 +2274,7 @@
+ // have to handle a more broad range of conversions than explicit casts, as they
+ // handle things like function to ptr-to-function decay etc.
+ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
++  DRPERF_BENCH_REGION("cf-007");
+   Expr *E = CE->getSubExpr();
+   QualType DestTy = CE->getType();
+   CastKind Kind = CE->getCastKind();

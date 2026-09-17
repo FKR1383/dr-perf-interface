@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReaderDecl.cpp
++++ b/clang/lib/Serialization/ASTReaderDecl.cpp
+@@ -11,6 +11,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "clang/AST/ASTConcept.h"
+@@ -4336,6 +4337,7 @@
+ }
+ 
+ void ASTReader::loadDeclUpdateRecords(PendingUpdateRecord &Record) {
++  DRPERF_BENCH_REGION("cf-150");
+   // The declaration may have been modified by files later in the chain.
+   // If this is the case, read the record containing the updates from each file
+   // and pass it to ASTDeclReader to make the modifications.

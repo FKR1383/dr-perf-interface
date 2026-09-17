@@ -1,0 +1,18 @@
+--- a/clang/lib/Driver/Driver.cpp
++++ b/clang/lib/Driver/Driver.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/Driver/Driver.h"
+ #include "ToolChains/AIX.h"
+ #include "ToolChains/AMDGPU.h"
+@@ -1419,6 +1420,7 @@
+ }
+ 
+ Compilation *Driver::BuildCompilation(ArrayRef<const char *> ArgList) {
++  DRPERF_BENCH_REGION("cf-135");
+   llvm::PrettyStackTraceString CrashInfo("Compilation construction");
+ 
+   // FIXME: Handle environment options which affect driver behavior, somewhere

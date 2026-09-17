@@ -1,0 +1,37 @@
+--- a/networkx/algorithms/assortativity/connectivity.py
++++ b/networkx/algorithms/assortativity/connectivity.py
+@@ -1,3 +1,4 @@
++import perfmark
+ from collections import defaultdict
+ 
+ import networkx as nx
+@@ -106,17 +107,18 @@
+     source_nodes = source_degree(nodes)
+     if nodes in G:
+         source_nodes = [(nodes, source_degree(nodes))]
+-    for n, k in source_nodes:
+-        nbrdeg = target_degree(neighbors(n))
+-        if weight is None:
+-            s = sum(d for n, d in nbrdeg)
+-        else:  # weight nbr degree by weight of (n,nbr) edge
+-            if reverse:
+-                s = sum(G[nbr][n].get(weight, 1) * d for nbr, d in nbrdeg)
+-            else:
+-                s = sum(G[n][nbr].get(weight, 1) * d for nbr, d in nbrdeg)
+-        dnorm[k] += source_degree(n, weight=weight)
+-        dsum[k] += s
++    with perfmark.region("gl-053"):
++        for n, k in source_nodes:
++            nbrdeg = target_degree(neighbors(n))
++            if weight is None:
++                s = sum(d for n, d in nbrdeg)
++            else:  # weight nbr degree by weight of (n,nbr) edge
++                if reverse:
++                    s = sum(G[nbr][n].get(weight, 1) * d for nbr, d in nbrdeg)
++                else:
++                    s = sum(G[n][nbr].get(weight, 1) * d for nbr, d in nbrdeg)
++            dnorm[k] += source_degree(n, weight=weight)
++            dsum[k] += s
+ 
+     # normalize
+     return {k: avg if dnorm[k] == 0 else avg / dnorm[k] for k, avg in dsum.items()}

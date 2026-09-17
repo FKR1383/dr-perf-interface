@@ -1,0 +1,22 @@
+--- a/networkx/algorithms/connectivity/cuts.py
++++ b/networkx/algorithms/connectivity/cuts.py
+@@ -1,6 +1,7 @@
+ """
+ Flow based cut algorithms
+ """
++import perfmark
+ 
+ import itertools
+ 
+@@ -153,8 +154,9 @@
+     # Any edge in the original graph linking the two sets in the
+     # partition is part of the edge cutset
+     cutset = set()
+-    for u, nbrs in ((n, G[n]) for n in reachable):
+-        cutset.update((u, v) for v in nbrs if v in non_reachable)
++    with perfmark.region("gl-094"):
++        for u, nbrs in ((n, G[n]) for n in reachable):
++            cutset.update((u, v) for v in nbrs if v in non_reachable)
+ 
+     return cutset
+ 

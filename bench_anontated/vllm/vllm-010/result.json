@@ -1,0 +1,70 @@
+{
+  "case": "vllm-010",
+  "status": "annotation-not-qualified",
+  "pcvs": [
+    {
+      "name": "new_token_count",
+      "expression": "num_new_tokens"
+    },
+    {
+      "name": "must_fit",
+      "expression": "int(full_sequence_must_fit)"
+    }
+  ],
+  "gate_pass": false,
+  "final_measurement": "measurements/screen-1/metrics.json",
+  "attempts": 1,
+  "evidence": {
+    "budget": "one DRPerf attempt, 60 second timeout",
+    "metrics": {
+      "case": "vllm-010",
+      "validity_warnings": [],
+      "pcv_names": [
+        "new_token_count",
+        "must_fit"
+      ],
+      "distinct_states": 2,
+      "required_states": 4,
+      "calls": 8,
+      "dropped_calls": 0,
+      "nested_calls_per_call": 0.0,
+      "states": [
+        {
+          "state": {
+            "new_token_count": 1,
+            "must_fit": 0
+          },
+          "calls": 3,
+          "instructions_per_call": 6928.333333333333
+        },
+        {
+          "state": {
+            "new_token_count": 34,
+            "must_fit": 1
+          },
+          "calls": 5,
+          "instructions_per_call": 9037.4
+        }
+      ],
+      "max_unexplained_share": null,
+      "threshold": 0.05,
+      "sufficient_points": false,
+      "gate_pass": false,
+      "gate_reasons": [
+        "insufficient state points: 2; need 4"
+      ],
+      "automatic_regime_splitting": false,
+      "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+      "returncode": 0,
+      "instrumented_wall_seconds": 25.70227770204656,
+      "raw_files": [
+        "run.3219149.json"
+      ]
+    },
+    "wrapper_output": "{\"out\": \"/home/ubuntu/drperf/bench_anontated/vllm/vllm-010/measurements/screen-1\", \"returncode\": 0, \"gate_pass\": false, \"max_unexplained_share\": null, \"gate_reasons\": [\"insufficient state points: 2; need 4\"]}\n"
+  },
+  "optimization": {
+    "status": "not-attempted",
+    "reason": "Annotation did not pass the strict gate in its single budgeted attempt."
+  }
+}

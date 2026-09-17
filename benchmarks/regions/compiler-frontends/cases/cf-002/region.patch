@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDeclAttr.cpp
++++ b/clang/lib/Sema/SemaDeclAttr.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/ASTMutationListener.h"
+@@ -6542,6 +6543,7 @@
+ static void
+ ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D, const ParsedAttr &AL,
+                      const Sema::ProcessDeclAttributeOptions &Options) {
++                       DRPERF_BENCH_REGION("cf-002");
+   if (AL.isInvalid() || AL.getKind() == ParsedAttr::IgnoredAttribute)
+     return;
+ 

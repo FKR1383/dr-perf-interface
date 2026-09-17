@@ -1,0 +1,86 @@
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ from enum import IntEnum, auto
+@@ -762,42 +763,43 @@
+         return self.sql[self._start : self._current]
+ 
+     def _add(self, token_type: TokenType, text: str | None = None) -> None:
+-        self._prev_token_line = self._line
+-
+-        if self._comments and token_type == TokenType.SEMICOLON and self.tokens:
+-            self.tokens[-1].comments.extend(self._comments)
++        with perfmark.region("lt-065"):
++            self._prev_token_line = self._line
++
++            if self._comments and token_type == TokenType.SEMICOLON and self.tokens:
++                self.tokens[-1].comments.extend(self._comments)
++                self._comments = []
++
++            if text is None:
++                text = self.sql[self._start : self._current]
++
++            self.tokens.append(
++                Token(
++                    token_type,
++                    text=text,
++                    line=self._line,
++                    col=self._col,
++                    start=self._start,
++                    end=self._current - 1,
++                    comments=self._comments,
++                )
++            )
+             self._comments = []
+ 
+-        if text is None:
+-            text = self.sql[self._start : self._current]
+-
+-        self.tokens.append(
+-            Token(
+-                token_type,
+-                text=text,
+-                line=self._line,
+-                col=self._col,
+-                start=self._start,
+-                end=self._current - 1,
+-                comments=self._comments,
+-            )
+-        )
+-        self._comments = []
+-
+-        # If we have either a semicolon or a begin token before the command's token, we'll parse
+-        # whatever follows the command's token as a string
+-        if (
+-            token_type in self.commands
+-            and self._peek != ";"
+-            and (len(self.tokens) == 1 or self.tokens[-2].token_type in self.command_prefix_tokens)
+-        ):
+-            start = self._current
+-            tokens = len(self.tokens)
+-            self._scan(check_semicolon=True)
+-            self.tokens = self.tokens[:tokens]
+-            text = self.sql[start : self._current].strip()
+-            if text:
+-                self._add(TokenType.STRING, text)
++            # If we have either a semicolon or a begin token before the command's token, we'll parse
++            # whatever follows the command's token as a string
++            if (
++                token_type in self.commands
++                and self._peek != ";"
++                and (len(self.tokens) == 1 or self.tokens[-2].token_type in self.command_prefix_tokens)
++            ):
++                start = self._current
++                tokens = len(self.tokens)
++                self._scan(check_semicolon=True)
++                self.tokens = self.tokens[:tokens]
++                text = self.sql[start : self._current].strip()
++                if text:
++                    self._add(TokenType.STRING, text)
+ 
+     def _scan_keywords(self) -> None:
+         sql = self.sql

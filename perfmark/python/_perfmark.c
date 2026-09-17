@@ -13,6 +13,7 @@
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <limits.h>
 #include "../perfmark.h"
 
 static const char *
@@ -89,7 +90,7 @@ Region_dealloc(RegionObject *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-#define MAX_KEY_STATES 8
+#define STACK_KEY_STATES 8 /* allocation-free fast path, not a limit */
 
 static PyObject *
 Region_enter(RegionObject *self, PyObject *Py_UNUSED(ignored))
@@ -100,20 +101,44 @@ Region_enter(RegionObject *self, PyObject *Py_UNUSED(ignored))
         perfmark_begin(name, "", 0);
     } else if (n == 1) {
         PyObject *t = PyList_GET_ITEM(self->states, 0);
-        perfmark_begin(name, PyBytes_AS_STRING(PyTuple_GET_ITEM(t, 0)),
-                       PyLong_AsLongLong(PyTuple_GET_ITEM(t, 1)));
+        int64_t value = PyLong_AsLongLong(PyTuple_GET_ITEM(t, 1));
+        if (PyErr_Occurred())
+            return NULL;
+        perfmark_begin(name, PyBytes_AS_STRING(PyTuple_GET_ITEM(t, 0)), value);
     } else {
-        const char *names[MAX_KEY_STATES];
-        int64_t vals[MAX_KEY_STATES];
+        const char *stack_names[STACK_KEY_STATES];
+        int64_t stack_vals[STACK_KEY_STATES];
+        const char **names = stack_names;
+        int64_t *vals = stack_vals;
         Py_ssize_t i;
-        if (n > MAX_KEY_STATES)
-            n = MAX_KEY_STATES;
+        if (n > INT_MAX) {
+            PyErr_SetString(PyExc_OverflowError, "number of states exceeds the C marker ABI");
+            return NULL;
+        }
+        if (n > STACK_KEY_STATES) {
+            names = PyMem_Calloc((size_t)n, sizeof(*names));
+            vals = PyMem_Calloc((size_t)n, sizeof(*vals));
+            if (names == NULL || vals == NULL) {
+                PyMem_Free(names);
+                PyMem_Free(vals);
+                return PyErr_NoMemory();
+            }
+        }
         for (i = 0; i < n; i++) {
             PyObject *t = PyList_GET_ITEM(self->states, i);
             names[i] = PyBytes_AS_STRING(PyTuple_GET_ITEM(t, 0));
             vals[i] = PyLong_AsLongLong(PyTuple_GET_ITEM(t, 1));
+            if (PyErr_Occurred())
+                break;
         }
-        perfmark_begin_v(name, (int)n, names, vals);
+        if (!PyErr_Occurred())
+            perfmark_begin_v(name, (int)n, names, vals);
+        if (n > STACK_KEY_STATES) {
+            PyMem_Free(names);
+            PyMem_Free(vals);
+        }
+        if (PyErr_Occurred())
+            return NULL;
     }
     if (self->extra != NULL) {
         Py_ssize_t i;

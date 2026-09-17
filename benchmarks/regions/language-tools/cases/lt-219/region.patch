@@ -1,0 +1,55 @@
+--- a/lark/parsers/grammar_analysis.py
++++ b/lark/parsers/grammar_analysis.py
+@@ -1,4 +1,5 @@
+ "Provides for superficial grammar analysis."
++import perfmark
+ 
+ from collections import Counter, defaultdict
+ from typing import List, Dict, Iterator, FrozenSet, Set
+@@ -180,24 +181,25 @@
+     def expand_rule(self, source_rule: NonTerminal, rules_by_origin=None) -> OrderedSet[RulePtr]:
+         "Returns all init_ptrs accessible by rule (recursive)"
+ 
+-        if rules_by_origin is None:
+-            rules_by_origin = self.rules_by_origin
+-
+-        init_ptrs = OrderedSet[RulePtr]()
+-        def _expand_rule(rule: NonTerminal) -> Iterator[NonTerminal]:
+-            assert not rule.is_term, rule
+-
+-            for r in rules_by_origin[rule]:
+-                init_ptr = RulePtr(r, 0)
+-                init_ptrs.add(init_ptr)
+-
+-                if r.expansion: # if not empty rule
+-                    new_r = init_ptr.next
+-                    if not new_r.is_term:
+-                        assert isinstance(new_r, NonTerminal)
+-                        yield new_r
+-
+-        for _ in bfs([source_rule], _expand_rule):
+-            pass
+-
+-        return init_ptrs
++        with perfmark.region("lt-219"):
++            if rules_by_origin is None:
++                rules_by_origin = self.rules_by_origin
++
++            init_ptrs = OrderedSet[RulePtr]()
++            def _expand_rule(rule: NonTerminal) -> Iterator[NonTerminal]:
++                assert not rule.is_term, rule
++
++                for r in rules_by_origin[rule]:
++                    init_ptr = RulePtr(r, 0)
++                    init_ptrs.add(init_ptr)
++
++                    if r.expansion: # if not empty rule
++                        new_r = init_ptr.next
++                        if not new_r.is_term:
++                            assert isinstance(new_r, NonTerminal)
++                            yield new_r
++
++            for _ in bfs([source_rule], _expand_rule):
++                pass
++
++            return init_ptrs

@@ -1,0 +1,18 @@
+--- a/clang/lib/Serialization/ASTReader.cpp
++++ b/clang/lib/Serialization/ASTReader.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "ASTCommon.h"
+ #include "ASTReaderInternals.h"
+ #include "TemplateArgumentHasher.h"
+@@ -3419,6 +3420,7 @@
+ 
+ llvm::Error ASTReader::ReadASTBlock(ModuleFile &F,
+                                     unsigned ClientLoadCapabilities) {
++                                      DRPERF_BENCH_REGION("cf-188");
+   BitstreamCursor &Stream = F.Stream;
+ 
+   if (llvm::Error Err = Stream.EnterSubBlock(AST_BLOCK_ID))

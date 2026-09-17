@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "gl-130",
+  "title": "Selected block in numpy.insert",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/numpy/numpy",
+    "revision": "d8c7dad6638b623b79da658cafd9a86c8717630e",
+    "path": "numpy/lib/_function_base_impl.py",
+    "snapshot": "../../upstream/numpy/numpy/lib/_function_base_impl.py",
+    "sha256": "46dea872654143fd4e4e5535cee41ee5e0c89cb6f08ec1dd4b0a769679cf06c7"
+  },
+  "region": {
+    "symbol": "insert",
+    "start_line": 5562,
+    "end_line": 5594,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "gl-130",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise insert with three small, varied domain inputs; fully consume lazy results and compare values with the pinned pristine function.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "numpy:numpy/lib/_function_base_impl.py:insert",
+  "citations": [
+    "https://github.com/numpy/numpy/blob/d8c7dad6638b623b79da658cafd9a86c8717630e/numpy/lib/_function_base_impl.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      },
+      {
+        "source": "../../upstream/numpy/numpy/lib/_function_base_impl.py",
+        "destination": "tests/original.py",
+        "sha256": "46dea872654143fd4e4e5535cee41ee5e0c89cb6f08ec1dd4b0a769679cf06c7"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Receipt-bound execution passed under Python 3.12.3. The saved return code is zero, the observer recorded 3 marker entries, and receipt patch/test hashes match this case. Differential value assertions passed; this is not a performance measurement."
+    },
+    "coverage_note": "Differentially calls numpy.lib._function_base_impl.insert on three bounded domain variants, consumes lazy outputs, compares with the pinned pristine function, and requires marker entry. The pristine body runs in a copied module namespace; recursive calls made through module globals may resolve to the imported marked symbol, so direct body equality is covered more strongly than recursive isolation."
+  }
+}

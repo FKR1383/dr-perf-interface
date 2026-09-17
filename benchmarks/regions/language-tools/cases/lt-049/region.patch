@@ -1,0 +1,37 @@
+--- a/sqlglot/__init__.py
++++ b/sqlglot/__init__.py
+@@ -6,6 +6,7 @@
+ """
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ from collections.abc import Collection
+ from builtins import type as Type
+@@ -152,17 +153,18 @@
+         A single syntax tree if one statement is parsed, otherwise a Block expression containing all parsed syntax trees.
+     """
+ 
+-    dialect = Dialect.get_or_raise(read or dialect)
++    with perfmark.region("lt-049"):
++        dialect = Dialect.get_or_raise(read or dialect)
+ 
+-    if into:
+-        result = dialect.parse_into(into, sql, **opts)
+-    else:
+-        result = dialect.parse(sql, **opts)
++        if into:
++            result = dialect.parse_into(into, sql, **opts)
++        else:
++            result = dialect.parse(sql, **opts)
+ 
+-    if not result or result[0] is None:
+-        raise ParseError(f"No expression was parsed from '{sql}'")
++        if not result or result[0] is None:
++            raise ParseError(f"No expression was parsed from '{sql}'")
+ 
+-    return exp.Block(expressions=result) if len(result) > 1 else result[0]
++        return exp.Block(expressions=result) if len(result) > 1 else result[0]
+ 
+ 
+ def transpile(

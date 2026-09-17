@@ -1,0 +1,18 @@
+--- a/clang/lib/Sema/SemaDecl.cpp
++++ b/clang/lib/Sema/SemaDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TypeLocBuilder.h"
+ #include "clang/AST/ASTConsumer.h"
+ #include "clang/AST/ASTContext.h"
+@@ -14309,6 +14310,7 @@
+ }
+ 
+ void Sema::CheckCompleteVariableDeclaration(VarDecl *var) {
++  DRPERF_BENCH_REGION("cf-086");
+   if (var->isInvalidDecl()) return;
+ 
+   CUDA().MaybeAddConstantAttr(var);

@@ -1,0 +1,39 @@
+--- a/Cython/Compiler/Options.py
++++ b/Cython/Compiler/Options.py
+@@ -1,3 +1,4 @@
++import perfmark
+ #
+ #  Cython - Compilation-wide options and pragma declarations
+ #
+@@ -151,18 +152,19 @@
+     # To add an item to this list, all accesses should be changed to use the new
+     # directive, and the global option itself should be set to an instance of
+     # ShouldBeFromDirective.
+-    for old_option in ShouldBeFromDirective.known_directives:
+-        value = globals().get(old_option.options_name)
+-        assert old_option.directive_name in _directive_defaults
+-        if not isinstance(value, ShouldBeFromDirective):
+-            if old_option.disallow:
+-                raise RuntimeError(
+-                    "Option '%s' must be set from directive '%s'" % (
+-                    old_option.option_name, old_option.directive_name))
+-            else:
+-                # Warn?
+-                _directive_defaults[old_option.directive_name] = value
+-    return _directive_defaults
++    with perfmark.region("lt-242"):
++        for old_option in ShouldBeFromDirective.known_directives:
++            value = globals().get(old_option.options_name)
++            assert old_option.directive_name in _directive_defaults
++            if not isinstance(value, ShouldBeFromDirective):
++                if old_option.disallow:
++                    raise RuntimeError(
++                        "Option '%s' must be set from directive '%s'" % (
++                        old_option.option_name, old_option.directive_name))
++                else:
++                    # Warn?
++                    _directive_defaults[old_option.directive_name] = value
++        return _directive_defaults
+ 
+ def copy_inherited_directives(outer_directives, **new_directives):
+     # A few directives are not copied downwards and this function removes them.

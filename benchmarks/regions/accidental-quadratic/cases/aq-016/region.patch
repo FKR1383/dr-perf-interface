@@ -1,0 +1,39 @@
+diff --git a/Lib/email/_header_value_parser.py b/Lib/email/_header_value_parser.py
+--- a/Lib/email/_header_value_parser.py
++++ b/Lib/email/_header_value_parser.py
+@@ -66,6 +66,7 @@
+ 
+ XXX: provide complete list of token types.
+ """
++import perfmark
+ 
+ import re
+ import sys
+@@ -2252,16 +2253,17 @@
+     returned acts like a Parameter, but the data attributes are None.
+ 
+     """
+-    invalid_parameter = InvalidParameter()
+-    while value and value[0] != ';':
+-        if value[0] in PHRASE_ENDS:
+-            invalid_parameter.append(ValueTerminal(value[0],
+-                                                   'misplaced-special'))
+-            value = value[1:]
+-        else:
+-            token, value = get_phrase(value)
+-            invalid_parameter.append(token)
+-    return invalid_parameter, value
++    with perfmark.region('aq-016'):
++        invalid_parameter = InvalidParameter()
++        while value and value[0] != ';':
++            if value[0] in PHRASE_ENDS:
++                invalid_parameter.append(ValueTerminal(value[0],
++                                                       'misplaced-special'))
++                value = value[1:]
++            else:
++                token, value = get_phrase(value)
++                invalid_parameter.append(token)
++        return invalid_parameter, value
+ 
+ def get_ttext(value):
+     """ttext = <matches _ttext_matcher>

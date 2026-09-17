@@ -1,0 +1,18 @@
+--- a/clang/lib/Parse/ParseDecl.cpp
++++ b/clang/lib/Parse/ParseDecl.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ASTContext.h"
+ #include "clang/AST/DeclTemplate.h"
+ #include "clang/AST/PrettyDeclStackTrace.h"
+@@ -6695,6 +6696,7 @@
+ ///         '::'[opt] nested-name-specifier '*' cv-qualifier-seq[opt]
+ void Parser::ParseDeclaratorInternal(Declarator &D,
+                                      DirectDeclParseFunction DirectDeclParser) {
++                                       DRPERF_BENCH_REGION("cf-031");
+   if (Diags.hasAllExtensionsSilenced())
+     D.setExtension();
+ 

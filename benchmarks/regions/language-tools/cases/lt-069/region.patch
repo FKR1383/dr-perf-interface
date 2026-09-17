@@ -1,0 +1,48 @@
+--- a/sqlglot/tokenizer_core.py
++++ b/sqlglot/tokenizer_core.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import typing as t
+ from enum import IntEnum, auto
+@@ -1102,22 +1103,23 @@
+         self._add(TokenType.IDENTIFIER, text)
+ 
+     def _scan_var(self) -> None:
+-        var_single_tokens = self.var_single_tokens
+-        single_tokens = self.single_tokens
+-
+-        while True:
+-            peek = self._peek
+-            if not peek or peek.isspace():
+-                break
+-            if peek not in var_single_tokens and peek in single_tokens:
+-                break
+-            self._advance(alnum=True)
+-
+-        self._add(
+-            TokenType.VAR
+-            if self.tokens and self.tokens[-1].token_type == TokenType.PARAMETER
+-            else self.keywords.get(self.sql[self._start : self._current].upper(), TokenType.VAR)
+-        )
++        with perfmark.region("lt-069"):
++            var_single_tokens = self.var_single_tokens
++            single_tokens = self.single_tokens
++
++            while True:
++                peek = self._peek
++                if not peek or peek.isspace():
++                    break
++                if peek not in var_single_tokens and peek in single_tokens:
++                    break
++                self._advance(alnum=True)
++
++            self._add(
++                TokenType.VAR
++                if self.tokens and self.tokens[-1].token_type == TokenType.PARAMETER
++                else self.keywords.get(self.sql[self._start : self._current].upper(), TokenType.VAR)
++            )
+ 
+     def _extract_string(
+         self,

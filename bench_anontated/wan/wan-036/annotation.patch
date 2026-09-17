@@ -1,0 +1,11 @@
+--- a/src/diffusers/pipelines/wan/pipeline_wan.py
++++ b/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -335,7 +335,7 @@
+         generator: torch.Generator | list[torch.Generator] | None = None,
+         latents: torch.Tensor | None = None,
+     ) -> torch.Tensor:
+-        with perfmark.region("wan-036"):
++        with perfmark.region("wan-036", latent_elements=int(batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (height // self.vae_scale_factor_spatial) * (width // self.vae_scale_factor_spatial))):
+             if latents is not None:
+                 return latents.to(device=device, dtype=dtype)
+ 

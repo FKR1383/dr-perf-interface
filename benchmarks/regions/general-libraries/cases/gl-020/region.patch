@@ -1,0 +1,46 @@
+--- a/networkx/algorithms/connectivity/edge_augmentation.py
++++ b/networkx/algorithms/connectivity/edge_augmentation.py
+@@ -7,6 +7,7 @@
+ augmentation with minimum weight.  In general, it is not guaranteed that a
+ k-edge-augmentation exists.
+ """
++import perfmark
+ 
+ import itertools as it
+ import math
+@@ -802,20 +803,21 @@
+     leafs = [n for n, d in T.degree() if d == 1]
+     if len(leafs) == 1:
+         A2 = []
+-    if len(leafs) == 2:
+-        A2 = [tuple(leafs)]
+-    else:
+-        # Choose an arbitrary non-leaf root
+-        try:
+-            root = next(n for n, d in T.degree() if d > 1)
+-        except StopIteration:  # no nodes found with degree > 1
+-            return
+-        # order the leaves of C by (induced directed) preorder
+-        v2 = [n for n in nx.dfs_preorder_nodes(T, root) if T.degree(n) == 1]
+-        # connecting first half of the leafs in pre-order to the second
+-        # half will bridge connect the tree with the fewest edges.
+-        half = math.ceil(len(v2) / 2)
+-        A2 = list(zip(v2[:half], v2[-half:]))
++    with perfmark.region("gl-020"):
++        if len(leafs) == 2:
++            A2 = [tuple(leafs)]
++        else:
++            # Choose an arbitrary non-leaf root
++            try:
++                root = next(n for n, d in T.degree() if d > 1)
++            except StopIteration:  # no nodes found with degree > 1
++                return
++            # order the leaves of C by (induced directed) preorder
++            v2 = [n for n in nx.dfs_preorder_nodes(T, root) if T.degree(n) == 1]
++            # connecting first half of the leafs in pre-order to the second
++            # half will bridge connect the tree with the fewest edges.
++            half = math.ceil(len(v2) / 2)
++            A2 = list(zip(v2[:half], v2[-half:]))
+ 
+     # collect the edges used to augment the original forest
+     aug_tree_edges = A1 + A2

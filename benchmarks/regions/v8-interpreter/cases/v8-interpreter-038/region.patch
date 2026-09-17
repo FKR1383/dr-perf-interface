@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -20,6 +20,7 @@
+ #include "src/objects/property-details.h"
+ #include "src/objects/swiss-name-dictionary-inl.h"
+ #include "src/runtime/runtime.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -129,6 +130,7 @@
+ }
+ 
+ RUNTIME_FUNCTION(Runtime_ObjectGetOwnPropertyNamesTryFast) {
++  DRPERF_BENCH_REGION("v8-interpreter-038");
+   HandleScope scope(isolate);
+   DirectHandle<Object> object = args.at(0);
+ 

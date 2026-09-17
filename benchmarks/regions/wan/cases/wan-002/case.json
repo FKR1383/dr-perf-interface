@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "wan-002",
+  "title": "VaeImageProcessor.postprocess region",
+  "language": "python",
+  "source": {
+    "repository": "https://github.com/huggingface/diffusers",
+    "revision": "c5469b7ceb606edd7ba6570dcd17d38590a18db6",
+    "path": "src/diffusers/image_processor.py",
+    "snapshot": "../../upstream/src/diffusers/image_processor.py",
+    "sha256": "d7558c34e9dfd36ea2a8721fc670615ca868de551ba232992a7f5382924b98f8"
+  },
+  "region": {
+    "symbol": "VaeImageProcessor.postprocess",
+    "start_line": 775,
+    "end_line": 775,
+    "kind": "block"
+  },
+  "marker": {
+    "kind": "python-context",
+    "name": "wan-002",
+    "pcvs": []
+  },
+  "status": "collected",
+  "build_status": "not-built",
+  "workload": {
+    "description": "Exercise the named diffusers Wan method with a tiny random model on CPU. Use a bounded video or prompt-encoding call appropriate to this method; full model downloads are unnecessary.",
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ]
+  },
+  "source_family": "wan:src/diffusers/image_processor.py:VaeImageProcessor.postprocess",
+  "citations": [
+    "https://github.com/huggingface/diffusers/blob/c5469b7ceb606edd7ba6570dcd17d38590a18db6/src/diffusers/image_processor.py"
+  ],
+  "tests": {
+    "files": [
+      "tests/test_case.py"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/wan_fixture.py",
+        "destination": "tests/helper.py",
+        "sha256": "b69b1ca558744ff8615de772ac2b786780a54e9dda5ef19bf645cbd22911d6a0"
+      },
+      {
+        "source": "../../../support/marker_probe.py",
+        "destination": "tests/marker_probe.py",
+        "sha256": "6a1bc80a1cc3b0fb0a19d02c2dedb5111740bdaa5f7488398e7263402a284f19"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/test_case.py",
+      "--source-root",
+      "{source_root}"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Passed with the pinned patch applied to an isolated source copy under Python 3.11, PyTorch 2.14.0+cpu, and Diffusers runtime dependencies from the provided environment. Correctness assertions passed across three distinct bounded configurations and the native probe observed the named marker at least three times; this was not an instruction-count measurement."
+    },
+    "coverage_note": "The test imports diffusers from the supplied source root, checks finite outputs and shape or value semantics, and requires the named marker to be observed."
+  }
+}

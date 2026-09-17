@@ -1,0 +1,18 @@
+--- a/src/runtime/runtime-scopes.cc
++++ b/src/runtime/runtime-scopes.cc
+@@ -23,6 +23,7 @@
+ #include "src/objects/tagged.h"
+ #include "src/roots/roots-inl.h"
+ #include "src/runtime/runtime-utils.h"
++#include "drperf_bench_region.h"
+ 
+ namespace v8 {
+ namespace internal {
+@@ -492,6 +493,7 @@
+ // Find the arguments of the JavaScript function invocation that called
+ // into C++ code. Collect these in a newly allocated array of handles.
+ DirectHandleVector<Object> GetCallerArguments(Isolate* isolate) {
++  DRPERF_BENCH_REGION("v8-interpreter-007");
+   // Find frame containing arguments passed to the caller.
+   JavaScriptStackFrameIterator it(isolate);
+   JavaScriptFrame* frame = it.frame();

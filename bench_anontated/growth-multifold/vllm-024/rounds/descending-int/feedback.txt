@@ -1,0 +1,14 @@
+vllm-024 = 701.8543*incoming_count + 27207.23 + unexplained
+  unexplained 358063 instr/call: PyObject_RichCompareBool [python3.12]
+  unexplained 270330 instr/call: PyInit__heapq+? [python3.12]
+  unexplained 228419.5 instr/call: PyLong_AsSsize_t+? [python3.12]
+  unexplained 25358.333 instr/call: _PyEval_EvalFrameDefault [python3.12]
+  unexplained 1488 instr/call: _PyErr_ChainStackItem+? [python3.12]
+  unexplained 990 instr/call: PyList_Append [python3.12]
+  incoming_count coefficient 557.26951: _PyEval_EvalFrameDefault [python3.12]
+  incoming_count coefficient 52: _PyErr_ChainStackItem+? [python3.12]
+  incoming_count coefficient 41.778359: PyInit__heapq+? [python3.12]
+  incoming_count coefficient 35.965374: PyList_Append [python3.12]
+  incoming_count coefficient 15: PyInterpreterState_Get+? [python3.12]
+  incoming_count coefficient -0.1589404: PyDict_Contains+? [python3.12]
+gate: unexplained share exceeds 5% at an observed state

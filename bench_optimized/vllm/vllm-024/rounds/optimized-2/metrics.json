@@ -1,0 +1,80 @@
+{
+  "case": "vllm-024",
+  "validity_warnings": [],
+  "pcv_names": [
+    "incoming_count"
+  ],
+  "distinct_states": 5,
+  "required_states": 3,
+  "calls": 25,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "incoming_count": 1
+      },
+      "calls": 5,
+      "instructions_per_call": 7627.0,
+      "unexplained_instructions_per_call": 621.2000000000002,
+      "unexplained_share": 0.08144748918316509
+    },
+    {
+      "state": {
+        "incoming_count": 2
+      },
+      "calls": 5,
+      "instructions_per_call": 8773.8,
+      "unexplained_instructions_per_call": 1005.0,
+      "unexplained_share": 0.11454557888258224
+    },
+    {
+      "state": {
+        "incoming_count": 3
+      },
+      "calls": 5,
+      "instructions_per_call": 17621.8,
+      "unexplained_instructions_per_call": 2340.7999999999997,
+      "unexplained_share": 0.1328354651624692
+    },
+    {
+      "state": {
+        "incoming_count": 4
+      },
+      "calls": 5,
+      "instructions_per_call": 17996.6,
+      "unexplained_instructions_per_call": 4024.600000000001,
+      "unexplained_share": 0.22363113032461693
+    },
+    {
+      "state": {
+        "incoming_count": 8
+      },
+      "calls": 5,
+      "instructions_per_call": 42274.2,
+      "unexplained_instructions_per_call": 13035.0,
+      "unexplained_share": 0.3083440963992222
+    }
+  ],
+  "max_unexplained_share": 0.3083440963992222,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "incoming_count": 2954.201369863016
+    },
+    "constant": 4018.2350684931434,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 10.310340570053086,
+  "raw_files": [
+    "run.3195632.json"
+  ]
+}

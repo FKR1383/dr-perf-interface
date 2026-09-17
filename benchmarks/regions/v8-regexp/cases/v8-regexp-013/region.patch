@@ -1,0 +1,18 @@
+--- a/src/regexp/regexp-parser.cc
++++ b/src/regexp/regexp-parser.cc
+@@ -3,6 +3,7 @@
+ // found in the LICENSE file.
+ 
+ #include "src/regexp/regexp-parser.h"
++#include "drperf_bench_region.h"
+ 
+ #include "src/base/logging.h"
+ #include "src/execution/isolate.h"
+@@ -2776,6 +2777,7 @@
+ template <class CharT, ParseMode mode>
+ Tree* ParserImpl<CharT, mode>::ParseClassRanges(
+     ZoneList<CharacterRange>* ranges, bool add_unicode_case_equivalents) {
++  DRPERF_BENCH_REGION("v8-regexp-013");
+   base::uc32 char_1, char_2;
+   bool is_class_1, is_class_2;
+   while (has_more() && current() != ']') {

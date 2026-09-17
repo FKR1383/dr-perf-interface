@@ -1,0 +1,82 @@
+--- a/sqlglot/expressions/core.py
++++ b/sqlglot/expressions/core.py
+@@ -1,6 +1,7 @@
+ """sqlglot expressions core - base classes, traits, operators, and helpers."""
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import datetime
+ import logging
+@@ -1080,39 +1081,40 @@
+         index: int | None = None,
+         overwrite: bool = True,
+     ) -> None:
+-        node: Expr | None = self
+-
+-        while node and node._hash is not None:
+-            node._hash = None
+-            node = node.parent
+-
+-        if index is not None:
+-            expressions = self.args.get(arg_key) or []
+-
+-            if seq_get(expressions, index) is None:
++        with perfmark.region("lt-062"):
++            node: Expr | None = self
++
++            while node and node._hash is not None:
++                node._hash = None
++                node = node.parent
++
++            if index is not None:
++                expressions = self.args.get(arg_key) or []
++
++                if seq_get(expressions, index) is None:
++                    return
++
++                if value is None:
++                    expressions.pop(index)
++                    for v in expressions[index:]:
++                        v.index = v.index - 1
++                    return
++
++                if isinstance(value, list):
++                    expressions.pop(index)
++                    expressions[index:index] = value
++                elif overwrite:
++                    expressions[index] = value
++                else:
++                    expressions.insert(index, value)
++
++                value = expressions
++            elif value is None:
++                self.args.pop(arg_key, None)
+                 return
+ 
+-            if value is None:
+-                expressions.pop(index)
+-                for v in expressions[index:]:
+-                    v.index = v.index - 1
+-                return
+-
+-            if isinstance(value, list):
+-                expressions.pop(index)
+-                expressions[index:index] = value
+-            elif overwrite:
+-                expressions[index] = value
+-            else:
+-                expressions.insert(index, value)
+-
+-            value = expressions
+-        elif value is None:
+-            self.args.pop(arg_key, None)
+-            return
+-
+-        self.args[arg_key] = value
+-        self._set_parent(arg_key, value, index)
++            self.args[arg_key] = value
++            self._set_parent(arg_key, value, index)
+ 
+     def _set_parent(self, arg_key: str, value: object, index: int | None = None) -> None:
+         if isinstance(value, Expr):

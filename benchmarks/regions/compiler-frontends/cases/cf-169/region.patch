@@ -1,0 +1,18 @@
+--- a/clang/lib/AST/ParentMap.cpp
++++ b/clang/lib/AST/ParentMap.cpp
+@@ -10,6 +10,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "clang/AST/ParentMap.h"
+ #include "clang/AST/Decl.h"
+ #include "clang/AST/Expr.h"
+@@ -27,6 +28,7 @@
+ 
+ static void BuildParentMap(MapTy& M, Stmt* S,
+                            OpaqueValueMode OVMode = OV_Transparent) {
++                             DRPERF_BENCH_REGION("cf-169");
+   if (!S)
+     return;
+ 

@@ -1,0 +1,18 @@
+--- a/llvm/lib/IR/RuntimeLibcalls.cpp
++++ b/llvm/lib/IR/RuntimeLibcalls.cpp
+@@ -6,6 +6,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "llvm/IR/RuntimeLibcalls.h"
+ 
+ using namespace llvm;
+@@ -14,6 +15,7 @@
+ /// Set default libcall names. If a target wants to opt-out of a libcall it
+ /// should be placed here.
+ void RuntimeLibcallsInfo::initLibcalls(const Triple &TT) {
++  DRPERF_BENCH_REGION("cf-216");
+   std::fill(std::begin(LibcallRoutineNames), std::end(LibcallRoutineNames),
+             nullptr);
+ 

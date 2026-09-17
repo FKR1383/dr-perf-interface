@@ -1,0 +1,126 @@
+--- a/networkx/classes/function.py
++++ b/networkx/classes/function.py
+@@ -1,4 +1,5 @@
+ """Functional interface to graph methods and assorted utilities."""
++import perfmark
+ 
+ from collections import Counter
+ from itertools import chain
+@@ -1354,64 +1355,65 @@
+     >>> list(nx.selfloop_edges(G, keys=True, data=True))
+     [(1, 1, 0, {})]
+     """
+-    if data is True:
+-        if G.is_multigraph():
+-            if keys is True:
++    with perfmark.region("gl-013"):
++        if data is True:
++            if G.is_multigraph():
++                if keys is True:
++                    return (
++                        (n, n, k, d)
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for k, d in nbrs[n].items()
++                    )
++                else:
++                    return (
++                        (n, n, d)
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for d in nbrs[n].values()
++                    )
++            else:
++                return ((n, n, nbrs[n]) for n, nbrs in G._adj.items() if n in nbrs)
++        elif data is not False:
++            if G.is_multigraph():
++                if keys is True:
++                    return (
++                        (n, n, k, d.get(data, default))
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for k, d in nbrs[n].items()
++                    )
++                else:
++                    return (
++                        (n, n, d.get(data, default))
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for d in nbrs[n].values()
++                    )
++            else:
+                 return (
+-                    (n, n, k, d)
++                    (n, n, nbrs[n].get(data, default))
+                     for n, nbrs in G._adj.items()
+                     if n in nbrs
+-                    for k, d in nbrs[n].items()
+-                )
+-            else:
+-                return (
+-                    (n, n, d)
+-                    for n, nbrs in G._adj.items()
+-                    if n in nbrs
+-                    for d in nbrs[n].values()
+                 )
+         else:
+-            return ((n, n, nbrs[n]) for n, nbrs in G._adj.items() if n in nbrs)
+-    elif data is not False:
+-        if G.is_multigraph():
+-            if keys is True:
+-                return (
+-                    (n, n, k, d.get(data, default))
+-                    for n, nbrs in G._adj.items()
+-                    if n in nbrs
+-                    for k, d in nbrs[n].items()
+-                )
++            if G.is_multigraph():
++                if keys is True:
++                    return (
++                        (n, n, k)
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for k in nbrs[n]
++                    )
++                else:
++                    return (
++                        (n, n)
++                        for n, nbrs in G._adj.items()
++                        if n in nbrs
++                        for i in range(len(nbrs[n]))  # for easy edge removal (#4068)
++                    )
+             else:
+-                return (
+-                    (n, n, d.get(data, default))
+-                    for n, nbrs in G._adj.items()
+-                    if n in nbrs
+-                    for d in nbrs[n].values()
+-                )
+-        else:
+-            return (
+-                (n, n, nbrs[n].get(data, default))
+-                for n, nbrs in G._adj.items()
+-                if n in nbrs
+-            )
+-    else:
+-        if G.is_multigraph():
+-            if keys is True:
+-                return (
+-                    (n, n, k)
+-                    for n, nbrs in G._adj.items()
+-                    if n in nbrs
+-                    for k in nbrs[n]
+-                )
+-            else:
+-                return (
+-                    (n, n)
+-                    for n, nbrs in G._adj.items()
+-                    if n in nbrs
+-                    for i in range(len(nbrs[n]))  # for easy edge removal (#4068)
+-                )
+-        else:
+-            return ((n, n) for n, nbrs in G._adj.items() if n in nbrs)
++                return ((n, n) for n, nbrs in G._adj.items() if n in nbrs)
+ 
+ 
+ @nx._dispatchable

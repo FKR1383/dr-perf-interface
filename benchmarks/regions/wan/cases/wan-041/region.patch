@@ -1,0 +1,20 @@
+--- a/src/diffusers/video_processor.py
++++ b/src/diffusers/video_processor.py
+@@ -12,6 +12,7 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++import perfmark
+ import warnings
+ 
+ import numpy as np
+@@ -109,7 +110,8 @@
+             outputs.append(batch_output)
+ 
+         if output_type == "np":
+-            outputs = np.stack(outputs)
++            with perfmark.region("wan-041"):
++                outputs = np.stack(outputs)
+         elif output_type == "pt":
+             outputs = torch.stack(outputs)
+         elif not output_type == "pil":

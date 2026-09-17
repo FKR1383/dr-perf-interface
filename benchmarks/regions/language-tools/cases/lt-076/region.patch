@@ -1,0 +1,162 @@
+--- a/sqlglot/parser.py
++++ b/sqlglot/parser.py
+@@ -1,4 +1,5 @@
+ from __future__ import annotations
++import perfmark
+ 
+ import itertools
+ import logging
+@@ -5907,79 +5908,80 @@
+     def parse_set_operation(
+         self, this: exp.Expr | None, consume_pipe: bool = False
+     ) -> exp.Expr | None:
+-        start = self._index
+-        _, side_token, kind_token = self._parse_join_parts()
+-
+-        side = side_token.text if side_token else None
+-        kind = kind_token.text if kind_token else None
+-
+-        if not self._match_set(self.SET_OPERATIONS):
+-            self._retreat(start)
+-            return None
+-
+-        token_type = self._prev.token_type
+-
+-        if token_type == TokenType.UNION:
+-            operation: type[exp.SetOperation] = exp.Union
+-        elif token_type == TokenType.EXCEPT:
+-            operation = exp.Except
+-        else:
+-            operation = exp.Intersect
+-
+-        comments = self._prev.comments
+-
+-        if self._match(TokenType.DISTINCT):
+-            distinct: bool | None = True
+-        elif self._match(TokenType.ALL):
+-            distinct = False
+-        else:
+-            distinct = self.dialect.SET_OP_DISTINCT_BY_DEFAULT[operation]
+-            if distinct is None:
+-                self.raise_error(f"Expected DISTINCT or ALL for {operation.__name__}")
+-
+-        by_name = (
+-            self._match_text_seq("BY", "NAME")
+-            or self._match_text_seq("STRICT", "CORRESPONDING")
+-            or None
+-        )
+-        if self._match_text_seq("CORRESPONDING"):
+-            by_name = True
+-            if not side and not kind:
+-                kind = "INNER"
+-
+-        on_column_list = None
+-        if by_name and self._match_texts(("ON", "BY")):
+-            on_column_list = self._parse_wrapped_csv(self._parse_column)
+-
+-        expression = self._parse_select(
+-            nested=True, parse_set_operation=False, consume_pipe=consume_pipe
+-        )
+-
+-        # Wrap VALUES operands in selects, both for consistency with the CTE canonicalization
+-        # in _parse_cte and so that alias pushdown can reach into set operation branches
+-        if isinstance(this, exp.Values):
+-            this = self._values_to_select(this)
+-        if isinstance(expression, exp.Values):
+-            expression = self._values_to_select(expression)
+-
+-        if isinstance(this, exp.Alias) and isinstance(this.this, exp.Subquery):
+-            subquery = this.this
+-            subquery.set("alias", exp.TableAlias(this=this.args["alias"]))
+-            subquery.add_comments(this.pop_comments())
+-            this = subquery
+-
+-        return self.expression(
+-            operation(
+-                this=this,
+-                distinct=distinct,
+-                by_name=by_name,
+-                expression=expression,
+-                side=side,
+-                kind=kind,
+-                on=on_column_list,
+-            ),
+-            comments=comments,
+-        )
++        with perfmark.region("lt-076"):
++            start = self._index
++            _, side_token, kind_token = self._parse_join_parts()
++
++            side = side_token.text if side_token else None
++            kind = kind_token.text if kind_token else None
++
++            if not self._match_set(self.SET_OPERATIONS):
++                self._retreat(start)
++                return None
++
++            token_type = self._prev.token_type
++
++            if token_type == TokenType.UNION:
++                operation: type[exp.SetOperation] = exp.Union
++            elif token_type == TokenType.EXCEPT:
++                operation = exp.Except
++            else:
++                operation = exp.Intersect
++
++            comments = self._prev.comments
++
++            if self._match(TokenType.DISTINCT):
++                distinct: bool | None = True
++            elif self._match(TokenType.ALL):
++                distinct = False
++            else:
++                distinct = self.dialect.SET_OP_DISTINCT_BY_DEFAULT[operation]
++                if distinct is None:
++                    self.raise_error(f"Expected DISTINCT or ALL for {operation.__name__}")
++
++            by_name = (
++                self._match_text_seq("BY", "NAME")
++                or self._match_text_seq("STRICT", "CORRESPONDING")
++                or None
++            )
++            if self._match_text_seq("CORRESPONDING"):
++                by_name = True
++                if not side and not kind:
++                    kind = "INNER"
++
++            on_column_list = None
++            if by_name and self._match_texts(("ON", "BY")):
++                on_column_list = self._parse_wrapped_csv(self._parse_column)
++
++            expression = self._parse_select(
++                nested=True, parse_set_operation=False, consume_pipe=consume_pipe
++            )
++
++            # Wrap VALUES operands in selects, both for consistency with the CTE canonicalization
++            # in _parse_cte and so that alias pushdown can reach into set operation branches
++            if isinstance(this, exp.Values):
++                this = self._values_to_select(this)
++            if isinstance(expression, exp.Values):
++                expression = self._values_to_select(expression)
++
++            if isinstance(this, exp.Alias) and isinstance(this.this, exp.Subquery):
++                subquery = this.this
++                subquery.set("alias", exp.TableAlias(this=this.args["alias"]))
++                subquery.add_comments(this.pop_comments())
++                this = subquery
++
++            return self.expression(
++                operation(
++                    this=this,
++                    distinct=distinct,
++                    by_name=by_name,
++                    expression=expression,
++                    side=side,
++                    kind=kind,
++                    on=on_column_list,
++                ),
++                comments=comments,
++            )
+ 
+     def _parse_set_operations(self, this: exp.Expr | None) -> exp.Expr | None:
+         while this:

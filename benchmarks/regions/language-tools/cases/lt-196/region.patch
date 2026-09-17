@@ -1,0 +1,102 @@
+--- a/pyparsing/core.py
++++ b/pyparsing/core.py
+@@ -2,6 +2,7 @@
+ # core.py
+ #
+ from __future__ import annotations
++import perfmark
+ 
+ import collections.abc
+ from collections import deque
+@@ -3455,48 +3456,49 @@
+         as_match: bool = False,
+         **kwargs,
+     ) -> None:
+-        super().__init__()
+-        asGroupList: bool = deprecate_argument(kwargs, "asGroupList", False)
+-        asMatch: bool = deprecate_argument(kwargs, "asMatch", False)
+-
+-        asGroupList = asGroupList or as_group_list
+-        asMatch = asMatch or as_match
+-
+-        if isinstance(pattern, str_type):
+-            if not pattern:
+-                raise ValueError("null string passed to Regex; use Empty() instead")
+-
+-            self._re = None
+-            self._may_return_empty = None  # type: ignore [assignment]
+-            self.reString = self.pattern = pattern
+-
+-        elif hasattr(pattern, "pattern") and hasattr(pattern, "match"):
+-            self._re = pattern
+-            self._may_return_empty = None  # type: ignore [assignment]
+-            self.pattern = self.reString = pattern.pattern
+-
+-        elif callable(pattern):
+-            # defer creating this pattern until we really need it
+-            self.pattern = pattern
+-            self._may_return_empty = None  # type: ignore [assignment]
+-            self._re = None
+-
+-        else:
+-            raise TypeError(
+-                "Regex may only be constructed with a string or a compiled RE object,"
+-                " or a callable that takes no arguments and returns a string or a"
+-                " compiled RE object"
+-            )
+-
+-        self.flags = flags
+-        self.errmsg = f"Expected {self.name}"
+-        self.mayIndexError = False
+-        self.asGroupList = asGroupList
+-        self.asMatch = asMatch
+-        if self.asGroupList:
+-            self.parseImpl = self.parseImplAsGroupList  # type: ignore [method-assign]
+-        if self.asMatch:
+-            self.parseImpl = self.parseImplAsMatch  # type: ignore [method-assign]
++        with perfmark.region("lt-196"):
++            super().__init__()
++            asGroupList: bool = deprecate_argument(kwargs, "asGroupList", False)
++            asMatch: bool = deprecate_argument(kwargs, "asMatch", False)
++
++            asGroupList = asGroupList or as_group_list
++            asMatch = asMatch or as_match
++
++            if isinstance(pattern, str_type):
++                if not pattern:
++                    raise ValueError("null string passed to Regex; use Empty() instead")
++
++                self._re = None
++                self._may_return_empty = None  # type: ignore [assignment]
++                self.reString = self.pattern = pattern
++
++            elif hasattr(pattern, "pattern") and hasattr(pattern, "match"):
++                self._re = pattern
++                self._may_return_empty = None  # type: ignore [assignment]
++                self.pattern = self.reString = pattern.pattern
++
++            elif callable(pattern):
++                # defer creating this pattern until we really need it
++                self.pattern = pattern
++                self._may_return_empty = None  # type: ignore [assignment]
++                self._re = None
++
++            else:
++                raise TypeError(
++                    "Regex may only be constructed with a string or a compiled RE object,"
++                    " or a callable that takes no arguments and returns a string or a"
++                    " compiled RE object"
++                )
++
++            self.flags = flags
++            self.errmsg = f"Expected {self.name}"
++            self.mayIndexError = False
++            self.asGroupList = asGroupList
++            self.asMatch = asMatch
++            if self.asGroupList:
++                self.parseImpl = self.parseImplAsGroupList  # type: ignore [method-assign]
++            if self.asMatch:
++                self.parseImpl = self.parseImplAsMatch  # type: ignore [method-assign]
+ 
+     def copy(self) -> Regex:
+         """

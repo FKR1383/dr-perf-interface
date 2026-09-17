@@ -1,0 +1,36 @@
+--- a/src/urllib3/util/ssl_match_hostname.py
++++ b/src/urllib3/util/ssl_match_hostname.py
+@@ -5,6 +5,7 @@
+ # It is modified to remove commonName support.
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import ipaddress
+ import re
+@@ -132,15 +133,16 @@
+ 
+     # We only check 'commonName' if it's enabled and we're not verifying
+     # an IP address. IP addresses aren't valid within 'commonName'.
+-    if hostname_checks_common_name and host_ip is None and not dnsnames:
+-        for sub in cert.get("subject", ()):
+-            for key, value in sub:
+-                if key == "commonName":
+-                    if _dnsname_match(value, hostname):
+-                        return
+-                    dnsnames.append(
+-                        value
+-                    )  # Defensive: for older PyPy and OpenSSL versions
++    with perfmark.region("gl-168"):
++        if hostname_checks_common_name and host_ip is None and not dnsnames:
++            for sub in cert.get("subject", ()):
++                for key, value in sub:
++                    if key == "commonName":
++                        if _dnsname_match(value, hostname):
++                            return
++                        dnsnames.append(
++                            value
++                        )  # Defensive: for older PyPy and OpenSSL versions
+ 
+     if len(dnsnames) > 1:
+         raise CertificateError(

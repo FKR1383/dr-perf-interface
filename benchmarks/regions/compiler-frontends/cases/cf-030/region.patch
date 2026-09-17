@@ -1,0 +1,18 @@
+--- a/clang/lib/CodeGen/ItaniumCXXABI.cpp
++++ b/clang/lib/CodeGen/ItaniumCXXABI.cpp
+@@ -17,6 +17,7 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "CGCXXABI.h"
+ #include "CGCleanup.h"
+ #include "CGRecordLayout.h"
+@@ -3108,6 +3109,7 @@
+     CodeGenModule &CGM, ArrayRef<const VarDecl *> CXXThreadLocals,
+     ArrayRef<llvm::Function *> CXXThreadLocalInits,
+     ArrayRef<const VarDecl *> CXXThreadLocalInitVars) {
++      DRPERF_BENCH_REGION("cf-030");
+   llvm::Function *InitFunc = nullptr;
+ 
+   // Separate initializers into those with ordered (or partially-ordered)

@@ -1,0 +1,18 @@
+--- a/clang/lib/Format/TokenAnnotator.cpp
++++ b/clang/lib/Format/TokenAnnotator.cpp
+@@ -12,6 +12,7 @@
+ ///
+ //===----------------------------------------------------------------------===//
+ 
++#include "drperf_bench_region.h"
+ #include "TokenAnnotator.h"
+ #include "FormatToken.h"
+ #include "clang/Basic/SourceManager.h"
+@@ -4226,6 +4227,7 @@
+ unsigned TokenAnnotator::splitPenalty(const AnnotatedLine &Line,
+                                       const FormatToken &Tok,
+                                       bool InFunctionDecl) const {
++                                        DRPERF_BENCH_REGION("cf-248");
+   const FormatToken &Left = *Tok.Previous;
+   const FormatToken &Right = Tok;
+ 

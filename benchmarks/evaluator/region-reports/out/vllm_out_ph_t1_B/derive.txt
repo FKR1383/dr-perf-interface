@@ -1,0 +1,36 @@
+derive make_request_output   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: kind=0 x370, kind=2 x2
+  fewer than 3 state points: no relation claimed
+
+derive process_outputs   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)
+  states: num_outputs=1,num_active=1 x5, num_outputs=2,num_active=2 x5, num_outputs=3,num_active=3 x8, num_outputs=4,num_active=4 x7, num_outputs=5,num_active=5 x8, num_outputs=6,num_active=6 x7, num_outputs=7,num_active=7 x9, num_outputs=8,num_active=8 x4, num_outputs=8,num_active=12 x1, num_outputs=9,num_active=9 x4, num_outputs=10,num_active=10 x1, num_outputs=11,num_active=11 x3, num_outputs=12,num_active=12 x3
+  cost(num_outputs, num_active) = 35,434.2*num_outputs + 13,236.1*num_active + -773.5        [all num_outputs, num_active]   blocks: 2323 affine, 1403 constant, 270 irregular (27.4% of cost)
+    marker cost subtracted from the constant: 9,621.1 per call (calibrated)
+    negative constant: the counts curve over the observed values (n log n, n^2, ...); the plane is a local approximation
+    irregular blocks, per call: 18,395.5 .. 728,942.7
+    per-num_outputs coefficient by function:
+              16,073  _PyEval_EvalFrameDefault  [python3.12]
+            -4,055.6  _int_malloc  [libc.so.6]
+             2,620.5  PyEval_EvalCode+?  [python3.12]
+             2,238.9  PyDict_SetItem  [python3.12]
+             1,860.6  _PyErr_ChainStackItem+?  [python3.12]
+             1,240.5  _PyObject_Call_Prepend  [python3.12]
+    per-num_active coefficient by function:
+             4,156.3  _int_malloc  [libc.so.6]
+             1,079.4  __realloc  [libc.so.6]
+               855.3  _int_free_merge_chunk  [libc.so.6]
+               724.5  _int_realloc  [libc.so.6]
+               702.7  _PyEval_EvalFrameDefault  [python3.12]
+               694.6  __memcpy_avx_unaligned_erms  [libc.so.6]
+    constant by function:
+               785.7  PyEval_EvalCode+?  [python3.12]
+               653.4  _PyEval_EvalFrameDefault  [python3.12]
+               498.2  PyType_GenericNew+?  [python3.12]
+               441.5  PyUnicode_FromString+?  [python3.12]
+              -354.1  _int_malloc  [libc.so.6]
+               345.7  _PyObject_Call_Prepend  [python3.12]
+    irregular by function:
+            26,886.9  _$LT$core..iter..adapters..flatten..FlatMap$LT$I$C$U$C$F$GT$$u20$as$u2  [tokenizers.abi3.so]
+            13,800.3  _int_free  [libc.so.6]
+             9,341.7  _PyEval_EvalFrameDefault  [python3.12]
+

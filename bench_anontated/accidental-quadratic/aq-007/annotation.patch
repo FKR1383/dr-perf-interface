@@ -1,0 +1,12 @@
+diff --git a/Lib/email/message.py b/Lib/email/message.py
+--- a/Lib/email/message.py
++++ b/Lib/email/message.py
+@@ -73,7 +73,7 @@
+ 
+ def _parseparam(s):
+     # RDM This might be a Header, so for now stringify it.
+-    with perfmark.region('aq-007'):
++    with perfmark.region('aq-007', input_len=len(s), input_pairs=len(s) * len(s)):
+         s = ';' + str(s)
+         plist = []
+         while s[:1] == ';':

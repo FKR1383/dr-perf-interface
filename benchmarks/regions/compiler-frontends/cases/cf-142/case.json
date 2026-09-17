@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "cf-142",
+  "title": "DiagnosticIDs::ProcessDiag compiler region",
+  "language": "cpp",
+  "source": {
+    "repository": "https://github.com/llvm/llvm-project",
+    "revision": "87f0227cb60147a26a1eeb4fb06e3b505e9c7261",
+    "path": "clang/lib/Basic/DiagnosticIDs.cpp",
+    "snapshot": "../../upstream/llvm-project/clang/lib/Basic/DiagnosticIDs.cpp",
+    "sha256": "9c65f981fcb7738271a2599e2135e005815ca9ed02e07b0326504688299c01cb"
+  },
+  "region": {
+    "symbol": "DiagnosticIDs::ProcessDiag",
+    "start_line": 774,
+    "end_line": 854,
+    "kind": "function"
+  },
+  "marker": {
+    "kind": "cpp-scope",
+    "name": "cf-142",
+    "pcvs": []
+  },
+  "status": "region-verified",
+  "build_status": "built-and-region-verified",
+  "phase": "compiler-support",
+  "workload": {
+    "description": "Run the bounded attribute-semantics fixture with Clang using explicit phase flags and assert compiler output or exit semantics.",
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ]
+  },
+  "source_family": "llvm-project:clang/lib/Basic/DiagnosticIDs.cpp:DiagnosticIDs::ProcessDiag",
+  "citations": [
+    "https://github.com/llvm/llvm-project/blob/87f0227cb60147a26a1eeb4fb06e3b505e9c7261/clang/lib/Basic/DiagnosticIDs.cpp#L774-L854"
+  ],
+  "tests": {
+    "files": [
+      "tests/spec.json"
+    ],
+    "resources": [
+      {
+        "source": "../../test-support/run_case.py",
+        "destination": "tests/run_case.py",
+        "sha256": "fac2e0bd9f446bcda2abe16f5a3af67dbb1696b3f01c79b6b03786c90016d9ab"
+      }
+    ],
+    "command": [
+      "{python}",
+      "tests/run_case.py",
+      "tests/spec.json"
+    ],
+    "validation": {
+      "status": "region-verified",
+      "details": "Assertions passed and the exact marked native region was entered at structural sizes 4, 16, and 64 on the pinned instrumented LLVM build.",
+      "evidence": "benchmarks/growth/compiler-build/entry-final/summary.json",
+      "binary_sha256": "fa935b95a870967c9d94fb0e2e4b5e82e6618204c78c2e61ddd9b8405a0483b5",
+      "spec_sha256": "c0ff87019b1feaaa9bb194e446359bb87490938d2d38b104d3d05200df3788f2",
+      "patch_sha256": "7f3f6697d292ea9035a98f9cbcb5cfd6b210dfa64c3a753b87e6e6345d7dd1cb"
+    },
+    "coverage_note": "Hash-bound native entry evidence is recorded in the validation receipt. It establishes reachability, not cost or speedup."
+  }
+}

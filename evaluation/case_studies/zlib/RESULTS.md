@@ -5,8 +5,10 @@ experimental agent tried five candidate sets and returned to its initial `n`
 model, which still left 47.43% of discovery cost unexplained.
 
 This historical run predates the mandatory irregularity target and continuation
-policy. Its artifacts are preserved; the current reproduction instructions use
-the updated policy and a larger attempt budget.
+policy, the baseline measurability loop, and the engine changes that removed the
+fixed state-count limit and accepted valid negative intercepts. Its artifacts
+and scores are preserved as historical evidence; the current reproduction
+instructions use the updated policies and fitter.
 
 Both fresh sessions used gpt-6-astra with xhigh reasoning through Codex CLI
 0.154.0-alpha.6.2. The target was the real zlib 1.3.1 implementation, compiled
@@ -19,7 +21,7 @@ See [README.md](README.md) for the exact workload and reproduction commands.
 Agent Only returned `{input, level, n}`. This names the input data dependency,
 but `input` is a byte-buffer pointer. The answer does not specify an integer
 summary of its contents. Its complete selection cannot be measured directly
-under the four-integer-state contract. Validation reports this explicitly;
+under the integer-state contract. Validation reports this explicitly;
 measuring the pointer address would not measure the contents.
 
 Agent + Dr. Perf recorded:

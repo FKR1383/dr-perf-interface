@@ -1,0 +1,62 @@
+--- a/wan/modules/t5.py
++++ b/wan/modules/t5.py
+@@ -506,8 +506,8 @@
+     def __call__(self, texts, device):
+         ids, mask = self.tokenizer(
+             texts, return_mask=True, add_special_tokens=True)
++        seq_lens = mask.gt(0).sum(dim=1).long()
+         ids = ids.to(device)
+         mask = mask.to(device)
+-        seq_lens = mask.gt(0).sum(dim=1).long()
+         context = self.model(ids, mask)
+         return [u[:v] for u, v in zip(context, seq_lens)]
+--- a/wan/text2video.py
++++ b/wan/text2video.py
+@@ -224,6 +224,9 @@
+             else:
+                 raise NotImplementedError("Unsupported solver.")
+ 
++            # Full text-to-video generation starts at the first scheduled step.
++            sample_scheduler.set_begin_index(0)
++
+             # sample videos
+             latents = noise
+ 
+--- a/wan/utils/fm_solvers_unipc.py
++++ b/wan/utils/fm_solvers_unipc.py
+@@ -427,7 +427,7 @@
+             D1s.append((mi - m0) / rk)  # pyright: ignore
+ 
+         rks.append(1.0)
+-        rks = torch.tensor(rks, device=device)
++        rks = torch.tensor(rks, device="cpu")
+ 
+         R = []
+         b = []
+@@ -452,7 +452,7 @@
+             h_phi_k = h_phi_k / hh - 1 / factorial_i
+ 
+         R = torch.stack(R)
+-        b = torch.tensor(b, device=device)
++        b = torch.tensor(b, device="cpu")
+ 
+         if len(D1s) > 0:
+             D1s = torch.stack(D1s, dim=1)  # (B, K)
+@@ -570,7 +570,7 @@
+             D1s.append((mi - m0) / rk)  # pyright: ignore
+ 
+         rks.append(1.0)
+-        rks = torch.tensor(rks, device=device)
++        rks = torch.tensor(rks, device="cpu")
+ 
+         R = []
+         b = []
+@@ -595,7 +595,7 @@
+             h_phi_k = h_phi_k / hh - 1 / factorial_i
+ 
+         R = torch.stack(R)
+-        b = torch.tensor(b, device=device)
++        b = torch.tensor(b, device="cpu")
+ 
+         if len(D1s) > 0:
+             D1s = torch.stack(D1s, dim=1)

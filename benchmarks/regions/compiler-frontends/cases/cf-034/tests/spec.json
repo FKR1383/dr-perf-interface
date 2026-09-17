@@ -1,0 +1,36 @@
+{
+  "case": "cf-034",
+  "phase": "ir-generation",
+  "scenario": "debug-type-ir",
+  "compiler": "clang",
+  "flags": [
+    "-g",
+    "-S",
+    "-emit-llvm",
+    "-O1",
+    "-x",
+    "c++",
+    "-std=c++20",
+    "-o",
+    "-"
+  ],
+  "expected_stdout": "define",
+  "fixture": "struct X_34{int n; X_34(int v):n(v){}}; int main(){X_34 x(3); int y=static_cast<int>(x.n); y++; return y>2 ? 0 : 1;}\n",
+  "fixtures": [
+    {
+      "size": 4,
+      "source": "struct D0{int a; double b;};\nstruct D1{int a; double b;};\nstruct D2{int a; double b;};\nstruct D3{int a; double b;};\nint f(){return 0;}\n"
+    },
+    {
+      "size": 16,
+      "source": "struct D0{int a; double b;};\nstruct D1{int a; double b;};\nstruct D2{int a; double b;};\nstruct D3{int a; double b;};\nstruct D4{int a; double b;};\nstruct D5{int a; double b;};\nstruct D6{int a; double b;};\nstruct D7{int a; double b;};\nstruct D8{int a; double b;};\nstruct D9{int a; double b;};\nstruct D10{int a; double b;};\nstruct D11{int a; double b;};\nstruct D12{int a; double b;};\nstruct D13{int a; double b;};\nstruct D14{int a; double b;};\nstruct D15{int a; double b;};\nint f(){return 0;}\n"
+    },
+    {
+      "size": 64,
+      "source": "struct D0{int a; double b;};\nstruct D1{int a; double b;};\nstruct D2{int a; double b;};\nstruct D3{int a; double b;};\nstruct D4{int a; double b;};\nstruct D5{int a; double b;};\nstruct D6{int a; double b;};\nstruct D7{int a; double b;};\nstruct D8{int a; double b;};\nstruct D9{int a; double b;};\nstruct D10{int a; double b;};\nstruct D11{int a; double b;};\nstruct D12{int a; double b;};\nstruct D13{int a; double b;};\nstruct D14{int a; double b;};\nstruct D15{int a; double b;};\nstruct D16{int a; double b;};\nstruct D17{int a; double b;};\nstruct D18{int a; double b;};\nstruct D19{int a; double b;};\nstruct D20{int a; double b;};\nstruct D21{int a; double b;};\nstruct D22{int a; double b;};\nstruct D23{int a; double b;};\nstruct D24{int a; double b;};\nstruct D25{int a; double b;};\nstruct D26{int a; double b;};\nstruct D27{int a; double b;};\nstruct D28{int a; double b;};\nstruct D29{int a; double b;};\nstruct D30{int a; double b;};\nstruct D31{int a; double b;};\nstruct D32{int a; double b;};\nstruct D33{int a; double b;};\nstruct D34{int a; double b;};\nstruct D35{int a; double b;};\nstruct D36{int a; double b;};\nstruct D37{int a; double b;};\nstruct D38{int a; double b;};\nstruct D39{int a; double b;};\nstruct D40{int a; double b;};\nstruct D41{int a; double b;};\nstruct D42{int a; double b;};\nstruct D43{int a; double b;};\nstruct D44{int a; double b;};\nstruct D45{int a; double b;};\nstruct D46{int a; double b;};\nstruct D47{int a; double b;};\nstruct D48{int a; double b;};\nstruct D49{int a; double b;};\nstruct D50{int a; double b;};\nstruct D51{int a; double b;};\nstruct D52{int a; double b;};\nstruct D53{int a; double b;};\nstruct D54{int a; double b;};\nstruct D55{int a; double b;};\nstruct D56{int a; double b;};\nstruct D57{int a; double b;};\nstruct D58{int a; double b;};\nstruct D59{int a; double b;};\nstruct D60{int a; double b;};\nstruct D61{int a; double b;};\nstruct D62{int a; double b;};\nstruct D63{int a; double b;};\nint f(){return 0;}\n"
+    }
+  ],
+  "target_symbol": "CGDebugInfo::CreateType",
+  "target_source": "clang/lib/CodeGen/CGDebugInfo.cpp",
+  "mapping_note": "The debug-type-ir construct is selected from the target name and implementation vocabulary; exact native entry still requires the pinned instrumented build."
+}

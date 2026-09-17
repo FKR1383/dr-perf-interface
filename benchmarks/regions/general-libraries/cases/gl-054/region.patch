@@ -1,0 +1,72 @@
+--- a/networkx/algorithms/traversal/edgedfs.py
++++ b/networkx/algorithms/traversal/edgedfs.py
+@@ -6,6 +6,7 @@
+ Algorithms for a depth-first traversal of edges in a graph.
+ 
+ """
++import perfmark
+ 
+ import networkx as nx
+ 
+@@ -108,33 +109,34 @@
+         kwds["keys"] = True
+ 
+     # set up edge lookup
+-    if orientation is None:
+-
+-        def edges_from(node):
+-            return iter(G.edges(node, **kwds))
+-
+-    elif not directed or orientation == "original":
+-
+-        def edges_from(node):
+-            for e in G.edges(node, **kwds):
+-                yield e + (FORWARD,)
+-
+-    elif orientation == "reverse":
+-
+-        def edges_from(node):
+-            for e in G.in_edges(node, **kwds):
+-                yield e + (REVERSE,)
+-
+-    elif orientation == "ignore":
+-
+-        def edges_from(node):
+-            for e in G.edges(node, **kwds):
+-                yield e + (FORWARD,)
+-            for e in G.in_edges(node, **kwds):
+-                yield e + (REVERSE,)
+-
+-    else:
+-        raise nx.NetworkXError("invalid orientation argument.")
++    with perfmark.region("gl-054"):
++        if orientation is None:
++    
++            def edges_from(node):
++                return iter(G.edges(node, **kwds))
++    
++        elif not directed or orientation == "original":
++    
++            def edges_from(node):
++                for e in G.edges(node, **kwds):
++                    yield e + (FORWARD,)
++    
++        elif orientation == "reverse":
++    
++            def edges_from(node):
++                for e in G.in_edges(node, **kwds):
++                    yield e + (REVERSE,)
++    
++        elif orientation == "ignore":
++    
++            def edges_from(node):
++                for e in G.edges(node, **kwds):
++                    yield e + (FORWARD,)
++                for e in G.in_edges(node, **kwds):
++                    yield e + (REVERSE,)
++    
++        else:
++            raise nx.NetworkXError("invalid orientation argument.")
+ 
+     # set up formation of edge_id to easily look up if edge already returned
+     if directed:

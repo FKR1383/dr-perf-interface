@@ -1,0 +1,77 @@
+--- a/pyparsing/results.py
++++ b/pyparsing/results.py
+@@ -1,6 +1,7 @@
+ # results.py
+ 
+ from __future__ import annotations
++import perfmark
+ 
+ import collections
+ from collections.abc import (
+@@ -547,36 +548,37 @@
+         return ret
+ 
+     def __iadd__(self, other: ParseResults) -> ParseResults:
+-        if not isinstance(other, ParseResults):
+-            return NotImplemented
+-        if not other:
++        with perfmark.region("lt-180"):
++            if not isinstance(other, ParseResults):
++                return NotImplemented
++            if not other:
++                return self
++
++            if other._tokdict:
++                offset = len(self._toklist)
++                # addoffset = lambda a: offset if a < 0 else a + offset
++                otheritems = other._tokdict.items()
++                otherdictitems = [
++                    # (k, _ParseResultsWithOffset(v[0], addoffset(v[1])))
++                    (
++                        k,
++                        _ParseResultsWithOffset(
++                            v.result,
++                            # addoffset(v[1])
++                            (offset if v.offset < 0 else v.offset + offset),
++                        ),
++                    )
++                    for k, vlist in otheritems
++                    for v in vlist
++                ]
++                for k, v in otherdictitems:
++                    self[k] = v
++                    if isinstance(v.result, ParseResults):
++                        v.result._parent = self
++
++            self._toklist += other._toklist
++            self._all_names |= other._all_names
+             return self
+-
+-        if other._tokdict:
+-            offset = len(self._toklist)
+-            # addoffset = lambda a: offset if a < 0 else a + offset
+-            otheritems = other._tokdict.items()
+-            otherdictitems = [
+-                # (k, _ParseResultsWithOffset(v[0], addoffset(v[1])))
+-                (
+-                    k,
+-                    _ParseResultsWithOffset(
+-                        v.result,
+-                        # addoffset(v[1])
+-                        (offset if v.offset < 0 else v.offset + offset),
+-                    ),
+-                )
+-                for k, vlist in otheritems
+-                for v in vlist
+-            ]
+-            for k, v in otherdictitems:
+-                self[k] = v
+-                if isinstance(v.result, ParseResults):
+-                    v.result._parent = self
+-
+-        self._toklist += other._toklist
+-        self._all_names |= other._all_names
+-        return self
+ 
+     def __radd__(self, other) -> ParseResults:
+         if isinstance(other, int) and other == 0:

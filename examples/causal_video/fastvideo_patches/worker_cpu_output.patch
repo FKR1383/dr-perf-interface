@@ -1,0 +1,97 @@
+--- a/fastvideo/worker/multiproc_executor.py
++++ b/fastvideo/worker/multiproc_executor.py
+@@ -144,6 +144,8 @@
+ 
+         # Get extra dict (contains audio, peak_memory_mb, etc.)
+         extra = responses[0].get("extra", {})
++        if os.environ.get("FASTVIDEO_WORKER_CPU_OUTPUT") == "1":
++            extra["_worker_video_u8"] = responses[0].get("worker_video_u8")
+ 
+         result_batch = ForwardBatch(data_type=forward_batch.data_type,
+                                     output=output,
+@@ -706,12 +708,34 @@
+                         logging_info = None
+                         if envs.FASTVIDEO_STAGE_LOGGING:
+                             logging_info = output_batch.logging_info
+-                        # result tensor shared by CUDA IPC to avoid serialization overhead
++                        # Optional measured worker->parent transfer for runtimes without
++                        # cross-process CUDA events. Keep pixel quantization on this
++                        # worker's GPU, and copy both outputs into CPU shared memory
++                        # before the pipe sends tensor descriptors to the parent.
+                         result = output_batch.output
+                         extra = output_batch.extra or {}
+                         extra["peak_memory_mb"] = (torch.cuda.max_memory_allocated() / (1024 * 1024))
++                        worker_video_u8 = None
++                        if os.environ.get("FASTVIDEO_WORKER_CPU_OUTPUT") == "1":
++                            if not isinstance(result, torch.Tensor) or result.device.type != "cuda":
++                                raise RuntimeError("worker CPU output requires a CUDA output tensor")
++                            pixel_video = (fastvideo_args.output_type != "latent"
++                                           and not extra.get("audio_only")
++                                           and result.ndim == 5 and result.shape[1] == 3)
++                            # Allocate shared CPU storage first so the D2H copies
++                            # write directly to what the parent will receive.
++                            result_cpu = torch.empty_like(result, device="cpu").share_memory_()
++                            result_cpu.copy_(result)
++                            if pixel_video:
++                                vid_u8_gpu = (result * 255).clamp_(0, 255).to(torch.uint8)
++                                vid_u8_gpu = vid_u8_gpu.permute(2, 0, 1, 3, 4)
++                                worker_video_u8 = torch.empty_like(
++                                    vid_u8_gpu, device="cpu").share_memory_()
++                                worker_video_u8.copy_(vid_u8_gpu)
++                            result = result_cpu
+                         self.pipe.send({
+                             "output_batch": result,
++                            "worker_video_u8": worker_video_u8,
+                             "logging_info": logging_info,
+                             "extra": extra,
+                             "trajectory_latents": output_batch.trajectory_latents,
+--- a/fastvideo/entrypoints/video_generator.py
++++ b/fastvideo/entrypoints/video_generator.py
+@@ -815,7 +815,8 @@
+         # *do* ask for the latent samples via ``return_frames=True``.
+         # ``skip_pixel_prealloc`` also gates the slow-path warning.
+         needs_samples_out = batch.return_frames
+-        skip_pixel_prealloc = is_latent_output or not needs_samples_out
++        worker_cpu_output = os.environ.get("FASTVIDEO_WORKER_CPU_OUTPUT") == "1"
++        skip_pixel_prealloc = is_latent_output or not needs_samples_out or worker_cpu_output
+         if skip_pixel_prealloc:
+             samples = torch.empty(0, device='cpu')
+         else:
+@@ -833,6 +834,8 @@
+         if output_batch.output is None:
+             raise RuntimeError("Forward execution returned no output tensor. "
+                                "This usually means the executor/pipeline failed earlier.")
++        worker_video_u8 = (output_batch.extra.pop("_worker_video_u8", None)
++                           if worker_cpu_output else None)
+ 
+         audio_only = bool(output_batch.extra.get("audio_only"))
+         if not needs_samples_out:
+@@ -845,6 +848,10 @@
+             # Audio-only return-frames requests expose the small placeholder
+             # without warning about expected video shape.
+             samples = output_batch.output.cpu()
++        elif worker_cpu_output:
++            if output_batch.output.device.type != "cpu":
++                raise RuntimeError("worker CPU output did not arrive on CPU")
++            samples = output_batch.output
+         elif output_batch.output.shape == samples.shape:
+             samples.copy_(output_batch.output)
+         else:
+@@ -903,9 +910,14 @@
+             # [0, 1] wrapped mod 256 in the old unclamped cast.
+             # (Equivalence is SSIM-gated, not bit-exact: float->uint8
+             # differs <=1 LSB CPU vs GPU.)
+-            src = output_batch.output
+-            vid_u8 = (src * 255).clamp_(0, 255).to(torch.uint8)
+-            vid_u8 = rearrange(vid_u8, "b c t h w -> t b c h w").cpu()
++            if worker_cpu_output:
++                if worker_video_u8 is None or worker_video_u8.device.type != "cpu":
++                    raise RuntimeError("worker GPU-quantized frames were not transferred")
++                vid_u8 = worker_video_u8
++            else:
++                src = output_batch.output
++                vid_u8 = (src * 255).clamp_(0, 255).to(torch.uint8)
++                vid_u8 = rearrange(vid_u8, "b c t h w -> t b c h w").cpu()
+             frames = [
+                 torchvision.utils.make_grid(x, nrow=6).permute(1, 2, 0).squeeze(-1).contiguous().numpy() for x in vid_u8
+             ]
