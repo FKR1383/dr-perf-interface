@@ -107,8 +107,15 @@ def summary(result):
         return "n/a" if value is None else f"{100 * value:.4g}%"
 
     dr = result["agent_drperf"]
-    lines = ["=== Agent Only ===", f"variables: {names(result['agent_only']['variables'])}",
-             "", "=== Agent + Dr. Perf ==="]
+    lines = ["=== Agent Only ===", f"variables: {names(result['agent_only']['variables'])}"]
+    if "agent_only_measurement" in result:
+        measured = result["agent_only_measurement"]
+        lines += [f"formula:      {measured['formula'] if measured['formula'] is not None else 'n/a'}",
+                  f"irregularity: {percent(measured['irregularity'])}",
+                  f"status:       {measured['status']}"]
+        if measured["status"] != "ok" and measured.get("details", {}).get("message"):
+            lines.append(f"reason:       {measured['details']['message']}")
+    lines += ["", "=== Agent + Dr. Perf ==="]
     for a in dr["attempts"]:
         lines += ["", f"attempt {a['attempt']}", f"  variables:    {names(a['variables'])}",
                   f"  formula:      {a['formula'] if a['formula'] is not None else 'n/a'}",

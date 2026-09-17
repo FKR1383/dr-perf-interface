@@ -6,9 +6,9 @@ import shutil
 import subprocess
 
 try:
-    from .results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result
+    from .results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result, validate_schema
 except ImportError:
-    from results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result
+    from results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result, validate_schema
 
 HERE = Path(__file__).resolve().parent
 
@@ -72,6 +72,10 @@ def invoke(executable, competitor, workspace, control, prompt, max_attempts=MAX_
     if proc.returncode:
         raise EvaluationError(f"{competitor}: Codex exited with status {proc.returncode}; see logs")
     try:
-        return validate_result(read_json(output), competitor, max_attempts)
+        value = read_json(output)
+        if competitor == "agent_only_instrumentation":
+            validate_schema(value, read_json(HERE / "schemas" / f"{competitor}.json"))
+            return value
+        return validate_result(value, competitor, max_attempts)
     except EvaluationError as exc:
         raise EvaluationError(f"{competitor}: invalid structured Codex output: {exc}") from exc

@@ -12,11 +12,12 @@ import sys
 import tempfile
 
 try:
-    from . import codex_runner, drperf_measure
+    from . import baseline_measure, codex_runner, drperf_measure
     from .results import MAX_ATTEMPTS, EvaluationError, best_attempt, comparison, summary, variables, write_json
 except ImportError:
     import codex_runner
     import drperf_measure
+    import baseline_measure
     from results import MAX_ATTEMPTS, EvaluationError, best_attempt, comparison, summary, variables, write_json
 
 HERE = Path(__file__).resolve().parent
@@ -156,6 +157,25 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
                             for path in base.rglob("*"):
                                 if path.is_file() and "codex-home" not in path.relative_to(base).parts:
                                     captured[f"{prefix}/{path.relative_to(base)}"] = path.read_bytes()
+            # Neither discovery competitor can receive post-hoc baseline feedback.
+            # Start from the original snapshot, not the experimental agent's edits.
+            print("Measuring Agent Only's frozen feature set...", file=sys.stderr, flush=True)
+            with tempfile.TemporaryDirectory(prefix="drperf-baseline-") as session:
+                session = Path(session)
+                target = session / "workspace"
+                shutil.copytree(snapshot, target)
+                control, journal = session / "control", session / "measurement"
+                try:
+                    outputs["agent_only_measurement"] = baseline_measure.measure(
+                        executable, target, control, journal, region,
+                        rebase_command(command, workspace, target),
+                        outputs["agent_only"]["variables"], model)
+                finally:
+                    for base, prefix in ((control, "logs/agent_only_instrumentation"),
+                                         (journal, "measurements/agent_only")):
+                        for path in base.rglob("*"):
+                            if path.is_file() and "codex-home" not in path.relative_to(base).parts:
+                                captured[f"{prefix}/{path.relative_to(base)}"] = path.read_bytes()
             result = {"region": region, **outputs, "search": search_status}
             if ground_truth is not None:
                 truth = variables(ground_truth)
@@ -171,6 +191,7 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
         if result is not None:
             for competitor in ("agent_only", "agent_drperf"):
                 write_json(results_dir / f"{competitor}.json", result[competitor])
+            write_json(results_dir / "agent_only_measurement.json", result["agent_only_measurement"])
             write_json(results_dir / "result.json", result)
     return result
 

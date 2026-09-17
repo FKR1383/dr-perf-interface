@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "reason", "bindings"],
+  "properties": {
+    "status": {"type": "string", "enum": ["ready", "unsupported"]},
+    "reason": {"type": "string"},
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["variable", "expression", "location"],
+        "properties": {
+          "variable": {"type": "string", "minLength": 1},
+          "expression": {"type": "string", "minLength": 1},
+          "location": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

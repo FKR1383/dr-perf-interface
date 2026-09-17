@@ -9,6 +9,12 @@ of a marked region:
   the region, and keeps using measurements to revise its answer until it finds
   a formula below the irregularity target or uses its experiment budget.
 
+After both discovery sessions finish, the harness also measures **Agent Only's
+frozen answer**. A separate Codex invocation only instruments those exact
+features and rebuilds a fresh copy; it cannot select features or run performance
+experiments. After that invocation exits, the harness runs Dr. Perf once.
+Neither competitor receives this feedback. Both discovery prompts are unchanged.
+
 Both agents return source-level names or expressions, such as `n` or
 `len(queue)`. The agent chooses the variables; the harness runs the evaluation
 and records the results. Ground truth is optional.
@@ -40,6 +46,9 @@ not copied.
 
 For a CPU machine-learning example with generated numeric inputs, see the
 [Rodinia Backpropagation case study](case_studies/rodinia_backprop/README.md).
+The [Rodinia k-means case study](case_studies/rodinia_kmeans/README.md) measures
+clustering through convergence and tests data-dependent work using generated
+points, including different coordinate sets with the same dimensions.
 The earlier [zlib compression case study](case_studies/zlib/README.md) includes
 fixed file workloads and a separate validation step.
 
@@ -60,16 +69,31 @@ Agent + Dr. Perf attempt and its final selection. Each attempt includes:
   Lower values mean less unexplained cost in that run.
 - **Status:** whether the measurement produced a model, or why it failed.
 
+Agent Only's section also shows its post-hoc formula, irregularity, and
+measurement status, computed by the same Dr. Perf adapter. These are not
+predictions supplied by Agent Only. Its original variable-only answer remains
+in `agent_only.json`; the measured result is stored separately in
+`agent_only_measurement.json` and under `agent_only_measurement` in `result.json`.
+
+The complete static answer is preserved. If it exceeds four states, has labels
+too long for Dr. Perf, contains features that cannot be faithfully exposed as
+integer entry state, or otherwise cannot be measured, the score and formula are
+`null` (`n/a` in the terminal), with an explicit status and reason. No features
+are dropped or substituted to obtain a score. The empty answer remains valid
+for discovery, but Dr. Perf cannot currently fit it.
+
 The default target is **strictly below 10% irregularity**, with a hard limit of
-**ten measurements per evaluation**, including failures. The agent must keep
+**ten measurements in the experimental search**, including failures. The agent must keep
 testing new candidate sets while the target is unmet and attempts remain.
 Worse attempts guide further investigation;
 they do not justify stopping. Successfully measured sets cannot be repeated,
 but failed measurements can be repaired and retried.
 
 Use `--max-attempts 5` for a smaller search and `--target-irregularity 0.05` for
-a target below 5%. Budgets above ten are rejected. This limits measurements,
-not elapsed time. The target uses a fraction, not a percentage. Exactly the
+a target below 5%. Budgets above ten are rejected. This limits search measurements,
+not elapsed time. The separate baseline step adds at most one Codex instrumentation
+invocation and one workload measurement, with no measurement retries or feedback.
+It does not consume the search budget. The target uses a fraction, not a percentage. Exactly the
 threshold does not meet it. A measurement with `status: ok` can still be above
 the target.
 
@@ -86,7 +110,9 @@ agent replies remain in the logs. The terminal and `result.json` report the
 best attempt, target, whether it was met, attempts used, and the stopping reason.
 Reaching the budget above the
 target saves the selected model and returns exit code **2**; reaching the
-target returns **0**. Missing models and execution/contract errors return **1**.
+target returns **0**. Missing experimental models and execution/contract errors
+return **1**. An unavailable baseline measurement is reported without discarding
+the experimental result or changing these exit codes.
 
 Failed measurements have `null` formula and irregularity in JSON, displayed
 as `n/a` in the terminal. A measured irregularity of zero is a successful
@@ -99,6 +125,11 @@ both answers, separate `agent_only.json` and `agent_drperf.json` files, and
 `logs/` and `measurements/` for inspection. JSON stores irregularity as an exact
 fraction, such as `0.021`; the terminal displays it as a percentage, `2.1%`.
 By default, results are saved in a temporary directory that remains after the run.
+
+Baseline raw data, the feature-to-code bindings, and the instrumentation source
+patch are saved under `measurements/agent_only/`. The instrumentation invocation's
+log is under `logs/agent_only_instrumentation/`. Inspect those bindings when
+reviewing how complex expressions or library state were exposed.
 
 Measurement details also list up to five functions contributing the most
 unexplained cost, with their shares of total cost. These guide source inspection
@@ -136,6 +167,12 @@ workspace and its own prior measurements; it never receives Agent Only's answer.
 Continuation logs are saved under `logs/agent_drperf/continuation-NNN/`.
 It is instructed not to optimize or change the program's behavior. The
 copies are discarded after evaluation; your original source is left intact.
+
+The post-hoc baseline instrumentation uses a third fresh copy of the original
+snapshot, after both competitors' workspaces have been deleted. It receives only
+the frozen static feature list and build/region context, with no experimental
+answer or measurements. Its Codex session exits before the harness measures the
+instrumented program. The static answer cannot be revised based on that result.
 
 ## Tests
 

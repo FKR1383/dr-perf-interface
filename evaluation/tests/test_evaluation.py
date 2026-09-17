@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from evaluation import codex_runner, drperf_measure as measurement, run
+from evaluation import baseline_measure, codex_runner, drperf_measure as measurement, run
 from evaluation.results import EvaluationError, best_attempt, comparison, summary, validate_result, write_json
 
 
@@ -101,6 +101,18 @@ class ResultsTests(unittest.TestCase):
                          {"exact_match": False, "missing": ["entries"], "extra": ["other"]})
         self.assertTrue(comparison([], [])["exact_match"])
         self.assertTrue(comparison(["n", "n"], ["n"])["exact_match"])
+
+    def test_posthoc_baseline_summary_and_unavailable_reason(self):
+        data = {"agent_only": {"variables": ["n"]}, "agent_drperf": result(),
+                "agent_only_measurement": {"variables": ["n"], "formula": "4*n + 20",
+                                           "irregularity": 0.1234, "status": "ok"}}
+        text = summary(data).split("=== Agent + Dr. Perf ===")[0]
+        self.assertIn("formula:      4*n + 20", text)
+        self.assertIn("irregularity: 12.34%", text)
+        data["agent_only_measurement"] = measurement.failed("unsupported_state_count", "five features")
+        text = summary(data).split("=== Agent + Dr. Perf ===")[0]
+        self.assertIn("irregularity: n/a", text)
+        self.assertIn("reason:       five features", text)
 
 
 class MeasurementTests(unittest.TestCase):
@@ -394,7 +406,7 @@ class HarnessTests(unittest.TestCase):
                     self.assertNotIn("Agent + Dr. Perf", kwargs["input"])
                     self.assertNotIn("Required irregularity", kwargs["input"])
                     answer = {"variables": ["n", "n"]}
-                else:
+                elif len(invocations) == 1:
                     old_cwd, old_control, old_home = invocations[0]
                     for path in (old_cwd, old_control, old_home):
                         self.assertFalse(path.exists())
@@ -413,6 +425,20 @@ class HarnessTests(unittest.TestCase):
                     finally:
                         os.chdir(previous)
                     answer = result([fitted(formula="4*n + 20", irregularity=0)])
+                else:
+                    self.assertEqual(len(invocations), 2)
+                    for old_cwd, old_control, old_home in invocations:
+                        for path in (old_cwd, old_control, old_home):
+                            self.assertFalse(path.exists())
+                    self.assertEqual(command[command.index("--sandbox") + 1], "workspace-write")
+                    self.assertNotIn("--add-dir", command)
+                    self.assertNotIn("baseline-secret", kwargs["input"])
+                    self.assertNotIn("experimental-log", kwargs["input"])
+                    self.assertIn('Frozen feature labels (JSON): ["n"]', kwargs["input"])
+                    self.assertFalse((cwd.parent / "measurement-config.json").exists())
+                    (cwd / "app.py").write_text("post-hoc instrumentation")
+                    answer = {"status": "ready", "reason": "",
+                              "bindings": [{"variable": "n", "expression": "n", "location": "app.py:1"}]}
                 invocations.append((cwd, control, private_home))
                 kwargs["stdout"].write("baseline-secret" if len(invocations) == 1 else "experimental-log")
                 write_json(control / "final.json", answer)
@@ -421,17 +447,29 @@ class HarnessTests(unittest.TestCase):
             with patch.dict(os.environ, {"CODEX_HOME": str(auth)}), \
                  patch.object(codex_runner.shutil, "which", return_value="/fake/codex"), \
                  patch.object(codex_runner.subprocess, "run", side_effect=fake_codex), \
-                 patch.object(measurement, "check_build"):
+                 patch.object(measurement, "check_build"), \
+                 patch.object(measurement.runner, "run", side_effect=raw_run) as baseline_run:
                 value = run.evaluate(source, "parse", ["python3", str(source / "app.py")],
                                      output, ground_truth=["n", "entries"], target_irregularity=0.05)
-            self.assertEqual(len(invocations), 2)
+            self.assertEqual(len(invocations), 3)
+            self.assertEqual(baseline_run.call_count, 1)
             self.assertEqual((source / "app.py").read_text(), "original local edit")
             self.assertEqual(value["agent_only"], {"variables": ["n"]})
+            self.assertEqual(value["agent_only_measurement"]["formula"], "4*n + 20")
+            self.assertEqual(value["agent_only_measurement"]["irregularity"], 0)
+            self.assertEqual(value["search"]["attempts_used"], 1)
             self.assertTrue(value["search"]["target_met"])
             self.assertEqual(value["comparison"]["agent_only"]["missing"], ["entries"])
             self.assertTrue((output / "result.json").is_file())
             self.assertFalse(any("auth.json" in str(p) for p in output.rglob("*")))
             self.assertEqual((output / "logs/agent_only/codex.log").read_text(), "baseline-secret")
+            self.assertTrue((output / "measurements/agent_only/raw/run.1.json").is_file())
+            self.assertTrue((output / "measurements/attempt-001/raw/run.1.json").is_file())
+            self.assertEqual(json.loads((output / "agent_only.json").read_text()), {"variables": ["n"]})
+            self.assertEqual(json.loads((output / "agent_only_measurement.json").read_text()),
+                             value["agent_only_measurement"])
+            self.assertIn("post-hoc instrumentation",
+                          (output / "measurements/agent_only/instrumentation.patch").read_text())
 
     def test_invalid_codex_json_and_missing_cli(self):
         with patch.object(codex_runner.shutil, "which", return_value=None):
