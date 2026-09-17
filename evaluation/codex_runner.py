@@ -6,9 +6,9 @@ import shutil
 import subprocess
 
 try:
-    from .results import EvaluationError, read_json, validate_result
+    from .results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result
 except ImportError:
-    from results import EvaluationError, read_json, validate_result
+    from results import MAX_ATTEMPTS, EvaluationError, read_json, validate_result
 
 HERE = Path(__file__).resolve().parent
 
@@ -24,7 +24,7 @@ def find_codex():
     return executable
 
 
-def invoke(executable, competitor, workspace, control, prompt, max_attempts=5,
+def invoke(executable, competitor, workspace, control, prompt, max_attempts=MAX_ATTEMPTS,
            model=None, journal=None):
     """The caller deletes control (including the private Codex home) before
     starting the other competitor. Only config/auth, never history, is copied.

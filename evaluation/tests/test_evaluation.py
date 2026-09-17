@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 from evaluation import codex_runner, drperf_measure as measurement, run
-from evaluation.results import EvaluationError, comparison, summary, validate_result, write_json
+from evaluation.results import EvaluationError, best_attempt, comparison, summary, validate_result, write_json
 
 
 def fitted(attempt=1, names=None, formula="4*n + 20", irregularity=0.00123, status="ok"):
@@ -39,6 +39,14 @@ def raw_run(command, out):
 
 
 class ResultsTests(unittest.TestCase):
+    def test_best_attempt_ignores_failures_and_breaks_ties(self):
+        failed = fitted(formula=None, irregularity=None, status="workload_failed")
+        candidates = [failed, fitted(attempt=2, names=["n", "m"], irregularity=0.2),
+                      fitted(attempt=3, names=["n"], irregularity=0.2),
+                      fitted(attempt=4, names=["m"], irregularity=0.2)]
+        self.assertEqual(best_attempt(candidates)["attempt"], 3)
+        self.assertIsNone(best_attempt([failed]))
+
     def test_static_normalization_and_empty_set(self):
         self.assertEqual(validate_result({"variables": ["z", "n", "z"]}, "agent_only"),
                          {"variables": ["n", "z"]})
@@ -144,11 +152,17 @@ class MeasurementTests(unittest.TestCase):
         high = measurement.derive.Regime([(10,), (20,), (30,)], 1)
         low.c, high.c = 100, 1000
         low.irr, high.irr = {(1,): 10}, {(10,): 1}
+        low.by_sym_irr = {("app", "search"): 10 / 3}
+        high.by_sym_irr = {("app", "sort"): 1 / 3}
         with patch.object(measurement.derive, "derive", return_value=[low, high]):
             value = measurement.analyze(self.directory / "raw", "parse", ["n"])
         self.assertEqual(value["irregularity"], 11 / 3311)
         self.assertEqual(len(value["details"]["regimes"]), 2)
         self.assertIn("n <= 3", value["formula"])
+        functions = value["details"]["unexplained_functions"]
+        self.assertEqual([r["function"] for r in functions], ["search", "sort"])
+        self.assertAlmostEqual(functions[0]["share_of_total_cost"], 10 / 3311)
+        self.assertAlmostEqual(sum(r["share_of_total_cost"] for r in functions), value["irregularity"])
 
     def test_workload_failure_and_missing_build(self):
         with patch.object(measurement, "check_build"), \
@@ -190,6 +204,159 @@ class MeasurementTests(unittest.TestCase):
         self.assertEqual([r["status"] for r in records], ["workload_failed", "measurement_error"])
         self.assertTrue(all(r["irregularity"] is None for r in records))
 
+    def test_repeat_success_rejected_but_failed_candidate_can_be_repaired(self):
+        config = {"workspace": str(Path.cwd()), "journal": str(self.directory / "journal"),
+                  "region": "parse", "command": ["program"], "max_attempts": 5}
+        with patch.object(measurement, "check_build"), \
+             patch.object(measurement.runner, "run", side_effect=[(7, "failed", [])]):
+            first = measurement.attempt(config, ["n"])
+        self.assertEqual(first["status"], "workload_failed")
+        with patch.object(measurement, "check_build"), \
+             patch.object(measurement.runner, "run", side_effect=raw_run) as measured:
+            repaired = measurement.attempt(config, ["n"])
+            self.assertEqual(repaired["status"], "ok")
+            with self.assertRaisesRegex(EvaluationError, "already measured"):
+                measurement.attempt(config, ["n", "n"])
+            self.assertEqual(measured.call_count, 1)
+        self.assertEqual(len(list(Path(config["journal"]).glob("attempt-*"))), 2)
+
+    def test_measurement_hard_ceiling_counts_failures_and_blocks_eleventh_run(self):
+        config = {"workspace": str(Path.cwd()), "journal": str(self.directory / "journal"),
+                  "region": "parse", "command": ["program"], "max_attempts": 20}
+        with patch.object(measurement, "check_build"), \
+             patch.object(measurement.runner, "run", return_value=(7, "failed", [])) as measured:
+            for i in range(10):
+                self.assertEqual(measurement.attempt(config, ["n"])["attempt"], i + 1)
+            with self.assertRaisesRegex(EvaluationError, "limit"):
+                measurement.attempt(config, ["n"])
+        self.assertEqual(measured.call_count, 10)
+        self.assertEqual(len(measurement.recorded_attempts(config)), 10)
+
+
+class SearchTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.workspace = self.root / "workspace"
+        self.workspace.mkdir()
+        self.config = {"max_attempts": 5, "target_irregularity": 0.1,
+                       "workspace": str(self.workspace), "journal": str(self.root / "journal")}
+
+    def search(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            return run.search("codex", self.workspace, self.root / "control",
+                              "fixed experimental prompt", self.config, "model-name")
+
+    def test_continue_with_same_workspace_budget_and_complete_history(self):
+        records = [fitted(irregularity=0.47),
+                   fitted(attempt=2, names=["n", "m"], irregularity=0.1),
+                   fitted(attempt=3, names=["n", "n*m"], irregularity=0.09)]
+        controls, prompts = [], []
+
+        def invoke(executable, competitor, workspace, control, prompt, maximum, model, journal):
+            self.assertEqual(workspace, self.workspace)
+            self.assertEqual(maximum, 5)
+            self.assertEqual(model, "model-name")
+            self.assertEqual(journal, Path(self.config["journal"]))
+            control.mkdir()
+            controls.append(control)
+            prompts.append(prompt)
+            marker = workspace / "instrumentation"
+            if len(controls) == 1:
+                marker.write_text("preserved edits")
+            else:
+                self.assertEqual(marker.read_text(), "preserved edits")
+            return result(records[:len(controls)], selected=len(controls) - 1)
+
+        with patch.object(codex_runner, "invoke", side_effect=invoke), \
+             patch.object(measurement, "recorded_attempts", side_effect=[records[:1], records[:2], records]):
+            answer, status = self.search()
+        self.assertEqual(answer["attempts"], records)
+        self.assertEqual(status["stop_reason"], "target_met")
+        self.assertTrue(status["target_met"])
+        self.assertEqual(status["attempts_used"], 3)
+        self.assertEqual(status["continuations"], 2)
+        self.assertEqual(controls[1], controls[0] / "continuation-001")
+        self.assertIn('"irregularity": 0.47', prompts[1])
+        self.assertIn("next attempt is 2", prompts[1])
+        self.assertIn("3 experiments remaining", prompts[2])
+
+    def test_budget_exhaustion_preserves_earlier_best(self):
+        self.config["max_attempts"] = 3
+        records = [fitted(irregularity=0.47),
+                   fitted(attempt=2, names=["level", "n"], irregularity=0.99),
+                   fitted(attempt=3, names=["n", "n*level"], irregularity=0.97)]
+        with patch.object(codex_runner, "invoke", side_effect=[result(records[:1]), result(records)]) as invoke, \
+             patch.object(measurement, "recorded_attempts", side_effect=[records[:1], records]):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 2)
+        self.assertEqual(answer["final_irregularity"], 0.47)
+        self.assertFalse(status["target_met"])
+        self.assertEqual(status["stop_reason"], "attempt_limit_reached")
+        self.assertEqual(status["attempts_used"], 3)
+
+    def test_ten_attempts_report_best_even_if_agent_selected_last(self):
+        self.config["max_attempts"] = 10
+        scores = [0.47, 0.36, 0.31, 0.27, 0.33, 0.99, 0.45, 0.42, 0.41, 0.40]
+        records = [fitted(attempt=i + 1, names=[f"n+{i}"], irregularity=score)
+                   for i, score in enumerate(scores)]
+        with patch.object(codex_runner, "invoke", return_value=result(records, selected=9)) as invoke, \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 1)
+        self.assertEqual(answer["selected_variables"], records[3]["variables"])
+        self.assertEqual(answer["final_irregularity"], 0.27)
+        self.assertEqual(status["best_attempt"], 4)
+        self.assertEqual(status["attempts_used"], 10)
+        self.assertEqual(status["stop_reason"], "attempt_limit_reached")
+
+    def test_previous_target_meeting_attempt_stops_without_more_experiments(self):
+        records = [fitted(irregularity=0.09), fitted(attempt=2, names=["m"], irregularity=0.8)]
+        with patch.object(codex_runner, "invoke", return_value=result(records, selected=1)) as invoke, \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 1)
+        self.assertEqual(answer["final_irregularity"], 0.09)
+        self.assertTrue(status["target_met"])
+        self.assertEqual(status["best_attempt"], 1)
+
+    def test_exact_threshold_is_unmet_and_custom_lower_target_works(self):
+        self.config["max_attempts"] = 1
+        for target, measured, expected in [(0.1, 0.1, False), (0.05, 0.04999, True), (0.1, 0, True)]:
+            with self.subTest(target=target, measured=measured):
+                self.config["target_irregularity"] = target
+                records = [fitted(irregularity=measured)]
+                with patch.object(codex_runner, "invoke", return_value=result(records)), \
+                     patch.object(measurement, "recorded_attempts", return_value=records):
+                    _, status = self.search()
+                self.assertEqual(status["target_met"], expected)
+
+    def test_no_measurement_progress_is_bounded_and_not_success(self):
+        records = [fitted(irregularity=0.47)]
+        with patch.object(codex_runner, "invoke", return_value=result(records)) as invoke, \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 3)
+        self.assertFalse(status["target_met"])
+        self.assertEqual(status["stop_reason"], "agent_stopped_without_progress")
+        self.assertEqual(status["attempts_used"], 1)
+        self.assertEqual(answer["attempts"], records)
+
+    def test_continuation_cannot_rewrite_previous_measurements(self):
+        first = [fitted(irregularity=0.47)]
+        tampered = [fitted(irregularity=0.3), fitted(attempt=2, names=["m"], irregularity=0.09)]
+        with patch.object(codex_runner, "invoke", side_effect=[result(first), result(tampered, selected=1)]), \
+             patch.object(measurement, "recorded_attempts", side_effect=[first, tampered]), \
+             self.assertRaisesRegex(EvaluationError, "changed earlier"):
+            self.search()
+
+    def test_output_must_match_recorded_measurements(self):
+        with patch.object(codex_runner, "invoke", return_value=result()), \
+             patch.object(measurement, "recorded_attempts", return_value=[fitted(irregularity=0.5)]), \
+             self.assertRaisesRegex(EvaluationError, "does not match"):
+            self.search()
+
 
 class HarnessTests(unittest.TestCase):
     def test_substituted_codex_isolation_and_measurement_reconciliation(self):
@@ -225,6 +392,7 @@ class HarnessTests(unittest.TestCase):
                     self.assertEqual(command[command.index("--sandbox") + 1], "read-only")
                     self.assertNotIn("measurement-config", kwargs["input"])
                     self.assertNotIn("Agent + Dr. Perf", kwargs["input"])
+                    self.assertNotIn("Required irregularity", kwargs["input"])
                     answer = {"variables": ["n", "n"]}
                 else:
                     old_cwd, old_control, old_home = invocations[0]
@@ -235,6 +403,8 @@ class HarnessTests(unittest.TestCase):
                     (cwd / "alias.py").write_text("temporary instrumentation")
                     config = json.loads((cwd.parent / "measurement-config.json").read_text())
                     self.assertEqual(config["command"], ["python3", str(cwd / "app.py")])
+                    self.assertEqual(config["target_irregularity"], 0.05)
+                    self.assertIn("strictly below 0.05 (5%)", kwargs["input"])
                     previous = Path.cwd()
                     try:
                         os.chdir(cwd)
@@ -253,10 +423,11 @@ class HarnessTests(unittest.TestCase):
                  patch.object(codex_runner.subprocess, "run", side_effect=fake_codex), \
                  patch.object(measurement, "check_build"):
                 value = run.evaluate(source, "parse", ["python3", str(source / "app.py")],
-                                     output, ground_truth=["n", "entries"])
+                                     output, ground_truth=["n", "entries"], target_irregularity=0.05)
             self.assertEqual(len(invocations), 2)
             self.assertEqual((source / "app.py").read_text(), "original local edit")
             self.assertEqual(value["agent_only"], {"variables": ["n"]})
+            self.assertTrue(value["search"]["target_met"])
             self.assertEqual(value["comparison"]["agent_only"]["missing"], ["entries"])
             self.assertTrue((output / "result.json").is_file())
             self.assertFalse(any("auth.json" in str(p) for p in output.rglob("*")))
@@ -283,13 +454,34 @@ class HarnessTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             cases = [["--workspace", temp, "--region", "parse"],
                      ["--workspace", temp + "/missing", "--region", "parse", "--", "./app"],
-                     ["--workspace", temp, "--region", "parse", "--max-attempts", "0", "--", "./app"]]
+                     ["--workspace", temp, "--region", "parse", "--max-attempts", "0", "--", "./app"],
+                     ["--workspace", temp, "--region", "parse", "--max-attempts", "11", "--", "./app"]]
+            cases += [["--workspace", temp, "--region", "parse", "--target-irregularity", target,
+                       "--", "./app"] for target in ["0", "-0.1", "10", "nan", "inf"]]
             for args in cases:
                 err = io.StringIO()
                 with contextlib.redirect_stderr(err):
                     self.assertEqual(run.main(args), 1)
                 self.assertIn("evaluation:", err.getvalue())
                 self.assertNotIn("Traceback", err.getvalue())
+
+    def test_cli_unmet_target_reports_failure_without_discarding_model(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output, err = io.StringIO(), io.StringIO()
+            value = {"region": "parse", "agent_only": {"variables": ["n"]},
+                     "agent_drperf": result([fitted(irregularity=0.47)]),
+                     "search": {"target_irregularity": 0.1, "target_met": False,
+                                "stop_reason": "attempt_limit_reached", "attempts_used": 5, "max_attempts": 5}}
+            with patch.object(run, "evaluate", return_value=value) as evaluated, \
+                 contextlib.redirect_stdout(output), contextlib.redirect_stderr(err):
+                rc = run.main(["--workspace", temp, "--region", "parse",
+                               "--results-dir", temp + "/results", "--", "./app"])
+            self.assertEqual(rc, 2)
+            self.assertEqual(evaluated.call_args.args[4], 10)
+            self.assertIn("final formula:", output.getvalue())
+            self.assertIn("target met:         no", output.getvalue())
+            self.assertIn("irregularity target: <10%", output.getvalue())
+            self.assertIn("target not met", err.getvalue())
 
     def test_cli_no_model_saves_summary_and_returns_failure(self):
         with tempfile.TemporaryDirectory() as temp:

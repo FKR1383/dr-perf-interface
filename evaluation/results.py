@@ -3,6 +3,8 @@ import json
 import math
 from pathlib import Path
 
+MAX_ATTEMPTS = 10
+
 
 class EvaluationError(ValueError):
     pass
@@ -59,13 +61,13 @@ def validate_schema(value, schema, where="result"):
             raise EvaluationError(f"{where}: number is outside the allowed range")
 
 
-def validate_result(value, competitor, max_attempts=5):
+def validate_result(value, competitor, max_attempts=MAX_ATTEMPTS):
     schema = read_json(Path(__file__).parent / "schemas" / f"{competitor}.json")
     validate_schema(value, schema)
     if competitor == "agent_only":
         value["variables"] = variables(value["variables"])
         return value
-    if len(value["attempts"]) > max_attempts:
+    if len(value["attempts"]) > min(max_attempts, MAX_ATTEMPTS):
         raise EvaluationError("experiment limit exceeded")
     for index, attempt in enumerate(value["attempts"], 1):
         attempt["variables"] = variables(attempt["variables"])
@@ -82,6 +84,13 @@ def validate_result(value, competitor, max_attempts=5):
                a["irregularity"] == value["final_irregularity"] for a in value["attempts"]):
         raise EvaluationError("final selection must match a recorded attempt")
     return value
+
+
+def best_attempt(attempts):
+    """Rank valid measurements; failures never beat a measured model."""
+    return min((a for a in attempts if a["status"] == "ok"),
+               key=lambda a: (a["irregularity"], len(a["variables"]), a["attempt"]),
+               default=None)
 
 
 def comparison(predicted, truth):
@@ -107,6 +116,14 @@ def summary(result):
     lines += ["", f"selected variables: {names(dr['selected_variables'])}",
               f"final formula:      {dr['final_formula'] if dr['final_formula'] is not None else 'n/a'}",
               f"final irregularity: {percent(dr['final_irregularity'])}"]
+    if "search" in result:
+        search = result["search"]
+        if search.get("best_attempt") is not None:
+            lines.append(f"best attempt:       {search['best_attempt']}")
+        lines += ["", f"irregularity target: <{percent(search['target_irregularity'])}",
+                  f"target met:         {'yes' if search['target_met'] else 'no'}",
+                  f"search stopped:     {search['stop_reason']}",
+                  f"attempts used:      {search['attempts_used']}/{search['max_attempts']}"]
     if "comparison" in result:
         lines += ["", f"ground truth: {names(result['ground_truth'])}"]
         for label, c in result["comparison"].items():

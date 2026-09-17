@@ -14,9 +14,9 @@ import derive  # noqa: E402
 import runner  # noqa: E402
 
 try:
-    from .results import EvaluationError, read_json, variables, write_json
+    from .results import MAX_ATTEMPTS, EvaluationError, read_json, variables, write_json
 except ImportError:
-    from results import EvaluationError, read_json, variables, write_json
+    from results import MAX_ATTEMPTS, EvaluationError, read_json, variables, write_json
 
 
 def check_build():
@@ -64,6 +64,7 @@ def _analyze(out, region, expected):
                       state_points=len(vecs), calls=sum(trig.values()))
     inside, outside = runner.marker_cost(rs)
     parts, details, total, irregular = [], [], 0.0, 0.0
+    unexplained = {}
     for r in regimes:
         # Same calibration and order as bin/drperf.cost_lines, before irr_share.
         r.c -= inside + nested * (inside + outside)
@@ -80,6 +81,9 @@ def _analyze(out, region, expected):
                         "dependent_states": [names[j] for j in sorted(r.dependent)]})
         total += sum(r.total(v) for v in r.values)
         irregular += sum(r.irr.values())
+        for (module, function), cost in r.by_sym_irr.items():
+            key = (module, function)
+            unexplained[key] = unexplained.get(key, 0.0) + cost * len(r.values)
     # One regime uses irr_share verbatim. Multiple regimes use the same ratio
     # across their disjoint state points, NOT an unweighted mean of percentages.
     share = details[0]["irregularity"] if len(regimes) == 1 else (irregular / total if total else 0.0)
@@ -87,6 +91,11 @@ def _analyze(out, region, expected):
         return failed("invalid_measurement", "combined irregularity is outside [0, 1]")
     return {"formula": "; ".join(parts), "irregularity": share, "status": "ok",
             "details": {"regimes": details, "calls": sum(trig.values()),
+                        "unexplained_functions": [
+                            {"module": module, "function": function,
+                             "share_of_total_cost": cost / total if total else 0.0}
+                            for (module, function), cost in
+                            sorted(unexplained.items(), key=lambda pair: pair[1], reverse=True)[:5]],
                         "excluded_nested_regions": derive.nested_calls(recs, region)}}
 
 
@@ -117,8 +126,12 @@ def attempt(config, candidate):
     journal = Path(config["journal"])
     journal.mkdir(exist_ok=True)
     index = len(list(journal.glob("attempt-*"))) + 1
-    if index > config["max_attempts"]:
+    if index > min(config["max_attempts"], MAX_ATTEMPTS):
         raise EvaluationError("experiment limit reached")
+    for path in journal.glob("attempt-*/measurement.json"):
+        previous = read_json(path)
+        if previous["status"] == "ok" and variables(previous["variables"]) == candidate:
+            raise EvaluationError("this variable set was already measured successfully; test a new set")
     out = journal / f"attempt-{index:03d}"
     out.mkdir()  # Never overwrite an existing experiment.
     write_json(out / "request.json", {"variables": candidate})
@@ -139,7 +152,7 @@ def recorded_attempts(config):
 def _recorded_attempts(config):
     records = []
     for index, out in enumerate(sorted(Path(config["journal"]).glob("attempt-*")), 1):
-        if out.name != f"attempt-{index:03d}" or index > config["max_attempts"]:
+        if out.name != f"attempt-{index:03d}" or index > min(config["max_attempts"], MAX_ATTEMPTS):
             raise EvaluationError("invalid measurement journal sequence or experiment limit")
         record = read_json(out / "measurement.json")
         candidate = variables(read_json(out / "request.json")["variables"])
