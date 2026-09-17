@@ -6,7 +6,8 @@ of a marked region:
 - **Agent Only** reads the source and predicts the relevant variables. It cannot
   run the program, profile it, or edit files.
 - **Agent + Dr. Perf** reads the source, chooses variables to try, instruments
-  the region, and uses measurements to revise its answer.
+  the region, and keeps using measurements to revise its answer until it finds
+  a formula below the irregularity target or uses its experiment budget.
 
 Both agents return source-level names or expressions, such as `n` or
 `len(queue)`. The agent chooses the variables; the harness runs the evaluation
@@ -37,6 +38,11 @@ needed to run and, for compiled programs, rebuild the target. Use relative paths
 in scripts and build configuration so they work in the copy. Git metadata is
 not copied.
 
+For a CPU machine-learning example with generated numeric inputs, see the
+[Rodinia Backpropagation case study](case_studies/rodinia_backprop/README.md).
+The earlier [zlib compression case study](case_studies/zlib/README.md) includes
+fixed file workloads and a separate validation step.
+
 The workload must reach the region and vary its state enough to fit a model.
 Dr. Perf supports up to four declared integer states and needs at least
 `max(3, number of states + 2)` distinct state combinations. The harness uses
@@ -54,8 +60,33 @@ Agent + Dr. Perf attempt and its final selection. Each attempt includes:
   Lower values mean less unexplained cost in that run.
 - **Status:** whether the measurement produced a model, or why it failed.
 
-The agent can try up to five candidates by default, stop early, or select an
-earlier attempt. Every attempt remains in the results.
+The default target is **strictly below 10% irregularity**, with a hard limit of
+**ten measurements per evaluation**, including failures. The agent must keep
+testing new candidate sets while the target is unmet and attempts remain.
+Worse attempts guide further investigation;
+they do not justify stopping. Successfully measured sets cannot be repeated,
+but failed measurements can be repaired and retried.
+
+Use `--max-attempts 5` for a smaller search and `--target-irregularity 0.05` for
+a target below 5%. Budgets above ten are rejected. This limits measurements,
+not elapsed time. The target uses a fraction, not a percentage. Exactly the
+threshold does not meet it. A measurement with `status: ok` can still be above
+the target.
+
+The harness checks the recorded measurements. If the agent returns early above
+the target, it invokes the experimental agent again with its previous answer,
+the existing workspace, and the remaining measurement budget. Two consecutive
+continuations that add no measurements end with an explicit unresolved result
+to prevent unlimited retries. Every recorded attempt remains in the results.
+
+The report selects the lowest-irregularity successful measurement, preferring
+fewer states for a tie and then the earliest attempt. This ranking uses verified
+measurements even if the agent's final reply selects a worse attempt. Original
+agent replies remain in the logs. The terminal and `result.json` report the
+best attempt, target, whether it was met, attempts used, and the stopping reason.
+Reaching the budget above the
+target saves the selected model and returns exit code **2**; reaching the
+target returns **0**. Missing models and execution/contract errors return **1**.
 
 Failed measurements have `null` formula and irregularity in JSON, displayed
 as `n/a` in the terminal. A measured irregularity of zero is a successful
@@ -69,13 +100,21 @@ both answers, separate `agent_only.json` and `agent_drperf.json` files, and
 fraction, such as `0.021`; the terminal displays it as a percentage, `2.1%`.
 By default, results are saved in a temporary directory that remains after the run.
 
+Measurement details also list up to five functions contributing the most
+unexplained cost, with their shares of total cost. These guide source inspection
+for the next candidate. Calls with identical declared states are averaged, and
+the current fitter only splits one-variable models into regimes. Meeting the
+target describes the measured fit; it does not prove per-call accuracy or
+identify a unique correct variable set.
+
 ## Options
 
 Place optional flags before `--`:
 
 | Option | Purpose |
 | --- | --- |
-| `--max-attempts N` | Limit the Dr. Perf agent to N experiments. Default: 5. |
+| `--max-attempts N` | Limit the Dr. Perf agent to N measurements, including failures. Default and maximum: 10; smaller budgets are allowed. |
+| `--target-irregularity F` | Stop strictly below fraction F. Default: 0.10 (10%); use 0.05 for 5%. Valid range: greater than 0 and at most 1. |
 | `--model NAME` | Choose a Codex model. Default: your normal Codex configuration. |
 | `--results-dir PATH` | Save results in a new or empty directory. `evaluation/results/` is gitignored. |
 | `--ground-truth n,entries` | Compare each agent's answer with this set of variables. |
@@ -92,7 +131,10 @@ sandbox. Its session files are removed before Agent + Dr. Perf starts, and its
 results are held until both runs finish.
 
 Agent + Dr. Perf makes instrumentation edits and rebuilds only in its disposable
-copy. It is instructed not to optimize or change the program's behavior. The
+copy. Any continuation uses a fresh Codex invocation with that same experimental
+workspace and its own prior measurements; it never receives Agent Only's answer.
+Continuation logs are saved under `logs/agent_drperf/continuation-NNN/`.
+It is instructed not to optimize or change the program's behavior. The
 copies are discarded after evaluation; your original source is left intact.
 
 ## Tests
