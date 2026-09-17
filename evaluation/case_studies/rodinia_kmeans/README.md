@@ -88,8 +88,9 @@ members' means. These check a converged fixed point, not a global optimum.
   trace costs as well as the reported irregularity.
 - Compare mathematical dependencies, not just spelling or feature count.
   Combining terms that Agent Only already identified is not a newly discovered
-  dependency. The harness measures Agent Only's frozen feature set after both
-  discovery sessions finish. An unavailable baseline score is not a measured
+  dependency. The harness gives Agent Only measurability advice for unsupported
+  proposals and measures the first supported set, without sending it cost or
+  fit-quality feedback. An unavailable baseline score is not a measured
   failure to predict cost. Validate both models before claiming a quantitative win.
 - If both methods fail under the same entry-feature rules, record that outcome.
   It can expose a limitation of the model class or feedback process. It is not

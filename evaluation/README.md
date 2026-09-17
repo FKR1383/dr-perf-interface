@@ -3,17 +3,27 @@
 Compare two ways of finding which program-state variables determine the cost
 of a marked region:
 
-- **Agent Only** reads the source and predicts the relevant variables. It cannot
-  run the program, profile it, or edit files.
+- **Agent Only with measurability feedback** reads the source and predicts the
+  relevant variables. A separate instrumentation service can tell it why its
+  answer cannot be measured, so it can revise that answer. It cannot run the
+  program, profile it, edit files, or see performance feedback.
 - **Agent + Dr. Perf** reads the source, chooses variables to try, instruments
   the region, and keeps using measurements to revise its answer until it finds
   a formula below the irregularity target or uses its experiment budget.
 
-After both discovery sessions finish, the harness also measures **Agent Only's
-frozen answer**. A separate Codex invocation only instruments those exact
-features and rebuilds a fresh copy; it cannot select features or run performance
-experiments. After that invocation exits, the harness runs Dr. Perf once.
-Neither competitor receives this feedback. Both discovery prompts are unchanged.
+The baseline runs first as a bounded loop: static proposal, separate
+instrumentation check, and a harness-controlled Dr. Perf measurement if the
+candidate can be instrumented. Unsupported candidates receive a reason and
+advice about representation, types, entry-state access, or binding requirements.
+The static author chooses its own revisions in a fresh read-only invocation.
+Formulas, irregularity, costs, traces, and performance diagnostics are never
+sent back. The loop stops on the **first measurable set, regardless of its
+irregularity**, or at its round limit. Agent + Dr. Perf then runs independently.
+
+The initial static prompt and experimental prompt remain unchanged. Baseline
+revision invocations append only the prior proposals and measurability feedback.
+This baseline is explicitly labelled as static reasoning with measurability
+feedback; its initial unassisted answer is preserved separately.
 
 Both agents return source-level names or expressions, such as `n` or
 `len(queue)`. The agent chooses the variables; the harness runs the evaluation
@@ -69,18 +79,26 @@ Agent + Dr. Perf attempt and its final selection. Each attempt includes:
   Lower values mean less unexplained cost in that run.
 - **Status:** whether the measurement produced a model, or why it failed.
 
-Agent Only's section also shows its post-hoc formula, irregularity, and
-measurement status, computed by the same Dr. Perf adapter. These are not
-predictions supplied by Agent Only. Its original variable-only answer remains
-in `agent_only.json`; the measured result is stored separately in
-`agent_only_measurement.json` and under `agent_only_measurement` in `result.json`.
+Agent Only's section shows its initial variables when revised, final variables,
+measurability rounds and stopping reason, plus the final formula, irregularity,
+and measurement status computed by the same Dr. Perf adapter. These scores are
+visible to the user, not the static author. Files and matching `result.json` keys:
 
-The complete static answer is preserved. If it exceeds four states, has labels
-too long for Dr. Perf, contains features that cannot be faithfully exposed as
-integer entry state, or otherwise cannot be measured, the score and formula are
-`null` (`n/a` in the terminal), with an explicit status and reason. No features
-are dropped or substituted to obtain a score. The empty answer remains valid
-for discovery, but Dr. Perf cannot currently fit it.
+- `agent_only_initial.json`: the first, unassisted variable-only answer.
+- `agent_only.json`: the final variable-only answer after measurability checks.
+- `agent_only_measurability.json`: every proposal and its sanitized feedback,
+  round budget, and stopping reason.
+- `agent_only_measurement.json`: the final candidate's measurement, or failure.
+
+The initial answer may still contain any number of features. If a candidate
+exceeds four states, has labels too long for Dr. Perf, or cannot be faithfully
+exposed as integer entry state, the service reports that limitation. The author
+can revise its proposal; the harness never drops or substitutes features for
+it. Each candidate stays frozen while it is being checked. If the loop exhausts
+its budget, formula and score remain `null` (`n/a`) with a reason. An execution
+or tool failure ends the loop without treating it as evidence about cost
+dependencies. The empty answer remains valid for discovery, but Dr. Perf cannot
+currently fit it.
 
 The default target is **strictly below 10% irregularity**, with a hard limit of
 **ten measurements in the experimental search**, including failures. The agent must keep
@@ -91,9 +109,13 @@ but failed measurements can be repaired and retried.
 
 Use `--max-attempts 5` for a smaller search and `--target-irregularity 0.05` for
 a target below 5%. Budgets above ten are rejected. This limits search measurements,
-not elapsed time. The separate baseline step adds at most one Codex instrumentation
-invocation and one workload measurement, with no measurement retries or feedback.
-It does not consume the search budget. The target uses a fraction, not a percentage. Exactly the
+not elapsed time. The baseline has a separate `--agent-only-max-rounds` budget:
+**3 rounds by default, maximum 10**, counting the initial proposal. Each round
+uses a fresh static invocation and at most one instrumentation invocation and
+one workload measurement. It does not consume the experimental search budget
+and never retries to improve an irregularity score. Use one round for an
+unassisted static answer followed by a single measurability check.
+The target uses a fraction, not a percentage. Exactly the
 threshold does not meet it. A measurement with `status: ok` can still be above
 the target.
 
@@ -126,10 +148,12 @@ both answers, separate `agent_only.json` and `agent_drperf.json` files, and
 fraction, such as `0.021`; the terminal displays it as a percentage, `2.1%`.
 By default, results are saved in a temporary directory that remains after the run.
 
-Baseline raw data, the feature-to-code bindings, and the instrumentation source
-patch are saved under `measurements/agent_only/`. The instrumentation invocation's
-log is under `logs/agent_only_instrumentation/`. Inspect those bindings when
-reviewing how complex expressions or library state were exposed.
+Baseline raw data, feature-to-code bindings, and instrumentation patches are
+saved under `measurements/agent_only/round-NNN/`. Static and instrumentation logs
+are under `logs/agent_only/round-NNN/` and
+`logs/agent_only_instrumentation/round-NNN/`. Inspect those bindings when reviewing
+how complex expressions or library state were exposed. Round progress and
+measurability statuses are printed while the baseline loop is running.
 
 Measurement details also list up to five functions contributing the most
 unexplained cost, with their shares of total cost. These guide source inspection
@@ -145,21 +169,31 @@ Place optional flags before `--`:
 | Option | Purpose |
 | --- | --- |
 | `--max-attempts N` | Limit the Dr. Perf agent to N measurements, including failures. Default and maximum: 10; smaller budgets are allowed. |
+| `--agent-only-max-rounds N` | Limit static proposal/measurability rounds, including the initial proposal. Default: 3; range: 1–10. Stops at the first measurable set, whatever its score. |
 | `--target-irregularity F` | Stop strictly below fraction F. Default: 0.10 (10%); use 0.05 for 5%. Valid range: greater than 0 and at most 1. |
 | `--model NAME` | Choose a Codex model. Default: your normal Codex configuration. |
 | `--results-dir PATH` | Save results in a new or empty directory. `evaluation/results/` is gitignored. |
 | `--ground-truth n,entries` | Compare each agent's answer with this set of variables. |
 
 Ground-truth comparison reports exact set equality, missing variables, and extra
-variables. Use `--ground-truth ''` for the empty set. If omitted, the harness
+variables for the final selections. Use `--ground-truth ''` for the empty set. If omitted, the harness
 simply reports both answers. Neither agent receives the ground truth.
 
 ## Isolation
 
-The agents run in separate, fresh Codex sessions on separate copies of the same
-source, including uncommitted changes. Agent Only runs first in a read-only
-sandbox. Its session files are removed before Agent + Dr. Perf starts, and its
-results are held until both runs finish.
+The agents run in separate, fresh Codex sessions on copies of the same source
+snapshot, including uncommitted changes. Every static proposal runs in a
+read-only sandbox. Its session is deleted before a separate writable copy is
+prepared for instrumentation. That instrumenter exits before Dr. Perf runs.
+The measurement copy and its session are deleted before any static revision.
+Raw artifacts remain in harness memory; they are not placed in the next copy.
+
+Revisions receive only the author's previous proposals and an allowlisted
+feasibility status/reason/advice. Free-text advice comes only from the
+instrumenter before any measurement; native measurement failures are mapped to
+fixed feasibility messages. Formulas, scores, instruction counts, traces, and
+unexplained-function details are excluded. Each round starts from the original
+source snapshot, not earlier instrumentation edits.
 
 Agent + Dr. Perf makes instrumentation edits and rebuilds only in its disposable
 copy. Any continuation uses a fresh Codex invocation with that same experimental
@@ -168,11 +202,10 @@ Continuation logs are saved under `logs/agent_drperf/continuation-NNN/`.
 It is instructed not to optimize or change the program's behavior. The
 copies are discarded after evaluation; your original source is left intact.
 
-The post-hoc baseline instrumentation uses a third fresh copy of the original
-snapshot, after both competitors' workspaces have been deleted. It receives only
-the frozen static feature list and build/region context, with no experimental
-answer or measurements. Its Codex session exits before the harness measures the
-instrumented program. The static answer cannot be revised based on that result.
+All baseline sessions finish before Agent + Dr. Perf starts. Baseline answers,
+logs, measurements, and feedback remain unpublished until both competitors
+finish, so the experimental agent receives none of them. The baseline loop
+does not change the experimental agent's prompt, search policy, or budget.
 
 ## Tests
 
