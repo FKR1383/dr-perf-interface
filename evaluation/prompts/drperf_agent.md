@@ -54,7 +54,8 @@ fewer features only to break an exact score tie.
    do not rebuild or remeasure just to select it. If the budget ends above the
    target, return the lowest-irregularity attempt and report the unmet target.
 
-Features must be integer-valued and computable at region entry from arguments,
+Features must be integer-valued scalar features, including byte counts and
+individual byte values. They must be computable at region entry from arguments,
 globals, reachable fields, or constants and state in called code. A tiny binding
 may expose existing state. Do not use pointer addresses, test-case identifiers,
 measured costs, future values, or values obtained by replaying the region.
