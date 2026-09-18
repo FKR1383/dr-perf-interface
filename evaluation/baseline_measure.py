@@ -48,6 +48,13 @@ Use perfmark's declared-state API, not extra trace-only fields. Dr. Perf has no
 fixed limit on the number of declared states; bind the complete candidate.
 Keep labels identical to the frozen list, including spaces.
 
+The harness enforces a frozen workload. For Python benchmark exports, change
+only state keywords on the existing target perfmark.region call. If the workspace
+has .drperf-workload.json, its instrumentation rules define the allowed edits;
+its fixed build command is run again by the harness. Never edit that definition,
+the workload driver, input data, or assignments outside permitted instrumentation.
+If a necessary binding cannot fit these rules, report it as unsupported.
+
 You may inspect source, make these instrumentation edits, and run compile/link
 commands. You MUST NOT run the application, tests, benchmarks, Dr. Perf, another
 profiler, or any performance measurement. If a build script executes the program
@@ -140,14 +147,16 @@ def save_patch(before, workspace, out):
     (out / "instrumentation.patch").write_text("".join(patch))
 
 
-def measure(executable, workspace, control, out, region, command, candidate, model=None):
+def measure(executable, workspace, control, out, region, command, candidate, model=None,
+            measurement_session=None):
     """Bind the entire frozen set, then make at most one native measurement."""
     candidate = variables(candidate)
     out.mkdir(parents=True, exist_ok=True)
     write_json(out / "request.json", {"variables": candidate, "region": region,
                                        "command": command})
     try:
-        measured = _measure(executable, workspace, control, out, region, command, candidate, model)
+        measured = _measure(executable, workspace, control, out, region, command, candidate, model,
+                            measurement_session)
     except (EvaluationError, OSError, ValueError) as exc:
         measured = drperf_measure.failed("instrumentation_error", str(exc))
     value = {"variables": candidate, **measured}
@@ -155,7 +164,7 @@ def measure(executable, workspace, control, out, region, command, candidate, mod
     return value
 
 
-def _measure(executable, workspace, control, out, region, command, candidate, model):
+def _measure(executable, workspace, control, out, region, command, candidate, model, measurement_session):
     if not candidate:
         return drperf_measure.failed("insufficient_state_variation",
                                      "Dr. Perf cannot fit a model with no declared states")
@@ -182,6 +191,8 @@ def _measure(executable, workspace, control, out, region, command, candidate, mo
         return drperf_measure.failed("instrumentation_error",
                                      "instrumentation bindings do not match the complete frozen answer")
     # The instrumenter has exited. It cannot see this result or revise features.
+    if measurement_session is not None:
+        return measurement_session.measure(workspace, command, out, region, candidate)
     previous = Path.cwd()
     try:
         os.chdir(workspace)

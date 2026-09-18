@@ -55,8 +55,10 @@ python3 evaluation/run.py \
 The result directory must be new or empty. Full zlib source is available to both
 agents. No candidate features or expected answers are supplied to them. The
 original marker records `n`; the experimental agent can replace its declaration.
-The agent keeps experimenting until irregularity is below 10% or all ten
-attempts are used. An unmet target is saved and reported with exit code 2.
+The agent stops when any successful measurement is strictly below 10% or all ten
+attempts are used. The harness selects the successful attempt with the lowest
+irregularity, breaking exact ties by fewer features and then the earliest attempt.
+An unmet target is saved and reported with exit code 2.
 
 ## Check the selected answers
 

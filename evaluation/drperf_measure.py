@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 import sys
+import time
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -126,13 +127,22 @@ def attempt(config, candidate):
     index = len(list(journal.glob("attempt-*"))) + 1
     if index > min(config["max_attempts"], MAX_ATTEMPTS):
         raise EvaluationError("experiment limit reached")
-    for path in journal.glob("attempt-*/measurement.json"):
-        previous = read_json(path)
-        if previous["status"] == "ok" and variables(previous["variables"]) == candidate:
-            raise EvaluationError("this variable set was already measured successfully; test a new set")
     out = journal / f"attempt-{index:03d}"
     out.mkdir()  # Never overwrite an existing experiment.
     write_json(out / "request.json", {"variables": candidate})
+    if config.get("measurement_service"):
+        # The parent harness owns execution settings. In particular, do not
+        # inherit this helper's Codex shell environment for the workload.
+        (out / ".request-ready").touch()
+        while not (out / "measurement.json").exists():
+            if not (journal / ".service-active").exists():
+                # The service may have published its last response and exited
+                # between the two existence checks.
+                if (out / "measurement.json").exists():
+                    break
+                raise EvaluationError("harness measurement service is not running")
+            time.sleep(0.05)
+        return read_json(out / "measurement.json")
     result = {"attempt": index, "variables": candidate,
               **measure(config["command"], out, config["region"], candidate)}
     write_json(out / "measurement.json", result)
@@ -156,7 +166,11 @@ def _recorded_attempts(config):
         candidate = variables(read_json(out / "request.json")["variables"])
         if record["attempt"] != index or record["variables"] != candidate:
             raise EvaluationError("measurement record does not match its request")
-        if (out / "process.json").exists():
+        workload_check = read_json(out / "workload-check.json") if (out / "workload-check.json").exists() else {}
+        if workload_check.get("status") == "rejected":
+            if record["status"] != "invalid_measurement" or record["formula"] is not None or record["irregularity"] is not None:
+                raise EvaluationError("rejected workload must not have a fitted result")
+        elif (out / "process.json").exists():
             rc = read_json(out / "process.json")["returncode"]
             measured = (analyze(out / "raw", config["region"], candidate) if rc == 0 else
                         failed("workload_failed", f"workload exited with status {rc}"))

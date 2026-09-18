@@ -83,11 +83,13 @@ def validate_result(value, competitor, max_attempts=MAX_ATTEMPTS):
                a["formula"] == value["final_formula"] and
                a["irregularity"] == value["final_irregularity"] for a in value["attempts"]):
         raise EvaluationError("final selection must match a recorded attempt")
+    if value["final_formula"] is None and any(a["status"] == "ok" for a in value["attempts"]):
+        raise EvaluationError("final selection must use a successful measurement when available")
     return value
 
 
 def best_attempt(attempts):
-    """Rank valid measurements; failures never beat a measured model."""
+    """Select by irregularity, then feature count, then earliest attempt."""
     return min((a for a in attempts if a["status"] == "ok"),
                key=lambda a: (a["irregularity"], len(a["variables"]), a["attempt"]),
                default=None)
@@ -133,8 +135,12 @@ def summary(result):
               f"final irregularity: {percent(dr['final_irregularity'])}"]
     if "search" in result:
         search = result["search"]
+        if search.get("policy") is not None:
+            lines.append(f"search policy:      {search['policy']}")
+        if search.get("selected_attempt") is not None:
+            lines.append(f"selected attempt:   {search['selected_attempt']}")
         if search.get("best_attempt") is not None:
-            lines.append(f"best attempt:       {search['best_attempt']}")
+            lines.append(f"lowest-score attempt: {search['best_attempt']}")
         lines += ["", f"irregularity target: <{percent(search['target_irregularity'])}",
                   f"target met:         {'yes' if search['target_met'] else 'no'}",
                   f"search stopped:     {search['stop_reason']}",

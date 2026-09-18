@@ -94,6 +94,11 @@ class ResultsTests(unittest.TestCase):
         with self.assertRaisesRegex(EvaluationError, "failed measurement"):
             validate_result(result([attempt]), "agent_drperf")
 
+    def test_cannot_select_failure_when_a_model_is_available(self):
+        failed = fitted(attempt=2, formula=None, irregularity=None, status="workload_failed")
+        with self.assertRaisesRegex(EvaluationError, "successful measurement"):
+            validate_result(result([fitted(), failed], selected=1), "agent_drperf")
+
     def test_summary_and_ground_truth(self):
         failed = fitted(attempt=2, names=[], formula=None, irregularity=None, status="workload_failed")
         data = {"agent_only": {"variables": []}, "agent_drperf": result([fitted(), failed])}
@@ -248,9 +253,9 @@ class MeasurementTests(unittest.TestCase):
         self.assertEqual([r["status"] for r in records], ["workload_failed", "measurement_error"])
         self.assertTrue(all(r["irregularity"] is None for r in records))
 
-    def test_repeat_success_rejected_but_failed_candidate_can_be_repaired(self):
+    def test_repairs_and_successful_repeats_are_recorded_and_consume_budget(self):
         config = {"workspace": str(Path.cwd()), "journal": str(self.directory / "journal"),
-                  "region": "parse", "command": ["program"], "max_attempts": 5}
+                  "region": "parse", "command": ["program"], "max_attempts": 3}
         with patch.object(measurement, "check_build"), \
              patch.object(measurement.runner, "run", side_effect=[(7, "failed", [])]):
             first = measurement.attempt(config, ["n"])
@@ -259,10 +264,16 @@ class MeasurementTests(unittest.TestCase):
              patch.object(measurement.runner, "run", side_effect=raw_run) as measured:
             repaired = measurement.attempt(config, ["n"])
             self.assertEqual(repaired["status"], "ok")
-            with self.assertRaisesRegex(EvaluationError, "already measured"):
+            repeated = measurement.attempt(config, ["n", "n"])
+            self.assertEqual(repeated["status"], "ok")
+            self.assertEqual(repeated["attempt"], 3)
+            self.assertEqual(repeated["variables"], ["n"])
+            with self.assertRaisesRegex(EvaluationError, "limit"):
                 measurement.attempt(config, ["n", "n"])
-            self.assertEqual(measured.call_count, 1)
-        self.assertEqual(len(list(Path(config["journal"]).glob("attempt-*"))), 2)
+            self.assertEqual(measured.call_count, 2)
+        records = measurement.recorded_attempts(config)
+        self.assertEqual([r["status"] for r in records], ["workload_failed", "ok", "ok"])
+        self.assertEqual([r["attempt"] for r in records], [1, 2, 3])
 
     def test_measurement_hard_ceiling_counts_failures_and_blocks_eleventh_run(self):
         config = {"workspace": str(Path.cwd()), "journal": str(self.directory / "journal"),
@@ -321,6 +332,8 @@ class SearchTests(unittest.TestCase):
         self.assertTrue(status["target_met"])
         self.assertEqual(status["attempts_used"], 3)
         self.assertEqual(status["continuations"], 2)
+        self.assertEqual(status["policy"], "minimum_irregularity")
+        self.assertEqual(status["selected_attempt"], 3)
         self.assertEqual(controls[1], controls[0] / "continuation-001")
         self.assertIn('"irregularity": 0.47', prompts[1])
         self.assertIn("next attempt is 2", prompts[1])
@@ -364,6 +377,48 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(answer["final_irregularity"], 0.09)
         self.assertTrue(status["target_met"])
         self.assertEqual(status["best_attempt"], 1)
+
+    def test_aq_pattern_selects_first_attempt_over_worse_repeated_candidate(self):
+        self.config["max_attempts"] = 4
+        records = [fitted(irregularity=0.1306058002159069),
+                   fitted(attempt=2, names=["branch", "n"], irregularity=0.19018125478403416),
+                   fitted(attempt=3, names=["branch", "n", "n*branch"], irregularity=0.16500761159233096),
+                   fitted(attempt=4, names=["branch", "n"], irregularity=0.19018125478403416)]
+        with patch.object(codex_runner, "invoke", return_value=result(records, selected=1)) as invoke, \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 1)
+        self.assertEqual(answer, result(records, selected=0))
+        self.assertEqual(status["selected_attempt"], 1)
+        self.assertEqual(status["best_attempt"], 1)
+        self.assertEqual(status["stop_reason"], "attempt_limit_reached")
+        text = summary({"agent_only": {"variables": ["n"]}, "agent_drperf": answer, "search": status})
+        self.assertIn("selected attempt:   1", text)
+        self.assertIn("lowest-score attempt: 1", text)
+        self.assertIn("final irregularity: 13.06%", text)
+        self.assertIn("target met:         no", text)
+
+    def test_lower_irregularity_wins_over_fewer_features(self):
+        records = [fitted(irregularity=0.08),
+                   fitted(attempt=2, names=["branch", "n"], irregularity=0.07)]
+        with patch.object(codex_runner, "invoke", return_value=result(records)) as invoke, \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(invoke.call_count, 1)
+        self.assertEqual(answer, result(records, selected=1))
+        self.assertEqual(status["selected_attempt"], 2)
+        self.assertEqual(status["stop_reason"], "target_met")
+
+    def test_all_failed_attempts_preserve_failure_without_claiming_success(self):
+        self.config["max_attempts"] = 1
+        records = [fitted(formula=None, irregularity=None, status="insufficient_state_variation")]
+        with patch.object(codex_runner, "invoke", return_value=result(records)), \
+             patch.object(measurement, "recorded_attempts", return_value=records):
+            answer, status = self.search()
+        self.assertEqual(answer, result(records))
+        self.assertIsNone(status["best_attempt"])
+        self.assertFalse(status["target_met"])
+        self.assertEqual(status["stop_reason"], "attempt_limit_reached")
 
     def test_exact_threshold_is_unmet_and_custom_lower_target_works(self):
         self.config["max_attempts"] = 1
@@ -410,8 +465,12 @@ class HarnessTests(unittest.TestCase):
             source.mkdir()
             output.mkdir()
             auth.mkdir()
-            (source / "app.py").write_text("original local edit")
+            original = "# original local edit\nimport perfmark\nn = 1\nwith perfmark.region('parse'):\n    pass\n"
+            instrumented_source = original.replace("region('parse')", "region('parse', n=n)") + "# post-hoc instrumentation\n"
+            (source / "app.py").write_text(original)
             (source / "alias.py").symlink_to(source / "app.py")
+            write_json(source / ".drperf-workload.json", {"version": 1, "instrumentation": {
+                name: {"kind": "python-marker"} for name in ("app.py", "alias.py")}})
             (source / ".git").write_text("gitdir: /original/history")
             (auth / "config.toml").write_text('model = "configured-model"\n')
             (auth / "history.jsonl").write_text("unrelated session")
@@ -422,7 +481,7 @@ class HarnessTests(unittest.TestCase):
                     return subprocess.CompletedProcess(command, 0, stdout="--output-schema --output-last-message --ephemeral")
                 cwd = Path(kwargs["cwd"])
                 control = Path(command[command.index("--output-last-message") + 1]).parent
-                self.assertEqual((cwd / "app.py").read_text(), "original local edit")
+                self.assertEqual((cwd / "app.py").read_text(), original)
                 self.assertFalse((cwd / "alias.py").is_symlink())
                 self.assertFalse((cwd / ".git").exists())
                 self.assertEqual(list(output.iterdir()), [])
@@ -444,7 +503,7 @@ class HarnessTests(unittest.TestCase):
                             self.assertFalse(path.exists())
                     self.assertEqual(command[command.index("--sandbox") + 1], "workspace-write")
                     self.assertNotIn("baseline-secret", kwargs["input"])
-                    (cwd / "alias.py").write_text("temporary instrumentation")
+                    (cwd / "alias.py").write_text(instrumented_source)
                     config = json.loads((cwd.parent / "measurement-config.json").read_text())
                     self.assertEqual(config["command"], ["python3", str(cwd / "app.py")])
                     self.assertEqual(config["target_irregularity"], 0.05)
@@ -452,8 +511,7 @@ class HarnessTests(unittest.TestCase):
                     previous = Path.cwd()
                     try:
                         os.chdir(cwd)
-                        with patch.object(measurement.runner, "run", side_effect=raw_run):
-                            measurement.attempt(config, ["n"])
+                        measurement.attempt(config, ["n"])
                     finally:
                         os.chdir(previous)
                     answer = result([fitted(formula="4*n + 20", irregularity=0)])
@@ -468,7 +526,7 @@ class HarnessTests(unittest.TestCase):
                     self.assertNotIn("experimental-log", kwargs["input"])
                     self.assertIn('Frozen feature labels (JSON): ["n"]', kwargs["input"])
                     self.assertFalse((cwd.parent / "measurement-config.json").exists())
-                    (cwd / "app.py").write_text("post-hoc instrumentation")
+                    (cwd / "app.py").write_text(instrumented_source)
                     answer = {"status": "ready", "reason": "", "advice": "",
                               "bindings": [{"variable": "n", "expression": "n", "location": "app.py:1"}]}
                 invocations.append((cwd, control, private_home))
@@ -476,16 +534,31 @@ class HarnessTests(unittest.TestCase):
                 write_json(control / "final.json", answer)
                 return subprocess.CompletedProcess(command, 0)
 
+            worker_calls = []
+
+            def fake_worker(session):
+                worker_calls.append(session.workspace)
+                request = json.loads((session.root / "request.json").read_text())
+                self.assertEqual(request["command"], ["python3", str(session.workspace / "app.py")])
+                self.assertEqual((session.workspace / "app.py").read_text(),
+                                 instrumented_source if len(worker_calls) == 1 else original)
+                raw_run([], session.out / "raw")
+                write_json(session.out / "process.json", {"returncode": 0})
+                write_json(session.root / "result.json", measurement.analyze(session.out / "raw", "parse", ["n"]))
+                return subprocess.CompletedProcess([], 0, stdout="")
+
             with patch.dict(os.environ, {"CODEX_HOME": str(auth)}), \
                  patch.object(codex_runner.shutil, "which", return_value="/fake/codex"), \
                  patch.object(codex_runner.subprocess, "run", side_effect=fake_codex), \
                  patch.object(measurement, "check_build"), \
-                 patch.object(measurement.runner, "run", side_effect=raw_run) as baseline_run:
+                 patch.object(run.MeasurementSession, "_run_worker", fake_worker):
                 value = run.evaluate(source, "parse", ["python3", str(source / "app.py")],
                                      output, ground_truth=["n", "entries"], target_irregularity=0.05)
             self.assertEqual(len(invocations), 3)
-            self.assertEqual(baseline_run.call_count, 1)
-            self.assertEqual((source / "app.py").read_text(), "original local edit")
+            self.assertEqual(len(worker_calls), 2)
+            self.assertEqual(worker_calls[0], worker_calls[1])
+            self.assertFalse(worker_calls[0].exists())
+            self.assertEqual((source / "app.py").read_text(), original)
             self.assertEqual(value["agent_only"], {"variables": ["n"]})
             self.assertEqual(value["agent_only_measurement"]["formula"], "4*n + 20")
             self.assertEqual(value["agent_only_measurement"]["irregularity"], 0)
@@ -539,13 +612,14 @@ class HarnessTests(unittest.TestCase):
                 self.assertIn("evaluation:", err.getvalue())
                 self.assertNotIn("Traceback", err.getvalue())
 
-    def test_cli_unmet_target_reports_failure_without_discarding_model(self):
+    def test_cli_stalled_search_reports_unmet_target_and_keeps_model(self):
         with tempfile.TemporaryDirectory() as temp:
             output, err = io.StringIO(), io.StringIO()
             value = {"region": "parse", "agent_only": {"variables": ["n"]},
                      "agent_drperf": result([fitted(irregularity=0.47)]),
                      "search": {"target_irregularity": 0.1, "target_met": False,
-                                "stop_reason": "attempt_limit_reached", "attempts_used": 5, "max_attempts": 5}}
+                                "stop_reason": "agent_stopped_without_progress", "attempts_used": 1,
+                                "max_attempts": 5}}
             with patch.object(run, "evaluate", return_value=value) as evaluated, \
                  contextlib.redirect_stdout(output), contextlib.redirect_stderr(err):
                 rc = run.main(["--workspace", temp, "--region", "parse",

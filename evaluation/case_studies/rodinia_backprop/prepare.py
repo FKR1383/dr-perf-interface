@@ -50,6 +50,10 @@ def main():
     for name in ("driver.c", "build.sh"):
         shutil.copyfile(HERE / name, workspace / name)
     (workspace / "build.sh").chmod(0o755)
+    (workspace / ".drperf-workload.json").write_text(json.dumps({
+        "version": 1, "instrumentation": {"driver.c": {"kind": "text-block",
+            "start": "/* EVALUATION_STATES_BEGIN */", "end": "/* EVALUATION_STATES_END */"}},
+        "build": ["./build.sh"], "build_outputs": ["program", "backprop.o"]}, indent=2) + "\n")
     (workspace / "perfmark").mkdir()
     shutil.copyfile(ROOT / "perfmark/perfmark.h", workspace / "perfmark/perfmark.h")
     shutil.copyfile(ROOT / "build/libperfmark.so", workspace / "libperfmark.so")

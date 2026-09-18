@@ -3,7 +3,6 @@
 import argparse
 import json
 import math
-import os
 from pathlib import Path
 import shlex
 import shutil
@@ -13,18 +12,22 @@ import tempfile
 
 try:
     from . import baseline_measure, codex_runner, drperf_measure
+    from .measurement_session import MeasurementSession, rebase_command
+    from .workload import FrozenWorkload
     from .results import MAX_ATTEMPTS, EvaluationError, best_attempt, comparison, summary, variables, write_json
 except ImportError:
     import codex_runner
     import drperf_measure
     import baseline_measure
+    from measurement_session import MeasurementSession, rebase_command
+    from workload import FrozenWorkload
     from results import MAX_ATTEMPTS, EvaluationError, best_attempt, comparison, summary, variables, write_json
 
 HERE = Path(__file__).resolve().parent
 
 
 def search(executable, workspace, control, prompt, config, model=None):
-    """Continue the experimental side until its target or measurement budget."""
+    """Search to target or budget and select the lowest verified irregularity."""
     previous = []
     continuations = stalled = 0
     current_prompt = prompt
@@ -41,22 +44,27 @@ def search(executable, workspace, control, prompt, config, model=None):
             raise EvaluationError("a continuation changed earlier measurement records")
         best = best_attempt(recorded)
         if best is not None:
-            # The agent proposes and tests candidates. Report the best verified
-            # measurement even if its final reply selected a worse attempt.
+            # The measured score, not the agent's preference or attempt order,
+            # determines the final selection.
             answer = {**answer, "selected_variables": best["variables"],
                       "final_formula": best["formula"], "final_irregularity": best["irregularity"]}
-        achieved = answer["final_irregularity"] is not None and answer["final_irregularity"] < threshold
+        selected = next(a for a in recorded if
+                        a["variables"] == answer["selected_variables"] and
+                        a["formula"] == answer["final_formula"] and
+                        a["irregularity"] == answer["final_irregularity"])
+        achieved = best is not None and best["irregularity"] < threshold
         stalled = stalled + 1 if len(recorded) == len(previous) else 0
-        metadata = {"target_irregularity": threshold, "target_met": achieved,
-                    "attempts_used": len(recorded), "max_attempts": config["max_attempts"],
-                    "continuations": continuations,
+        metadata = {"policy": "minimum_irregularity", "target_irregularity": threshold,
+                    "target_met": achieved, "attempts_used": len(recorded),
+                    "max_attempts": config["max_attempts"], "continuations": continuations,
+                    "selected_attempt": selected["attempt"],
                     "best_attempt": best["attempt"] if best is not None else None}
         if achieved:
             return answer, {**metadata, "stop_reason": "target_met"}
         if len(recorded) >= config["max_attempts"]:
             return answer, {**metadata, "stop_reason": "attempt_limit_reached"}
-        # A noncompliant agent cannot trigger an unbounded sequence of API calls.
-        # Preserve its measurements but report failure, never target success.
+        # An agent that repeatedly returns without measuring has failed to
+        # follow the search contract. Bound retries and report the interruption.
         if stalled >= 2:
             return answer, {**metadata, "stop_reason": "agent_stopped_without_progress"}
         remaining = config["max_attempts"] - len(recorded)
@@ -64,15 +72,15 @@ def search(executable, workspace, control, prompt, config, model=None):
               f"continuing with {remaining} experiments remaining...", file=sys.stderr, flush=True)
         previous = recorded
         continuations += 1
-        current_prompt = (prompt + "\n\nContinue this experiment in the existing disposable workspace. "
-                          "Your previous invocation stopped before reaching the target. "
+        current_prompt = (prompt + "\n\nContinue in the same disposable workspace. "
+                          "The target is unmet and measurement budget remains. "
                           f"There are {remaining} experiments remaining; the next attempt is "
-                          f"{len(recorded) + 1}. Keep the existing journal and its numbering. "
-                          "Use the previous measurements and source inspection to test a new hypothesis. "
-                          "If a previous measurement already meets the target, select it. "
-                          "The prior measurements and best verified selection follow; "
-                          "detailed evidence remains in the journal.\n" +
-                          json.dumps(answer, indent=2))
+                          f"{len(recorded) + 1}. Keep the journal and its numbering unchanged. "
+                          "Use source inspection and measured feedback to test further candidates. "
+                          "Stop when any successful attempt is strictly below the target or the "
+                          "budget is exhausted. Select the lowest irregularity across all attempts. "
+                          "Prior measurements and the best verified selection follow; "
+                          "detailed evidence remains in the journal.\n" + json.dumps(answer, indent=2))
 
 
 def copy_workspace(source, destination, results_dir):
@@ -85,19 +93,6 @@ def copy_workspace(source, destination, results_dir):
     shutil.copytree(source, destination, ignore=ignore, symlinks=False)
 
 
-def rebase_command(command, source, destination):
-    def rebase(arg):
-        if arg == str(source) or arg.startswith(str(source) + os.sep):
-            return str(destination) + arg[len(str(source)):]
-        if "=" in arg:
-            key, value = arg.split("=", 1)
-            if value == str(source) or value.startswith(str(source) + os.sep):
-                return key + "=" + str(destination) + value[len(str(source)):]
-        return arg
-
-    return [rebase(arg) for arg in command]
-
-
 def capture_files(base, prefix, captured):
     for path in base.rglob("*"):
         if path.is_file() and "codex-home" not in path.relative_to(base).parts:
@@ -105,7 +100,7 @@ def capture_files(base, prefix, captured):
 
 
 def agent_only_search(executable, snapshot, source, region, command, captured, model=None,
-                      max_rounds=baseline_measure.DEFAULT_ROUNDS):
+                      max_rounds=baseline_measure.DEFAULT_ROUNDS, measurement_session=None):
     """Static proposals alternate with isolated measurability checks, not fit feedback."""
     initial = None
     history = []
@@ -153,7 +148,8 @@ def agent_only_search(executable, snapshot, source, region, command, captured, m
             try:
                 measured = baseline_measure.measure(
                     executable, target, control, journal, region,
-                    rebase_command(command, source, target), answer["variables"], model)
+                    rebase_command(command, source, target), answer["variables"], model,
+                    **({"measurement_session": measurement_session} if measurement_session is not None else {}))
             finally:
                 capture_files(control, f"logs/agent_only_instrumentation/{label}", captured)
                 capture_files(journal, f"measurements/agent_only/{label}", captured)
@@ -199,8 +195,12 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
                 raise EvaluationError("temporary directory is inside the workspace; set TMPDIR outside the workspace")
             snapshot = root / "snapshot"
             copy_workspace(workspace, snapshot, results_dir)
+            workload = FrozenWorkload(snapshot, region)
+            measurements = MeasurementSession(root / "measurement-runtime", workspace, workload, command)
+            print(f"Frozen workload: {workload.origin} ({workload.metadata['sha256'][:12]})",
+                  file=sys.stderr, flush=True)
             outputs = agent_only_search(executable, snapshot, workspace, region, command,
-                                        captured, model, agent_only_max_rounds)
+                                        captured, model, agent_only_max_rounds, measurements)
             with tempfile.TemporaryDirectory(prefix="drperf-competitor-") as session:
                 session = Path(session)
                 target = session / "workspace"
@@ -210,6 +210,7 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
                 journal.mkdir()
                 config = {"workspace": str(target), "journal": str(journal),
                           "region": region, "command": rebase_command(command, workspace, target),
+                          "measurement_service": True,
                           "max_attempts": max_attempts, "target_irregularity": target_irregularity}
                 config_path = session / "measurement-config.json"
                 write_json(config_path, config)
@@ -221,13 +222,15 @@ def evaluate(workspace, region, command, results_dir, max_attempts=MAX_ATTEMPTS,
                                        "--config", str(config_path)]))
                 print("Running Agent + Dr. Perf...", file=sys.stderr, flush=True)
                 try:
-                    answer, search_status = search(executable, target, control, prompt, config, model)
+                    with measurements.serve(config):
+                        answer, search_status = search(executable, target, control, prompt, config, model)
                     outputs["agent_drperf"] = answer
                 finally:
                     # Hold logs in memory until BOTH competitors have ended.
                     capture_files(control, "logs/agent_drperf", captured)
                     capture_files(journal, "measurements", captured)
-            result = {"region": region, **outputs, "search": search_status}
+            result = {"region": region, **outputs, "search": search_status,
+                      "measurement_protocol": measurements.protocol}
             if ground_truth is not None:
                 truth = variables(ground_truth)
                 result["ground_truth"] = truth
@@ -298,7 +301,7 @@ def main(argv=None):
             raise EvaluationError("no model selected; see the recorded measurement statuses")
         if not result["search"]["target_met"]:
             print(f"evaluation: irregularity target not met ({result['search']['stop_reason']}); "
-                  "best selected model and evidence saved", file=sys.stderr)
+                  "selected model and evidence saved", file=sys.stderr)
             return 2
         return 0
     except (EvaluationError, OSError, shutil.Error) as exc:

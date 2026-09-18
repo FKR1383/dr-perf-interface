@@ -8,8 +8,9 @@ of a marked region:
   answer cannot be measured, so it can revise that answer. It cannot run the
   program, profile it, edit files, or see performance feedback.
 - **Agent + Dr. Perf** reads the source, chooses variables to try, instruments
-  the region, and keeps using measurements to revise its answer until it finds
-  a formula below the irregularity target or uses its experiment budget.
+  the region, and uses measurements to find a lower-irregularity model. It stops
+  when any successful attempt is strictly below the target or the measurement
+  budget is exhausted, then selects the lowest-irregularity successful attempt.
 
 The baseline runs first as a bounded loop: static proposal, separate
 instrumentation check, and a harness-controlled Dr. Perf measurement if the
@@ -28,6 +29,117 @@ feedback; its initial unassisted answer is preserved separately.
 Both agents return source-level names or expressions, such as `n` or
 `len(queue)`. The agent chooses the variables; the harness runs the evaluation
 and records the results. Ground truth is optional.
+
+Both sides now submit measurements to **one harness-owned execution service**.
+Every measurement starts a fresh process at the same workspace and raw-output
+paths, using the environment captured before either agent runs. The service
+copies the instrumented candidate, resets its temporary/cache directories, and
+discards Python bytecode caches, including those created by an instrumenter.
+The experimental helper submits a request; its shell environment does not
+launch or configure the measured workload. The supplied workload, hash seed,
+thread settings, measurement scope, and fitter are shared across both sides.
+Only permitted instrumentation and necessary feature bindings may differ.
+
+Each measurement saves `execution.json` with its actual command, paths,
+environment fingerprint (without dumping the environment), scope, and input-file
+hashes. `result.json` also records the common `measurement_protocol`.
+These controls remove differences caused by the two launch routes; they do not
+make time, OS scheduling, external mutable data, random inputs inside the
+application, or instrumentation-induced runtime state deterministic. Use a
+deterministic, self-contained workload. Separately built binaries must retain
+the same compiler settings and use relocatable paths. Equal features should
+be checked against raw counts, rather than assuming that labels alone prove
+identical execution. Results from the old mixed-launcher protocol should be
+rerun on both sides before comparison.
+
+## Fixed workloads in every workspace
+
+The **workload driver supplies inputs**; the target program computes its local
+variables from them. Agents select expressions to observe, not assignments to
+feed the workload. For example, `aq-001/tests/test_case.py` constructs enums at
+fixed sizes and with fixed member values; `len(enum_class._member_map_)` observes
+the dictionary while those enums are being constructed.
+
+`evaluation/run.py` requires a frozen workload definition before invoking either
+agent. Python benchmark exports supply it through `case.json`; their driver,
+data, dependencies inside the workspace, and all source outside the target
+marker's state keywords are protected automatically. This is based on the
+export metadata, not on the benchmark ID. The command and its arguments are
+fixed for the evaluation. Each measurement validates the protected files before
+execution and afterward. Changed files, missing files, new auxiliary files, or
+changed assignments outside instrumentation produce `invalid_measurement`,
+with no usable formula or score. Details are saved in `workload-check.json`.
+Target-region call counts and values of features shared with earlier successful
+measurements are also compared in call order; mismatches are rejected. This
+check does not reveal the static agent's answer or measurements to its competitor.
+
+For a custom workspace, add `.drperf-workload.json` before evaluation:
+
+```json
+{
+  "version": 1,
+  "instrumentation": {
+    "kernel.py": {"kind": "python-marker"}
+  }
+}
+```
+
+The `python-marker` rule compares Python syntax trees after removing only state
+keywords from the existing `perfmark.region('target', ...)` call. It permits
+feature expressions and formatting changes, while preserving assignments,
+control flow, region boundaries, and the rest of the program. It requires
+exactly one target marker per declared source file. Feature expressions must
+be read-only; this is not a proof that arbitrary called functions have no side
+effects. Bindings needing additional edits must be declared in advance.
+
+For C/C++ or another language, explicitly bound the editable instrumentation
+block with unique anchors, leaving the workload assignments outside it:
+
+```json
+{
+  "version": 1,
+  "instrumentation": {
+    "driver.c": {
+      "kind": "text-block",
+      "start": "/* EVALUATION_STATES_BEGIN */",
+      "end": "/* EVALUATION_STATES_END */"
+    }
+  },
+  "build": ["./build.sh"],
+  "build_outputs": ["program", "kernel.o"]
+}
+```
+
+All text outside those anchors is frozen, including the driver assignments and
+region body. Code inside must only bind read-only features and begin the marker.
+The harness removes existing build outputs and rebuilds every candidate with
+the same frozen command, environment, and working directory. Build scripts and
+compiler settings stored in the workspace cannot change. Output entries are
+exact relative paths; a trailing `/` allows a generated directory. Do not put
+input data or source files under generated-output paths. Workload files must
+be local to the snapshot; external dependencies must remain fixed separately.
+The zlib and Rodinia preparation scripts now write these definitions. For an
+older prepared workspace, add the definition with its existing state-block
+anchors and build outputs, or prepare a fresh workspace.
+
+Frozen source and files do not freeze fresh values obtained from clocks, live
+services, operating-system randomness, or thread scheduling. Materialize such
+**input data once** into workspace files before evaluation, then make the driver
+read the same files on every call/run. Alternatively, use a deterministic input
+generator with explicit fixed seeds in the supplied command. The harness does
+not silently rewrite application randomness or manufacture assignments.
+
+For stronger verification of actual input values (including array contents),
+add `"input_trace": "workload-inputs.json"` to the definition. The frozen driver
+must write that relative file as a nonempty JSON array containing complete input
+records in call order, independently of the chosen performance features. The
+harness removes any stale trace before each run, compares the newly recorded
+values with the first measurement, and rejects missing/different traces. It
+saves the trace beside each measurement. This protocol works with any language;
+the driver must record the actual values it supplies, not just a seed, sizes,
+case labels, or selected features. Without a full input trace, only frozen
+files, source structure, call counts, and shared observed features are checked;
+unobserved runtime values are not claimed to have been verified.
 
 ## Run an evaluation
 
@@ -70,6 +182,52 @@ budget; exceeding those limits invalidates the measurement. More features still
 require enough varied inputs. The harness uses your supplied workload; it does
 not generate one.
 
+## Reproduce instruction-count differences without an agent
+
+For the exported `aq-001` benchmark, run:
+
+```sh
+python3 evaluation/reproduce_aq001.py --workspace /tmp/aq-001
+```
+
+If needed, first export it with
+`python3 benchmarks/regions/collect.py export aq-001 /tmp/aq-001`.
+The reproducer copies the workspace and declares only
+`len(enum_class._member_map_)`. It runs the unchanged workload four times, with
+0, 16, 0, and 16 extra environment variables respectively. The added variables
+are named `DRPERF_DIAGNOSTIC_UNUSED_0` through `DRPERF_DIAGNOSTIC_UNUSED_15`, each
+set to `padding`; the benchmark does not use them. This deliberately changes
+process environment while keeping the program inputs fixed. It requires a built
+Dr. Perf and makes no Codex/API calls.
+
+The same instrumented workspace and collector output path are used for each
+run. Workspace bytecode caches are removed before every measurement. Source
+and workload hashes must stay unchanged, and the complete ordered sequence of
+recorded feature values must match before counts are compared. A run does not
+silently pair calls with different inputs or average repeated feature values.
+
+The terminal prints a sample of differing **raw instruction counts**, and the
+retained output directory contains:
+
+- `counts.csv`: every call's feature value and instruction count in each run.
+- `comparison.json`: all per-call counts, formulas, irregularities, and checks.
+- `setup.json`: workload command, instrumentation feature, hashes, and conditions.
+- `run-NN-envN/`: each measurement's raw traces, block counts, and workload log.
+- `workspace/`: the fixed instrumented copy, for inspection.
+
+These are the trace's per-call `self` instruction counts, before marker-cost
+calibration, not predictions from the fitted formula. Different environments
+can change instruction counts; a particular score change is not guaranteed.
+Matching counts are reported honestly. To repeat with no deliberate environment
+change instead:
+
+```sh
+python3 evaluation/reproduce_aq001.py --workspace /tmp/aq-001 --env-counts 0 0 0 0
+```
+
+Use `--results-dir PATH` to choose a new or empty output directory. You can also
+specify other conditions, for example `--env-counts 0 16 64 128`.
+
 ## Read the results
 
 The terminal shows Agent Only's predicted variables, followed by each
@@ -104,11 +262,14 @@ dependencies. The empty answer remains valid for discovery, but Dr. Perf cannot
 currently fit it.
 
 The default target is **strictly below 10% irregularity**, with a hard limit of
-**ten measurements in the experimental search**, including failures. The agent must keep
-testing new candidate sets while the target is unmet and attempts remain.
-Worse attempts guide further investigation;
-they do not justify stopping. Successfully measured sets cannot be repeated,
-but failed measurements can be repaired and retried.
+**ten measurements in the experimental search**, including failures and repeats.
+The agent first measures a minimal candidate justified by source inspection.
+Further changes must explain specific residual work; it may also test
+simplifications, repair failures, or repeat a candidate to check stability.
+All repeats remain in the report. After each measurement, the agent checks
+whether any successful attempt is strictly below the target or the budget is
+exhausted. Otherwise it must continue. A plausible explanation, a worse attempt,
+or a preference for fewer features is not a stopping condition.
 
 Use `--max-attempts 5` for a smaller search and `--target-irregularity 0.05` for
 a target below 5%. Budgets above ten are rejected. This limits search measurements,
@@ -122,20 +283,30 @@ The target uses a fraction, not a percentage. Exactly the
 threshold does not meet it. A measurement with `status: ok` can still be above
 the target.
 
-The harness checks the recorded measurements. If the agent returns early above
-the target, it invokes the experimental agent again with its previous answer,
-the existing workspace, and the remaining measurement budget. Two consecutive
-continuations that add no measurements end with an explicit unresolved result
-to prevent unlimited retries. Every recorded attempt remains in the results.
+The harness verifies all recorded measurements and selects the successful
+attempt with the lowest exact irregularity, even if the agent's reply selected
+another attempt. Fewer features break exact score ties, followed by the earliest
+attempt. Source reasoning guides candidate discovery; the measured score
+determines the final choice. Every recorded attempt remains in the results.
 
-The report selects the lowest-irregularity successful measurement, preferring
-fewer states for a tie and then the earliest attempt. This ranking uses verified
-measurements even if the agent's final reply selects a worse attempt. Original
-agent replies remain in the logs. The terminal and `result.json` report the
-best attempt, target, whether it was met, attempts used, and the stopping reason.
-Reaching the budget above the
-target saves the selected model and returns exit code **2**; reaching the
-target returns **0**. Missing experimental models and execution/contract errors
+If the agent returns above the target with budget remaining, the harness invokes
+it again in the same disposable workspace with its prior measurements. Two
+consecutive invocations that add no measurements stop the search with
+`agent_stopped_without_progress`, an explicit failure to complete the search
+contract rather than a successful early stop. Execution errors also end the run.
+
+The terminal and `result.json` identify the selected and lowest-score attempts;
+these are the same whenever a successful model exists. In `search`,
+`selected_attempt` identifies the selected record and `best_attempt` identifies
+the lowest-scoring successful record, or `null` if all measurements failed.
+`target_met` describes the selected model. Normal `stop_reason` values are
+`target_met` and `attempt_limit_reached`.
+
+New results identify this search policy as `minimum_irregularity`. Runs labelled
+`source_guided` allowed subjective early stopping and higher-score selections;
+distinguish those results when comparing policies. Finishing above the target
+saves the selected model and returns exit code **2**, including a stalled search.
+Selecting a model below the target returns **0**. Missing experimental models and execution/contract errors
 return **1**. An unavailable baseline measurement is reported without discarding
 the experimental result or changing these exit codes.
 
@@ -189,7 +360,7 @@ Place optional flags before `--`:
 | --- | --- |
 | `--max-attempts N` | Limit the Dr. Perf agent to N measurements, including failures. Default and maximum: 10; smaller budgets are allowed. |
 | `--agent-only-max-rounds N` | Limit static proposal/measurability rounds, including the initial proposal. Default: 3; range: 1–10. Stops at the first measurable set, whatever its score. |
-| `--target-irregularity F` | Stop strictly below fraction F. Default: 0.10 (10%); use 0.05 for 5%. Valid range: greater than 0 and at most 1. |
+| `--target-irregularity F` | Stop when any successful attempt is strictly below F; otherwise continue to the measurement budget. Default: 0.10 (10%); use 0.05 for 5%. Valid range: greater than 0 and at most 1. |
 | `--model NAME` | Choose a Codex model. Default: your normal Codex configuration. |
 | `--results-dir PATH` | Save results in a new or empty directory. `evaluation/results/` is gitignored. |
 | `--ground-truth n,entries` | Compare each agent's answer with this set of variables. |
@@ -215,9 +386,10 @@ unexplained-function details are excluded. Each round starts from the original
 source snapshot, not earlier instrumentation edits.
 
 Agent + Dr. Perf makes instrumentation edits and rebuilds only in its disposable
-copy. Any continuation uses a fresh Codex invocation with that same experimental
-workspace and its own prior measurements; it never receives Agent Only's answer.
-Continuation logs are saved under `logs/agent_drperf/continuation-NNN/`.
+copy. Each Codex invocation can run multiple experiments within the shared
+measurement budget. Continuations use the same experimental workspace and prior
+measurements; they never receive Agent Only's answer. Their logs are saved under
+`logs/agent_drperf/continuation-NNN/`.
 It is instructed not to optimize or change the program's behavior. The
 copies are discarded after evaluation; your original source is left intact.
 
