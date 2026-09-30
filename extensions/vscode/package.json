@@ -2,7 +2,7 @@
   "name": "drperf-explorer",
   "displayName": "drperf Region Explorer",
   "description": "Inspect region performance interfaces, observed state relationships, and conditional PCV scenarios.",
-  "version": "0.1.0",
+  "version": "0.1.18",
   "publisher": "MJChku",
   "license": "UNLICENSED",
   "engines": {
@@ -90,7 +90,7 @@
         "drperf.sourceRoot": {
           "type": "string",
           "default": "",
-          "description": "Source root for report locations; defaults to the report's workspace folder."
+          "description": "Source root for report locations. Defaults to the captured source root when it is inside an open workspace, otherwise the report's workspace folder."
         },
         "drperf.pythonPath": {
           "type": "string",
@@ -128,8 +128,9 @@
     "test:host": "node test/run-host.cjs"
   },
   "devDependencies": {
-    "@vscode/vsce": "4.0.0",
     "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "4.0.0",
+    "elkjs": "0.12.0",
     "playwright": "1.63.0"
   },
   "repository": {

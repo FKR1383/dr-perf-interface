@@ -20,7 +20,6 @@ import re
 
 REL_TOL = 0.05      # a block follows the plane if every point is within 5% of its own count (plus ABS_TOL)
 ABS_TOL = 64.0      # instructions per call: tiling/rounding slack for small blocks
-MIN_VALUES = 3      # state points needed before a relation is claimed (k variables need k + 2)
 MIN_SPLIT = 3       # points needed in each regime of a split; a 3-point regime is reported as weak
 RUNTIME_MODULES = ("libgomp", "libiomp", "libomp", "libtbb")   # spin/barrier waiting, not work
 
@@ -218,9 +217,14 @@ def affine_fit(vs, ys):
 
 
 def derive_regime(vecs, values, slots):
-    """Per-block relation test over the given state points (sorted tuples)."""
+    """Per-block relation test over any nonempty set of observed state points.
+
+    A single point gives a constant. Rank-deficient inputs use the independent
+    columns and retain dependent-PCV metadata; neither case prevents a fit.
+    Acceptance describes these observations only, not unobserved states.
+    """
     k = len(values[0]) if values else 0
-    if len(values) < max(MIN_VALUES, k + 2):
+    if not values:
         return None
     r = Regime(values, k)
     n = len(values)
@@ -403,7 +407,7 @@ def describe(region, names, regimes, trig, slots, top=6):
     out.append("derive %s   (instructions per call on all threads, nested marked regions included, OpenMP runtime waiting excluded; derived per basic block)" % region)
     out.append("  states: %s" % ", ".join("%s x%d" % (fmt_state(names, v), trig[v]) for v in values))
     if not regimes:
-        out.append("  fewer than %d state points: no relation claimed" % max(MIN_VALUES, k + 2))
+        out.append("  no fitted observations available")
         return "\n".join(out)
     for r in regimes:
         rng = regime_range(regimes, r, names)

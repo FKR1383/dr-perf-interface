@@ -89,11 +89,41 @@ def build_env():
     for v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
         env.setdefault(v, "4")
     env["PERFMARK_LIB"] = PERFMARK
-    env["PERFMARK_CALIBRATE"] = "1"
+    env.pop("PERFMARK_CALIBRATE", None)  # No automatic wrapper calibration.
     env["DRPERF"] = "1"
     py = os.path.join(ROOT, "perfmark", "python")
     env["PYTHONPATH"] = py + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
     return env
+
+
+def wait_options(env):
+    enabled = env.get("DRPERF_WAITS", "0")
+    if enabled not in ("0", "1"):
+        raise ValueError("DRPERF_WAITS must be 0 or 1")
+    delay = env.get("DRPERF_WAIT_DELAY_MS", "0")
+    kind = env.get("DRPERF_WAIT_DELAY_KIND", "semaphore")
+    if kind not in ("semaphore", "event"):
+        raise ValueError("DRPERF_WAIT_DELAY_KIND must be semaphore or event")
+    region = env.get("DRPERF_WAIT_DELAY_REGION", "")
+    if not delay.isdecimal() or not 0 <= int(delay) <= 60000:
+        raise ValueError("DRPERF_WAIT_DELAY_MS must be between 0 and 60000")
+    if region and not re.fullmatch(r"[A-Za-z0-9_.:-]{1,159}", region):
+        raise ValueError("DRPERF_WAIT_DELAY_REGION must be a simple region name")
+    if int(delay) and (enabled != "1" or not region):
+        raise ValueError("Delay probes require DRPERF_WAITS=1 and DRPERF_WAIT_DELAY_REGION")
+    options = ["-waits"] if enabled == "1" else []
+    limit = env.get("DRPERF_MAX_WAIT_RECORDS")
+    if limit is not None:
+        if not limit.isascii() or not limit.isdecimal() or not 1 <= int(limit) <= 10000000:
+            raise ValueError("DRPERF_MAX_WAIT_RECORDS must be between 1 and 10000000")
+        if enabled != "1":
+            raise ValueError("DRPERF_MAX_WAIT_RECORDS requires DRPERF_WAITS=1")
+        options += ["-max_wait_records", str(int(limit))]
+    if int(delay) and kind == "event":
+        options += ["-wait_delay_event"]
+    if int(delay):
+        options += ["-wait_delay_ms", str(int(delay)), "-wait_delay_region", region]
+    return options
 
 
 def run(cmd, out, timeout=None):
@@ -109,7 +139,7 @@ def run(cmd, out, timeout=None):
     env["DYNAMORIO_OPTIONS"] = "-code_api %s-client_lib '%s;0;%s'" % (
         "".join(o + " " for o in native_exec_options(env) + late_attach_options(env)),
         CLIENT, " ".join(["-o", path, "-blocks"] + state_budget_options(env)
-                         + native_gx_options(env)))
+                         + native_gx_options(env) + wait_options(env)))
     excluded = env.get("DRPERF_EXCLUDE_CUDA_MODULE", "")
     if excluded:
         if not re.fullmatch(r"[A-Za-z0-9_.-]{1,127}", excluded):
@@ -390,34 +420,10 @@ def demangle_slots(slots):
 
 
 def calibration(run):
-    """(inside, outside) instructions per marker pair, from the calibration
-    regions perfmark.calibrate() runs at the first region: `inside` is what a
-    pair costs the region it wraps, `outside` what it costs the region around
-    it."""
-    inner = outer = loop = None
-    for reg in run["regions"]:
-        if reg["region"] == CALIB and reg["count"]:
-            inner = reg
-        elif reg["region"] == CALIB + "_outer" and reg["count"]:
-            outer = reg
-        elif reg["region"] == CALIB + "_loop" and reg["count"]:
-            loop = reg
-    inside = inner["incl"]["sum"] / inner["count"] if inner else 0.0
-    n = inner["count"] if inner else 20
-    outside = 0.0
-    if outer and loop and inner:
-        outside = max(0.0, (outer["incl"]["sum"] / outer["count"] -
-                            loop["incl"]["sum"] / loop["count"] - n * inside) / n)
-    return inside, outside
+    """Compatibility hook: estimated marker subtraction is disabled."""
+    return 0.0, 0.0
 
 
 def marker_cost(rs):
-    """The calibrated marker cost of the run, or (0, 0) if it was not measured."""
-    for run in rs["runs"]:
-        try:
-            inside, outside = calibration(run["data"])
-        except (KeyError, TypeError, ZeroDivisionError):
-            continue
-        if inside:
-            return inside, outside
+    """Compatibility hook: no estimated marker cost is subtracted."""
     return 0.0, 0.0

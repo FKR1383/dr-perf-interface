@@ -70,3 +70,16 @@ EXPORT void perfmark_state(const char *name, const char *value)
     (void)name; (void)value;
     __asm__ __volatile__("" ::: "memory");
 }
+
+EXPORT int perfmark_event_publish(uint64_t event, uint64_t generation)
+{
+    (void)event; (void)generation;
+    __asm__ __volatile__("" ::: "memory");
+    return 0;
+}
+EXPORT int perfmark_event_waited(uint64_t event, uint64_t generation)
+{
+    (void)event; (void)generation;
+    __asm__ __volatile__("" ::: "memory");
+    return 0;
+}

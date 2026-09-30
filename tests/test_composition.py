@@ -48,6 +48,30 @@ def by_name(report):
 
 
 class Composition(unittest.TestCase):
+    def test_two_parent_states_compose_child_call_multiplier(self):
+        fixture = Fixture()
+        for n in (0, 2):
+            fixture.call("parent", {"n": n, "cold": 0},
+                         lambda: [fixture.call("child", {"m": 7}) for _ in range(n)])
+        report = composition.build(fixture.model(), fixture.events)
+        edge = by_name(report)["parent"]["children"][0]
+        self.assertEqual(composition.edge_text(edge, ["n", "cold"]), "(n)*F[child]")
+        self.assertTrue(edge["includesZeroCallParents"])
+
+    def test_single_child_with_opaque_pcvs_is_atomic_f(self):
+        fixture = Fixture()
+        for n in (1, 2, 4, 7):
+            fixture.call('parent', {'n': n},
+                         lambda: fixture.call('child', {'m': n*n}))
+        report = composition.build(fixture.model(irregular=['child']), fixture.events)
+        edge = by_name(report)['parent']['children'][0]
+        self.assertIsNone(edge['arguments'])
+        self.assertIsNone(edge['sequenceArguments'])
+        self.assertEqual(edge['form'], 'product')
+        self.assertEqual(composition.edge_text(edge, ['n']), 'F[child]')
+        self.assertEqual(composition.edge_text(edge, ['n'], 'U'), 'U[child]')
+        self.assertNotIn('sum[', '\n'.join(composition.lines(report)))
+
     def test_cross_function_product_keeps_irregular_child(self):
         fixture = Fixture()
         for n in (0, 1, 3, 8):
@@ -59,23 +83,23 @@ class Composition(unittest.TestCase):
         regions = by_name(report)
         edge = regions["parent"]["children"][0]
         self.assertEqual(edge["form"], "product")
-        self.assertEqual(composition.edge_text(edge, ["n", "m"]), "(n)*F[library.child](m)")
+        self.assertEqual(composition.edge_text(edge, ["n", "m"]), "(n)*F[library.child]")
         self.assertTrue(edge["includesZeroCallParents"])
         text = "\n".join(composition.lines(report))
         self.assertIn("U_own[library.child]", text)
-        self.assertIn("(n)*U[library.child](m)", text)
+        self.assertIn("(n)*U[library.child]", text)
         self.assertLess(text.index("F[library.child](size) ="), text.index("F[parent](n, m) ="))
 
-    def test_varying_arguments_remain_a_sum_even_if_cost_is_affine(self):
+    def test_varying_arguments_do_not_block_affine_child_multiplier(self):
         fixture = Fixture()
         for n in (1, 2, 4, 7):
             fixture.call("parent", {"n": n},
                          lambda: [fixture.call("child", {"m": i+1}) for i in range(n)])
         report = composition.build(fixture.model(), fixture.events)
         edge = by_name(report)["parent"]["children"][0]
-        self.assertEqual(edge["form"], "sum")
+        self.assertEqual(edge["form"], "product")
         self.assertIsNone(edge["arguments"])
-        self.assertEqual(composition.edge_text(edge, ["n"]), "sum[j=0..(n)-1] F[child](j + 1)")
+        self.assertEqual(composition.edge_text(edge, ["n"]), "(n)*F[child]")
 
     def test_repeated_parent_state_with_different_call_counts_is_not_averaged(self):
         fixture = Fixture()
@@ -85,7 +109,7 @@ class Composition(unittest.TestCase):
         report = composition.build(fixture.model(), fixture.events)
         edge = by_name(report)["parent"]["children"][0]
         self.assertIsNone(edge["multiplicity"])
-        self.assertIn("calls(child)", composition.edge_text(edge, ["n"]))
+        self.assertEqual(composition.edge_text(edge, ["n"]), "unexplained(F[child])")
         row = next(r for r in by_name(report)["parent"]["observed"] if r["state"] == [2])
         self.assertEqual(row["childCallRanges"]["child"], [2, 7])
 
@@ -97,7 +121,7 @@ class Composition(unittest.TestCase):
         report = composition.build(fixture.model(), fixture.events)
         edge = by_name(report)["parent"]["children"][0]
         self.assertEqual(composition.edge_text(edge, ["j"]),
-                         "sum[call_j=0..(j)-1] F[child](2*j + call_j)")
+                         "(j)*F[child]")
 
     def test_conditional_count_pcv_restores_product(self):
         fixture = Fixture()
@@ -106,7 +130,7 @@ class Composition(unittest.TestCase):
                          lambda: [fixture.call("child", {"m": 10}) for _ in range(selected)])
         report = composition.build(fixture.model(), fixture.events)
         edge = by_name(report)["parent"]["children"][0]
-        self.assertEqual(composition.edge_text(edge, ["n", "selected"]), "(selected)*F[child](10)")
+        self.assertEqual(composition.edge_text(edge, ["n", "selected"]), "(selected)*F[child]")
 
     def test_three_levels_do_not_double_count_descendants(self):
         fixture = Fixture()
@@ -128,7 +152,7 @@ class Composition(unittest.TestCase):
         report = composition.build(fixture.model(), fixture.events)
         region = by_name(report)["recursive"]
         self.assertTrue(region["recursive"])
-        self.assertEqual(region["children"][0]["form"], "sum")
+        self.assertEqual(region["children"][0]["form"], "unresolved")
         self.assertEqual(region["children"][0]["childCalls"], 7)
 
     def test_no_cross_thread_or_process_parentage(self):
@@ -193,10 +217,26 @@ class ExactRelations(unittest.TestCase):
         self.assertEqual(relation["coefficients"], ["1/2"])
         self.assertEqual(relation["constant"], str(-base//2))
 
-    def test_no_interpolation_claim_with_too_few_states(self):
-        self.assertIsNone(composition.affine([(1,), (2,)], [3, 5], ["n"]))
-        relation = composition.affine([(1,), (2,), (3,)], [3, 5, 7], ["n"])
+    def test_two_states_support_observed_affine_relation(self):
+        relation = composition.affine([(1,), (2,)], [3, 5], ["n"])
         self.assertEqual(composition.affine_text(relation, ["n"]), "2*n + 1")
+        self.assertEqual(relation["samples"], 2)
+        self.assertEqual(relation["kind"], "observed-affine")
+
+    def test_sparse_dependent_pcvs_fit_without_extra_observation(self):
+        relation = composition.affine([(1, 2, 0), (2, 4, 0)], [3, 5], ["n", "m", "cold"])
+        self.assertEqual(composition.affine_text(relation, ["n", "m", "cold"]), "2*n + 1")
+        self.assertEqual(relation["dependent"], ["m", "cold"])
+
+    def test_sparse_fit_still_rejects_conflicting_observations(self):
+        self.assertIsNone(composition.affine([(1,), (2,), (2,)], [3, 5, 6], ["n"]))
+        self.assertIsNone(composition.affine([(1,), (2,), (3,)], [3, 5, 8], ["n"]))
+
+    def test_single_state_constant_and_empty_input(self):
+        relation = composition.affine([(10, 0)], [3], ["n", "cold"])
+        self.assertEqual(composition.affine_text(relation, ["n", "cold"]), "3")
+        self.assertEqual(relation["kind"], "observed-constant")
+        self.assertIsNone(composition.affine([], [], ["n"]))
 
     def test_dependent_parent_pcvs_disclosed(self):
         relation = composition.affine([(i, 2*i) for i in range(5)], list(range(5)), ["n", "m"])
@@ -256,7 +296,7 @@ class StructuralChecks(unittest.TestCase):
         report = composition.build(fixture.model(), fixture.events)
         reordered = json.loads(json.dumps(report, sort_keys=True))
         edge = by_name(reordered)['parent']['children'][0]
-        self.assertEqual(composition.edge_text(edge, ['n', 'm']), 'F[child](n, m)')
+        self.assertEqual(composition.edge_text(edge, ['n', 'm']), 'F[child]')
 
     def test_mutually_recursive_components_all_marked(self):
         fixture = Fixture()
@@ -338,7 +378,7 @@ class StructuralChecks(unittest.TestCase):
             fixture.call('parent', {'n': n}, lambda: [fixture.call('child', {}) for _ in range(n)])
         report = composition.build(fixture.model(), fixture.events)
         edge = by_name(report)['parent']['children'][0]
-        self.assertEqual(composition.edge_text(edge, ['n']), '(n)*F[child]()')
+        self.assertEqual(composition.edge_text(edge, ['n']), '(n)*F[child]')
 
     def test_decimal_string_boundaries_are_ordered_numerically(self):
         fixture = Fixture()
@@ -426,7 +466,7 @@ class FrozenChecks(unittest.TestCase):
         fixture.call('parent', {'n': 1, 'different': 3}, lambda: fixture.call('child', {'m': 3, 'twice': 6}))
         self.assertEqual(self.check_fixture(fixture)['edges'][0]['status'], 'schema-mismatch')
 
-    def test_known_count_with_opaque_arguments_remains_unresolved(self):
+    def test_known_count_with_opaque_arguments_accepts_multiplier(self):
         fixture = Fixture()
         for n in range(2, 6):
             fixture.call('parent', {'n': n}, lambda: [fixture.call('child', {'m': i*i+1}) for i in range(n)])
@@ -434,7 +474,8 @@ class FrozenChecks(unittest.TestCase):
         result = composition.check(reference, fixture.model(), fixture.events)
         row = result['edges'][0]
         self.assertEqual(row['status'], 'holds')
-        self.assertTrue(row['unresolved'])
+        self.assertFalse(row['unresolved'])
+        self.assertTrue(row['argumentsUnresolved'])
 
     def test_invalid_measured_trace_cannot_validate(self):
         result = composition.check(self.reference, self.base.model(), self.base.events[:-1])

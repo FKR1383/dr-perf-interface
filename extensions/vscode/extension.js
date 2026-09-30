@@ -4,6 +4,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { execFile } = require('node:child_process');
 const Model = require('./media/model');
+const Navigation = require('./navigation');
+const { graphHtml } = require('./graph-export');
 
 function activate(context) {
   let report = null,
@@ -17,6 +19,8 @@ function activate(context) {
     pendingScenario = null,
     webviewReady = false,
     analysisStatus = null;
+  let sourceOpenSequence = 0, savedEditorLayout = null, layoutQueue = Promise.resolve();
+  const sourceWarnings = new Set();
   const changed = new vscode.EventEmitter();
   const lensesChanged = new vscode.EventEmitter();
   const documentHashes = new WeakMap();
@@ -34,7 +38,8 @@ function activate(context) {
     const folder =
       (reportUri && vscode.workspace.getWorkspaceFolder(reportUri)) ||
       vscode.workspace.workspaceFolders?.[0];
-    return configured ? path.resolve(folder?.uri.fsPath || '', configured) : folder?.uri.fsPath;
+    return Navigation.sourceRoot(configured, folder?.uri.fsPath,
+      report?.provenance?.sourceRoot, (vscode.workspace.workspaceFolders || []).map(f=>f.uri.fsPath));
   };
   function sourceUri(location) {
     if (demo) return vscode.Uri.joinPath(context.extensionUri, 'demo', 'pipeline.c');
@@ -165,14 +170,15 @@ function activate(context) {
     }
     void sendSourceStatus();
   }
-  function selectRegion(regionId, reveal = true) {
+  function selectRegion(regionId, reveal = true, notify = true) {
     if (!report?.regions.some((r) => r.id === regionId)) return;
     selected = regionId;
     if (reveal) showExplorer();
-    panel?.webview.postMessage({ type: 'select', region: regionId });
+    if (notify) panel?.webview.postMessage({ type: 'select', region: regionId });
     void sendSourceStatus();
   }
-  async function openSource(regionId, index = 0) {
+  async function openSource(regionId, index = 0, preserveFocus = false) {
+    const sequence = ++sourceOpenSequence, currentReport = report;
     const region = report?.regions.find((r) => r.id === regionId);
     const location = region?.sources[index];
     const uri = location && sourceUri(location);
@@ -184,18 +190,51 @@ function activate(context) {
     }
     try {
       const document = await vscode.workspace.openTextDocument(uri);
+      if (sequence !== sourceOpenSequence || report !== currentReport) return;
       const line = Math.min(Math.max(0, location.line - 1), document.lineCount - 1);
       await vscode.window.showTextDocument(document, {
-        viewColumn: vscode.ViewColumn.One,
+        viewColumn:
+          panel?.viewColumn === vscode.ViewColumn.One
+            ? vscode.ViewColumn.Two
+            : vscode.ViewColumn.One,
+        preserveFocus,
+        preview: true,
         selection: new vscode.Range(line, 0, line, 0)
       });
-      if (stale(document, location))
+      const warningKey = report.id+':'+uri.toString();
+      if (stale(document, location) && !preserveFocus && !sourceWarnings.has(warningKey)) {
+        sourceWarnings.add(warningKey);
         vscode.window.showWarningMessage(
           'Source has changed since this report was exported. Recorded formulas may be stale.'
         );
+      }
     } catch (error) {
       vscode.window.showErrorMessage('Cannot open region source: ' + error.message);
     }
+  }
+  function graphFullscreen(enabled) {
+    layoutQueue = layoutQueue.then(()=>applyGraphFullscreen(enabled));
+    return layoutQueue;
+  }
+  async function applyGraphFullscreen(enabled) {
+    try {
+      const commands = await vscode.commands.getCommands(true);
+      if (!commands.includes('vscode.getEditorLayout') || !commands.includes('vscode.setEditorLayout')) return;
+      if (enabled && panel && !savedEditorLayout) {
+        const layout = await vscode.commands.executeCommand('vscode.getEditorLayout');
+        if (!layout?.groups) return;
+        savedEditorLayout = layout;
+        panel.reveal(panel.viewColumn, false);
+        await vscode.commands.executeCommand('vscode.setEditorLayout',
+          Navigation.expandedLayout(layout, panel.viewColumn));
+      } else if (!enabled && savedEditorLayout) {
+        const original = savedEditorLayout; savedEditorLayout = null;
+        const current = await vscode.commands.executeCommand('vscode.getEditorLayout');
+        // Do not undo editor groups the user added/removed while expanded.
+        if (current?.groups && Navigation.leafCount(current) === Navigation.leafCount(original))
+          await vscode.commands.executeCommand('vscode.setEditorLayout', original);
+      }
+    } catch (error) { output.appendLine('Graph layout: '+error.message); }
   }
   function showExplorer() {
     if (!report) {
@@ -203,7 +242,7 @@ function activate(context) {
       return;
     }
     if (panel) {
-      panel.reveal(vscode.ViewColumn.Beside, true);
+      panel.reveal(panel.viewColumn, true);
       return;
     }
     panel = vscode.window.createWebviewPanel(
@@ -224,9 +263,10 @@ function activate(context) {
     webview.html = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; worker-src blob:; connect-src ${webview.cspSource};">
       <link rel="stylesheet" href="${media('explorer.css')}"><title>drperf Region Explorer</title></head>
-      <body><div id="app" aria-live="polite"></div><script nonce="${nonce}" src="${media('expressions.js')}"></script><script nonce="${nonce}" src="${media('model.js')}"></script><script nonce="${nonce}" src="${media('analysis-client.js')}" data-expressions="${media('expressions.js')}" data-model="${media('model.js')}" data-worker="${media('analysis-worker.js')}"></script><script nonce="${nonce}" src="${media('explorer.js')}"></script></body></html>`;
+      <body><div id="app" aria-live="polite"></div><script nonce="${nonce}" src="${media('expressions.js')}"></script><script nonce="${nonce}" src="${media('model.js')}"></script><script nonce="${nonce}" src="${media('analysis-client.js')}" data-expressions="${media('expressions.js')}" data-model="${media('model.js')}" data-worker="${media('analysis-worker.js')}"></script><script nonce="${nonce}" src="${media('execution-graph.js')}"></script><script nonce="${nonce}" src="${media('vendor/elk.bundled.js')}"></script><script nonce="${nonce}" src="${media('graph-layout.js')}"></script><script nonce="${nonce}" src="${media('explorer.js')}"></script></body></html>`;
     panel.onDidDispose(
       () => {
+        void graphFullscreen(false);
         panel = null;
         webviewReady = false;
       },
@@ -248,9 +288,26 @@ function activate(context) {
           );
         else if (message.type === 'source' && typeof message.region === 'string')
           await openSource(message.region, Number.isInteger(message.index) ? message.index : 0);
-        else if (message.type === 'select' && typeof message.region === 'string')
-          selectRegion(message.region, false);
-        else if (message.type === 'reload') await reload();
+        else if (message.type === 'exportGraphHtml' && report && message.modelId === report.id) {
+          const snapshot = report;
+          try {
+            const uri = await vscode.window.showSaveDialog({
+              defaultUri: reportUri && vscode.Uri.joinPath(reportUri, '..', path.basename(reportUri.path).replace(/\.json$/i, '') + '.graph.html'),
+              filters: { 'Interactive graph': ['html'] }, saveLabel: 'Save graph HTML'
+            });
+            if (uri) {
+              await vscode.workspace.fs.writeFile(uri, Buffer.from(graphHtml(snapshot, message.view || {})));
+              vscode.window.showInformationMessage('Graph saved: ' + uri.fsPath + '. Open it in a browser.');
+            }
+          } catch (error) { vscode.window.showErrorMessage('Cannot export graph: ' + error.message); }
+        }
+        else if (message.type === 'graphFullscreen') await graphFullscreen(message.enabled === true);
+        else if (message.type === 'select' && typeof message.region === 'string') {
+          ++sourceOpenSequence;
+          selectRegion(message.region, false, false);
+          if (message.openSource !== false && report?.regions.find((r) => r.id === message.region)?.sources.length)
+            await openSource(message.region, 0, true);
+        } else if (message.type === 'reload') await reload();
         else if (message.type === 'loadValidationReport') {
           const uri = (
             await vscode.window.showOpenDialog({
@@ -305,6 +362,8 @@ function activate(context) {
     const parsed = await readModel(uri);
     if (sequence !== loadSequence) return;
     analysisStatus = null;
+    ++sourceOpenSequence;
+    sourceWarnings.clear();
     report = parsed;
     reportUri = uri;
     demo = isDemo;
@@ -527,9 +586,11 @@ function activate(context) {
   );
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (panel && configuration().get('followCursor', true)) {
+      if (panel && configuration().get('followCursor', true) &&
+          (event.kind === vscode.TextEditorSelectionChangeKind.Keyboard ||
+           event.kind === vscode.TextEditorSelectionChangeKind.Mouse)) {
         const region = currentRegion(event.textEditor);
-        if (region) selectRegion(region, false);
+        if (region && region !== selected) selectRegion(region, false);
       }
     })
   );
@@ -593,8 +654,11 @@ function activate(context) {
         return;
       }
       const candidate = typeof region === 'string' ? region : currentRegion();
-      if (candidate) selectRegion(candidate);
-      else showExplorer();
+      if (candidate) {
+        selectRegion(candidate);
+        if (report.regions.find((r) => r.id === candidate)?.sources.length)
+          await openSource(candidate, 0, true);
+      } else showExplorer();
     }
   }))
     context.subscriptions.push(vscode.commands.registerCommand(command, callback));

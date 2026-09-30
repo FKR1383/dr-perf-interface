@@ -1,4 +1,4 @@
-"""Marker removal uses exclusive profiles and direct-child counts per state."""
+"""Exact marker exclusion preserves wrapper work and ignores calibration."""
 from collections import Counter
 import copy
 from pathlib import Path
@@ -50,94 +50,67 @@ class Capture:
 
 
 class MarkerAccounting(unittest.TestCase):
-    def test_nested_slope_is_corrected_before_fitting(self):
-        cap = Capture(); cap.calibrate()
+    def test_legacy_calibration_cannot_change_application_formula(self):
+        cap = Capture(); cap.calibrate(inside=2000, outside=3000)
         for n in (0, 1, 3, 7, 12):
             cap.call('parent', n, {0: 10+10*n, 1: 20, 2: 3*n, 3: 100*n+7},
                      lambda: [cap.call('child', n, {0: 10, 1: 20, 3: 50*n+2}) for _ in range(n)])
+        saved = copy.deepcopy(cap.keys)
         adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records)
-        vecs, calls = derive.per_trigger(derive.per_state(adjusted, 'parent')[0])
+        vecs, _ = derive.per_trigger(derive.per_state(adjusted, 'parent')[0])
         fit = derive.derive(vecs, cap.slots, split=False)[0]
-        self.assertAlmostEqual(fit.a[0], 100)
-        self.assertAlmostEqual(fit.c, 7)
+        self.assertAlmostEqual(fit.a[0], 103)
+        self.assertAlmostEqual(fit.c, 27)
         for state, vec in vecs.items():
-            self.assertEqual(vec, {3: 100*state[0]+7})
-            row = accounting[('parent', state)]
-            self.assertEqual(row['wrapperEstimate'], 20 + 3*state[0])
-            self.assertEqual(row['unmatchedEstimate'], 0)
+            self.assertEqual(sum(vec.values()), 103*state[0]+27)
+            self.assertEqual(accounting[('parent', state)]['exactBlocks'], 10+10*state[0])
+        self.assertEqual(cap.keys, saved)
+        without = {k:r for k,r in cap.keys.items() if not r['region'].startswith(markers.CALIB)}
+        no_calibration, _ = markers.adjust(without, cap.slots, [])
+        self.assertEqual(derive.per_state(adjusted, 'parent'),
+                         derive.per_state(no_calibration, 'parent'))
 
-    def test_grandchildren_do_not_charge_outer_and_recursion_counts(self):
+    def test_tiny_region_preserves_shared_interpreter_blocks(self):
         cap = Capture(); cap.calibrate()
-        def middle(n):
-            cap.call('middle', n, {0: 10, 1: 20, 2: 3*n, 3: 17},
-                     lambda: [cap.call('leaf', 0, {0: 10, 1: 20, 3: 2}) for _ in range(n)])
-        cap.call('outer', 10, {0: 10, 1: 20, 2: 3, 3: 19}, lambda: middle(10))
-        def recursive(n):
-            cap.call('recursive', n, {0: 10, 1: 20, 2: 3*(n>0), 3: 23},
-                     lambda: recursive(n-1) if n else None)
-        recursive(4)
-        adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records)
-        self.assertEqual(accounting[('outer', (10,))]['wrapperEstimate'], 23)
-        self.assertEqual(accounting[('middle', (10,))]['wrapperEstimate'], 50)
-        for row in adjusted.values():
-            if row['region'] in ('outer', 'middle', 'recursive', 'leaf'):
-                self.assertEqual(set(row['vec']), {3})
+        cap.call('tiny', 1, {0: 10, 1: 2, 3: 7})
+        for errors in ([], ['truncated']):
+            adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records, errors)
+            row = next(r for r in adjusted.values() if r['region'] == 'tiny')
+            self.assertEqual(row['vec'], {1: 2, 3: 7})
+            info = markers.metadata('tiny', ['n'], accounting)
+            self.assertEqual(info['method'], 'marker-module exclusion only')
+            self.assertNotIn('unmatchedEstimate', info['points'][0])
 
-    def test_different_run_calibrations_are_not_mixed(self):
-        cap = Capture()
-        for run, inside, outside in ((0, 20, 3), (1, 100, 11)):
-            cap.calibrate(inside, outside, run)
-            cap.call('parent', 1, {0: 10, 1: inside, 2: outside, 3: 7},
-                     lambda: cap.call('child', 1, {0: 10, 1: inside, 3: 5}, run=run), run=run)
-        adjusted, _ = markers.adjust(cap.keys, cap.slots, cap.records)
-        for row in adjusted.values():
-            if row['region'] == 'parent':
-                self.assertEqual(row['vec'], {3: 7})
-
-    def test_nonlinear_child_counts_do_not_leave_marker_irregularity(self):
+    def test_nonlinear_wrapper_work_is_not_hidden(self):
         cap = Capture(); cap.calibrate()
         for n in (0, 1, 3, 7, 12):
-            count = n*n
-            cap.call('parent', n, {0: 10, 1: 20, 2: 3*count, 3: 100*n+7},
-                     lambda: [cap.call('child', n, {0: 10, 1: 20, 3: 7}) for _ in range(count)])
+            cap.call('parent', n, {0: 10, 1: 20, 2: 300*n*n, 3: 100*n+7})
         adjusted, _ = markers.adjust(cap.keys, cap.slots, cap.records)
         vecs, _ = derive.per_trigger(derive.per_state(adjusted, 'parent')[0])
         fit = derive.derive(vecs, cap.slots, split=False)[0]
-        self.assertEqual(fit.n_irr, 0)
+        self.assertGreater(fit.n_irr, 0)
         self.assertAlmostEqual(fit.a[0], 100)
 
-    def test_bad_or_missing_calibration_is_not_silently_over_subtracted(self):
-        cap = Capture(); cap.calibrate()
-        cap.call('tiny', 1, {0: 10, 1: 2, 3: 7})
-        adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records)
-        row = next(r for r in adjusted.values() if r['region'] == 'tiny')
-        self.assertEqual(row['vec'], {3: 7})
-        self.assertEqual(accounting[('tiny', (1,))]['unmatchedEstimate'], 18)
-        adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records, ['truncated'])
-        row = next(r for r in adjusted.values() if r['region'] == 'tiny')
-        self.assertEqual(row['vec'], {1: 2, 3: 7})
-        self.assertEqual(accounting[('tiny', (1,))]['uncalibratedCalls'], 1)
-
-    def test_module_only_removal_does_not_claim_caller_preparation(self):
-        cap = Capture(); cap.call('native', 1, {0: 10, 3: 19})
-        adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records)
-        self.assertEqual(next(iter(adjusted.values()))['vec'], {3: 19})
-        self.assertEqual(accounting[('native', (1,))]['uncalibratedCalls'], 1)
-
-    def test_shared_state_root_buckets_are_adjusted_at_the_fitting_scope(self):
-        cap = Capture(); cap.calibrate()
-        cap.call('parent', 1, {0: 10, 1: 20, 2: 12, 3: 7},
-                 lambda: [cap.call('child', 1, {0: 10, 1: 20, 3: 5}) for _ in range(4)])
-        cap.call('parent', 1, {0: 10, 1: 20, 3: 7})
+    def test_shared_state_root_buckets_preserve_measured_work(self):
+        cap = Capture()
+        cap.call('parent', 1, {0: 10, 1: 20, 2: 12, 3: 7})
         key = cap.identities[(0, 'parent', 1)]
-        cap.keys[key].update(count=1, root='busy', vec={0: 10, 1: 20, 2: 12, 3: 7})
         cap.keys[(0, 1000)] = dict(cap.keys[key], root='idle', vec={0: 10, 1: 20, 3: 7})
-        saved = copy.deepcopy(cap.keys)
         adjusted, accounting = markers.adjust(cap.keys, cap.slots, cap.records)
         own, _, _ = derive.per_state(adjusted, 'parent')
-        self.assertEqual(own[(1,)], ({3: 14}, 2))
-        self.assertEqual(accounting[('parent', (1,))]['unmatchedEstimate'], 0)
-        self.assertEqual(cap.keys, saved)
+        self.assertEqual(own[(1,)], ({1: 40, 2: 12, 3: 14}, 2))
+        self.assertEqual(accounting[('parent', (1,))]['exactBlocks'], 20)
+
+    def test_marker_identity_includes_binding_but_not_application_symbols(self):
+        self.assertTrue(markers.is_marker(('libperfmark.so', 'anything')))
+        self.assertTrue(markers.is_marker(('_perfmark.cpython-311-x86_64-linux-gnu.so', 'Region_enter')))
+        self.assertFalse(markers.is_marker(('libpython.so', 'work')))
+
+    def test_automatic_calibration_is_disabled(self):
+        with patch.dict(os.environ, {'PERFMARK_CALIBRATE': '1'}):
+            self.assertNotIn('PERFMARK_CALIBRATE', runner.build_env())
+        self.assertEqual(runner.calibration({}), (0, 0))
+        self.assertEqual(runner.marker_cost({}), (0, 0))
 
 
 class PythonMarkers(unittest.TestCase):
@@ -154,6 +127,8 @@ class PythonMarkers(unittest.TestCase):
             app.write_text('''import perfmark
 def leaf(n):
     with perfmark.region("leaf", n=n):
+        with perfmark.region("perf.pcv"):
+            scratch = sum(i*i for i in range(100*n))
         total = 0
         for i in range(100*n): total += i
     return total
@@ -163,22 +138,34 @@ def middle(n):
 for n in (0,1,2,4,8):
     with perfmark.region("outer", n=n): middle(n)
 ''')
-            with patch.dict(os.environ, {'DRPERF_FOLLOW_THREADS':'0', 'PERFMARK_NO_EXT': '1' if ctypes else ''}):
+            with patch.dict(os.environ, {'DRPERF_FOLLOW_THREADS':'0', 'PERFMARK_NO_EXT': '1' if ctypes else '', 'PERFMARK_CALIBRATE': '1'}):
                 rc, log, files = runner.run([sys.executable, str(app)], str(folder/'raw'), timeout=90)
             self.assertEqual(rc, 0, log); self.assertTrue(files, log)
             model = explorer.build_model(folder/'raw', discover=False)
             self.assertEqual(model['composition']['status'], 'observed')
             regions = {r['id']: r for r in model['regions']}
+            self.assertEqual(set(regions), {'outer', 'middle', 'leaf'})
+            runs = explorer.load_raw_runs(folder/'raw')
+            raw_keys, _ = runner.blocks_of_set(runs)
+            self.assertFalse(any(r['region'].startswith(markers.CALIB) for r in raw_keys.values()))
+            self.assertTrue(any(r['region'] == 'perf.pcv' for r in raw_keys.values()))
+            self.assertFalse(any(e['child'] == 'perf.pcv' for r in model['composition']['regions']
+                                 for e in r['children']))
             for name, region in regions.items():
                 self.assertTrue(all(p['observed'] >= 0 for p in region['points']))
-                self.assertTrue(any(p['recorded'] > p['observed'] for p in region['points']))
-                self.assertTrue(all(p['calibratedCalls'] == p['calls'] for p in region['markerAdjustment']['points']))
+                # Current clients exclude marker modules during execution;
+                # legacy profiles still use exact block subtraction on export.
+                self.assertTrue(all(p['recorded'] == p['observed'] for p in region['points']))
+                self.assertEqual(region['markerAdjustment']['method'], 'marker-module exclusion only')
+                self.assertFalse(any('calibration' in d.lower() for d in region['diagnostics']))
+                for point, adjustment in zip(region['points'], region['markerAdjustment']['points']):
+                    self.assertAlmostEqual(point['recorded'] - point['observed'], adjustment['exactBlocks'])
                 for fit in region['regimes']:
                     for group in fit['attribution']['coefficients'] + [fit['attribution']['constant'], fit['attribution']['unexplained']]:
                         self.assertFalse(any(markers.is_marker((r['module'], r['function'])) for r in group))
             self.assertTrue(all(p['directChildCalls'] == 1 for p in regions['outer']['markerAdjustment']['points']))
             self.assertTrue(all(p['directChildCalls'] == p['state'][0] for p in regions['middle']['markerAdjustment']['points']))
-            self.assertTrue(all(p['directChildCalls'] == 0 for p in regions['leaf']['markerAdjustment']['points']))
+            self.assertTrue(all(p['directChildCalls'] == 1 for p in regions['leaf']['markerAdjustment']['points']))
 
 
 if __name__ == '__main__':

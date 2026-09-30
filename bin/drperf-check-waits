@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+"""Check declared wait indicators against every invocation in an existing profile."""
+import argparse
+import json
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'lib'))
+import wait_contracts
+import explorer
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('profile')
+    parser.add_argument('declarations')
+    parser.add_argument('-o', '--output', help='Write the checked evidence as JSON')
+    args = parser.parse_args()
+    try:
+        model = explorer.load_model(args.profile, wait_evidence=True)
+        declarations = json.loads(Path(args.declarations).read_text())
+        report = wait_contracts.check(model, declarations)
+        if args.output:
+            Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.output).write_text(json.dumps(report, indent=2) + '\n')
+        print('\n'.join(wait_contracts.lines(report)))
+        return 0 if report['status'] == 'verified-observed' else 1 if report['status'] == 'invalid' else 2
+    except (OSError, ValueError, KeyError, TypeError, SyntaxError) as error:
+        parser.error(str(error))
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "claims": [
+    {
+      "id": "transfer-orders-after-compute",
+      "region": "carrier.transfer",
+      "api": "cudaStreamWaitEvent",
+      "indicator": "d2h == 1",
+      "producer": "carrier.transfer"
+    },
+    {
+      "id": "drain-requires-transfer-completion",
+      "region": "store.drain",
+      "api": "cudaEventSynchronize",
+      "indicator": "True",
+      "producer": "carrier.transfer"
+    },
+    {
+      "id": "encode-orders-copy-stream",
+      "region": "codec.encode_units",
+      "api": "cudaStreamWaitEvent",
+      "indicator": "units > 0",
+      "producer": "codec.encode_units"
+    },
+    {
+      "id": "decode-orders-copy-and-join",
+      "region": "codec.decode_units",
+      "api": "cudaStreamWaitEvent",
+      "indicator": "units > 0",
+      "producer": "codec.decode_units"
+    },
+    {
+      "id": "load-origin-observed-proxy",
+      "region": "load.plan",
+      "api": "cudaEventSynchronize",
+      "indicator": "encoded > 0 and new_copy_stream == 1",
+      "producer": "load.plan"
+    },
+    {
+      "id": "load-copy-order-observed-proxy",
+      "region": "load.plan",
+      "api": "cudaStreamWaitEvent",
+      "indicator": "encoded > 0 and new_copy_stream == 0",
+      "producer": "load.plan"
+    }
+  ]
+}

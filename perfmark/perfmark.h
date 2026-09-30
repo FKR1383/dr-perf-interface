@@ -19,6 +19,11 @@ void perfmark_end(const char *region);
 /* Attach an extra named value to the innermost open region (recorded per
  * trigger in the trace; not part of the aggregation key). */
 void perfmark_state(const char *name, const char *value);
+/* Observational event checkpoints: no synchronization outside an explicit
+ * drperf delay probe. Use a stable application ID plus a unique generation.
+ * Publish immediately BEFORE the real release; waited only after readiness. */
+int perfmark_event_publish(uint64_t event, uint64_t generation);
+int perfmark_event_waited(uint64_t event, uint64_t generation);
 #ifdef __cplusplus
 }
 #endif

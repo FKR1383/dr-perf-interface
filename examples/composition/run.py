@@ -86,36 +86,36 @@ def assert_cases(model):
     def text(name, child=None):
         return composition.edge_text(edge(name, child), regions[name]['states'])
     assert regions['irregular_leaf']['ownUnexplained']
-    assert text('repeated') == '(2*n + 1)*F[irregular_leaf](m)'
-    assert text('varying') == 'sum[j=0..(n)-1] F[linear_leaf](m + j)'
-    assert edge('branch_raw')['form'] == 'sum'
-    assert text('branch_refined') == '(selected_count)*F[irregular_leaf](m)'
+    assert text('repeated') == '(2*n + 1)*F[irregular_leaf]'
+    assert text('varying') == '(n)*F[linear_leaf]'
+    assert edge('branch_raw')['form'] == 'unresolved'
+    assert text('branch_refined') == '(selected_count)*F[irregular_leaf]'
     assert edge('hidden_count')['multiplicity'] is None
     assert [e['child'] for e in regions['three_levels']['children']] == ['middle']
-    assert text('three_levels') == '(batches)*F[middle](n, m)'
-    assert text('middle') == '(n)*F[irregular_leaf](m)'
+    assert text('three_levels') == '(batches)*F[middle]'
+    assert text('middle') == '(n)*F[irregular_leaf]'
     assert regions['recursive']['recursive']
-    assert text('multiple_children', 'linear_leaf') == '(n)*F[linear_leaf](m)'
-    assert text('multiple_children', 'irregular_leaf') == '(n + 2)*F[irregular_leaf](m + 1)'
+    assert text('multiple_children', 'linear_leaf') == '(n)*F[linear_leaf]'
+    assert text('multiple_children', 'irregular_leaf') == '(n + 2)*F[irregular_leaf]'
     assert {e['child'] for e in regions['diamond']['children']} == {'left', 'right'}
-    assert text('left') == '(n)*F[linear_leaf](m)'
-    assert text('right') == '(2*n)*F[linear_leaf](m)'
+    assert text('left') == '(n)*F[linear_leaf]'
+    assert text('right') == '(2*n)*F[linear_leaf]'
     assert edge('rectangular_raw')['multiplicity'] is None
-    assert text('rectangular_refined') == '(cells)*F[linear_leaf](m)'
+    assert text('rectangular_refined') == '(cells)*F[linear_leaf]'
     assert edge('triangular_raw')['multiplicity'] is None
-    assert text('triangular_refined') == '(pairs)*F[linear_leaf](m)'
+    assert text('triangular_refined') == '(pairs)*F[linear_leaf]'
     assert edge('arguments_raw')['arguments'] is None and edge('arguments_raw')['sequenceArguments'] is None
-    assert text('arguments_refined') == '(n)*F[linear_leaf](effective)'
+    assert text('arguments_refined') == '(n)*F[linear_leaf]'
     assert edge('alternating')['arguments'] is None and edge('alternating')['sequenceArguments'] is None
     for name, child in (('mutual_a', 'mutual_b'), ('mutual_b', 'mutual_a')):
         assert regions[name]['recursive']
         assert edge(name)['child'] == child
         assert composition.affine_text(edge(name)['multiplicity'], ['depth', 'more']) == 'more'
-    assert text('context_cheap_raw') == '(n)*F[context_leaf_raw](m)'
-    assert text('context_expensive_raw') == '(n)*F[context_leaf_raw](m)'
-    assert text('context_cheap_refined') == '(n)*F[context_leaf_refined](m, m)'
-    assert text('context_expensive_refined') == '(n)*F[context_leaf_refined](m, 128*m)'
-    assert text('regime_parent') == '(n)*F[regime_leaf](m)'
+    assert text('context_cheap_raw') == '(n)*F[context_leaf_raw]'
+    assert text('context_expensive_raw') == '(n)*F[context_leaf_raw]'
+    assert text('context_cheap_refined') == '(n)*F[context_leaf_refined]'
+    assert text('context_expensive_refined') == '(n)*F[context_leaf_refined]'
+    assert text('regime_parent') == '(n)*F[regime_leaf]'
     assert len(regions['regime_leaf']['own']) == 2
 
 
@@ -173,7 +173,7 @@ def main():
         notes.append(f"  {name}: {100*row['relativeAbsoluteError']:.3f}% aggregate absolute reconstruction error; {label}")
     heldout_check = summary['heldoutRelations']
     notes.append(f"  New inputs: {sum(e['checks'] for e in heldout_check['edges'])} frozen relation checks, no failures.")
-    notes.append(f"  {sum(e['unresolved'] for e in heldout_check['edges'])} edges still need trace-dependent sums; checking partial relations does not close them.")
+    notes.append(f"  {sum(e['unresolved'] for e in heldout_check['edges'])} edges still have unexplained child-call multipliers; checking argument relations does not close them.")
     notes.append('  Deliberately changed child count: 40/40 affected parent calls rejected.')
     (out / 'report.txt').write_text('\n'.join(explorer.cost_lines(baseline) + notes) + '\n')
     print(f"PASS: 20 composition cases, {baseline['trace']['recordCount']} baseline calls.")

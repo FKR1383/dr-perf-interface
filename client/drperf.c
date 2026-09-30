@@ -26,6 +26,8 @@
  *   -exclude_cuda_module BASENAME  -no_follow_threads  -max_states_per_region N
  *   -native_gx (execute GX's explicit emulation-work boundary natively)
  *   -no_auto_gx (disable automatic GX counting/native-work exclusions)
+ *   -waits (observe supported synchronization APIs without wait annotations)
+ *   -wait_delay_region NAME -wait_delay_ms N (experimental sem_post delay probe)
  */
 #include "dr_api.h"
 #include "drmgr.h"
@@ -119,6 +121,9 @@ typedef struct _thread_t {
     uint64 final_total;
     uint64 excluded_total;
     uint64 sys;
+    uint64 wait_syscalls;
+    int wait_api_depth;
+    int marker_api_depth;
     thread_id_t tid;
     int index;
     bool alive;
@@ -782,6 +787,8 @@ pre_state(void *wrapcxt, void **user_data)
     safe_strcpy(s->value, value, STATE_VAL_MAX);
 }
 
+#include "waits.h"
+
 /* ------------------------------------------------------------- modules */
 
 /* Suppress synchronous work below explicitly selected emulator CUDA exports.
@@ -804,6 +811,33 @@ post_excluded_cuda(void *wrapcxt, void *user_data)
         --*depth;
 }
 
+/* Event annotation helpers may call Python/libc. Exclude the whole dynamic
+ * extent, while retaining declared checkpoint observations inside it. */
+static void
+pre_excluded_marker(void *wrapcxt, void **user_data)
+{
+    byte *base = dr_get_dr_segment_base(tls_seg);
+    (*(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))++;
+    cur_thread(drwrap_get_drcontext(wrapcxt))->marker_api_depth++;
+    *user_data = (void *)1;
+}
+
+static void
+post_excluded_marker(void *wrapcxt, void *user_data)
+{
+    if (user_data)
+        cur_thread(dr_get_current_drcontext())->marker_api_depth--;
+    post_excluded_cuda(wrapcxt, user_data);
+}
+
+static bool
+marker_module_name(const char *name)
+{
+    return name && (strcmp(name, "libperfmark.so") == 0 ||
+        strncmp(name, "libperfmark.so.", 15) == 0 ||
+        strncmp(name, "_perfmark.", 10) == 0);
+}
+
 static bool
 exclude_cuda_symbol(const char *name, size_t offset, void *data)
 {
@@ -822,6 +856,10 @@ exclude_cuda_symbol(const char *name, size_t offset, void *data)
     address = (app_pc)dr_get_proc_address(mod->handle, name);
     if (address == NULL || drwrap_is_wrapped(address, pre_excluded_cuda, post_excluded_cuda))
         return true;
+    if (opt_waits && wait_exclude(address)) {
+        excluded_wrappers++;
+        return true;
+    }
     if (!drwrap_wrap(address, pre_excluded_cuda, post_excluded_cuda)) {
         dr_fprintf(STDERR, "drperf: cannot exclude CUDA export %s\n", name);
         dr_abort();
@@ -877,6 +915,7 @@ event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
         nmodules++;
     }
     dr_mutex_unlock(slots_lock);
+    wait_module(mod, name);
     /* Detect the loaded emulator, including when a launcher sets LD_PRELOAD
      * after drperf starts. Plain applications keep the default counting scope.
      * An explicit different exclusion module remains authoritative. */
@@ -908,6 +947,19 @@ event_module_load(void *drcontext, const module_data_t *mod, bool loaded)
      * Walking every module's dynamic section crashes DR on some torch libs. */
     if (!(name != NULL && strstr(name, "perfmark") != NULL) && mod->start != main_module_start)
         return;
+    {
+        const char *helpers[] = {"perfmark_py_event_publish", "perfmark_py_event_waited",
+                                 "perfmark_event_publish", "perfmark_event_waited"};
+        for (uint i = 0; i < sizeof(helpers) / sizeof(helpers[0]); ++i) {
+            app_pc entry = (app_pc)dr_get_proc_address(mod->handle, helpers[i]);
+            if (entry && opt_waits && wait_exclude(entry)) continue;
+            if (entry && !drwrap_wrap_ex(entry, pre_excluded_marker, post_excluded_marker,
+                                        NULL, DRWRAP_UNWIND_ON_EXCEPTION)) {
+                dr_fprintf(STDERR, "drperf: cannot exclude event helper %s\n", helpers[i]);
+                dr_abort();
+            }
+        }
+    }
     towrap = (app_pc)dr_get_proc_address(mod->handle, "perfmark_begin");
     if (towrap != NULL) {
         bool ok = drwrap_wrap(towrap, pre_begin, NULL);
@@ -992,7 +1044,8 @@ event_pre_syscall(void *drcontext, int sysnum)
 {
     thread_t *t = cur_thread(drcontext);
     byte *base = dr_get_dr_segment_base(tls_seg);
-    if (opt_exclude_cuda_module[0] && *(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))
+    wait_syscall(drcontext, t, sysnum);
+    if (*(ptr_uint_t *)(base + TLS_EXCLUDE_DEPTH))
         return true;
     t->sys++;
     return true;
@@ -1061,13 +1114,14 @@ event_insert(void *drcontext, void *tag, instrlist_t *bb, instr_t *inst, bool fo
     if (drreg_reserve_aflags(drcontext, bb, inst) != DRREG_SUCCESS ||
         drreg_reserve_register(drcontext, bb, inst, NULL, &reg) != DRREG_SUCCESS)
         DR_ASSERT(false);
-    if (opt_exclude_cuda_module[0]) {
+    {
         int mod = slot_mod[slot];
         excluded = INSTR_CREATE_label(drcontext);
         done = INSTR_CREATE_label(drcontext);
         /* Also suppress module entry/exit blocks around drwrap callbacks and
          * module-private helpers. Export wrappers extend exclusion into callees. */
-        if (mod >= 0 && strcmp(modules[mod].name, opt_exclude_cuda_module) == 0) {
+        if (mod >= 0 && (marker_module_name(modules[mod].name) ||
+            (opt_exclude_cuda_module[0] && strcmp(modules[mod].name, opt_exclude_cuda_module) == 0))) {
             instrlist_meta_preinsert(bb, inst, INSTR_CREATE_jmp(drcontext, opnd_create_instr(excluded)));
         } else {
             instrlist_meta_preinsert(bb, inst, INSTR_CREATE_cmp(drcontext,
@@ -1523,6 +1577,17 @@ event_exit(void)
                "\"state_overflows\": %lld, \"threads\": %d,\n",
                marker_seen ? "true" : "false", (long long)unmatched_ends, (long long)depth_overflows,
                (long long)state_overflows, nthreads_seen);
+    dr_fprintf(f, "    \"waits_enabled\": %s, \"wait_records\": %d, \"wait_dropped\": %lld, "
+               "\"wait_hooks\": %d, \"wait_delay_ms\": %d, \"wait_delay_injections\": %lld, "
+               "\"max_wait_records\": %d,\n",
+               opt_waits ? "true" : "false", wait_count, (long long)wait_dropped,
+               wait_hooks, opt_wait_delay_ms, (long long)wait_delay_injections, opt_max_wait_records);
+    dr_fprintf(f, "    \"wait_delay_region\": ");
+    json_str(f, opt_wait_delay_region);
+    dr_fprintf(f, ", \"wait_delay_kind\": ");
+    json_str(f, opt_wait_delay_event ? "event" : "semaphore");
+    dr_fprintf(f, ",\n");
+    write_wait_summary(f);
     dr_fprintf(f, "    \"trace_file\": ");
     json_str(f, opt_trace > 0 ? trace_path : "");
     dr_fprintf(f, ", \"trace_records\": %lld, \"trace_dropped\": %lld},\n",
@@ -1555,6 +1620,7 @@ event_exit(void)
         write_key(f, k, i == 0);
     dr_fprintf(f, "\n  ]\n}\n");
     dr_close_file(f);
+    write_waits();
     if (opt_blocks && blocks_file != INVALID_FILE) {
         /* the block table: "slot module symbol" for every referenced block */
         char spath[560];
@@ -1628,6 +1694,10 @@ event_exit(void)
     dr_mutex_destroy(leader_lock);
     dr_mutex_destroy(slots_lock);
     dr_rwlock_destroy(threads_rw);
+    if (opt_waits) {
+        dr_raw_mem_free(wait_records, (size_t)opt_max_wait_records * sizeof(*wait_records));
+        dr_mutex_destroy(wait_lock);
+    }
     drsym_exit();
     drx_exit();
     drutil_exit();
@@ -1695,6 +1765,20 @@ parse_options(int argc, const char *argv[])
             opt_native_gx = true;
         } else if (strcmp(argv[i], "-no_auto_gx") == 0) {
             opt_auto_gx = false;
+        } else if (strcmp(argv[i], "-waits") == 0) {
+            opt_waits = true;
+        } else if (strcmp(argv[i], "-max_wait_records") == 0 && i + 1 < argc) {
+            if (dr_sscanf(argv[++i], "%d", &opt_max_wait_records) != 1 ||
+                opt_max_wait_records < 1 || opt_max_wait_records > 10000000)
+                dr_abort();
+        } else if (strcmp(argv[i], "-wait_delay_event") == 0) {
+            opt_wait_delay_event = true;
+        } else if (strcmp(argv[i], "-wait_delay_region") == 0 && i + 1 < argc) {
+            safe_strcpy(opt_wait_delay_region, argv[++i], sizeof(opt_wait_delay_region));
+        } else if (strcmp(argv[i], "-wait_delay_ms") == 0 && i + 1 < argc) {
+            if (dr_sscanf(argv[++i], "%d", &opt_wait_delay_ms) != 1 ||
+                opt_wait_delay_ms < 0 || opt_wait_delay_ms > 60000)
+                dr_abort();
         } else if (strcmp(argv[i], "-verbose") == 0) {
             opt_verbose = true;
         } else {
@@ -1711,6 +1795,10 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     module_data_t *main_mod;
     dr_set_client_name("drperf", "https://github.com/DynamoRIO/dynamorio/issues");
     parse_options(argc, argv);
+    if (opt_wait_delay_ms && (!opt_waits || !opt_wait_delay_region[0])) {
+        dr_fprintf(STDERR, "drperf: wait delay requires -waits and -wait_delay_region\n");
+        dr_abort();
+    }
     if (opt_native_gx && !opt_exclude_cuda_module[0]) {
         dr_fprintf(STDERR, "drperf: -native_gx requires -exclude_cuda_module\n");
         dr_abort();
@@ -1727,7 +1815,13 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
         dr_fprintf(STDERR, "drperf: drsym_init failed; symbols disabled\n");
         opt_symbols = false;
     }
-    drwrap_set_global_flags(DRWRAP_NO_FRILLS | DRWRAP_FAST_CLEANCALLS);
+    drwrap_set_global_flags(DRWRAP_FAST_CLEANCALLS | DRWRAP_NO_FRILLS);
+    if (opt_waits) {
+        wait_lock = dr_mutex_create();
+        wait_records = dr_raw_mem_alloc((size_t)opt_max_wait_records * sizeof(*wait_records),
+                                       DR_MEMPROT_READ | DR_MEMPROT_WRITE, NULL);
+        DR_ASSERT(wait_records != NULL);
+    }
     keys_lock = dr_mutex_create();
     leader_lock = dr_mutex_create();
     slots_lock = dr_mutex_create();

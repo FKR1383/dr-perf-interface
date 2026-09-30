@@ -49,7 +49,7 @@ GXVM timing. GX loader/dispatch stubs remain instrumented.
 Do not combine GX work-boundary replacement with whole-module native execution.
 
 **Cost formulae (`derive`).** Over the observed points $V \subset \mathbb{Z}^k$,
-$|V| \ge k + 2$, each block gets a least-squares plane
+$|V| \ge 1$, each block gets a least-squares plane
 $a_\beta \cdot v + d_\beta$; tolerance $\theta(y) = \max(64,\ 0.05\,y)$.
 $\beta$ is *affine* if $|c_\beta(v) - a_\beta \cdot v - d_\beta| \le \theta(c_\beta(v))$
 for all $v \in V$; a negative intercept is allowed because the origin need
@@ -63,19 +63,19 @@ $$\mathrm{cost}(v) \approx A \cdot v + D,\qquad A_j = \sum_{\text{scaling in } j
 
 with $I(v) = \sum_{\text{irregular}} c_\beta(v)$ tabulated at $V$ only.
 OpenMP runtime blocks are excluded as waiting. Before fitting, perfmark library
-and native Python binding blocks are excluded by identity. If the run contains
-the Python empty-region calibration, the remaining inside block profile is
-subtracted once per region invocation, and the outside profile is subtracted
-once per **direct** child invocation at that parent state. The outside profile
-is the difference between the calibration outer region's exclusive vector and
-the bare-loop exclusive vector, divided by the child count. It does not include
-the child's inside profile. Run-specific calibration profiles are kept separate.
-The corrected vectors are fitted, so varying marker counts affect slopes as well
-as constants; non-affine marker counts are removed before irregularity testing.
-Variables collinear over $V$ cannot be separated and
-are reported. For $k = 1$ and an irregular share above 5%, $V$ may be split
+and native Python binding blocks are excluded by identity. No calibrated wrapper
+profile is subtracted, including when an older capture contains calibration
+samples. Python wrapper execution and caller-side argument preparation remain
+measured unless explicitly excluded. PCV computation placed in a `perf.pcv`
+region is isolated by exclusive counters and omitted from exported application
+interfaces and their composition.
+There is no minimum-state or full-rank requirement: one state gives a constant,
+and underdetermined fits select independent columns. Variables constant or
+collinear over $V$ cannot be separated and are recorded in fit metadata.
+For $k = 1$ and an irregular share above 5%, $V$ may be split
 once into two regimes of at least 3 points (3 is flagged weak), chosen by
-the mean per-point irregular fraction. Guaranteed: exactly affine counts give exact $A, D$ (P1); at
+the mean per-point irregular fraction. Guaranteed: exactly affine counts give exact predictions on $V$
+(P1; coefficients need not be unique); at
 $v \in V$ the error is at most $\sum_{\text{affine}} \theta$ (P2); irregular
 cost never enters $A$ or $D$ (P3). Not provided: loop detection or
 data flow (the only link to $v$ is co-variation across $V$: an undeclared
@@ -106,24 +106,25 @@ uses direct-child calls in the same thread, process, and run. Function boundarie
 do not matter. Child interfaces are frozen; their blocks are never refitted
 against parent PCVs. For each parent invocation, the trace supplies the child
 call count and child arguments. The checker finds an affine call-count relation
-and affine argument substitutions in the parent PCVs, checking every invocation
-in exact rational arithmetic (including parents with zero child calls). When
-both hold, the parent includes `(a*PCVs + d)*F_child(arguments)`. F denotes the
-child's full interface, including its unexplained component and its descendants.
+in the parent PCVs, checking every invocation in exact rational arithmetic
+(including parents with zero child calls). The parent uses the basis terms
+`F_child` and `PCV*F_child`, written compactly as `(a*PCVs + d)*F_child`.
+F is an atomic reference to the child's full interface, including its
+unexplained component and descendants. It is not expanded into the parent.
 
-When arguments vary inside a parent, the checker additionally tries affine
-substitutions in parent PCVs and the zero-based child invocation index `j`.
-It retains `sum[j=0..count-1] F_child(arguments_j)` rather than averaging child
-arguments. Unexplained multiplicities remain `calls(child)`; unexplained
-argument relationships remain `pcvs_j`. These are trace-dependent sums, not
-closed expressions in parent entry PCVs. Observed per-parent-state child
-argument histograms are retained in the JSON report. A nonlinear count can be
-made affine by an appropriate declared parent PCV, for example `selected_count`.
-Recursion is reported as a recurrence, not solved or unrolled indefinitely.
+Child-argument mappings are optional metadata. The checker tries affine maps
+in parent PCVs and, for varying arguments, an invocation index. Neither map is
+required to accept an affine multiplier. Actual child-state histograms are
+retained in the JSON report. In particular, a single call with unmapped child
+PCVs is still `1*F_child`, not a summation. If no affine multiplier explains
+call count, the parent retains `unexplained(F_child)` rather than introducing
+a summation outside the chosen interface basis. A semantic parent PCV such as
+`selected_count` can make that multiplier affine. Recursion stays symbolic.
 
-The final unexplained report has the same structure: `U_parent = U_own_parent +
-sum U_child`. Thus an irregular child does not prevent a compact parent
-interface, and a parent cannot erase unexplained child work. A product `N*F`
+The final unexplained report retains the same multipliers:
+`U_parent = U_own_parent + (a*PCVs + d)*U_child`. An unmodelled multiplier leaves
+the full child contribution in `unexplained(F_child)`. An irregular child does
+not prevent a compact parent interface. A product `N*F`
 denotes N applications of that interface, not N times the child's global
 measured mean. The client aggregates block counts by region/state across callers;
 it does not record block counts per invocation or per caller. Raw traces do
@@ -137,26 +138,25 @@ input guarantee is inferred.
 
 Composition uses the already marker-adjusted own fits, without adding marker
 costs back. Raw counts and separately fitted `recordedRegimes` remain available
-for audit and the recorded-count view. Marker-module exclusion is exact;
-wrapper-profile subtraction is an estimate, not an exact counterfactual program
-without annotations. Signed baseline differences are retained, and a requested
-positive subtraction is capped at that block's available count. Unmatched
-estimates are reported per state, not silently turned into negative counts.
-Without a usable calibration/complete nesting trace, only identifiable marker
-blocks are excluded. Caller-side PCV evaluation, argument preparation, and
-wrapper paths not represented by calibration can remain. The guarantees on
-exact collected counts apply to the raw measurements; calibrated costs inherit
-the stated estimation limits.
+for audit and the recorded-count view. Marker-module exclusion removes only
+instructions actually observed in identifiable marker blocks; no estimated cost
+is subtracted or added. Remaining wrapper and marker-boundary overhead can
+matter for tiny or frequently entered regions. Arbitrary PCV expressions are
+not automatically excluded: explicitly bracket expensive annotation work in a
+`perf.pcv` region. Re-exporting an older raw capture applies these rules without
+requiring a new execution; previously exported JSON retains its old accounting.
 Missing/crossing traces, omitted state buckets, and invalid measurements disable
 composition. The exporter also disables it when the trace exceeds its configured
-limit. Nonconstant affine call relations require more distinct parent/index
-points than their design-matrix rank; dependent PCVs are disclosed. Constant
-relations, including single-input cases, describe observations only.
+limit. Affine call relations are fitted on any nonempty set of parent/index
+points, without requiring more observations than their design-matrix rank;
+dependent PCVs are disclosed. Every relation, including a constant at a single
+input, describes observations only. Conflicting call counts at the same input
+still fail the exact relation check.
 
 `composition.check` checks a frozen composition against a separate execution's
 trace and per-state counter coverage. It checks each available multiplicity and
-argument relation in exact arithmetic without refitting, preserves unresolved
-sum fallbacks, reports new call-graph edges, distinguishes absent parents from
+argument relation in exact arithmetic without refitting, preserves unexplained
+child multipliers, reports new call-graph edges, distinguishes absent parents from
 zero child calls, and rejects incompatible PCV schemas. PCV name order and JSON
 object-key order do not change argument meaning. This validates structural
 relations at the newly observed calls, not predictions of their instruction

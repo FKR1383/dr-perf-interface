@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Check declared event order and plan a bounded publication-delay rerun."""
+import argparse
+import json
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'lib'))
+import event_model
+import explorer
+
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('profile')
+parser.add_argument('-o','--output',help='Write checked event model JSON')
+parser.add_argument('--plan',action='store_true',help='Suggest per-publisher second-run delays')
+args=parser.parse_args()
+try:
+    model=explorer.load_model(args.profile, wait_evidence=True)
+    report=event_model.check(model)
+    if report is None:
+        parser.exit(2,'No event annotations were captured.\n')
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True,exist_ok=True)
+        Path(args.output).write_text(json.dumps(report,indent=2)+'\n')
+    label = ('delay probe' if report['probe'] else 'requested delay probe did not execute'
+             if report.get('probeRequested') else 'baseline')
+    print('Declared event model:',report['status'],f'({label})')
+    for e in report['edges']:
+        print(f"  {e['consumer']} -> {e['producer'] or '?'}: {e['status']} (event {e['event']}, generation {e['generation']})")
+    for v in report['violations']+report['unverified']:print(' ',v['reason'])
+    if report['unexplained']:print('Native synchronization without a resolved publisher (separate from declared edges):')
+    for r in report['unexplained']:print(f"  {r['region']}: {r['count']} {r['api']} — native publisher unresolved")
+    if args.plan:
+        for p in event_model.probe_plan(report):
+            print(f"  Probe: DRPERF_WAITS=1 DRPERF_WAIT_DELAY_KIND=event DRPERF_WAIT_DELAY_REGION={p['region']} DRPERF_WAIT_DELAY_MS={p['delayMs']}")
+    print(report['contract'])
+    sys.exit(1 if report['violations'] else 0 if report['status']=='ordered' else 2)
+except (OSError,ValueError,KeyError,TypeError) as error:
+    parser.error(str(error))

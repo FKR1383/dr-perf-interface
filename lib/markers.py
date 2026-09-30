@@ -1,14 +1,13 @@
-"""Remove marker blocks and estimate wrapper overhead before cost fitting.
+"""Exclude identifiable marker blocks before fitting, without estimated subtraction.
 
-Inside calibration belongs to each region once. Outside calibration belongs
-only to its direct parent, once per child call at that parent's state. Block
-profiles avoid subtracting child work or hiding application irregularity in an
-aggregate constant. Calibration is an estimate, with any unmatched part exposed.
+Current clients exclude marker modules during execution, including the dynamic
+extent of native event helpers. Legacy captures still use exact block removal.
+Ordinary Python region wrappers and caller-side argument preparation remain measured. Work in
+explicit PCV regions is kept separate by the client's exclusive counters and
+omitted from application interfaces by the exporter.
 """
 from collections import Counter, defaultdict
 from pathlib import Path
-
-import derive
 
 CALIB = "_perfmark_calibration"
 
@@ -18,7 +17,7 @@ def is_marker(symbol):
     module = Path(module).name
     return (module == 'libperfmark.so' or module.startswith('libperfmark.so.') or
             module == '_perfmark.so' or module.startswith('_perfmark.') and module.endswith('.so') or
-            name in ('perfmark_begin', 'perfmark_begin_v', 'perfmark_end', 'perfmark_state'))
+            name in ('perfmark_begin', 'perfmark_begin_v', 'perfmark_end', 'perfmark_state', 'perfmark_event_publish', 'perfmark_event_waited'))
 
 
 def _run(key):
@@ -27,31 +26,11 @@ def _run(key):
 
 def adjust(keys, slots, records, trace_errors=()):
     """Return corrected keys and per-region/state accounting; keep raw intact."""
-    profiles = defaultdict(lambda: defaultdict(lambda: [Counter(), 0]))
     schemas = {}
-    for key, row in keys.items():
+    for row in keys.values():
         if not row.get('overflow') and row['count']:
             schemas.setdefault(row['region'], tuple(n for n, _ in row['states']))
-        if row['region'] in (CALIB, CALIB+'_outer', CALIB+'_loop'):
-            vector, _ = profiles[_run(key)][row['region']]
-            vector.update({b: c for b, c in row['vec'].items()
-                           if not is_marker(slots.get(b, ('?', '?'))) and
-                           not derive.is_runtime(slots.get(b, ('?', '?')))})
-            profiles[_run(key)][row['region']][1] += row['count']
-    calibration = {}
-    for run, entries in profiles.items():
-        if not all(entries[name][1] for name in (CALIB, CALIB+'_outer', CALIB+'_loop')):
-            continue
-        inner, ni = entries[CALIB]
-        outer, no = entries[CALIB+'_outer']
-        loop, nl = entries[CALIB+'_loop']
-        # Outer and loop vectors are already EXCLUSIVE; subtracting the child
-        # inside profile here would charge its overhead twice.
-        outside = {b: (outer[b]/no - loop[b]/nl)/(ni/no) for b in set(outer) | set(loop)}
-        if sum(outside.values()) < -1e-9:
-            continue  # A negative total wrapper cost is an unusable calibration.
-        calibration[run] = ({b: c/ni for b, c in inner.items()}, outside)
-    expected, seen, children = Counter(), Counter(), Counter()
+    expected, children = Counter(), Counter()
     for key, row in keys.items():
         if not row.get('overflow'):
             expected[(_run(key), row['region'], tuple(v for _, v in row['states']))] += row['count']
@@ -70,13 +49,10 @@ def adjust(keys, slots, records, trace_errors=()):
         except (KeyError, TypeError, ValueError):
             state = None
         identity = (run, name, state)
-        seen[identity] += 1
         if stack:
             children[stack[-1][0]] += 1
         stack.append((identity, record['seq_end']))
-    # The fit aggregates by state across callers. Apply calibration at that
-    # same scope, rather than allocating an average child count to each root
-    # bucket and clipping it against the wrong caller's available blocks.
+    # Aggregate identical state buckets while retaining the raw input for audit.
     grouped = {}
     for key, row in keys.items():
         identity = (_run(key), row['region'], tuple(row['states']), bool(row.get('overflow')))
@@ -99,24 +75,6 @@ def adjust(keys, slots, records, trace_errors=()):
         summary['exactBlocks'] += removed
         summary['directChildCalls'] += (children[identity] * count / expected[identity]
                                          if valid and expected[identity] else 0)
-        if run in calibration and not row['region'].startswith(CALIB):
-            if valid and seen[identity] == expected[identity] and count and not row.get('overflow'):
-                inside, outside = calibration[run]
-                child_count = children[identity] / expected[identity]
-                summary['calibratedCalls'] += count
-                for b in set(inside) | set(outside):
-                    correction = count * (inside.get(b, 0) + child_count * outside.get(b, 0))
-                    # A signed differential profile can add back loop-control
-                    # work removed by the baseline. Keep it signed, not abs().
-                    available = vector.get(b, 0)
-                    applied = min(available, correction)
-                    vector[b] = available - applied
-                    summary['wrapperEstimate'] += applied
-                    summary['unmatchedEstimate'] += correction - applied
-            else:
-                summary['uncalibratedCalls'] += count
-        elif not row['region'].startswith(CALIB):
-            summary['uncalibratedCalls'] += count
         result['vec'] = {b: c for b, c in vector.items() if c}
         corrected[key] = result
     return corrected, {key: dict(value) for key, value in totals.items()}
@@ -129,11 +87,8 @@ def metadata(region, states, accounting):
             continue
         n = row['calls']
         points.append({'state': list(state), 'exactBlocks': row['exactBlocks']/n,
-                       'wrapperEstimate': row.get('wrapperEstimate', 0)/n,
-                       'unmatchedEstimate': row.get('unmatchedEstimate', 0)/n,
                        'directChildCalls': row.get('directChildCalls', 0)/n,
-                       'calibratedCalls': row.get('calibratedCalls', 0),
                        'calls': n})
-    return {'method': 'block profiles; own inside once + direct-child outside per state',
-            'scope': 'marker modules excluded exactly; wrapper calibration is an estimate; caller-side PCV computation may remain',
+    return {'method': 'marker-module exclusion only',
+            'scope': 'marker modules excluded exactly; current clients also exclude native event helpers and their callees; no calibration subtraction; ordinary Python region wrappers and caller-side preparation remain unless explicitly excluded',
             'points': points}

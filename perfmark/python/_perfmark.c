@@ -234,7 +234,46 @@ mod_state(PyObject *Py_UNUSED(m), PyObject *args)
     Py_RETURN_NONE;
 }
 
+/* Exported entry boundaries let drperf exclude parsing, GIL handoff and all
+ * callees exactly. The actual checkpoint still uses libperfmark's C ABI. */
+static PyObject *event_checkpoint(PyObject *args, int publish)
+{
+    PyObject *eo, *go;
+    unsigned long long event, generation;
+    if (!PyArg_ParseTuple(args, "OO", &eo, &go))
+        return NULL;
+    if (!PyLong_Check(eo) || !PyLong_Check(go) || PyBool_Check(eo) || PyBool_Check(go)) {
+        PyErr_SetString(PyExc_ValueError, "event IDs and generations must be unsigned 64-bit integers");
+        return NULL;
+    }
+    event = PyLong_AsUnsignedLongLong(eo);
+    if (PyErr_Occurred()) return NULL;
+    generation = PyLong_AsUnsignedLongLong(go);
+    if (PyErr_Occurred()) return NULL;
+    Py_BEGIN_ALLOW_THREADS
+    if (publish) perfmark_event_publish(event, generation);
+    else perfmark_event_waited(event, generation);
+    Py_END_ALLOW_THREADS
+    Py_RETURN_NONE;
+}
+
+__attribute__((visibility("default"), noinline)) PyObject *
+perfmark_py_event_publish(PyObject *m, PyObject *args)
+{
+    (void)m;
+    return event_checkpoint(args, 1);
+}
+
+__attribute__((visibility("default"), noinline)) PyObject *
+perfmark_py_event_waited(PyObject *m, PyObject *args)
+{
+    (void)m;
+    return event_checkpoint(args, 0);
+}
+
 static PyMethodDef mod_methods[] = {
+    { "event_publish", perfmark_py_event_publish, METH_VARARGS, "publish immediately before the original release" },
+    { "event_waited", perfmark_py_event_waited, METH_VARARGS, "record observed readiness; never blocks" },
     { "begin", mod_begin, METH_VARARGS, "begin(name, state_name='', value=0)" },
     { "end", mod_end, METH_VARARGS, "end(name)" },
     { "state", mod_state, METH_VARARGS, "state(name, value)" },

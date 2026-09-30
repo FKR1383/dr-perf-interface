@@ -29,8 +29,10 @@ Doubling the producer workload correctly predicts every downstream PCV in this
 example. Dequeue, decode, and copy cost predictions match their changed-run
 measurements to floating-point precision. Enqueue includes mutex operations;
 its changed-run instruction cost differs by about 0.02%, illustrating small
-path variation that the checker's tolerance accepts. Startup lacks enough
-varied states for a formula.
+path variation that the checker's tolerance accepts. The bundled older reports
+have no startup formula because their exporter required more varied states.
+Re-exporting the raw capture with the current fitter gives a constant for its
+single observed state, without claiming constant cost at other inputs.
 
 The initial lookup annotation declares `entries`, but the body performs work
 proportional to `entries * entries`. Some of its cost remains unexplained; a

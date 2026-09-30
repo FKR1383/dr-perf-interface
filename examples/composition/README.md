@@ -21,29 +21,19 @@ and the explorer's per-region scenario behavior remain available.
 
 ## What the checker composes
 
-First fit each region's own basic blocks. Freeze those interfaces. Then fit
-each direct child's call count and arguments against parent PCVs, checking
-these relations exactly at **every call**, including zero-child calls.
+First fit each region's own basic blocks and freeze those interfaces. A parent
+uses `F_child` and `PCV*F_child` as its child terms, compactly written as
+`(a*PCVs + d)*F_child`. The multiplier is fitted to the observed direct-child
+call count, including zero-call parents. A child with unexplained work remains
+an ordinary `F_child` reference; its unexplained component is retained.
 
-```text
-F_parent = own_affine_terms + U_own_parent + (a*n + b)*F_child(arguments)
-U_parent = U_own_parent + (a*n + b)*U_child(arguments)
-```
-
-`F_child` retains its entire interface, including unexplained cost and further
-children. Parent fitting never uses an irregular child's instruction counts to
-invent an ordinary parent coefficient. The coefficients `a` and `b` are found
-automatically from the trace. Neither child irregularity nor a function-call
-boundary prevents this composition.
-
-`N*F` is shorthand for N child-interface applications. Because current counters
-aggregate by child region/state across callers, this is **not** an exact
-per-parent numerical inclusive-cost estimate obtained by multiplying a global
-child average. The child's unexplained table is a per-state mean, not the
-unexplained cost of each individual invocation. These distinctions also apply
-when several callers use the same child at identical PCVs with hidden state.
-Raw traces have thread-local per-call instruction totals, but not per-call
-block/function attribution; the example runner also checks these totals.
+Argument mappings are additional checked metadata, not requirements on the
+parent formula. Varying or opaque arguments no longer produce a summation.
+A single call is `F_child`; an affine number of calls is `(a*PCVs+d)*F_child`.
+If call count itself cannot be expressed in that basis, the full child
+contribution remains `unexplained(F_child)`. F denotes applications of the
+child interface at actual child states, not a scalar global mean; numerical
+inclusive predictions still need those states and any unexplained work.
 
 ## Measured examples
 
@@ -55,20 +45,20 @@ deliberately absent from its PCVs.
 | Case | What appears in the parent interface |
 | --- | --- |
 | Repeated irregular child | `(2*n + 1)*F_irregular_leaf(m)` |
-| Arguments change in a loop | `sum[j=0..n-1] F_linear_leaf(m+j)` |
+| Arguments change in a loop | `n*F_linear_leaf`; `m+j` is retained as argument metadata |
 | Three levels across functions | `batches*F_middle(n,m)`, then `n*F_irregular_leaf(m)` |
-| Data-dependent branch, incomplete parent PCVs | `sum[j=0..calls(irregular_leaf)-1] F_irregular_leaf(m)` |
+| Data-dependent branch, incomplete parent PCVs | `unexplained(F_irregular_leaf)` until a call-count PCV is supplied |
 | Same branch, add `selected_count` PCV | `selected_count*F_irregular_leaf(m)` |
-| Identical parent PCVs, different hidden call counts | Keeps the actual call-count sum; does not fit an average |
+| Identical parent PCVs, different hidden call counts | Marks the child multiplier unexplained; does not fit an average |
 | Recursive function | A reference to `F_recursive(depth-1)`, with the observed base-case-dependent call count; no claimed closed bound |
 | Multiple children | `n*F_linear_leaf(m) + (n+2)*F_irregular_leaf(m+1)` |
 | Diamond call graph | `F_left(n,m) + F_right(n,m)`; each refers to the shared leaf without adding it again at the root |
-| Rectangular nested loop, raw | Non-affine `n*width` multiplicity stays as a trace-dependent count |
+| Rectangular nested loop, raw | Non-affine `n*width` multiplicity leaves the child contribution unexplained |
 | Rectangular loop, refined | Declaring `cells=n*width` gives `cells*F_linear_leaf(m)` |
-| Triangular loop, raw | Non-affine `n*(n-1)/2` multiplicity stays as a trace-dependent count |
+| Triangular loop, raw | Non-affine `n*(n-1)/2` multiplicity leaves the child contribution unexplained |
 | Triangular loop, refined | Declaring `pairs=n*(n-1)/2` gives `pairs*F_linear_leaf(m)` |
-| Conditional child argument, raw | `m<20 ? m : 2*m` cannot be replaced by an affine argument substitution; retains `F(pcvs_j)` |
-| Conditional child argument, refined | Declaring `effective=m<20 ? m : 2*m` gives `n*F_linear_leaf(effective)` |
+| Conditional child argument, raw | `m<20 ? m : 2*m` cannot be replaced by an affine argument substitution; retains `n*F_linear_leaf` with unresolved argument metadata |
+| Conditional child argument, refined | Declaring `effective=m<20 ? m : 2*m` gives `n*F_linear_leaf`, with `effective` in argument metadata |
 | Alternating call sites to one child | Arguments `m,2*m,m,2*m,...` remain opaque; an affine invocation index does not explain the alternation |
 | Mutual recursion | Both functions are marked recursive; `more=(depth>0)` explains the call count, but the target's own base-case flag remains a non-affine argument |
 | Shared child with hidden caller context | Both callers retain `n*F_context_leaf_raw(m)`; numerical reconstruction deliberately fails despite an affine global state mean |
@@ -104,8 +94,8 @@ The new-input run uses different `n` and `m` values, including values beyond
 the baseline range. `composition.check` evaluates the **baseline** call-count
 and argument relations against every new invocation; it does not fit new rules
 and compare their coefficients. The result is 14,845 exact checks across 28
-edges, with zero failures. Ten edges still need trace-dependent sums: passing
-their available partial relations does not turn them into closed interfaces.
+edges, with zero failures. Unknown child-call multipliers remain explicitly unexplained. Argument mappings
+are checked separately and no longer block an affine multiplier.
 
 The deliberately changed program performs `n+3` irregular-child calls where the
 baseline performed `n+2`. The frozen checker rejects the multiplicity at all
@@ -149,7 +139,7 @@ raw cases to fail and the refined cases to pass. `report.txt` and
 
 For changing arguments, the checker learns `m+j` using the child invocation
 index; it does not replace the calls with `n*F(mean_argument)`. If even that
-argument relationship is not affine, it retains `F(pcvs_j)`, with the observed
+argument relationship is not affine, it retains `n*F_linear_leaf` with unresolved argument metadata, with the observed
 child states in the JSON evidence.
 
 `branch_refined` computes `selected_count` before entering its region to
@@ -160,12 +150,10 @@ formula can compose once the parent names the relevant semantic quantity.
 ## Scope and checks
 
 The composed section uses marker-adjusted instructions: identifiable perfmark
-and native binding blocks are removed before fitting. With Python calibration,
-the wrapper inside profile is removed once per invocation and the outside
-profile once per direct child call at that parent's state. Grandchildren do not
-charge their grandparents, and child inside overhead is not subtracted twice.
-Native C examples have no Python wrapper calibration: their marker library
-instructions are removed exactly, but caller-side argument preparation remains.
+and native binding blocks are removed before fitting. No wrapper calibration is
+subtracted. Python wrapper and caller-side argument preparation remain measured;
+expensive PCV computation must be explicitly excluded using a `perf.pcv` region.
+That region's own work is excluded from application interfaces and composition.
 Raw instruction reconstruction tests explicitly use the saved `recordedRegimes`;
 their reconstruction-error numbers describe the raw audit, not the marker-adjusted formulae.
 Basic-block fits keep the existing instruction tolerances;
@@ -182,9 +170,9 @@ There is no latency or parallelism inference.
 python3 -m unittest discover -s tests -p test_composition.py
 ```
 
-Tests also cover int64 argument values, rational coefficients, tied PCVs,
-insufficient samples, zero calls, marker-removal preservation, and child interfaces
-with too few states to fit. Additional checks use 100 seeded random affine
+Tests also cover int64 argument values, rational coefficients, dependent PCVs,
+single-state and two-state fits, zero calls, marker-removal preservation, and
+legacy child interfaces with no exported fit. Additional checks use 100 seeded random affine
 systems and contradictory samples, 20 random nesting forests checked against
 an independent interval-containment oracle, and a 1,200-level call chain.
 They cover missing/new children, changed schemas, malformed numeric states,

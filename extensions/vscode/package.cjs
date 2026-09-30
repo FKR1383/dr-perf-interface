@@ -1,5 +1,11 @@
 /* Preserve monorepo-relative README links in a portable VSIX. */
 'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const elkRoot = path.dirname(require.resolve('elkjs/package.json'));
+fs.mkdirSync(path.join(__dirname, 'media/vendor'), {recursive:true});
+fs.copyFileSync(path.join(elkRoot, 'lib/elk.bundled.js'), path.join(__dirname, 'media/vendor/elk.bundled.js'));
+fs.copyFileSync(path.join(elkRoot, 'LICENSE.md'), path.join(__dirname, 'media/vendor/ELK-LICENSE.md'));
 const { execFileSync, spawnSync } = require('node:child_process');
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], {
   cwd: __dirname,

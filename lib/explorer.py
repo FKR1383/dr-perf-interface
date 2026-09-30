@@ -18,6 +18,9 @@ import derive
 import composition
 import markers
 import runner
+import waits
+import event_model
+import report_storage
 
 SCHEMA = "drperf.explorer.v1"
 SAFE_INTEGER = (1 << 53) - 1
@@ -27,11 +30,11 @@ SKIP_DIRS = {".git", "node_modules", "third_party", "__pycache__", "build", "tar
 
 def write_model(model, destination):
     """Publish a complete JSON report atomically, recomputing its content ID."""
-    model = portable(model)
-    model.pop("id", None)
-    model["id"] = hashlib.sha256(json.dumps(model, sort_keys=True).encode()).hexdigest()
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    model = portable(report_storage.externalize_waits(model, destination))
+    model.pop("id", None)
+    model["id"] = hashlib.sha256(json.dumps(model, sort_keys=True).encode()).hexdigest()
     import tempfile
     temporary = None
     try:
@@ -44,6 +47,11 @@ def write_model(model, destination):
     finally:
         if temporary and temporary.exists():
             temporary.unlink()
+
+
+def load_model(path, wait_evidence=False):
+    """View the small report, or explicitly load full evidence for checking."""
+    return report_storage.load_model(path, wait_evidence=wait_evidence)
 
 
 def relation_text(relation):
@@ -70,7 +78,7 @@ def cost_lines(model):
         if not region["regimes"]:
             calls = sum(point["calls"] for point in region["points"])
             mean = sum(point["observed"] * point["calls"] for point in region["points"]) / calls if calls else 0
-            lines.append("  %s = %s   (observed mean; insufficient varied states)" % (region["name"], derive.fmt(mean)))
+            lines.append("  %s = %s   (observed mean; no exported fit)" % (region["name"], derive.fmt(mean)))
             continue
         for fit in region["regimes"]:
             terms = ["%s*%s" % (derive.fmt(a), state) for a, state in zip(fit["coefficients"], region["states"]) if a]
@@ -93,6 +101,7 @@ def cost_lines(model):
             lines.append("      note: " + message)
     if "composition" in model:
         lines.extend(composition.lines(model["composition"]))
+    lines.extend(waits.lines(model.get("waits")))
     return lines
 
 
@@ -602,14 +611,10 @@ def build_model(raw, source_root=None, source_paths=None, discover=True, max_tra
                                                "constant": attributed(fit.by_sym_c), "unexplained": attributed(fit.by_sym_irr)},
                                "markerCalibration": 0})
         diagnostics = []
-        if any(p['unmatchedEstimate'] > 1e-6 for p in marker_info['points']):
-            diagnostics.append("Marker wrapper calibration exceeded some observed block counts; only available counts were removed. See markerAdjustment.points for unmatched estimates.")
-        if any(p['calibratedCalls'] < p['calls'] for p in marker_info['points']):
-            diagnostics.append("Marker library blocks excluded; wrapper calibration unavailable for some calls. Caller-side annotation preparation may remain.")
         if any(point["observed"] < 0 for point in points):
-            diagnostics.append("Marker-overhead subtraction produces negative observed costs. Inspect recorded counts; calibrated predictions are unavailable at those states.")
+            diagnostics.append("Observed costs are negative. Inspect recorded counts; predictions are unavailable at those states.")
         if any(point["explained"] < 0 for fit in regimes for point in fit["points"]):
-            diagnostics.append("The calibrated explained formula is negative at some recorded states. These states cannot support scenario cost predictions.")
+            diagnostics.append("The explained formula is negative at some recorded states. These states cannot support scenario cost predictions.")
         info = interface_metadata.get(name, {"originalName": name, "displayName": name})
         if info.get("schemaVariant"):
             diagnostics.append("This region name was used with different PCV schemas. Each schema is displayed and checked as a separate interface.")
@@ -617,7 +622,7 @@ def build_model(raw, source_root=None, source_paths=None, discover=True, max_tra
                         "markerCalibration": calibration, "diagnostics": diagnostics,
                         "markerAdjustment": marker_info, "recordedRegimes": raw_regimes,
                         "calls": sum(calls.values()), "droppedCalls": dropped,
-                        "status": "modelled" if regimes else "insufficient-states",
+                        "status": "modelled" if regimes else "no-observations",
                         "regimes": regimes, "points": points,
                         "nested": nested, "sources": locations.get(info["originalName"], [])})
     if discover and complete and not trace_errors:
@@ -630,7 +635,7 @@ def build_model(raw, source_root=None, source_paths=None, discover=True, max_tra
                                  ([] if complete else ["trace exceeds export limit"]))
     model = {"schema": SCHEMA, "title": raw.name, "measurement": {
                  "unit": "CPU instructions per call", "scope": "exclusive region work",
-                 "markerAdjustment": "marker blocks excluded; wrapper profiles subtracted before fitting using direct-child counts per state",
+                 "markerAdjustment": "marker modules excluded exactly; no wrapper calibration subtraction",
                  "composition": "symbolic direct-child work in composition; no latency or parallelism model",
                  "tolerance": {"absolute": derive.ABS_TOL, "relative": derive.REL_TOL}},
              "provenance": {"rawDirectory": str(raw), "sourceRoot": str(Path(source_root).resolve()) if source_root else None,
@@ -644,6 +649,17 @@ def build_model(raw, source_root=None, source_paths=None, discover=True, max_tra
                                   "unknown": ["causality of observed relationships", "unexplained cost at changed states",
                                               "new branches or calls", "CPU/GPU latency and overlap"],
                                   "requiresExplicitAssumptions": True}}
+    synchronization = waits.build(runs, regions, traces, invalid + trace_errors +
+                                  ([] if complete else ["Region trace exceeds export limit."]))
+    if synchronization is not None:
+        model["waits"] = synchronization
+        declared_events = event_model.check(model)
+        if declared_events is not None:
+            model["eventModel"] = declared_events
+    # Keep the checked region graph portable: viewers need no Python/Graphviz
+    # process, raw sidecars, or fresh application execution to display it.
+    import execution
+    model["executionGraph"] = execution.build(model)
     model = portable(model)
     model["id"] = hashlib.sha256(json.dumps(model, sort_keys=True).encode()).hexdigest()
     return model
