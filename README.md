@@ -194,6 +194,10 @@ bin/drperf-export out/raw --source-root . -o out/app.drperf.json
 ```
 
 Install the extension's `.vsix`, then run **drperf: Open Performance Report**.
+The JSON contains the viewer data and checked results. With wait capture enabled,
+full synchronization evidence is saved in an adjacent `*.waits.<hash>.jsonl.gz`
+file. The viewer needs only the JSON; checking commands also need the evidence
+file and verify its checksum before loading it.
 The [measured producer/consumer example](examples/explorer/README.md) demonstrates
 propagation across threads, a failed extrapolation, and a semantic PCV refinement
 that fixes it. `bin/drperf-explore` exposes the same scenario checker to agents
@@ -263,13 +267,31 @@ Start with `examples/playground`, a 250-line C system with three regions and a
 one-line change to measure. `SPEC.md` states exactly what is computed, on one
 page.
 
+Declared wait checking is available as an opt-in prototype: annotate publication
+and completed waits with `event_publish` and `event_waited`, then capture with
+`DRPERF_WAITS=1 bin/drperf ./program`. Drperf checks the declared relationships;
+requested delay probes test them by postponing publication. Supported native
+synchronization calls also expose missing or unexplained waits, including
+already-satisfied operations. Start with [the publish/waited usage guide](docs/waited.md)
+for annotation placement and what the checker guarantees. See [wait_task.md](wait_task.md)
+for capture coverage, delay probes, and the runnable
+`examples/waits` demonstration. Render a region-only graph with
+`bin/drperf-graph profile.drperf.json -o graph.html`: observed sequence, nesting,
+and supported wait dependencies, with clickable cost interfaces. Repeat
+`--root REGION` for workflow views. It does not predict latency.
+
 ## Markers
 
 You declare a region and the integers that matter to it. Nothing else is added
 to the program. Every declared integer state forms part of the key, and the
 formula is derived in all of them. PCV storage is dynamically sized in the
-client and bindings; there is no fixed four-PCV limit. Fitting k PCVs still
-needs at least max(3, k+2) distinct observed states. The default measurement
+client and bindings; there is no fixed four-PCV limit. Fitting uses any nonempty
+set of observed states, even a single state (a constant fit). When observations
+cannot separate PCVs, the fitter uses an independent subset. Child-call
+multipliers follow the same observed-only rule. Fits are checked at every
+observed point within the applicable tolerance; they make no claim about
+unobserved inputs or uniquely identified coefficients. Existing captures can
+be re-exported to apply this rule without reprofiling. The default measurement
 budget is 4,096 distinct state combinations per region; it is configurable:
 
 ```bash
@@ -333,11 +355,11 @@ Outside DynamoRIO the markers are empty functions, one call each.
   `F_parent(n,m) = own_terms + (2*n+1)*F_child(m)`. Child unexplained work stays
   inside `F_child` and in the parent's recursive `U` expression. Multiplicities
   and argument substitutions are checked exactly against every observed call;
-  varying arguments or irregular multiplicities stay as sums. These are
+  child arguments are separate metadata; unmodelled call multipliers remain
+  unexplained. Child terms use `(a*PCVs + d)*F_child`. These are
   symbolic interfaces, not numerical inclusive costs fabricated from global
-  child averages. Marker blocks are excluded before fitting; measured wrapper
-  profiles are subtracted using direct-child counts at each state. Calibration
-  mismatches are reported, and caller-side annotation preparation may remain.
+  child averages. Marker blocks are excluded before fitting, without estimated
+  wrapper subtraction. Caller-side annotation preparation may remain.
   See the [20 measured composition examples](examples/composition/README.md),
   including new-input checks and a shared-callee case where hidden caller
   context makes multiplying a global child mean fail.
@@ -468,9 +490,13 @@ counter budget bound storage when a declared state has many values.
 - Counts are exact and reproducible for deterministic single-threaded programs.
   With OpenMP the partition of work varies between runs; the total usually does
   not, and runtime spin-waiting is excluded and reported separately.
-- A marker pair costs a few hundred instructions. A region of a few lines is
-  fine; a region inside a hot inner loop measures itself.
-- A formula needs at least (variables + 2) different state points in the run.
+- Identifiable marker-library and native Python binding instructions are excluded
+  before fitting. No estimated wrapper overhead is subtracted. Python wrappers
+  and boundary preparation remain measured and can matter for tiny, frequently
+  entered regions. Put expensive PCV computation in a `perf.pcv` region to
+  exclude it from application interfaces, including enclosing regions' own cost.
+- A formula describes the observed states only; a fit from few states does not
+  establish its behavior on unobserved inputs.
 - The numbers describe these binaries on this CPU. A toolchain or machine
   change invalidates a baseline.
 - Kernel time is not counted; syscalls per region are reported as the hint.

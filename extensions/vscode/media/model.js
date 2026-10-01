@@ -9,6 +9,7 @@
   'use strict';
   const schema = 'drperf.explorer.v1';
   const compiledExpressions = new WeakMap();
+  const childCostCache = new WeakMap();
   const id = (region, state) => JSON.stringify([region, state]);
   function keyFactory() {
     const regions = new Map();
@@ -25,19 +26,14 @@
   const finite = (value) => typeof value === 'number' && Number.isFinite(value);
   const safe = (value) => Number.isSafeInteger(value);
   const sum = (values) => values.reduce((a, b) => a + b, 0);
-  const coefficient = (value) => {
-    const rounded = Math.round(value);
-    if (rounded !== 0 && Math.abs(value - rounded) < 1e-9 * Math.max(1, Math.abs(value)))
-      return String(rounded);
-    return finite(value)
-      ? new Intl.NumberFormat('en-US', { maximumSignificantDigits: 12, useGrouping: false }).format(
-          value
-        )
-      : String(value);
-  };
+  // Display precision must never change stored fits or scenario arithmetic.
+  const coefficient = (value) => finite(value)
+    ? new Intl.NumberFormat('en-US', { maximumFractionDigits: 0, useGrouping: false }).format(
+      Math.round(value) || 0)
+    : String(value);
   const format = (value) =>
     finite(value)
-      ? new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value)
+      ? new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Math.round(value) || 0)
       : String(value);
 
   function validate(model) {
@@ -172,6 +168,7 @@
       }
     }
     const relationIds = new Set();
+    validateComposition(model, names);
     for (const relation of model.relations) {
       if (
         !relation ||
@@ -300,6 +297,194 @@
     return (
       terms.join(' + ').replace(/\+ -/g, '- ') + (fit.blocks?.unexplained ? ' + unexplained' : '')
     );
+  }
+
+  function validateComposition(model, names) {
+    const composition = model.composition;
+    if (!composition) return;
+    if (!['observed', 'unavailable'].includes(composition.status) ||
+        !Array.isArray(composition.regions) || composition.regions.length > names.size)
+      throw new Error('Invalid composition metadata.');
+    const checkAffine = (relation, states) => {
+      if (!relation || !Array.isArray(relation.coefficients) ||
+          relation.coefficients.length !== states.length)
+        throw new Error('Invalid child-call affine relation.');
+      [...relation.coefficients, relation.constant].forEach(rational);
+    };
+    const seen = new Set();
+    for (const parent of composition.regions) {
+      const region = names.get(parent.id);
+      if (!region || seen.has(parent.id) || !Array.isArray(parent.states) ||
+          JSON.stringify(parent.states) !== JSON.stringify(region.states) ||
+          !Array.isArray(parent.children) || parent.children.length > names.size)
+        throw new Error('Invalid composed region.');
+      seen.add(parent.id);
+      const children = new Set();
+      for (const edge of parent.children) {
+        const child = names.get(edge.child);
+        if (!child || children.has(edge.child) || !['product', 'sum', 'unresolved'].includes(edge.form) ||
+            typeof edge.indexVariable !== 'string' || !edge.indexVariable ||
+            !Array.isArray(edge.argumentStates) ||
+            new Set(edge.argumentStates).size !== child.states.length ||
+            edge.argumentStates.length !== child.states.length ||
+            !edge.argumentStates.every((state) => child.states.includes(state)))
+          throw new Error('Invalid composed child reference.');
+        children.add(edge.child);
+        if (edge.multiplicity !== null) checkAffine(edge.multiplicity, parent.states);
+        for (const [field, states] of [['arguments', parent.states],
+          ['sequenceArguments', [...parent.states, edge.indexVariable]]]) {
+          const args = edge[field];
+          if (args == null) continue;
+          if (typeof args !== 'object' || Array.isArray(args) ||
+              Object.keys(args).length !== child.states.length)
+            throw new Error('Invalid composed child arguments.');
+          edge.argumentStates.forEach((state) => checkAffine(args[state], states));
+        }
+        if (edge.form === 'product' && edge.multiplicity == null)
+          throw new Error('A child product requires an affine multiplier.');
+      }
+    }
+  }
+
+  // Call counts and argument substitutions stay exact: fractions use integer
+  // numerators/denominators instead of rounding away half a loop or an argument.
+  function affineCallText(relation, states) {
+    const exact = (value) => {
+      const [n, d] = rational(value);
+      return d === 1n ? String(n) : `${n}/${d}`;
+    };
+    const terms = relation.coefficients.flatMap((value, i) => {
+      const text = exact(value);
+      return rational(value)[0] === 0n ? [] : [text === '1' ? states[i] : `${text}*${states[i]}`];
+    });
+    if (rational(relation.constant)[0] !== 0n || !terms.length)
+      terms.push(exact(relation.constant));
+    return terms.join(' + ').replace(/\+ -/g, '- ');
+  }
+
+  function childTerms(model, regionId) {
+    if (model.composition?.status !== 'observed') return [];
+    const parent = model.composition.regions.find((region) => region.id === regionId);
+    if (!parent) return [];
+    return parent.children.map((edge) => {
+      const count = edge.multiplicity ? affineCallText(edge.multiplicity, parent.states) : null;
+      return { child: edge.child,
+        prefix: count === null ? 'unexplained(' : (count === '1' ? '' : `(${count})*`),
+        reference: `F[${edge.child}]`,
+        suffix: count === null ? ')' : '' };
+    });
+  }
+
+  // Reconstruct measured child-subtree work at the actual call sites. A state
+  // bucket contains mean exclusive counts, not an exact per-invocation cost:
+  // this is an estimate when the same state appears in different contexts.
+  // The event tree (rather than recursively expanding region names) also handles
+  // recursion and keeps grandchildren from being charged twice.
+  function observedChildCosts(model) {
+    if (childCostCache.has(model)) return childCostCache.get(model);
+    const unavailable = (reason) => {
+      const result = { reason, points: null };
+      childCostCache.set(model, result);
+      return result;
+    };
+    if (!model.trace?.complete || model.validity?.errors?.length || model.validity?.traceErrors?.length)
+      return unavailable('Complete, valid call traces are required to account for child work.');
+    const regions = new Map(model.regions.map((r) => [r.id, r]));
+    const edges = new Map(model.composition.regions.map((r) =>
+      [r.id, new Map(r.children.map((e) => [e.child, e]))]));
+    const key = (state) => JSON.stringify(state.map(String));
+    const points = new Map();
+    for (const r of model.regions) {
+      if (r.droppedCalls) return unavailable('Some region calls were omitted from the report.');
+      const rows = new Map();
+      for (const p of r.points) {
+        if (!finite(p.observed) || p.observed < 0 || rows.has(key(p.state)))
+          return unavailable('Child work has missing, negative, or duplicate state observations.');
+        rows.set(key(p.state), { own: p.observed, expected: p.calls, calls: 0,
+          childCost: 0, unresolvedCost: 0, children: new Map() });
+      }
+      if (sum(r.points.map((p) => p.calls)) !== r.calls)
+        return unavailable('Region calls do not match state observations.');
+      points.set(r.id, rows);
+    }
+    const nodes = [];
+    for (const events of groupedEvents(model.trace.events)) {
+      const stacks = new Map(), boundaries = new Set();
+      for (const event of events) {
+        const r = regions.get(event.region);
+        if (!r || event.end <= event.seq || boundaries.has(event.seq) || boundaries.has(event.end) ||
+            Object.keys(event.values).length !== r.states.length ||
+            r.states.some((name) => !Object.hasOwn(event.values, name)))
+          return unavailable('Invalid call boundaries or PCVs in the child trace.');
+        boundaries.add(event.seq); boundaries.add(event.end);
+        const row = points.get(r.id).get(key(r.states.map((name) => event.values[name])));
+        if (!row) return unavailable('A child call has no matching measured state.');
+        row.calls++;
+        if (!stacks.has(event.thread)) stacks.set(event.thread, []);
+        const stack = stacks.get(event.thread);
+        while (stack.length && stack.at(-1).end < event.seq) stack.pop();
+        const parent = stack.at(-1);
+        if (parent && (event.end >= parent.end || !edges.get(parent.region)?.has(r.id)))
+          return unavailable('Child composition does not match the recorded nesting.');
+        const node = { region: r.id, end: event.end, row, parent, cost: row.own };
+        nodes.push(node); stack.push(node);
+      }
+    }
+    for (const rows of points.values())
+      for (const row of rows.values())
+        if (row.calls !== row.expected)
+          return unavailable('Child traces do not cover all measured calls.');
+    for (let i = nodes.length - 1; i >= 0; --i) {
+      const node = nodes[i], parent = node.parent;
+      if (!finite(node.cost)) return unavailable('Child instruction totals exceed numeric limits.');
+      if (!parent) continue;
+      parent.cost += node.cost;
+      parent.row.childCost += node.cost;
+      if (edges.get(parent.region).get(node.region).multiplicity == null) {
+        parent.row.unresolvedCost += node.cost;
+        parent.row.children.set(node.region, (parent.row.children.get(node.region) || 0) + node.cost);
+      }
+    }
+    const result = { points, reason: null };
+    childCostCache.set(model, result);
+    return result;
+  }
+
+  function interfaceExplanation(model, regionId, fit) {
+    const region = model.regions.find((r) => r.id === regionId);
+    if (!region) throw new Error('Unknown region: ' + regionId);
+    const parent = model.composition?.status === 'observed'
+      ? model.composition.regions.find((r) => r.id === regionId) : null;
+    const hasChildren = !!parent?.children.length;
+    const selected = fit ? fit.points : region.regimes.length
+      ? region.regimes.flatMap((f) => f.points)
+      : region.points.map((p) => ({ ...p, explained: 0, unexplained: p.observed }));
+    const unavailable = (reason) => ({ share: null, estimated: hasChildren, reason, children: [] });
+    if (!selected.length) return unavailable('No measured states.');
+    let total = 0, ownUnexplained = 0, unresolvedChildCost = 0;
+    const children = new Map();
+    const observed = hasChildren ? observedChildCosts(model) : null;
+    if (observed?.reason) return unavailable(observed.reason);
+    for (const p of selected) {
+      if (!finite(p.explained) || !finite(p.unexplained) || p.explained < 0 || p.unexplained < 0)
+        return unavailable('Negative or missing own-work costs cannot support this percentage.');
+      total += p.explained + p.unexplained;
+      ownUnexplained += p.unexplained;
+      if (!hasChildren) continue;
+      const row = observed.points.get(regionId).get(JSON.stringify(p.state.map(String)));
+      if (!row?.calls) return unavailable('No matching calls for a fitted state.');
+      total += row.childCost / row.calls;
+      unresolvedChildCost += row.unresolvedCost / row.calls;
+      for (const [child, cost] of row.children)
+        children.set(child, (children.get(child) || 0) + cost / row.calls);
+    }
+    if (!finite(total) || !finite(ownUnexplained + unresolvedChildCost))
+      return unavailable('Instruction totals exceed numeric limits.');
+    // Preserve the fitter's equal weighting of distinct states. A resolved F is
+    // an atomic explained term here, regardless of that child's own residuals.
+    return { share: total ? (ownUnexplained + unresolvedChildCost) / total : 0,
+      estimated: hasChildren, reason: null, ownUnexplained, unresolvedChildCost, total,
+      children: [...children].map(([child, cost]) => ({ child, share: total ? cost / total : 0 })) };
   }
 
   function relationship(relation) {
@@ -1549,6 +1734,8 @@
     validate,
     format,
     formula,
+    childTerms,
+    interfaceExplanation,
     relationship,
     evaluate,
     graph,

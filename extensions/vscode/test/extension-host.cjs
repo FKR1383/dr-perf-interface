@@ -14,7 +14,7 @@ async function run() {
   const document = await vscode.workspace.openTextDocument(
     path.join(root, 'examples/explorer/pipeline.c')
   );
-  const editor = await vscode.window.showTextDocument(document);
+  let editor = await vscode.window.showTextDocument(document);
   const lenses = await vscode.commands.executeCommand(
     'vscode.executeCodeLensProvider',
     document.uri
@@ -32,7 +32,22 @@ async function run() {
     new vscode.Position(line, 8)
   );
   assert.ok(hovers.length);
+  // A region selected from the tree must reveal its source even when another
+  // document is active, and keep the performance panel alongside it.
+  const unrelated = await vscode.workspace.openTextDocument({ content: 'other file' });
+  await vscode.window.showTextDocument(unrelated);
   await vscode.commands.executeCommand('drperf.inspectRegion', 'enqueue');
+  const revealed = vscode.window.visibleTextEditors.find(
+    (candidate) => candidate.document.uri.toString() === document.uri.toString()
+  );
+  assert.ok(revealed, 'region click opens its source beside the explorer');
+  assert.equal(revealed.selection.active.line, line);
+  editor = revealed;
+  assert.ok(vscode.window.tabGroups.all.some((group) =>
+    group.viewColumn !== revealed.viewColumn && group.tabs.some(
+      (tab) => tab.input instanceof vscode.TabInputWebview
+    )
+  ), 'source and explorer occupy different editor groups');
   const scenarioUri = vscode.Uri.file(path.join(root, 'scenario.json'));
   await vscode.workspace.fs.writeFile(
     scenarioUri,

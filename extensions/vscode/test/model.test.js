@@ -289,13 +289,13 @@ test('scenario validation separates state errors from formula errors', () => {
   assert.equal(enqueue.costChecks, 0);
 });
 
-test('tiny affine coefficients remain visible instead of rounding to zero', () => {
+test('integer display preserves terms without changing small fitted coefficients', () => {
   assert.equal(
     Model.formula(
       { states: ['bytes'] },
       { coefficients: [0.00003125], constant: 2, blocks: { unexplained: 0 } }
     ),
-    '0.00003125*bytes + 2'
+    '0*bytes + 2'
   );
 });
 test('malformed observations and source locations are rejected before rendering', () => {

@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Render a region-only execution/cost graph from an existing drperf profile."""
+import argparse
+import json
+from pathlib import Path
+import subprocess
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'lib'))
+import execution
+import explorer
+
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('profile')
+parser.add_argument('-o','--output',required=True,help='.html, .svg, .dot, or .json')
+parser.add_argument('--root',action='append',help='Limit to a region and its nested calls; repeat for HTML tabs')
+parser.add_argument('--depth',type=int,help='Maximum nesting depth below each root (1 shows direct children)')
+parser.add_argument('--all-roots',action='store_true',help='Add drill-down views for every region (HTML)')
+args=parser.parse_args()
+try:
+    model=explorer.load_model(args.profile, wait_evidence=True)
+    if args.depth is not None and args.depth < 0: raise ValueError('--depth must be nonnegative')
+    roots=args.root or ([] if args.all_roots else [None])
+    if args.all_roots: roots += [r['id'] for r in model['regions'] if r['id'] not in roots]
+    graphs=[execution.build(model,root,args.depth) for root in roots]
+    for graph in graphs:
+        if graph['status']!='observed':
+            raise ValueError('; '.join(graph['warnings']))
+    output=Path(args.output)
+    output.parent.mkdir(parents=True,exist_ok=True)
+    if output.suffix=='.html': execution.write_html(graphs,output,Path(args.profile).stem+' — region graph')
+    elif len(graphs)>1: raise ValueError('Multiple roots require HTML output')
+    elif output.suffix=='.svg': output.write_text(execution.svg(graphs[0]))
+    elif output.suffix=='.dot': output.write_text(execution.dot(graphs[0]))
+    elif output.suffix=='.json': output.write_text(json.dumps(graphs[0],indent=2)+'\n')
+    else: raise ValueError('Use .html, .svg, .dot, or .json')
+    print(f'{output}: {len(graphs)} views, {len(model["regions"])} profiled regions')
+except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
+    parser.exit(1,'drperf-graph: '+str(error)+'\n')

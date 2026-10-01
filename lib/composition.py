@@ -21,9 +21,9 @@ def _integer(value):
 def affine(rows, values, names):
     """An exact observed affine relation, or None; never a least-squares guess.
 
-    Nonconstant relations need at least one more distinct input than the rank.
-    Dependent columns get zero coefficients and are disclosed. Constant
-    relations are observations, including at a single input, not proofs.
+    Any nonempty set of inputs can support an observed relation, including
+    exactly determined and underdetermined systems. Dependent columns get zero
+    coefficients and are disclosed. All relations describe observations only.
     """
     if len(rows) != len(values) or any(len(row) != len(names) for row in rows):
         raise ValueError("affine relation has inconsistent dimensions")
@@ -46,8 +46,6 @@ def affine(rows, values, names):
             continue
         scale = vector[pivot]
         basis[pivot] = [x / scale for x in vector]
-    if len(set(rows)) <= len(basis):
-        return None
     solution = [Fraction(0)] * (len(names) + 1)
     for pivot, row in sorted(basis.items(), reverse=True):
         solution[pivot] = row[-1] - sum(row[j] * solution[j]
@@ -168,7 +166,7 @@ def _edge(parent, child, calls, regions):
             "argumentStates": list(child_names),
             "sequenceArguments": sequence_arguments,
             "indexVariable": index,
-            "form": "product" if multiplicity is not None and arguments is not None else "sum",
+            "form": "product" if multiplicity is not None else "unresolved",
             "parentCalls": len(calls), "childCalls": sum(map(len, children)),
             "includesZeroCallParents": any(not nodes for nodes in children)}
 
@@ -183,7 +181,8 @@ def build(region_list, traces, errors=()):
     report = {"status": "unavailable", "scope": "same-thread direct-child instruction work",
               "basis": "marker-adjusted own interfaces; runtime waiting excluded; wrapper calibration is an estimate",
               "contract": "Observed calls only. F includes U. U includes descendant unexplained work. "
-                          "N*F denotes N applications of a child interface, not N times a global measured mean. "
+                          "N*F denotes N applications of an atomic child interface, not N times a global measured mean. "
+                          "Argument mappings are metadata, not prerequisites for child multipliers. "
                           "Own cost fits and U tables are per-state means across callers. "
                           "No prediction of per-invocation inclusive counts or latency.",
               "regions": [], "errors": list(errors)}
@@ -290,22 +289,14 @@ def _state_text(names, state):
 
 
 def edge_text(edge, names, prefix="F"):
-    index = edge.get("indexVariable", "j")
-    argument_names = edge.get("argumentStates", list((edge["arguments"] or edge.get("sequenceArguments") or {}).keys()))
-    if edge["form"] == "product":
-        count = affine_text(edge["multiplicity"], names)
-        args = [affine_text(edge["arguments"][name], names) for name in argument_names]
-        reference = _reference(prefix, edge["child"], args)
-        return reference if count == "1" else f"({count})*{reference}"
-    upper = (affine_text(edge["multiplicity"], names) if edge["multiplicity"] is not None
-             else f"calls({edge['child']})")
-    if edge["arguments"] is not None:
-        args = [affine_text(edge["arguments"][name], names) for name in argument_names]
-    elif edge.get("sequenceArguments") is not None:
-        args = [affine_text(edge["sequenceArguments"][name], names + [index]) for name in argument_names]
-    else:
-        args = ["pcvs_" + index]
-    return f"sum[{index}=0..({upper})-1] " + _reference(prefix, edge["child"], args)
+    """Keep the child interface atomic; argument mappings are metadata only."""
+    reference = f"{prefix}[{edge['child']}]"
+    if edge["multiplicity"] is None:
+        # The full child contribution, not only the child's own irregular part,
+        # is unresolved when no allowed parent multiplier explains call count.
+        return f"unexplained(F[{edge['child']}])"
+    count = affine_text(edge["multiplicity"], names)
+    return reference if count == "1" else f"({count})*{reference}"
 
 
 def lines(report):
@@ -316,7 +307,7 @@ def lines(report):
     out = ["", "composed interfaces (marker-adjusted instructions)",
            "  F includes child unexplained work; U names unexplained work recursively.",
            "  N*F means N child-interface applications, not N times a global measured mean.",
-           "  Own fits retain block tolerances; multipliers/arguments are exact on observed calls only."]
+           "  Own fits retain block tolerances; multipliers are exact on observed calls only. Argument maps are separate metadata."]
     for region in report["regions"]:
         name, names = region["id"], region["states"]
         child_terms = [edge_text(edge, names) for edge in region["children"]]
@@ -332,7 +323,7 @@ def lines(report):
         u_terms = ([own_u] if own_u else []) + [edge_text(edge, names, "U") for edge in region["children"]]
         out.append("    " + _reference("U", name, names) + " = " + (" + ".join(u_terms) or "0"))
         if not region["own"]:
-            out.append("    own cost has insufficient varied states; retained entirely in U_own")
+            out.append("    own cost has no exported fit; retained entirely in U_own")
         if region["recursive"]:
             out.append("    recursive reference: a recurrence over observed calls, not a solved bound")
         if own_u:
@@ -346,8 +337,8 @@ def lines(report):
             if len(shown) < len(observations):
                 out.append(f"    ... {len(observations)-len(shown)} more states in the JSON composition report")
         for edge in region["children"]:
-            if edge["form"] == "sum":
-                out.append("    " + edge["child"] + ": keep actual child-call arguments/multiplicity; no average-child substitution")
+            if edge["multiplicity"] is None:
+                out.append("    " + edge["child"] + ": no affine call multiplier fits; full child contribution remains unexplained")
             relations = ([edge["multiplicity"]] + list((edge["arguments"] or {}).values())
                          + list((edge.get("sequenceArguments") or {}).values()))
             for relation in relations:
@@ -366,8 +357,9 @@ def lines(report):
 def check(reference, region_list, traces, errors=()):
     """Check frozen call relations on another execution; do not refit any rule.
 
-    This validates structure/arguments only, not instruction predictions. Sum
-    fallbacks stay unresolved even when a known multiplicity or argument holds.
+    This validates structure/arguments only, not instruction predictions.
+    Unknown argument mappings do not block an affine child multiplier.
+    An unmodelled call count remains unresolved even when argument checks hold.
     New edges are reported, including edges from a formerly childless region.
     """
     result = {"status": "unavailable", "errors": list(errors), "edges": [], "newEdges": []}
@@ -400,7 +392,8 @@ def check(reference, region_list, traces, errors=()):
             child = edge["child"]
             reference_edges.add((parent, child))
             row = {"parent": parent, "child": child, "checks": 0, "failures": 0,
-                   "counterexamples": [], "unresolved": edge["form"] == "sum"}
+                   "counterexamples": [], "unresolved": edge["multiplicity"] is None,
+                   "argumentsUnresolved": edge.get("arguments") is None and edge.get("sequenceArguments") is None}
             result["edges"].append(row)
             if parent not in regions or not calls[parent]:
                 row["status"] = "not-exercised"

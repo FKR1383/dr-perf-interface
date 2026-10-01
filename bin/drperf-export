@@ -12,7 +12,8 @@ import explorer
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("raw", help="directory containing drperf run JSON and block/trace sidecars")
-    parser.add_argument("-o", "--output", required=True, help="output .drperf.json model")
+    parser.add_argument("-o", "--output", required=True,
+                        help="output .drperf.json viewer report (full wait evidence saved alongside)")
     parser.add_argument("--source-root", help="root for relative source locations")
     parser.add_argument("--source", action="append", help="source path relative to root (repeatable)")
     parser.add_argument("--no-relations", action="store_true")

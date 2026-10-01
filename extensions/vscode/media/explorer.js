@@ -3,6 +3,15 @@
 (function () {
   'use strict';
   const M = window.DrperfModel;
+  const G = window.DrperfGraph;
+  const graphHistory = [];
+  const graphLayouts=new Map();
+  let graphShowSequence=false, graphDetailsOpen=false, graphSidebarOpen=false, graphAutoFit=true;
+  let graphToggleFocus=null, graphLayoutRequest=null;
+  const graphExpanded = new Set();
+  let graphHighlight = null;
+  let graphZoom = 1, graphViewportKey = null;
+  let graphFullscreen = !!window.DrperfStandalone, graphMode = 'top', renderedTab = null;
   const analysis = window.DrperfAnalysis;
   let scenarioImportGeneration = 0;
   let scenarioGeneration = 0,
@@ -21,7 +30,7 @@
     rawCosts = saved.rawCosts || false;
   let model = null,
     selected = null,
-    activeTab = saved.tab || 'interface',
+    activeTab = window.DrperfStandalone ? 'graph' : saved.tab || 'interface',
     filter = '',
     result = null;
   let edits = [],
@@ -77,10 +86,11 @@
       auditAlternatives
     });
   function choose(id, tab = activeTab) {
+    if (tab === 'graph' && selected && selected !== id) graphHistory.push(selected);
     selected = id;
     activeTab = tab;
     persist();
-    send({ type: 'select', region: id });
+    send({ type: 'select', region: id, openSource: tab !== 'graph' });
     render();
   }
   function heading(title, description) {
@@ -93,18 +103,48 @@
   function stat(label, value) {
     return append(el('div', 'stat'), el('strong', '', value), el('span', 'muted', label));
   }
-  function formulaCard(r) {
+  function unexplainedPercent(share) {
+    return share > 0 && share < 0.005 ? '<1' : fmt(100 * share);
+  }
+  function explanationBadge(info) {
+    const tag = info.share === null
+      ? badge('Unexplained share unavailable', 'warn')
+      : badge(`${unexplainedPercent(info.share)}% unexplained${info.estimated ? ' (estimate)' : ''}`,
+        info.share > 0.05 ? 'warn' : 'good');
+    tag.classList.add('interface-unexplained');
+    tag.title = info.reason || (info.estimated
+      ? 'Own unexplained work plus full unresolved child terms, divided by interface work. Child costs use measured per-state means and recorded nesting. Fitted child terms do not propagate their internal unexplained work.'
+      : 'Unexplained own work divided by the fitted explained and unexplained work.');
+    return tag;
+  }
+  function formulaCard(r, openChild = id => choose(id, 'interface')) {
     const card = el('section', 'card formula-card');
+    const childTerms = M.childTerms(model, r.id);
+    const formulaWithChildren = (own) => {
+      const row = el('div', 'formula', own);
+      for (const term of childTerms) {
+        row.append(el('span', '', ' + ' + term.prefix));
+        const link = button(term.reference, () => openChild(term.child), 'link-button child-interface');
+        link.title = 'Open child interface, including its unexplained cost';
+        row.append(link, el('span', '', term.suffix));
+      }
+      return row;
+    };
     append(card, el('div', 'eyebrow', 'PERFORMANCE INTERFACE'), el('h1', '', r.name));
     const tags = el('div', 'tags');
     append(
       tags,
       badge('CPU instructions / call'),
-      badge('Own work · nested regions excluded'),
-      badge(rawCosts ? 'Marker API cost retained' : 'Marker estimate subtracted')
+      badge(childTerms.length ? 'Own work + direct child interfaces' : 'Own work · nested regions excluded'),
+      badge(rawCosts ? 'Marker API cost retained' :
+        model.measurement.markerAdjustment?.includes('no wrapper calibration subtraction')
+          ? 'Marker modules excluded' : 'Marker adjustment applied')
     );
     if (r.droppedCalls) tags.append(badge(`${r.droppedCalls} calls omitted from fitting`, 'warn'));
     append(card, tags);
+    card.append(el('p', 'small muted', 'Costs and percentages rounded to whole numbers for display; calculations retain full precision.'));
+    if (childTerms.length)
+      card.append(el('p', 'small muted', 'Unexplained includes own unexplained work and the full contribution of unexplained(F[child]) terms. Fitted child terms count as explained here, even when the child has its own unexplained work. Percentages estimate child costs from measured per-state means and recorded calls. Click F to inspect the child. The charts and function breakdown below show own work only.'));
     const statuses = sourceStatuses.get(r.id) || [];
     if (statuses.some((source) => source.state === 'changed'))
       card.append(
@@ -128,6 +168,8 @@
     if (!r.regimes.length)
       append(
         card,
+        childTerms.length ? formulaWithChildren('own (not fitted)') : null,
+        childTerms.length ? explanationBadge(M.interfaceExplanation(model, r.id)) : null,
         el(
           'p',
           'empty',
@@ -144,16 +186,17 @@
             fit.range.map(([lo, hi], i) => `${lo} ≤ ${r.states[i]} ≤ ${hi}`).join(' · ')
           )
         );
-      block.append(el('div', 'formula', M.formula(r, fit)));
+      block.append(formulaWithChildren(M.formula(r, fit)));
       const notes = el('div', 'tags');
-      notes.append(
-        badge(
-          `${(100 * fit.unexplainedShare).toFixed(1)}% unexplained`,
-          fit.unexplainedShare > 0.05 ? 'warn' : 'good'
-        )
-      );
-      if (fit.dependent.length)
-        notes.append(badge(`Tied PCVs: ${fit.dependent.join(', ')}`, 'warn'));
+      const explanation = M.interfaceExplanation(model, r.id, fit);
+      notes.append(explanationBadge(explanation));
+      for (const child of explanation.children) {
+        if (!child.share) continue;
+        const link = button(`unexplained(F[${child.child}]): ${unexplainedPercent(child.share)}%`,
+          () => openChild(child.child), 'link-button');
+        link.title = 'Contribution to this interface’s unexplained percentage, including the child’s descendants.';
+        notes.append(link);
+      }
       append(block, notes);
       card.append(block);
     }
@@ -215,7 +258,7 @@
       el('section', 'card'),
       heading(
         'What the run observed',
-        'Explained and unexplained work at the measured states. No claim between these points.'
+        'Own explained and unexplained work at the measured states; child terms are excluded from this chart. No claim between these points.'
       )
     );
     const points = r.regimes.length
@@ -388,7 +431,7 @@
       el('section', 'card'),
       heading(
         'Where the cost comes from',
-        'Functions contributing to the interface and the unexplained part.'
+        'Functions contributing to this region’s own explained and unexplained work. Child terms are shown in the interface above.'
       )
     );
     if (!r.regimes.length) {
@@ -425,7 +468,7 @@
   function interfaceView(r) {
     const main = el('div', 'interface-view');
     append(main, formulaCard(r), observations(r));
-    if (Object.keys(r.nested || {}).length) {
+    if (model.composition?.status !== 'observed' && Object.keys(r.nested || {}).length) {
       const nested = append(
         el('section', 'card'),
         heading(
@@ -1023,7 +1066,7 @@
       const error =
         row.relativeAbsoluteError === null
           ? 'Not checked'
-          : (100 * row.relativeAbsoluteError).toFixed(2) + '%';
+          : fmt(100 * row.relativeAbsoluteError) + '%';
       const tr = el('tr');
       tr.dataset.validationRegion = row.region;
       append(
@@ -1782,7 +1825,271 @@
     main.append(card);
     return main;
   }
+  function graphView(r,previousCard) {
+    const graph=G.build(loadedModel), tree=G.hierarchy(loadedModel);
+    const waitPairs=new Set(G.waits(graph).edges.map(e=>JSON.stringify([e.source,e.target]))).size;
+    const card=el('section','card execution-graph');
+    if(graph.status!=='observed') {card.append(el('p','notice warn',graph.warnings.join(' ')));return card;}
+    const controls=el('div','execution-controls');
+    const fullscreen=button(graphFullscreen?'Exit full screen':'Full-screen graph',()=>{
+      graphFullscreen=!graphFullscreen;document.body.classList.toggle('graph-fullscreen',graphFullscreen);
+      fullscreen.textContent=graphFullscreen?'Exit full screen':'Full-screen graph';
+      send({type:'graphFullscreen',enabled:graphFullscreen});render();
+    });
+    fullscreen.textContent=graphFullscreen?'↙':'⛶';
+    fullscreen.setAttribute('aria-label',graphFullscreen?'Exit full screen':'Full-screen graph');
+    fullscreen.title=graphFullscreen?'Exit full screen':'Full-screen graph';
+    const more=append(el('details','execution-more'),el('summary','','More'));
+    const menu=el('div','execution-menu');more.append(menu);
+    const actions=el('div','execution-menu-actions');menu.append(actions);
+    append(controls,window.DrperfStandalone ? null : fullscreen,
+      button('Expand all',()=>{graphMode='top';for(const n of tree.nodes.values())if(n.children.length)graphExpanded.add(n.key);render();},'execution-expand-all'));
+    append(actions,
+      button('Collapse all',()=>{graphExpanded.clear();render();}),
+      button('Selected region',()=>{graphMode='region';render();}),
+      button('Full graph',()=>{graphMode='top';render();}),
+      button(`All waits (${waitPairs})`,()=>{graphMode='waits';render();},'execution-waits-button'));
+    if(!window.DrperfStandalone) {
+      actions.append(button('Export graph as HTML',()=>send({type:'exportGraphHtml',modelId:loadedModel.id,view:{selected,mode:graphMode,expanded:[...graphExpanded],showSequence:graphShowSequence}})));
+      actions.append(button(graphSidebarOpen?'Hide region list':'Show region list',()=>{graphSidebarOpen=!graphSidebarOpen;render();}));
+      actions.append(button('Reload profile',()=>send({type:'reload'})));
+    }
+    if(!window.DrperfStandalone && r.sources.length) actions.append(button('Open source',()=>send({type:'source',region:r.id,index:0}),'quiet'));
+    actions.append(button(rawCosts?'View calibrated formulas':'View recorded counts',()=>{rawCosts=!rawCosts;model=rawCosts?M.recordedCosts(loadedModel):loadedModel;render();}));
+    actions.append(button(graphShowSequence?'Hide sequence':'Show sequence',()=>{graphShowSequence=!graphShowSequence;render();}));
+    menu.addEventListener('click',event=>{if(event.target.closest('button'))more.open=false;});
+    const guide=append(el('details','execution-guide'),el('summary','','Legend and scope'),
+      el('p','execution-legend','Nested boxes contain subregions. Optional gray arrows show observed sequence; dashed blue shows waits between distinct regions; red shows violated declarations; amber shows unverified declarations. Same-region synchronization is excluded from this graph.'));
+    menu.append(guide);card.append(controls);
+    if(graph.waitCoverage!=='observed')card.append(el('p','notice warn',graph.waitCoverage==='not captured'
+      ?'Waits not captured. Enable DRPERF_WAITS=1.'
+      :'Wait capture is incomplete. Producer edges are disabled.'));
+    if(graph.eventChecks?.status!=='not captured' && graph.eventChecks) {
+      const checks=graph.eventChecks;
+      menu.append(el('p','execution-event-summary notice'+(checks.violations||checks.unverified?' warn':''),
+        `Declared events: ${checks.status} · ${checks.probe?'delay probe':'baseline'} · ${checks.violations} violations · ${checks.unverified} unverified`));
+    }
+    const view=G.nestedView(tree,r.id,graphMode,graphExpanded);
+    const waits=view.edges.filter(e=>e.kind==='wait');
+    const visiblePairs=new Set(waits.map(e=>JSON.stringify([e.actualSource,e.actualTarget]))).size;
+    menu.append(el('p','execution-wait-summary',waits.length
+      ?`${visiblePairs} region relationships. Counts are repeated observations, not distinct dependencies or blocking stalls.`
+      :`No matched waits in this view. All waits (${waitPairs}) shows dependencies elsewhere.`));
+    menu.append(el('p','execution-scope',`${model.regions.length} regions in this profile · ${tree.roots.length} top-level regions · ${view.visible.size} visible boxes · ${graphMode==='top'?'Full graph':graphMode==='waits'?'Wait relationships':r.name}`));
+    if(view.visible.size>250){card.append(el('p','notice warn','More than 250 visible boxes. Collapse all or select a smaller region.'));return card;}
+    const regions=new Map(model.regions.map(n=>[n.id,n])), boxes=new Map(), headers=new Map();
+    const ns='http://www.w3.org/2000/svg';
+    const rootWidth=260;
+    const stage=el('div','execution-measure');
+    document.body.append(stage);
+    function reveal(key){for(let n=tree.nodes.get(key);n?.parent;n=tree.nodes.get(n.parent))graphExpanded.add(n.parent);}
+    const endpoints=e=>[tree.nodes.get(e.actualSource||e.source),tree.nodes.get(e.actualTarget||e.target)];
+    const describe=e=>{
+      const [source,target]=endpoints(e);
+      return `${source.id} ${e.eventStatus?'declares wait on ('+e.eventStatus+')':e.kind==='wait'?'waits on':'then'} ${target.id} · ${e.observations} observations`;
+    };
+    const focusBox=key=>{
+      const node=[...document.querySelectorAll('.execution-node')].find(n=>n.dataset.path===key);
+      const canvas=document.querySelector('.execution-canvas');
+      if(node&&canvas){const a=node.getBoundingClientRect(),b=canvas.getBoundingClientRect();
+        if(a.top<b.top||a.top>b.bottom-60)canvas.scrollTop+=a.top-b.top-24;
+        if(a.left<b.left||a.left>b.right-80)canvas.scrollLeft+=a.left-b.left-24;}
+    };
+    const openEdge=e=>{reveal(e.actualSource);reveal(e.actualTarget);graphHighlight=e.actualTarget;render();focusBox(e.actualTarget);};
+    const selectNode=key=>{
+      const node=tree.nodes.get(key);if(!node)return;
+      graphHighlight=key;choose(node.id,'graph');
+    };
+    const selectChild=id=>{
+      const parent=[...tree.nodes.values()].find(n=>n.id===r.id&&n.key===graphHighlight)
+        ||[...tree.nodes.values()].find(n=>n.id===r.id);
+      const key=parent?.children.find(k=>tree.nodes.get(k).id===id)
+        ||[...tree.nodes.values()].find(n=>n.id===id)?.key;
+      if(key){reveal(key);selectNode(key);focusBox(key);}
+    };
+    function makeHeader(key,width){
+      const n=tree.nodes.get(key),target=regions.get(n.id),expanded=graphExpanded.has(key);
+      const content=el('div','execution-box-header');content.style.width=(width-32)+'px';
+      const title=el('div','execution-box-title');
+      if(n.children.length){
+        const toggle=button(expanded?'▾':'▸',()=>{
+          graphToggleFocus={key,focus:document.activeElement===toggle};
+          if(expanded)graphExpanded.delete(key);else graphExpanded.add(key);render();
+        },'execution-toggle');
+        toggle.setAttribute('aria-label',(expanded?'Collapse ':'Expand ')+target.name);
+        toggle.setAttribute('aria-expanded',String(expanded));title.append(toggle);
+      }
+      const name=button(target.name,()=>selectNode(key),'execution-region-name');
+      name.setAttribute('aria-label','Select region '+target.name);
+      name.setAttribute('aria-pressed',String(r.id===target.id));
+      title.append(name);content.append(title);
+      stage.append(content);
+      const bounds=content.getBoundingClientRect();
+      headers.set(key,content);
+      return {header:Math.ceil(bounds.height)+32};
+    }
+    const layoutNodes=new Map();
+    function measure(key){
+      const n=tree.nodes.get(key),children=graphExpanded.has(key)?n.children:[];
+      const measured=makeHeader(key,rootWidth);
+      boxes.set(key,{width:rootWidth,...measured});
+      layoutNodes.set(key,{width:rootWidth,header:measured.header,children});
+      children.forEach(measure);
+    }
+    try{view.roots.forEach(measure);}finally{stage.remove();}
+    const routedEdges=view.edges.filter(e=>e.source!==e.target&&(e.kind==='wait'||graphShowSequence));
+    const layoutKey=JSON.stringify([model.id,[...layoutNodes],routedEdges.map(e=>[e.source,e.target])]);
+    graphLayoutRequest=layoutKey;
+    let layout=graphLayouts.get(layoutKey);
+    if(!layout){
+      layout={pending:true};graphLayouts.set(layoutKey,layout);
+      // Retain only a bounded set of expansion layouts; selecting a node reuses it.
+      if(graphLayouts.size>24)graphLayouts.delete(graphLayouts.keys().next().value);
+      window.DrperfLayout.layout(view.roots,layoutNodes,routedEdges).then(value=>{
+        Object.assign(layout,{pending:false,value});if(activeTab==='graph'&&graphLayoutRequest===layoutKey)render();
+      }).catch(error=>{Object.assign(layout,{pending:false,error:error.message});if(activeTab==='graph'&&graphLayoutRequest===layoutKey)render();});
+    }
+    if(layout.pending&&previousCard?.dataset.modelId===model.id){
+      // Keep the actual old graph visible while ELK computes the new layout.
+      // Disable stale controls briefly rather than replace it with a spinner.
+      previousCard.setAttribute('aria-busy','true');
+      previousCard.querySelectorAll('button').forEach(b=>b.disabled=true);
+      return previousCard;
+    }
+    if(layout.pending||layout.error){
+      card.append(el('p','execution-layout-status',layout.error?'Cannot lay out graph: '+layout.error:'Arranging regions with ELK…'));
+      return card;
+    }
+    for(const [key,position]of layout.value.boxes)Object.assign(boxes.get(key),position);
+    const {width,height}=layout.value;
+    const svgEl=(tag,attrs={},text)=>{const n=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;};
+    const svg=svgEl('svg',{'class':'execution-svg',viewBox:`0 0 ${width} ${height}`,width,height,role:'img','aria-label':`Region graph for ${r.name}`});
+    const defs=svgEl('defs');for(const kind of ['sequence','wait','violation','unverified']){
+      const marker=svgEl('marker',{id:'execution-arrow-'+kind,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});
+      marker.append(svgEl('path',{d:'M 0 0 L 10 5 L 0 10 z','class':'execution-arrow '+kind}));defs.append(marker);
+    }svg.append(defs);
+    function draw(key){
+      const n=tree.nodes.get(key),b=boxes.get(key);
+      const isSelected=n.id===r.id&&(!graphHighlight||tree.nodes.get(graphHighlight)?.id!==r.id||key===graphHighlight);
+      const group=svgEl('g',{'class':'execution-node'+(isSelected?' selected':'')+(key===graphHighlight?' highlighted':''),
+        'data-region':n.id,'data-path':key,role:'group',tabindex:0,'aria-label':'Region '+n.id,'aria-current':String(isSelected)});
+      group.addEventListener('click',event=>{
+        if(event.target.closest('button')||card.getAttribute('aria-busy')==='true')return;
+        selectNode(key);
+      });
+      group.addEventListener('keydown',event=>{
+        if(event.target!==group||card.getAttribute('aria-busy')==='true')return;
+        if(event.key==='Enter'||event.key===' '){event.preventDefault();selectNode(key);}
+      });
+      group.append(svgEl('rect',{x:b.x,y:b.y,width:b.width,height:b.height,rx:8}));
+      const foreign=svgEl('foreignObject',{x:b.x+16,y:b.y+16,width:b.width-32,height:b.header-32});
+      foreign.append(headers.get(key));group.append(foreign);svg.append(group);
+      if(graphExpanded.has(key))for(const child of n.children)draw(child);
+    }view.roots.forEach(draw);
+    for(const [i,e]of routedEdges.entries()){
+      const [source,target]=endpoints(e),wait=e.kind==='wait';
+      const style=e.eventStatus==='violation'?'violation':e.eventStatus==='unverified'?'unverified':e.kind;
+      const sections=layout.value.routes.get(i)||[];
+      const d=sections.map(points=>points.map((p,j)=>`${j?'L':'M'} ${p.x} ${p.y}`).join(' ')).join(' ');
+      const attrs={d,'class':'execution-edge '+e.kind+' '+style,'data-kind':e.kind,'data-event-status':e.eventStatus||'',
+        'data-source':source.id,'data-target':target.id,'marker-end':`url(#execution-arrow-${style})`};
+      const line=svgEl('path',attrs);line.append(svgEl('title',{},describe(e)));svg.append(line);
+      if(wait){
+        const hit=svgEl('path',{...attrs,'class':'execution-edge-hit','marker-end':'',role:'button',tabindex:0,'aria-label':describe(e)});
+        hit.addEventListener('click',()=>openEdge(e));
+        hit.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openEdge(e);}});svg.append(hit);
+      }
+    }
+    const surface=append(el('div','execution-surface'),svg);
+    const canvas=append(el('div','execution-canvas'),surface);
+    let paddingX=0,paddingY=0;
+    card.dataset.modelId=model.id;
+    card.setAttribute('aria-busy','false');
+    const zoomText=el('span','execution-zoom');
+    const scale=()=>{
+      svg.setAttribute('width',String(Math.round(width*graphZoom)));svg.setAttribute('height',String(Math.round(height*graphZoom)));
+      surface.style.width=Math.round(width*graphZoom)+'px';surface.style.height=Math.round(height*graphZoom)+'px';
+      zoomText.textContent=Math.round(graphZoom*100)+'%';
+    };
+    const zoomTo=value=>{
+      const x=(canvas.scrollLeft+canvas.clientWidth/2-paddingX)/graphZoom,y=(canvas.scrollTop+canvas.clientHeight/2-paddingY)/graphZoom;
+      graphZoom=Math.max(.005,Math.min(3,value));scale();
+      canvas.scrollLeft=paddingX+x*graphZoom-canvas.clientWidth/2;canvas.scrollTop=paddingY+y*graphZoom-canvas.clientHeight/2;
+    };
+    const fitGraph=()=>{
+      zoomTo(Math.min(1,(canvas.clientWidth-16)/width,(canvas.clientHeight-16)/height));
+      canvas.scrollLeft=paddingX-Math.max(0,(canvas.clientWidth-width*graphZoom)/2);
+      canvas.scrollTop=paddingY-Math.max(0,(canvas.clientHeight-height*graphZoom)/2);
+    };
+    const compactButton=(label,text,action)=>{
+      const b=button(text,action);b.setAttribute('aria-label',label);b.title=label;return b;
+    };
+    const detailsToggle=compactButton(graphDetailsOpen?'Hide details':'Show details','Details',()=>{graphDetailsOpen=!graphDetailsOpen;render();});
+    detailsToggle.setAttribute('aria-expanded',String(graphDetailsOpen));
+    append(controls,compactButton('Fit graph','Fit',fitGraph),
+      compactButton('Zoom out','−',()=>zoomTo(graphZoom/1.25)),zoomText,compactButton('Zoom in','+',()=>zoomTo(graphZoom*1.25)),detailsToggle,more);
+    actions.append(button('100%',()=>zoomTo(1)));
+    card.restoreGraphViewport=scroll=>{
+      // Keep the scroll surface padded for navigation, without translating
+      // the whole viewport to compensate for a changed node position.
+      paddingX=canvas.clientWidth;paddingY=canvas.clientHeight;
+      surface.style.padding=`${paddingY}px ${paddingX}px`;
+      canvas.scrollLeft=scroll?scroll.canvasX+paddingX-(scroll.canvasWidth??paddingX):(paddingX-Math.max(0,(canvas.clientWidth-width*graphZoom)/2));
+      canvas.scrollTop=scroll?scroll.canvasY+paddingY-(scroll.canvasHeight??paddingY):paddingY;
+      if(graphAutoFit){fitGraph();graphAutoFit=false;}
+      if(graphToggleFocus){
+        const anchor=graphToggleFocus;
+        const node=[...canvas.querySelectorAll('.execution-node')].find(n=>n.dataset.path===anchor.key);
+        const toggle=node?.querySelector('.execution-toggle');
+        if(toggle){
+          if(anchor.focus)toggle.focus({preventScroll:true});
+        }
+        graphToggleFocus=null;
+      }
+    };
+    scale();
+    const secondary=(label,content)=>append(el('details','execution-secondary'),el('summary','',label),content);
+    const inspector=append(el('aside','execution-inspector'),formulaCard(r,selectChild),
+      secondary('Function breakdown',attribution(r)),secondary('Observed states',observations(r)));
+    inspector.hidden=!graphDetailsOpen;
+    inspector.setAttribute('aria-label','Selected region performance');
+    const split=append(el('div','execution-split'+(graphDetailsOpen?'':' details-hidden')),canvas,inspector);
+    card.append(split);menu.append(el('p','small muted','Arrows point from consumer to publisher. Top-level regions run horizontally; children stack vertically. Fit shows the overview; zoom in to read names. '+graph.contract));
+    const details=el('details','execution-edge-details');details.open=true;details.append(el('summary','',`Relationships for ${r.name}`));
+    for(const e of view.edges){
+      const source=tree.nodes.get(e.actualSource||e.source),target=tree.nodes.get(e.actualTarget||e.target);
+      if(source.id!==r.id&&target.id!==r.id&&tree.nodes.get(e.source)?.id!==r.id&&tree.nodes.get(e.target)?.id!==r.id)continue;
+      const row=el('p','execution-edge-row');Object.assign(row.dataset,{kind:e.kind,source:source.id,target:target.id});
+      row.textContent=`${source.path.join(' / ')} ${e.eventStatus?'declares wait on ('+e.eventStatus+')':e.kind==='wait'?'waits on completion from':'then'} ${target.path.join(' / ')} · ${e.observations} observations`;
+      const global=graph.edges.find(g=>g.kind===e.kind&&g.source===source.id&&g.target===target.id&&g.eventStatus===e.eventStatus);
+      const count=global&&G.countFormula(global);
+      if(count!==null&&count!==undefined)row.append(el('span','small muted',` · full-profile count: ${count} per ${global.context} invocation`));
+      if(e.kind==='wait'){
+        const reveal=button('Reveal endpoints',()=>openEdge(e),'execution-reveal-wait');
+        reveal.setAttribute('aria-label','Reveal wait: '+describe(e));
+        reveal.dataset.eventStatus=e.eventStatus||'';row.append(reveal);
+      }
+      details.append(row);
+    }inspector.insertBefore(details,inspector.children[1]);return card;
+  }
   function render() {
+    if(activeTab==='graph'&&renderedTab!=='graph')graphAutoFit=true;
+    if(activeTab!=='graph'){graphToggleFocus=null;graphLayoutRequest=null;}
+    const previousGraph=document.querySelector('.execution-graph');
+    const viewportKey=JSON.stringify([model?.id,graphMode==='region'?selected:null,graphMode]);
+    const graphScroll = activeTab==='graph' && renderedTab==='graph' && graphViewportKey===viewportKey
+      ? {x:window.scrollX,y:window.scrollY,canvasX:document.querySelector('.execution-canvas')?.scrollLeft||0,
+         canvasY:document.querySelector('.execution-canvas')?.scrollTop||0,
+         canvasWidth:document.querySelector('.execution-canvas')?.clientWidth,canvasHeight:document.querySelector('.execution-canvas')?.clientHeight} : null;
+    graphViewportKey=viewportKey;
+    renderedTab=activeTab;
+    if (activeTab!=='graph' && graphFullscreen) {
+      graphFullscreen=false;
+      send({type:'graphFullscreen',enabled:false});
+    }
+    document.body.classList.toggle('graph-fullscreen',graphFullscreen);
+    document.body.classList.toggle('graph-active',activeTab==='graph');
+    document.body.classList.toggle('graph-sidebar-open',graphSidebarOpen);
     root.replaceChildren();
     if (!model) {
       root.append(el('div', 'empty', 'Open a drperf report to explore its regions.'));
@@ -1845,9 +2152,10 @@
           'region-button' + (r.id === selected ? ' active' : '')
         );
         b.setAttribute('aria-current', r.id === selected ? 'true' : 'false');
-        const share = r.regimes.length
-          ? Math.max(...r.regimes.map((f) => f.unexplainedShare))
-          : null;
+        const explanations = r.regimes.map((f) => M.interfaceExplanation(model, r.id, f));
+        const unavailable = explanations.some((e) => e.share === null);
+        const share = explanations.length && !unavailable
+          ? Math.max(...explanations.map((e) => e.share)) : null;
         append(
           b,
           el('span', 'region-name', r.name),
@@ -1855,9 +2163,9 @@
             el('span', 'region-meta'),
             el('span', 'muted', r.states.join(', ') || 'no PCVs'),
             share === null
-              ? badge('needs states')
+              ? badge(unavailable ? 'share unavailable' : 'needs states')
               : share > 0.05
-                ? badge(`${Math.round(share * 100)}% unexplained`, 'warn')
+                ? badge(`${unexplainedPercent(share)}% unexplained${explanations.some((e) => e.estimated) ? ' (estimate)' : ''}`, 'warn')
                 : el('span', 'good-dot', '●')
           )
         );
@@ -1884,6 +2192,7 @@
     tabs.setAttribute('aria-label', 'Explorer views');
     for (const [key, title] of [
       ['interface', 'Interface'],
+      ['graph', 'Graph'],
       ['relations', 'Relationships'],
       ['scenario', 'What-if'],
       ['compare', 'Compare runs']
@@ -1909,6 +2218,8 @@
       content.append(
         activeTab === 'interface'
           ? interfaceView(r)
+          : activeTab === 'graph'
+            ? graphView(r,previousGraph)
           : activeTab === 'relations'
             ? relationshipsView()
             : activeTab === 'compare'
@@ -1918,6 +2229,10 @@
     }
     append(shell, aside, content);
     root.append(shell);
+    if(graphScroll){window.scrollTo(graphScroll.x,graphScroll.y);const canvas=document.querySelector('.execution-canvas');
+      if(canvas){canvas.scrollLeft=graphScroll.canvasX;canvas.scrollTop=graphScroll.canvasY;}}
+    const currentGraph=document.querySelector('.execution-graph');
+    if(currentGraph?.getAttribute('aria-busy')==='false')currentGraph.restoreGraphViewport?.(graphScroll);
     if (activeTab === 'scenario') updateScenario();
     persist();
   }
@@ -1938,6 +2253,16 @@
         const same = current.modelId === model.id;
         selected = message.selected || (same ? current.selected : null) || model.regions[0]?.id;
         if (previousId !== model.id) {
+          graphAutoFit=true;
+          graphHistory.length = 0;graphToggleFocus=null;graphLayoutRequest=null;
+          graphExpanded.clear(); graphHighlight=null; graphZoom=1;
+          graphMode = 'top';
+          if(window.DrperfStandalone) {
+            const view=window.DrperfStandalone;
+            graphShowSequence=view.showSequence===true;
+            if(['top','region','waits'].includes(view.mode))graphMode=view.mode;
+            if(Array.isArray(view.expanded))for(const key of view.expanded)if(typeof key==='string')graphExpanded.add(key);
+          }
           sourceStatuses.clear();
           validationModel = null;
           proposalResult = null;
@@ -2019,8 +2344,12 @@
           root.prepend(el('p', 'notice warn', 'Cannot open saved scenario: ' + error.message));
         });
     } else if (message?.type === 'sourceStatus' && message.modelId === loadedModel?.id) {
+      if (JSON.stringify(sourceStatuses.get(message.region)) === JSON.stringify(message.sources || [])) return;
       sourceStatuses.set(message.region, message.sources || []);
-      if (activeTab === 'interface' && selected === message.region) render();
+      if (activeTab === 'interface' && selected === message.region) {
+        const scroll = {x:window.scrollX,y:window.scrollY};
+        render();window.scrollTo(scroll.x,scroll.y);
+      }
     } else if (message?.type === 'validationModel') {
       try {
         validationModel = M.validate(message.model);
@@ -2032,7 +2361,24 @@
         updateScenario();
       }
     } else if (message?.type === 'select' && model?.regions.some((r) => r.id === message.region)) {
+      if (selected === message.region) return;
       selected = message.region;
+      render();
+    }
+  });
+  document.addEventListener('pointerdown',event=>{
+    const menu=document.querySelector('.execution-more[open]');
+    if(menu&&!menu.contains(event.target))menu.open=false;
+  });
+  document.addEventListener('keydown',event=>{
+    const menu=document.querySelector('.execution-more[open]');
+    if(event.key==='Escape'&&menu){menu.open=false;menu.querySelector('summary').focus();return;}
+    if(event.key==='Escape'&&graphFullscreen&&!window.DrperfStandalone) {
+      graphFullscreen=false;
+      document.body.classList.remove('graph-fullscreen');
+      send({type:'graphFullscreen',enabled:false});
+      const button=document.querySelector('.execution-controls button');
+      if(button)button.textContent='Full-screen graph';
       render();
     }
   });

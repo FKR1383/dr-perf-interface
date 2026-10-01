@@ -158,8 +158,6 @@ if _ext is not None:
         __slots__ = ()
 
         def __init__(self, name, **state):
-            if _calibrate_pending:
-                _calibrate_once()
             key, extra = _split_state(state)
             _ext.Region.__init__(self, _encode(name), key or None, extra or None)
 
@@ -191,8 +189,6 @@ class _region_ctypes(object):
         _state(_encode(name), _encode(value))
 
     def __enter__(self):
-        if _calibrate_pending:
-            _calibrate_once()
         _open(self._name, self._key, self._extra)
         return self
 
@@ -339,7 +335,9 @@ def capture_exit(loc, glob, names, declared):
 
 
 def calibrate(n=20):
-    """Measure the marker cost so drperf can subtract it.
+    """Record empty-marker diagnostic samples explicitly (legacy API).
+
+    drperf does not run this automatically or subtract these measurements.
 
     _perfmark_calibration        : n empty regions -> cost inside the brackets
     _perfmark_calibration_outer  : the loop of n empty regions -> its self is
@@ -358,16 +356,15 @@ def calibrate(n=20):
                 pass
 
 
-_calibrate_pending = bool(os.environ.get("PERFMARK_CALIBRATE")) and available
+# Builtins have exported native boundaries: drperf excludes their execution,
+# including argument validation and GIL handoff, without estimated subtraction.
+if _ext is not None and hasattr(_ext, "event_waited"):
+    event_publish = _ext.event_publish
+    event_waited = _ext.event_waited
+else:
+    def _missing_event_checkpoint(event, generation):
+        if os.environ.get("DRPERF"):
+            raise RuntimeError("Event checkpoints require a rebuilt _perfmark extension (run build.sh)")
+    event_publish = event_waited = _missing_event_checkpoint
 
-
-def _calibrate_once():
-    """Calibration runs at the first real region, not at import.
-
-    With late attach, DynamoRIO starts at the first marker; calibrating at
-    import would attach before the program has done any of its own work, which
-    is exactly what late attach exists to avoid."""
-    global _calibrate_pending
-    if _calibrate_pending:
-        _calibrate_pending = False
-        calibrate()
+__all__ += ["event_publish", "event_waited"]
