@@ -141,3 +141,8 @@ Each suite also receives `full-report.json`, `full-report.md`, and
 
 Success requires valid irregularity strictly below `10%`, with at most ten
 measured candidates and at most four PCVs per candidate.
+
+Every `drperf-full-report.json` includes `irregularity_breakdown`, containing
+the complete function-level attribution of non-affine instructions. Its entries
+record module, function, mean irregular instructions per call, and share of the
+total irregular instructions.

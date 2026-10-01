@@ -141,3 +141,8 @@ SUITE/CASE/
 Complete reports are retained outside the isolated agent directory. Suite
 aggregates are written as `full-report.json`, `full-report.md`, and
 `full-report.csv`.
+
+Every retained `drperf-full-report.json` includes `irregularity_breakdown`,
+with complete function-level attribution of non-affine instructions. This
+breakdown remains private to the trusted evaluator: `agent_PCVs` still receives
+only the scalar percentage or sanitized invalid-measurement diagnostics.

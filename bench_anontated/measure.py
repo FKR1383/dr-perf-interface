@@ -14,8 +14,38 @@ import derive
 import runner
 
 
+MIN_REQUIRED_STATE_POINTS = 3
+
+
 def write(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
+
+
+def irregularity_breakdown(regime):
+    """Return the complete non-affine instruction attribution by function."""
+    if regime is None:
+        return {
+            'basis': 'mean instructions per call across observed states for basic blocks classified as non-affine',
+            'irregular_basic_blocks': 0,
+            'total_irregular_instructions_per_call': 0.0,
+            'functions': [],
+        }
+    entries = sorted(regime.by_sym_irr.items(), key=lambda item: -abs(item[1]))
+    total = sum(value for _symbol, value in entries)
+    functions = []
+    for (module, symbol), value in entries:
+        functions.append({
+            'module': module,
+            'function': symbol,
+            'irregular_instructions_per_call': value,
+            'share_of_irregular_instructions': value / total if total else 0.0,
+        })
+    return {
+        'basis': 'mean instructions per call across observed states for basic blocks classified as non-affine',
+        'irregular_basic_blocks': regime.n_irr,
+        'total_irregular_instructions_per_call': total,
+        'functions': functions,
+    }
 
 
 def analyze(raw, case):
@@ -37,7 +67,7 @@ def analyze(raw, case):
             row.update(unexplained_instructions_per_call=irr,
                        unexplained_share=irr / instructions if instructions else 0.0)
         rows.append(row)
-    needed = max(derive.MIN_VALUES, len(names) + 2)
+    needed = max(MIN_REQUIRED_STATE_POINTS, len(names) + 2)
     sufficient = bool(regimes) and len(rows) >= needed
     worst = max((r['unexplained_share'] for r in rows), default=None) if regimes else None
     reasons = list(warnings)
@@ -53,7 +83,8 @@ def analyze(raw, case):
                'max_unexplained_share': worst, 'threshold': 0.05,
                'sufficient_points': sufficient, 'gate_pass': not reasons,
                'gate_reasons': reasons, 'automatic_regime_splitting': False,
-               'instruction_scope': 'target own work, excluding configured runtime waiting modules; marker overhead included'}
+               'instruction_scope': 'target own work, excluding configured runtime waiting modules; marker overhead included',
+               'irregularity_breakdown': irregularity_breakdown(regimes[0] if regimes else None)}
     lines = []
     if regimes:
         r = regimes[0]
