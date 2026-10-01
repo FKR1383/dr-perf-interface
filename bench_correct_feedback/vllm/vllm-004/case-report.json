@@ -36,7 +36,18 @@
           "name": "request_heads",
           "rationale": "Captures per-request, per-head setup and scheduling overhead; warm-up calls yield zero."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 78.42094988547488,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-002/annotation.diff",
@@ -73,7 +84,18 @@
           "name": "request_kv_blocks",
           "rationale": "Captures per-request KV block overhead, including the observed decode cost increase for longer contexts."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 76.2666799173577,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-003/annotation.diff",
@@ -110,7 +132,18 @@
           "name": "prefill_extra_kv_blocks",
           "rationale": "Allows a separate prefill cost increase for additional KV blocks."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 78.86665499894163,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-004/annotation.diff",
@@ -142,7 +175,18 @@
           "name": "additional_request_blocks",
           "rationale": "Captures additional per-request block overhead, particularly visible during decode."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 96.63320514475745,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-005/annotation.diff",
@@ -179,7 +223,18 @@
           "name": "sequence_count",
           "rationale": "Measures per-sequence overhead from the native kernel's sequence-length tensor."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 77.81982667882919,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-006/annotation.diff",
@@ -216,7 +271,18 @@
           "name": "first_layer_request_blocks",
           "rationale": "Separates possible first-layer request and kernel setup costs from subsequent layers."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 80.04378622566541,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-007/annotation.diff",
@@ -253,7 +319,18 @@
           "name": "requests",
           "rationale": "Separates per-request setup from tiled kernel work."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 79.31980581047878,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-008/annotation.diff",
@@ -290,7 +367,18 @@
           "name": "requests",
           "rationale": "Separates batch cardinality from per-request dimensions."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 79.39984785243848,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-009/annotation.diff",
@@ -317,7 +405,18 @@
           "name": "additional_request_blocks",
           "rationale": "Preserves the stronger context-block effect observed during decode."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 98.58946424548043,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-010/annotation.diff",
@@ -354,7 +453,18 @@
           "name": "decode_extra_blocks",
           "rationale": "Counts additional context blocks traversed during decode."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 76.0055850662916,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     }
   ],
   "case": "vllm-004",

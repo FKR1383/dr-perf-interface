@@ -26,7 +26,18 @@
           "name": "tokenization_option_work",
           "rationale": "The generator captures tokenization options that are processed separately for every prompt."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 99.51801406733945,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-002/annotation.diff",
@@ -63,7 +74,18 @@
           "name": "tokenization_option_work",
           "rationale": "Tracks per-request option processing."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 24.86939377150273,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-003/annotation.diff",
@@ -100,7 +122,18 @@
           "name": "special_token_requests",
           "rationale": "Captures the tokenization branch that inserts special tokens, which alternates across subsequent batches."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 30.904936954760664,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-004/annotation.diff",
@@ -137,7 +170,18 @@
           "name": "long_prompt_requests",
           "rationale": "Models the larger per-request tokenization and input-processing cost of long prompts."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 13.206467293377283,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-005/annotation.diff",
@@ -174,7 +218,18 @@
           "name": "long_prompt_requests",
           "rationale": "Captures additional processing associated with long prompts."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 14.047464483815803,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-006/annotation.diff",
@@ -211,7 +266,18 @@
           "name": "prompt_word_work",
           "rationale": "Provides a cheap lexical-unit estimate for tokenization work, distinguishing texts with different word lengths."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 13.583320192910032,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-007/annotation.diff",
@@ -248,7 +314,18 @@
           "name": "sampled_requests",
           "rationale": "Counts requests using stochastic sampling, which require different sampling-parameter validation and preparation from greedy requests."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 26.92613971825332,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-008/annotation.diff",
@@ -285,7 +362,18 @@
           "name": "special_token_requests",
           "rationale": "Captures additional processing when tokenization inserts special tokens."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 25.70510255319562,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-009/annotation.diff",
@@ -322,7 +410,18 @@
           "name": "estimated_prompt_tokens",
           "rationale": "Estimates token-dependent processing, including punctuation, likely subword splits, and explicitly requested special tokens."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 29.41123889984531,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-010/annotation.diff",
@@ -359,7 +458,18 @@
           "name": "long_prompt_requests",
           "rationale": "Separates the additional tokenization and input-processing work of long prompts using inexpensive length checks."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 39.42693616389077,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     }
   ],
   "case": "vllm-002",

@@ -1,341 +1,498 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 336,
   "case": "vllm-004",
-  "validity_warnings": [],
+  "distinct_states": 25,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "attention_tiles": 19.460760938545704,
+      "attention_work": -0.0007402223370810805,
+      "query_elements": 5.0364543593554565,
+      "request_heads": 164.57205583767836
+    },
+    "constant": 91316.08737865352,
+    "dependent_columns": []
+  },
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 106.31281191296875,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>",
+        "irregular_instructions_per_call": 730679.04,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.8442336022988955
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::operator()",
+        "irregular_instructions_per_call": 90884.64,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.1050089886536752
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax",
+        "irregular_instructions_per_call": 39426.72,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.045554012131550824
+      },
+      {
+        "function": "_PyType_Lookup",
+        "irregular_instructions_per_call": 1423.53,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0016447602765238027
+      },
+      {
+        "function": "PyDict_Contains+?",
+        "irregular_instructions_per_call": 605.78,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006999240481848567
+      },
+      {
+        "function": "pybind11::detail::get_internals",
+        "irregular_instructions_per_call": 602.8333333333334,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.0006965194411295154
+      },
+      {
+        "function": "_PyObject_GenericGetAttrWithDict",
+        "irregular_instructions_per_call": 540.0733333333334,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006240059324892803
+      },
+      {
+        "function": "PyType_GenericAlloc",
+        "irregular_instructions_per_call": 191.97,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00022180398747077644
+      },
+      {
+        "function": "operator new",
+        "irregular_instructions_per_call": 191.29,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0002210183089195438
+      },
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 174.03333333333333,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00020107978999929222
+      },
+      {
+        "function": "_int_free",
+        "irregular_instructions_per_call": 159.27333333333334,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0001840259437990075
+      },
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 157.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00018139931256400428
+      },
+      {
+        "function": "__free",
+        "irregular_instructions_per_call": 136.52,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00015773652325629215
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 109.83833333333334,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00012690826853402944
+      },
+      {
+        "function": "epoll_wait",
+        "irregular_instructions_per_call": 49.208333333333336,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 5.685578241456716e-05
+      },
+      {
+        "function": "___pthread_cond_broadcast",
+        "irregular_instructions_per_call": 45.27166666666667,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 5.230731982140179e-05
+      },
+      {
+        "function": "__GI___pthread_enable_asynccancel",
+        "irregular_instructions_per_call": 31.813333333333336,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.675743182825599e-05
+      },
+      {
+        "function": "__GI___pthread_disable_asynccancel",
+        "irregular_instructions_per_call": 27.83666666666667,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.216275284972399e-05
+      },
+      {
+        "function": "std::_Hash_bytes",
+        "irregular_instructions_per_call": 19.526666666666667,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 2.2561298789807582e-05
+      },
+      {
+        "function": "gloo::transport::tcp::Loop::run",
+        "irregular_instructions_per_call": 15.746666666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.819385037266149e-05
+      },
+      {
+        "function": "pybind11::detail::all_type_info_get_cache",
+        "irregular_instructions_per_call": 10.350000000000001,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.1958489713614296e-05
+      },
+      {
+        "function": "std::ostream::sentry::sentry",
+        "irregular_instructions_per_call": 4.713333333333333,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 5.445830742367347e-06
+      },
+      {
+        "function": "std::__ostream_insert<>",
+        "irregular_instructions_per_call": 3.8,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 4.390556609829402e-06
+      },
+      {
+        "function": "std::basic_streambuf<>::xsputn",
+        "irregular_instructions_per_call": 3.1,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 3.5817698659134602e-06
+      }
+    ],
+    "irregular_basic_blocks": 116,
+    "total_irregular_instructions_per_call": 865493.9083333333
+  },
+  "max_unexplained_share": 0.7842094988547489,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "query_elements",
     "attention_work",
     "attention_tiles",
     "request_heads"
   ],
-  "distinct_states": 25,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "ffb3a63ac8e981ecd4d6f34c19c9ef5cacb6a9d4753dc6d5b9a1512d1d4eb652",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2660470.json"
+  ],
   "required_states": 6,
-  "calls": 336,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 12,
+      "instructions_per_call": 124126.58333333333,
       "state": {
-        "query_elements": 768,
+        "attention_tiles": 12,
         "attention_work": 9984,
-        "attention_tiles": 12,
+        "query_elements": 768,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 124028.58333333333,
-      "unexplained_instructions_per_call": 27449.0,
-      "unexplained_share": 0.22131188845581967
+      "unexplained_instructions_per_call": 27464.0,
+      "unexplained_share": 0.2212580034225814
     },
     {
+      "calls": 12,
+      "instructions_per_call": 122887.08333333333,
       "state": {
-        "query_elements": 768,
+        "attention_tiles": 12,
         "attention_work": 18432,
-        "attention_tiles": 12,
+        "query_elements": 768,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 123024.16666666667,
-      "unexplained_instructions_per_call": 26801.75,
-      "unexplained_share": 0.21785760250357314
+      "unexplained_instructions_per_call": 26783.333333333332,
+      "unexplained_share": 0.21795076103062092
     },
     {
+      "calls": 12,
+      "instructions_per_call": 122838.66666666667,
       "state": {
-        "query_elements": 768,
+        "attention_tiles": 12,
         "attention_work": 19200,
-        "attention_tiles": 12,
+        "query_elements": 768,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 122877.41666666667,
-      "unexplained_instructions_per_call": 26750.583333333332,
-      "unexplained_share": 0.21770138125462435
+      "unexplained_instructions_per_call": 26721.0,
+      "unexplained_share": 0.217529225325359
     },
     {
+      "calls": 12,
+      "instructions_per_call": 138448.5,
       "state": {
-        "query_elements": 768,
-        "attention_work": 36864,
         "attention_tiles": 24,
+        "attention_work": 36864,
+        "query_elements": 768,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 138433.83333333334,
-      "unexplained_instructions_per_call": 42158.916666666664,
-      "unexplained_share": 0.3045420014134309
+      "unexplained_instructions_per_call": 42160.166666666664,
+      "unexplained_share": 0.3045187681099229
     },
     {
+      "calls": 12,
+      "instructions_per_call": 138434.58333333334,
       "state": {
-        "query_elements": 768,
+        "attention_tiles": 24,
         "attention_work": 37632,
-        "attention_tiles": 24,
+        "query_elements": 768,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 138872.0,
-      "unexplained_instructions_per_call": 42193.416666666664,
-      "unexplained_share": 0.3038295456727538
+      "unexplained_instructions_per_call": 42116.08333333333,
+      "unexplained_share": 0.30423093940278645
     },
     {
+      "calls": 12,
+      "instructions_per_call": 153822.66666666666,
       "state": {
-        "query_elements": 1536,
+        "attention_tiles": 24,
         "attention_work": 18432,
-        "attention_tiles": 24,
+        "query_elements": 1536,
         "request_heads": 24
       },
-      "calls": 12,
-      "instructions_per_call": 153331.58333333334,
-      "unexplained_instructions_per_call": 50319.333333333336,
-      "unexplained_share": 0.3281733106736544
+      "unexplained_instructions_per_call": 50548.833333333336,
+      "unexplained_share": 0.3286175856180711
     },
     {
+      "calls": 24,
+      "instructions_per_call": 151789.0,
       "state": {
-        "query_elements": 1536,
+        "attention_tiles": 24,
         "attention_work": 35328,
-        "attention_tiles": 24,
+        "query_elements": 1536,
         "request_heads": 24
       },
-      "calls": 24,
-      "instructions_per_call": 151940.08333333334,
-      "unexplained_instructions_per_call": 49096.375,
-      "unexplained_share": 0.32312984120385174
+      "unexplained_instructions_per_call": 49052.45833333333,
+      "unexplained_share": 0.32316214174501
     },
     {
+      "calls": 12,
+      "instructions_per_call": 151563.58333333334,
       "state": {
-        "query_elements": 1536,
+        "attention_tiles": 24,
         "attention_work": 36864,
-        "attention_tiles": 24,
+        "query_elements": 1536,
         "request_heads": 24
       },
-      "calls": 12,
-      "instructions_per_call": 151841.83333333334,
-      "unexplained_instructions_per_call": 48996.083333333336,
-      "unexplained_share": 0.32267842305205746
+      "unexplained_instructions_per_call": 48933.333333333336,
+      "unexplained_share": 0.32285679882425583
     },
     {
+      "calls": 24,
+      "instructions_per_call": 183045.16666666666,
       "state": {
-        "query_elements": 1536,
+        "attention_tiles": 48,
         "attention_work": 73728,
-        "attention_tiles": 48,
-        "request_heads": 24
-      },
-      "calls": 24,
-      "instructions_per_call": 183314.75,
-      "unexplained_instructions_per_call": 80225.0,
-      "unexplained_share": 0.4376352693932158
-    },
-    {
-      "state": {
         "query_elements": 1536,
-        "attention_work": 75264,
-        "attention_tiles": 48,
         "request_heads": 24
       },
-      "calls": 12,
-      "instructions_per_call": 182962.0,
-      "unexplained_instructions_per_call": 80072.5,
-      "unexplained_share": 0.4376455220209661
+      "unexplained_instructions_per_call": 80211.875,
+      "unexplained_share": 0.43820810164340135
     },
     {
+      "calls": 12,
+      "instructions_per_call": 182748.75,
       "state": {
-        "query_elements": 2304,
-        "attention_work": 50688,
+        "attention_tiles": 48,
+        "attention_work": 75264,
+        "query_elements": 1536,
+        "request_heads": 24
+      },
+      "unexplained_instructions_per_call": 80059.08333333333,
+      "unexplained_share": 0.4380827958239568
+    },
+    {
+      "calls": 12,
+      "instructions_per_call": 180240.0,
+      "state": {
         "attention_tiles": 36,
-        "request_heads": 36
-      },
-      "calls": 12,
-      "instructions_per_call": 180516.91666666666,
-      "unexplained_instructions_per_call": 71834.33333333333,
-      "unexplained_share": 0.3979368507937622
-    },
-    {
-      "state": {
+        "attention_work": 50688,
         "query_elements": 2304,
-        "attention_work": 108288,
-        "attention_tiles": 72,
         "request_heads": 36
       },
+      "unexplained_instructions_per_call": 71788.58333333333,
+      "unexplained_share": 0.39829440375795233
+    },
+    {
       "calls": 24,
-      "instructions_per_call": 227475.0,
-      "unexplained_instructions_per_call": 118333.29166666667,
-      "unexplained_share": 0.5202035022163608
+      "instructions_per_call": 227209.95833333334,
+      "state": {
+        "attention_tiles": 72,
+        "attention_work": 108288,
+        "query_elements": 2304,
+        "request_heads": 36
+      },
+      "unexplained_instructions_per_call": 118299.125,
+      "unexplained_share": 0.5206599475998612
     },
     {
+      "calls": 12,
+      "instructions_per_call": 271250.3333333333,
       "state": {
-        "query_elements": 3072,
+        "attention_tiles": 96,
         "attention_work": 147456,
-        "attention_tiles": 96,
-        "request_heads": 48
-      },
-      "calls": 12,
-      "instructions_per_call": 271776.0833333333,
-      "unexplained_instructions_per_call": 156219.91666666666,
-      "unexplained_share": 0.5748111266842526
-    },
-    {
-      "state": {
         "query_elements": 3072,
-        "attention_work": 150528,
-        "attention_tiles": 96,
         "request_heads": 48
       },
-      "calls": 12,
-      "instructions_per_call": 271669.3333333333,
-      "unexplained_instructions_per_call": 156184.91666666666,
-      "unexplained_share": 0.5749081604106954
+      "unexplained_instructions_per_call": 156131.91666666666,
+      "unexplained_share": 0.5756008287547419
     },
     {
+      "calls": 12,
+      "instructions_per_call": 271660.75,
       "state": {
-        "query_elements": 3840,
+        "attention_tiles": 96,
+        "attention_work": 150528,
+        "query_elements": 3072,
+        "request_heads": 48
+      },
+      "unexplained_instructions_per_call": 156273.25,
+      "unexplained_share": 0.5752514855384887
+    },
+    {
+      "calls": 12,
+      "instructions_per_call": 315081.0,
+      "state": {
+        "attention_tiles": 120,
         "attention_work": 176640,
-        "attention_tiles": 120,
-        "request_heads": 60
-      },
-      "calls": 12,
-      "instructions_per_call": 314954.75,
-      "unexplained_instructions_per_call": 193585.33333333334,
-      "unexplained_share": 0.6146449079854593
-    },
-    {
-      "state": {
         "query_elements": 3840,
-        "attention_work": 180480,
-        "attention_tiles": 120,
         "request_heads": 60
       },
-      "calls": 12,
-      "instructions_per_call": 315199.5,
-      "unexplained_instructions_per_call": 193409.0,
-      "unexplained_share": 0.6136082068658104
+      "unexplained_instructions_per_call": 193625.9166666667,
+      "unexplained_share": 0.6145274283967193
     },
     {
+      "calls": 12,
+      "instructions_per_call": 314754.25,
       "state": {
-        "query_elements": 4608,
-        "attention_work": 221184,
+        "attention_tiles": 120,
+        "attention_work": 180480,
+        "query_elements": 3840,
+        "request_heads": 60
+      },
+      "unexplained_instructions_per_call": 193346.9166666667,
+      "unexplained_share": 0.614278970551364
+    },
+    {
+      "calls": 12,
+      "instructions_per_call": 358604.9166666667,
+      "state": {
         "attention_tiles": 144,
+        "attention_work": 221184,
+        "query_elements": 4608,
         "request_heads": 72
       },
-      "calls": 12,
-      "instructions_per_call": 358906.0,
-      "unexplained_instructions_per_call": 231027.41666666666,
-      "unexplained_share": 0.6436989536721779
+      "unexplained_instructions_per_call": 231025.5,
+      "unexplained_share": 0.6442340560956242
     },
     {
+      "calls": 12,
+      "instructions_per_call": 282434.5833333333,
       "state": {
-        "query_elements": 7680,
-        "attention_work": 76800,
         "attention_tiles": 12,
+        "attention_work": 76800,
+        "query_elements": 7680,
         "request_heads": 12
       },
-      "calls": 12,
-      "instructions_per_call": 281015.1666666667,
-      "unexplained_instructions_per_call": 133757.91666666666,
-      "unexplained_share": 0.4759811303185889
+      "unexplained_instructions_per_call": 134866.8333333333,
+      "unexplained_share": 0.4775152948396605
     },
     {
+      "calls": 12,
+      "instructions_per_call": 446086.1666666667,
       "state": {
-        "query_elements": 15360,
-        "attention_work": 168960,
         "attention_tiles": 24,
+        "attention_work": 168960,
+        "query_elements": 15360,
         "request_heads": 24
       },
-      "calls": 12,
-      "instructions_per_call": 446410.1666666667,
-      "unexplained_instructions_per_call": 274010.25,
-      "unexplained_share": 0.6138082652687494
+      "unexplained_instructions_per_call": 274005.1666666667,
+      "unexplained_share": 0.6142426892861133
     },
     {
+      "calls": 12,
+      "instructions_per_call": 1149289.6666666667,
       "state": {
-        "query_elements": 50688,
-        "attention_work": 1115136,
         "attention_tiles": 36,
+        "attention_work": 1115136,
+        "query_elements": 50688,
         "request_heads": 36
       },
-      "calls": 12,
-      "instructions_per_call": 1149077.1666666667,
-      "unexplained_instructions_per_call": 797721.3333333334,
-      "unexplained_share": 0.694227817307889
+      "unexplained_instructions_per_call": 797914.8333333334,
+      "unexplained_share": 0.6942678216602777
     },
     {
+      "calls": 12,
+      "instructions_per_call": 1477946.9166666667,
       "state": {
-        "query_elements": 64512,
-        "attention_work": 1354752,
         "attention_tiles": 48,
+        "attention_work": 1354752,
+        "query_elements": 64512,
         "request_heads": 48
       },
-      "calls": 12,
-      "instructions_per_call": 1478437.9166666667,
-      "unexplained_instructions_per_call": 1055638.9166666667,
-      "unexplained_share": 0.7140231623974741
+      "unexplained_instructions_per_call": 1055508.8333333335,
+      "unexplained_share": 0.7141723572277602
     },
     {
+      "calls": 12,
+      "instructions_per_call": 4391285.166666667,
       "state": {
-        "query_elements": 176640,
-        "attention_work": 8125440,
         "attention_tiles": 240,
+        "attention_work": 8125440,
+        "query_elements": 176640,
         "request_heads": 60
       },
-      "calls": 12,
-      "instructions_per_call": 4391189.666666667,
-      "unexplained_instructions_per_call": 3400428.5,
-      "unexplained_share": 0.7743752281557108
+      "unexplained_instructions_per_call": 3400582.0,
+      "unexplained_share": 0.7743933429359385
     },
     {
+      "calls": 12,
+      "instructions_per_call": 5212452.916666667,
       "state": {
-        "query_elements": 207360,
-        "attention_work": 9331200,
         "attention_tiles": 288,
+        "attention_work": 9331200,
+        "query_elements": 207360,
         "request_heads": 72
       },
-      "calls": 12,
-      "instructions_per_call": 5213004.416666667,
-      "unexplained_instructions_per_call": 4064580.9166666665,
-      "unexplained_share": 0.7797002633781898
+      "unexplained_instructions_per_call": 4064358.166666667,
+      "unexplained_share": 0.7797400248299605
     },
     {
+      "calls": 12,
+      "instructions_per_call": 6103533.916666667,
       "state": {
-        "query_elements": 247296,
-        "attention_work": 11375616,
         "attention_tiles": 336,
+        "attention_work": 11375616,
+        "query_elements": 247296,
         "request_heads": 84
       },
-      "calls": 12,
-      "instructions_per_call": 6104044.416666667,
-      "unexplained_instructions_per_call": 4753592.666666666,
-      "unexplained_share": 0.7787611528001522
+      "unexplained_instructions_per_call": 4753554.5,
+      "unexplained_share": 0.7788200352290442
     },
     {
+      "calls": 12,
+      "instructions_per_call": 7092512.916666667,
       "state": {
-        "query_elements": 282624,
-        "attention_work": 13283328,
         "attention_tiles": 384,
+        "attention_work": 13283328,
+        "query_elements": 282624,
         "request_heads": 96
       },
-      "calls": 12,
-      "instructions_per_call": 7092678.666666667,
-      "unexplained_instructions_per_call": 5561920.833333334,
-      "unexplained_share": 0.7841777549394127
+      "unexplained_instructions_per_call": 5562016.0,
+      "unexplained_share": 0.7842094988547489
     }
   ],
-  "max_unexplained_share": 0.7841777549394127,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": false,
-  "gate_reasons": [
-    "unexplained share exceeds 5% at an observed state"
-  ],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "query_elements": 5.045034896359019,
-      "attention_work": -0.000999560647692606,
-      "attention_tiles": 22.141047881754453,
-      "request_heads": 162.49429921340194
-    },
-    "constant": 91415.3229785413,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 128.76972533389926,
-  "raw_files": [
-    "run.1792277.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

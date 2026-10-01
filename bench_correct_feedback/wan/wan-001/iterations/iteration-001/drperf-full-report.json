@@ -1,87 +1,154 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 18,
   "case": "wan-001",
-  "validity_warnings": [],
+  "distinct_states": 6,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "elements": 1.7399652777777777
+    },
+    "constant": 80306.75416666642,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 11.212006689980626,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 846.3333333333333,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.3972256264504184
+      },
+      {
+        "function": "_int_free",
+        "irregular_instructions_per_call": 552.2222222222223,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.2591848973951136
+      },
+      {
+        "function": "operator new",
+        "irregular_instructions_per_call": 407.6111111111111,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.19131183019999476
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 135.16666666666669,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.06344032750123857
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_construct<>",
+        "irregular_instructions_per_call": 63.83333333333333,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.02996010534275507
+      },
+      {
+        "function": "std::_Hash_bytes",
+        "irregular_instructions_per_call": 47.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.022059398711897993
+      },
+      {
+        "function": "__memcmp_evex_movbe",
+        "irregular_instructions_per_call": 34.22222222222222,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.016062162655471824
+      },
+      {
+        "function": "_Py_HashPointer+?",
+        "irregular_instructions_per_call": 22.222222222222225,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.01042997575030638
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::find",
+        "irregular_instructions_per_call": 22.0,
+        "module": "libcufile.so.0",
+        "share_of_irregular_instructions": 0.010325675992803316
+      }
+    ],
+    "irregular_basic_blocks": 14,
+    "total_irregular_instructions_per_call": 2130.6111111111113
+  },
+  "max_unexplained_share": 0.03710862002319289,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "elements"
   ],
-  "distinct_states": 6,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "24e0e1c84e472e6809882161e8638e745d0fd4d6cc83be91ff112c9dfb58359b",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2541849.json"
+  ],
   "required_states": 3,
-  "calls": 18,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 3,
+      "instructions_per_call": 91407.33333333333,
       "state": {
         "elements": 144
       },
-      "calls": 3,
-      "instructions_per_call": 91102.66666666667,
-      "unexplained_instructions_per_call": 3412.666666666667,
-      "unexplained_share": 0.03745956942350755
+      "unexplained_instructions_per_call": 3392.0,
+      "unexplained_share": 0.03710862002319289
     },
     {
+      "calls": 3,
+      "instructions_per_call": 79850.0,
       "state": {
         "elements": 192
       },
-      "calls": 3,
-      "instructions_per_call": 80357.66666666667,
-      "unexplained_instructions_per_call": 1885.3333333333335,
-      "unexplained_share": 0.023461772989924214
+      "unexplained_instructions_per_call": 1760.0,
+      "unexplained_share": 0.022041327489041952
     },
     {
+      "calls": 3,
+      "instructions_per_call": 80166.66666666667,
       "state": {
         "elements": 216
       },
-      "calls": 3,
-      "instructions_per_call": 79598.0,
-      "unexplained_instructions_per_call": 1751.3333333333333,
-      "unexplained_share": 0.022002227861671567
+      "unexplained_instructions_per_call": 1760.0,
+      "unexplained_share": 0.021954261954261953
     },
     {
+      "calls": 3,
+      "instructions_per_call": 82454.0,
       "state": {
         "elements": 288
       },
-      "calls": 3,
-      "instructions_per_call": 82848.33333333333,
-      "unexplained_instructions_per_call": 2234.0,
-      "unexplained_share": 0.026964935927095698
+      "unexplained_instructions_per_call": 2072.666666666667,
+      "unexplained_share": 0.025137248243465048
     },
     {
+      "calls": 3,
+      "instructions_per_call": 81920.0,
       "state": {
         "elements": 360
       },
-      "calls": 3,
-      "instructions_per_call": 82210.66666666667,
-      "unexplained_instructions_per_call": 2049.6666666666665,
-      "unexplained_share": 0.024931882318596124
+      "unexplained_instructions_per_call": 1925.3333333333335,
+      "unexplained_share": 0.02350260416666667
     },
     {
+      "calls": 3,
+      "instructions_per_call": 81749.33333333333,
       "state": {
         "elements": 480
       },
-      "calls": 3,
-      "instructions_per_call": 82152.33333333333,
-      "unexplained_instructions_per_call": 1963.0000000000002,
-      "unexplained_share": 0.023894634763873622
+      "unexplained_instructions_per_call": 1873.6666666666665,
+      "unexplained_share": 0.02291965683716075
     }
   ],
-  "max_unexplained_share": 0.03745956942350755,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "elements": 2.678506944444444
-    },
-    "constant": 80078.96249999979,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 10.482139805331826,
-  "raw_files": [
-    "run.1537426.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

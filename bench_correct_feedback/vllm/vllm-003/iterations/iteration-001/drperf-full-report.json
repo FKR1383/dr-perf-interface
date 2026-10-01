@@ -1,135 +1,1732 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 8,
   "case": "vllm-003",
-  "validity_warnings": [],
+  "distinct_states": 8,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "decode_rounds_proxy": -14762930085.585007,
+      "initial_batch": -45313861646.98814,
+      "long_prompt_requests": 2203431880.5593357,
+      "request_count_proxy": 2335469781.5905457
+    },
+    "constant": 58724671373.19521,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 75.72531954292208,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "std::__introsort_loop<>",
+        "irregular_instructions_per_call": 81671811.375,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.28739820502151325
+      },
+      {
+        "function": "kernel._omp_fn.0",
+        "irregular_instructions_per_call": 48605535.25,
+        "module": "cxp2qcvqydeuqira52wn4b5ryo75g52ruv3od6quqwhniree46a7.main.so",
+        "share_of_irregular_instructions": 0.17103996286821535
+      },
+      {
+        "function": "cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>",
+        "irregular_instructions_per_call": 27602802.0,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.09713260444218029
+      },
+      {
+        "function": "_ZN3c1012function_refIFvPPcPKlllEE11callback_fnIZN2at18TensorIteratorBase15loop_2d_from_1dIZZZNS8_6native12_GLOBAL__N_110_dim_applyIZNSC_11sort_kernelERKNS8_10TensorBaseESG_SG_lbbEUlPT_lPT0_llE_EEvSG_SG_lRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSH_ENKUlvE_clEvENKUlvE8_clEvEUlS2_S4_lE_EEDaSV_EUlS2_S4_llE_EEvlS2_S4_ll",
+        "irregular_instructions_per_call": 16609139.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.05844656381668027
+      },
+      {
+        "function": "_ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native7cpublas12_GLOBAL__N_112gemm_transa_IN3c104HalfEfS8_EEvNS3_13TransposeTypeElllT0_PKT_lSD_lSA_PT1_lEUlllE_EEvlllRSC_EUlllE_EEvlllSH_._omp_fn.0",
+        "irregular_instructions_per_call": 15690954.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.055215525880396
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::where_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(bool, unsigned int, unsigned int)#1}&>(at::TensorIteratorBase&, at::native::(anonymous namespace)::where_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(bool, unsigned int, unsigned int)#1}&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::where_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(bool, unsigned int, unsigned int)#1}&>(at::TensorIteratorBase&, at::native::(anonymous namespace)::where_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(bool, unsigned int, unsigned int)#1}&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 10548420.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.03711925897654469
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::(anonymous namespace)::cpu_masked_fill_kernel<float>(at::TensorIterator&, float)::{lambda(char**, long const*, long)#1}>(at::native::(anonymous namespace)::cpu_masked_fill_kernel<float>(at::TensorIterator&, float)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 7767042.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0273317575194451
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::binary_kernel_reduce_lastdim<at::native::(anonymous namespace)::argmax_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char*, char*, long)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::argmax_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char*, char*, long)#1})::{lambda(char**, long const*, long)#1}>(at::native::AVX2::binary_kernel_reduce_lastdim<at::native::(anonymous namespace)::argmax_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char*, char*, long)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::argmax_kernel_impl(at::TensorIterator&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char*, char*, long)#1})::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 7741960.125,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.02724349326668929
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}&&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}&&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 7642476.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.026893416357989978
+      },
+      {
+        "function": "__memset_evex_unaligned_erms",
+        "irregular_instructions_per_call": 6670863.25,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.02347436761493008
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::(anonymous namespace)::cpu_scatter_gather_base_kernel<true>::operator()<at::native::(anonymous namespace)::TensorAssign>(at::Tensor const&, long, at::Tensor const&, at::Tensor const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, at::native::(anonymous namespace)::TensorAssign&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char**, long const*, long)#1}>(at::native::(anonymous namespace)::cpu_scatter_gather_base_kernel<true>::operator()<at::native::(anonymous namespace)::TensorAssign>(at::Tensor const&, long, at::Tensor const&, at::Tensor const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, at::native::(anonymous namespace)::TensorAssign&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 5730970.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.020166939649098013
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::copy_kernel(at::TensorIterator&, bool)::{lambda()#1}::operator()() const::{lambda()#16}::operator()() const::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(char**, long const*, long)#1}>(at::native::AVX2::copy_kernel(at::TensorIterator&, bool)::{lambda()#1}::operator()() const::{lambda()#16}::operator()() const::{lambda()#1}::operator()() const::{lambda()#3}::operator()() const::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 4298370.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.015125706185775432
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::lt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::lt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::lt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::lt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 3821305.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.013446944827710895
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::le_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::le_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::le_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::le_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 3820846.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.013445330513979708
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::gt_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}&&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 3820795.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.013445150168304018
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::(anonymous namespace)::cpu_cum_base_kernel<float, at::native::(anonymous namespace)::cumsum_cpu_kernel(at::Tensor const&, at::Tensor const&, long)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float*, auto:1, float const*, auto:2, float)#1}>(at::Tensor const&, at::Tensor const&, long, at::native::(anonymous namespace)::cumsum_cpu_kernel(at::Tensor const&, at::Tensor const&, long)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float*, auto:1, float const*, auto:2, float)#1} const&, float)::{lambda(char**, long const*, long)#1}>(at::native::(anonymous namespace)::cpu_cum_base_kernel<float, at::native::(anonymous namespace)::cumsum_cpu_kernel(at::Tensor const&, at::Tensor const&, long)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float*, auto:1, float const*, auto:2, float)#1}>(at::Tensor const&, at::Tensor const&, long, at::native::(anonymous namespace)::cumsum_cpu_kernel(at::Tensor const&, at::Tensor const&, long)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float*, auto:1, float const*, auto:2, float)#1} const&, float)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 3343021.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.01176389212229991
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::copy_kernel(at::TensorIterator&, bool)::{lambda()#1}::operator()() const::{lambda()#16}::operator()() const::{lambda()#1}::operator()() const::{lambda()#13}::operator()() const::{lambda(char**, long const*, long)#1}>(at::native::AVX2::copy_kernel(at::TensorIterator&, bool)::{lambda()#1}::operator()() const::{lambda()#16}::operator()() const::{lambda()#1}::operator()() const::{lambda()#13}::operator()() const::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 2865812.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.010084621397668421
+      },
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 2077248.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.007309713304474955
+      },
+      {
+        "function": "Sleef_finz_expf16_u10avx512f",
+        "irregular_instructions_per_call": 2029732.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.007142505151456561
+      },
+      {
+        "function": "argmax_vec_impl<>",
+        "irregular_instructions_per_call": 1944112.5,
+        "module": "cxp2qcvqydeuqira52wn4b5ryo75g52ruv3od6quqwhniree46a7.main.so",
+        "share_of_irregular_instructions": 0.006841215266971745
+      },
+      {
+        "function": "Sleef_finz_logf16_u10avx512f",
+        "irregular_instructions_per_call": 1679006.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.005908322276021053
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax",
+        "irregular_instructions_per_call": 1394820.0,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.004908287909613013
+      },
+      {
+        "function": "void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#2}>(long, long, long, at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#2} const&)::{lambda(long, long)#1}>(long, long, long, at::parallel_for<at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#2}>(long, long, long, at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#2} const&)::{lambda(long, long)#1} const&) [clone ._omp_fn.0]",
+        "irregular_instructions_per_call": 994440.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0034993747070127795
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::operator()",
+        "irregular_instructions_per_call": 980490.0,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.0034502854938246253
+      },
+      {
+        "function": "_PyType_Lookup",
+        "irregular_instructions_per_call": 961367.375,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0033829941235492037
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::mul_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#14}::operator()() const::{lambda(float, float)#1}, at::native::(anonymous namespace)::mul_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#14}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>, at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 896942.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.003156285093577749
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::fill_kernel(at::TensorIterator&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#1}, at::native::(anonymous namespace)::fill_kernel(at::TensorIterator&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda()#2}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 717353.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0025243230552304966
+      },
+      {
+        "function": "dynamo_custom_eval_frame_shim",
+        "irregular_instructions_per_call": 682966.375,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.0024033177048541944
+      },
+      {
+        "function": "_ZN2at8internal15invoke_parallelIZNS_12parallel_forIZNS_6native12_GLOBAL__N_120_vec_softmax_lastdimIfEENSt9enable_ifIX9is_same_vIT_NS_10OpMathTypeIS7_E4typeEEEvE4typeEPKS7_PS7_llEUlllE_EEvlllRSD_EUlllE_EEvlllSH_._omp_fn.0",
+        "irregular_instructions_per_call": 677374.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.002383638472696266
+      },
+      {
+        "function": "void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::reduced_float_copy_kernel(at::TensorIteratorBase&, bool)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(long, long)#1}>(long, long, long, at::native::AVX2::reduced_float_copy_kernel(at::TensorIteratorBase&, bool)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(long, long)#1} const&)::{lambda(long, long)#1}>(long, long, long, at::parallel_for<at::native::AVX2::reduced_float_copy_kernel(at::TensorIteratorBase&, bool)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(long, long)#1}>(long, long, long, at::native::AVX2::reduced_float_copy_kernel(at::TensorIteratorBase&, bool)::{lambda()#1}::operator()() const::{lambda()#1}::operator()() const::{lambda(long, long)#1} const&)::{lambda(long, long)#1} const&) [clone ._omp_fn.0]",
+        "irregular_instructions_per_call": 676610.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0023809526417309713
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::add_kernel(at::TensorIteratorBase&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(float, float)#1}, at::native::(anonymous namespace)::add_kernel(at::TensorIteratorBase&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#7}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>, at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 657565.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0023139317899690866
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::arange_kernel(at::TensorIterator&, c10::Scalar const&, c10::Scalar const&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}::operator()(long, long) const::{lambda()#1}, at::native::(anonymous namespace)::arange_kernel(at::TensorIterator&, c10::Scalar const&, c10::Scalar const&, c10::Scalar const&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(long, long)#1}::operator()(long, long) const::{lambda()#2}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 628430.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0022114074726761203
+      },
+      {
+        "function": "PyEval_EvalCode+?",
+        "irregular_instructions_per_call": 504028.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.001773645176853218
+      },
+      {
+        "function": "void at::internal::invoke_parallel<at::parallel_for<at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#1}>(long, long, long, at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#1} const&)::{lambda(long, long)#1}>(long, long, long, at::parallel_for<at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#1}>(long, long, long, at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products(int, int, c10::Half const*, long, c10::Half const*, float, c10::Half*, int)::{lambda(long, long)#1} const&)::{lambda(long, long)#1} const&) [clone ._omp_fn.0]",
+        "irregular_instructions_per_call": 490455.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.001725881724315145
+      },
+      {
+        "function": "_Py_HashBytes",
+        "irregular_instructions_per_call": 456800.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0016074535576312207
+      },
+      {
+        "function": "PyDict_Contains+?",
+        "irregular_instructions_per_call": 432646.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0015224584001479423
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(long)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(at::vec::AVX2::Vectorized<long>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 418237.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0014717535536260952
+      },
+      {
+        "function": "_PyDict_GetItem_KnownHash",
+        "irregular_instructions_per_call": 376725.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0013256726765811808
+      },
+      {
+        "function": "PyException_SetCause+?",
+        "irregular_instructions_per_call": 376179.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0013237535346713248
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 362651.25,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0012761479945663573
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(float)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 358355.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0012610306282684136
+      },
+      {
+        "function": "_PyObject_GC_NewVar",
+        "irregular_instructions_per_call": 335850.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0011818382028673765
+      },
+      {
+        "function": "PyObject_Malloc",
+        "irregular_instructions_per_call": 292869.125,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.001030588882677652
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::(anonymous namespace)::div_true_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#2}::operator()() const::{lambda(float, float)#1}, at::native::(anonymous namespace)::div_true_kernel(at::TensorIteratorBase&)::{lambda()#2}::operator()() const::{lambda()#2}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>, at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 268928.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0009463414999472394
+      },
+      {
+        "function": "PyLong_AsSsize_t+?",
+        "irregular_instructions_per_call": 219455.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0007722498603949623
+      },
+      {
+        "function": "PyUnicode_Contains",
+        "irregular_instructions_per_call": 176676.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006217131255579689
+      },
+      {
+        "function": "_PyOS_URandom+?",
+        "irregular_instructions_per_call": 170734.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000600805783335333
+      },
+      {
+        "function": "at::TensorIteratorBase::serial_for_each",
+        "irregular_instructions_per_call": 124536.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00043823647298971987
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::bitwise_or_kernel(at::TensorIteratorBase&)::{lambda(bool, bool)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::bitwise_or_kernel(at::TensorIteratorBase&)::{lambda(bool, bool)#1}&&, long, bool)::{lambda(char**, long const*, long)#1}>(at::native::AVX2::cpu_kernel<at::native::(anonymous namespace)::bitwise_or_kernel(at::TensorIteratorBase&)::{lambda(bool, bool)#1}>(at::TensorIteratorBase&, at::native::(anonymous namespace)::bitwise_or_kernel(at::TensorIteratorBase&)::{lambda(bool, bool)#1}&&, long, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 119510.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00042055028048193033
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 117825.0,
+        "module": "cxp2qcvqydeuqira52wn4b5ryo75g52ruv3od6quqwhniree46a7.main.so",
+        "share_of_irregular_instructions": 0.0004146191070891967
+      },
+      {
+        "function": "epoll_wait",
+        "irregular_instructions_per_call": 110916.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0003903067505360097
+      },
+      {
+        "function": "_PyWeakref_ClearRef+?",
+        "irregular_instructions_per_call": 108054.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00038023554421740766
+      },
+      {
+        "function": "__memcpy_evex_unaligned_erms",
+        "irregular_instructions_per_call": 106924.25,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00037626002173716985
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX512::VectorizedLoop2d<at::native::AVX512::reciprocal_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}, at::native::AVX512::reciprocal_kernel(at::TensorIteratorBase&)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(at::vec::AVX512::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 104380.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00036730871807786036
+      },
+      {
+        "function": "at::internal::serial_for_each",
+        "irregular_instructions_per_call": 103200.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0003631563688619448
+      },
+      {
+        "function": "PyObject_GetAttr",
+        "irregular_instructions_per_call": 101365.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000356697354467188
+      },
+      {
+        "function": "<no symbol>",
+        "irregular_instructions_per_call": 99121.125,
+        "module": "linux-vdso.so.1",
+        "share_of_irregular_instructions": 0.0003488012929444231
+      },
+      {
+        "function": "__GI___pthread_enable_asynccancel",
+        "irregular_instructions_per_call": 98320.5,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00034598394159612443
+      },
+      {
+        "function": "___pthread_cond_broadcast",
+        "irregular_instructions_per_call": 94507.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00033256446385468885
+      },
+      {
+        "function": "__memchr_evex",
+        "irregular_instructions_per_call": 91662.125,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0003225535193838178
+      },
+      {
+        "function": "std::_Hash_bytes",
+        "irregular_instructions_per_call": 83948.25,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0002954088559872748
+      },
+      {
+        "function": "__GI___pthread_disable_asynccancel",
+        "irregular_instructions_per_call": 81931.875,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00028831335331757843
+      },
+      {
+        "function": "_Py_hashtable_get",
+        "irregular_instructions_per_call": 79215.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00027875547237344396
+      },
+      {
+        "function": "c10::_compute_non_overlapping_and_dense<>",
+        "irregular_instructions_per_call": 78725.375,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 0.0002770298721643299
+      },
+      {
+        "function": "_PyDict_DelItem_KnownHash+?",
+        "irregular_instructions_per_call": 73982.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00026033997954785906
+      },
+      {
+        "function": "_PyDictView_New+?",
+        "irregular_instructions_per_call": 71940.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0002531551837753204
+      },
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 70236.75,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0002471589099923372
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::cpu_index_kernel<c10::Half, at::native::(anonymous namespace)::index_kernel(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>)::{lambda()#1}::operator()() const::{lambda()#19}::operator()() const::{lambda(char*, char*, long)#1}>(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>, at::native::(anonymous namespace)::index_kernel(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>)::{lambda()#1}::operator()() const::{lambda()#19}::operator()() const::{lambda(char*, char*, long)#1} const&, bool)::{lambda(char**, long const*, long)#1}>(at::native::cpu_index_kernel<c10::Half, at::native::(anonymous namespace)::index_kernel(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>)::{lambda()#1}::operator()() const::{lambda()#19}::operator()() const::{lambda(char*, char*, long)#1}>(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>, at::native::(anonymous namespace)::index_kernel(at::TensorIteratorBase&, c10::ArrayRef<long>, c10::ArrayRef<long>)::{lambda()#1}::operator()() const::{lambda()#19}::operator()() const::{lambda(char*, char*, long)#1} const&, bool)::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 67490.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0002374932615102897
+      },
+      {
+        "function": "PyNumber_Multiply",
+        "irregular_instructions_per_call": 66110.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000232639323629185
+      },
+      {
+        "function": "PyArg_UnpackTuple",
+        "irregular_instructions_per_call": 64662.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0002275443383571564
+      },
+      {
+        "function": "_Py_DecodeUTF8Ex+?",
+        "irregular_instructions_per_call": 62312.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00021927394959045678
+      },
+      {
+        "function": "PyFrozenSet_New+?",
+        "irregular_instructions_per_call": 62113.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0002185736805277727
+      },
+      {
+        "function": "PyDict_SetDefault",
+        "irregular_instructions_per_call": 54935.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00019331604871346253
+      },
+      {
+        "function": "PyMem_Free+?",
+        "irregular_instructions_per_call": 50303.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00017701411923347875
+      },
+      {
+        "function": "gloo::transport::tcp::Loop::run",
+        "irregular_instructions_per_call": 49296.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0001734696669048932
+      },
+      {
+        "function": "_PyUnicode_JoinArray",
+        "irregular_instructions_per_call": 46184.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00016251872558291925
+      },
+      {
+        "function": "at::TensorIteratorBase::compute_strides",
+        "irregular_instructions_per_call": 45908.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0001615483778742
+      },
+      {
+        "function": "at::TensorIteratorBase::fast_set_up",
+        "irregular_instructions_per_call": 41814.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0001471427171939844
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 40981.875,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00014421275976525416
+      },
+      {
+        "function": "PySlice_Unpack",
+        "irregular_instructions_per_call": 40806.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00014359562566038876
+      },
+      {
+        "function": "at::native::(anonymous namespace)::LayerNormKernelImpl",
+        "irregular_instructions_per_call": 37753.125,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00013285098219670554
+      },
+      {
+        "function": "at::TensorIteratorBase::permute_dimensions",
+        "irregular_instructions_per_call": 37212.625,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0001309489951194154
+      },
+      {
+        "function": "void at::internal::invoke_parallel<at::parallel_for<at::TensorIteratorBase::for_each(c10::function_ref<void (char**, long const*, long, long)>, long)::{lambda(long, long)#1}>(long, long, long, at::TensorIteratorBase::for_each(c10::function_ref<void (char**, long const*, long, long)>, long)::{lambda(long, long)#1} const&)::{lambda(long, long)#1}>(long, long, long, at::parallel_for<at::TensorIteratorBase::for_each(c10::function_ref<void (char**, long const*, long, long)>, long)::{lambda(long, long)#1}>(long, long, long, at::TensorIteratorBase::for_each(c10::function_ref<void (char**, long const*, long, long)>, long)::{lambda(long, long)#1} const&)::{lambda(long, long)#1} const&) [clone ._omp_fn.0]",
+        "irregular_instructions_per_call": 36504.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00012845714572236436
+      },
+      {
+        "function": "prepare_index",
+        "irregular_instructions_per_call": 32656.75,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 0.00011491714428546678
+      },
+      {
+        "function": "PyType_GetSlot+?",
+        "irregular_instructions_per_call": 29624.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00010424771816457186
+      },
+      {
+        "function": "PyInit__sha2+?",
+        "irregular_instructions_per_call": 29555.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00010400227209863109
+      },
+      {
+        "function": "PyDict_Update+?",
+        "irregular_instructions_per_call": 29131.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0001025128807379224
+      },
+      {
+        "function": "malloc_consolidate",
+        "irregular_instructions_per_call": 28823.25,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00010142728774376141
+      },
+      {
+        "function": "PyLong_AsSize_t+?",
+        "irregular_instructions_per_call": 28087.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 9.883646815883104e-05
+      },
+      {
+        "function": "PyUnicode_New+?",
+        "irregular_instructions_per_call": 23352.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.217428719496645e-05
+      },
+      {
+        "function": "at::TensorIteratorBase::reorder_dimensions",
+        "irregular_instructions_per_call": 22419.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.889375536739246e-05
+      },
+      {
+        "function": "PyErr_WarnExplicit+?",
+        "irregular_instructions_per_call": 21719.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 7.642961762294765e-05
+      },
+      {
+        "function": "void at::internal::invoke_parallel<at::parallel_for<at::native::(anonymous namespace)::layer_norm_kernel_mixed_type<c10::Half, c10::Half, 0>(at::Tensor const&, at::Tensor const&, at::Tensor const&, long, long, float, at::Tensor*, at::Tensor*, at::Tensor*)::{lambda(long, long)#1}>(long, long, long, at::native::(anonymous namespace)::layer_norm_kernel_mixed_type<c10::Half, c10::Half, 0>(at::Tensor const&, at::Tensor const&, at::Tensor const&, long, long, float, at::Tensor*, at::Tensor*, at::Tensor*)::{lambda(long, long)#1} const&)::{lambda(long, long)#1}>(long, long, long, at::parallel_for<at::native::(anonymous namespace)::layer_norm_kernel_mixed_type<c10::Half, c10::Half, 0>(at::Tensor const&, at::Tensor const&, at::Tensor const&, long, long, float, at::Tensor*, at::Tensor*, at::Tensor*)::{lambda(long, long)#1}>(long, long, long, at::native::(anonymous namespace)::layer_norm_kernel_mixed_type<c10::Half, c10::Half, 0>(at::Tensor const&, at::Tensor const&, at::Tensor const&, long, long, float, at::Tensor*, at::Tensor*, at::Tensor*)::{lambda(long, long)#1} const&)::{lambda(long, long)#1} const&) [clone ._omp_fn.0]",
+        "irregular_instructions_per_call": 21550.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.583315729066148e-05
+      },
+      {
+        "function": "at::TensorIteratorBase::coalesce_dimensions",
+        "irregular_instructions_per_call": 20682.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.277871735895409e-05
+      },
+      {
+        "function": "PyUnicode_AsASCIIString+?",
+        "irregular_instructions_per_call": 20554.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 7.233005250723441e-05
+      },
+      {
+        "function": "PyObject_GC_Track",
+        "irregular_instructions_per_call": 18616.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.550858729108836e-05
+      },
+      {
+        "function": "PyType_FromModuleAndSpec+?",
+        "irregular_instructions_per_call": 18127.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.379002496200127e-05
+      },
+      {
+        "function": "_PyTime_AsTimespec_clamp",
+        "irregular_instructions_per_call": 18055.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.353446194352172e-05
+      },
+      {
+        "function": "_PyList_Extend+?",
+        "irregular_instructions_per_call": 17408.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.12585874897985e-05
+      },
+      {
+        "function": "at::DimCounter::increment",
+        "irregular_instructions_per_call": 16605.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.843287865896782e-05
+      },
+      {
+        "function": "pybind11::cpp_function::dispatcher",
+        "irregular_instructions_per_call": 16233.75,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 5.712559244395711e-05
+      },
+      {
+        "function": "at::TensorIteratorBase::allocate_or_resize_outputs",
+        "irregular_instructions_per_call": 16095.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.663733951708568e-05
+      },
+      {
+        "function": "pybind11::detail::all_type_info_get_cache",
+        "irregular_instructions_per_call": 15558.75,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 5.4750307934852865e-05
+      },
+      {
+        "function": "at::DimCounter::DimCounter",
+        "irregular_instructions_per_call": 15244.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.364272156560759e-05
+      },
+      {
+        "function": "PyArray_NewFromDescr_int",
+        "irregular_instructions_per_call": 15146.75,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 5.3300504649295904e-05
+      },
+      {
+        "function": "std::__introsort_loop",
+        "irregular_instructions_per_call": 14725.0,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 5.1816391698607435e-05
+      },
+      {
+        "function": "PyObject_Format",
+        "irregular_instructions_per_call": 14511.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 5.106421827072442e-05
+      },
+      {
+        "function": "fbgemm::Float16ToFloat_avx512",
+        "irregular_instructions_per_call": 14130.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.972262239058221e-05
+      },
+      {
+        "function": "PySet_Contains",
+        "irregular_instructions_per_call": 13301.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.680806032441096e-05
+      },
+      {
+        "function": "_PyTime_GetMonotonicClock",
+        "irregular_instructions_per_call": 12638.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.44741233604652e-05
+      },
+      {
+        "function": "PyUnicode_InternInPlace",
+        "irregular_instructions_per_call": 12592.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.431049264983802e-05
+      },
+      {
+        "function": "PyUnicode_FromStringAndSize",
+        "irregular_instructions_per_call": 12022.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.230645631215673e-05
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#2}::operator()() const::{lambda(c10::Half)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#2}::operator()() const::{lambda(at::vec::AVX2::Vectorized<c10::Half>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 11934.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.199503012096306e-05
+      },
+      {
+        "function": "_int_free",
+        "irregular_instructions_per_call": 11251.5,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.959335356175766e-05
+      },
+      {
+        "function": "_int_free_merge_chunk",
+        "irregular_instructions_per_call": 9804.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.449968789223411e-05
+      },
+      {
+        "function": "PyArray_UpdateFlags",
+        "irregular_instructions_per_call": 9436.875,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 3.3207797039782416e-05
+      },
+      {
+        "function": "__clock_gettime_2",
+        "irregular_instructions_per_call": 9352.5,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.2910886476144384e-05
+      },
+      {
+        "function": "_int_free_maybe_consolidate",
+        "irregular_instructions_per_call": 9090.375,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.19884843251089e-05
+      },
+      {
+        "function": "at::CPUGeneratorImpl::set_current_seed",
+        "irregular_instructions_per_call": 8869.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.121123844962979e-05
+      },
+      {
+        "function": "at::CPUGeneratorImpl::CPUGeneratorImpl",
+        "irregular_instructions_per_call": 8397.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.9548539293256816e-05
+      },
+      {
+        "function": "std::__once_callable+?",
+        "irregular_instructions_per_call": 8218.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 2.8918649030842508e-05
+      },
+      {
+        "function": "std::condition_variable::notify_all",
+        "irregular_instructions_per_call": 8218.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 2.8918649030842508e-05
+      },
+      {
+        "function": "Struct_vectorcall",
+        "irregular_instructions_per_call": 7974.5,
+        "module": "_core.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 2.8061787137558236e-05
+      },
+      {
+        "function": "std::_Hashtable<>::_M_find_before_node",
+        "irregular_instructions_per_call": 7800.875,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.745081117771642e-05
+      },
+      {
+        "function": "get_view_from_index",
+        "irregular_instructions_per_call": 7725.5,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 2.7185571074199778e-05
+      },
+      {
+        "function": "PyArg_ParseTupleAndKeywords",
+        "irregular_instructions_per_call": 7641.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.6889980113066807e-05
+      },
+      {
+        "function": "array_assign_subscript",
+        "irregular_instructions_per_call": 7348.5,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 2.585893068911489e-05
+      },
+      {
+        "function": "PySlice_New",
+        "irregular_instructions_per_call": 6772.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.3832021241345933e-05
+      },
+      {
+        "function": "c10::TensorImpl::compute_non_overlapping_and_dense",
+        "irregular_instructions_per_call": 6681.375,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 2.351135783261686e-05
+      },
+      {
+        "function": "_PyEval_AddPendingCall+?",
+        "irregular_instructions_per_call": 6657.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.342822287479821e-05
+      },
+      {
+        "function": "define_cast_for_descrs",
+        "irregular_instructions_per_call": 6600.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 2.3225004089019293e-05
+      },
+      {
+        "function": "_PyType_GetDocFromInternalDoc+?",
+        "irregular_instructions_per_call": 6474.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.2781617647319833e-05
+      },
+      {
+        "function": "pybind11::detail::instance::get_value_and_holder",
+        "irregular_instructions_per_call": 6428.75,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.2622385611709513e-05
+      },
+      {
+        "function": "PyUnicode_AsEncodedString",
+        "irregular_instructions_per_call": 5685.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.0008253049189783e-05
+      },
+      {
+        "function": "array_subscript",
+        "irregular_instructions_per_call": 5440.5,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.9144793143380222e-05
+      },
+      {
+        "function": "npy_alloc_cache_dim",
+        "irregular_instructions_per_call": 4962.625,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.7463179684434753e-05
+      },
+      {
+        "function": "_int_memalign",
+        "irregular_instructions_per_call": 4773.75,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.679853988938725e-05
+      },
+      {
+        "function": "at::detail::empty_strided_generic",
+        "irregular_instructions_per_call": 4717.625,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.660103938113025e-05
+      },
+      {
+        "function": "__GI_tolower",
+        "irregular_instructions_per_call": 4683.25,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.6480075818166606e-05
+      },
+      {
+        "function": "at::TensorIteratorBase::compute_fast_setup_type",
+        "irregular_instructions_per_call": 4664.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.6413215957910338e-05
+      },
+      {
+        "function": "_PySet_NextEntry+?",
+        "irregular_instructions_per_call": 4459.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.5694032592653774e-05
+      },
+      {
+        "function": "at::native::mkldnn_gemm<>",
+        "irregular_instructions_per_call": 4363.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.535401501385052e-05
+      },
+      {
+        "function": "at::native::cpublas::(anonymous namespace)::cpublas_gemm_impl(c10::ScalarType, at::native::TransposeType, at::native::TransposeType, long, long, long, c10::Scalar const&, void const*, long, void const*, long, c10::Scalar const&, void*, long)::{lambda()#1}::operator()() const::{lambda()#10}::operator()() const",
+        "irregular_instructions_per_call": 4353.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.5320585083722386e-05
+      },
+      {
+        "function": "_PyObject_GenericGetAttrWithDict",
+        "irregular_instructions_per_call": 4348.125,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.5300791046146517e-05
+      },
+      {
+        "function": "unpack_indices",
+        "irregular_instructions_per_call": 4299.375,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.5129242720488989e-05
+      },
+      {
+        "function": "PyArray_DiscoverDTypeAndShape",
+        "irregular_instructions_per_call": 4215.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.4832332156850957e-05
+      },
+      {
+        "function": "array_dealloc",
+        "irregular_instructions_per_call": 4151.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.460711999598774e-05
+      },
+      {
+        "function": "_PyUnicode_Equal",
+        "irregular_instructions_per_call": 4134.375,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.4548617618263505e-05
+      },
+      {
+        "function": "_mid_memalign",
+        "irregular_instructions_per_call": 4006.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.4096873694032012e-05
+      },
+      {
+        "function": "PyMem_Malloc",
+        "irregular_instructions_per_call": 3984.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.4021216483742027e-05
+      },
+      {
+        "function": "_PyObject_GC_Resize",
+        "irregular_instructions_per_call": 3727.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.3116848900275669e-05
+      },
+      {
+        "function": "PyArray_PyIntAsIntp",
+        "irregular_instructions_per_call": 3570.125,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.256305571565303e-05
+      },
+      {
+        "function": "PyLong_AsDouble",
+        "irregular_instructions_per_call": 3484.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.2259987006991395e-05
+      },
+      {
+        "function": "_PyEval_SignalAsyncExc+?",
+        "irregular_instructions_per_call": 3462.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.2185209531704781e-05
+      },
+      {
+        "function": "PyArray_FailUnlessWriteable",
+        "irregular_instructions_per_call": 3447.125,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.2130226093994034e-05
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::substr",
+        "irregular_instructions_per_call": 3430.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.2071723716269801e-05
+      },
+      {
+        "function": "c10::TensorImpl::compute_contiguous",
+        "irregular_instructions_per_call": 3335.375,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 1.1736984547486777e-05
+      },
+      {
+        "function": "at::detail::empty_strided_cpu",
+        "irregular_instructions_per_call": 3293.125,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.1588309331916918e-05
+      },
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::TensorIteratorBase::loop_2d_from_1d<at::native::(anonymous namespace)::cpu_scatter_gather_base_kernel<true>::operator()<at::native::(anonymous namespace)::ReduceAdd>(at::Tensor const&, long, at::Tensor const&, at::Tensor const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, at::native::(anonymous namespace)::ReduceAdd&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(char**, long const*, long)#1}>(at::native::(anonymous namespace)::cpu_scatter_gather_base_kernel<true>::operator()<at::native::(anonymous namespace)::ReduceAdd>(at::Tensor const&, long, at::Tensor const&, at::Tensor const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, at::native::(anonymous namespace)::ReduceAdd&)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(char**, long const*, long)#1} const&)::{lambda(char**, long const*, long, long)#1}>(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 3270.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.1506933844105014e-05
+      },
+      {
+        "function": "at::TensorIteratorBase::for_each",
+        "irregular_instructions_per_call": 3266.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.1492858084051062e-05
+      },
+      {
+        "function": "_PyDict_Contains_KnownHash+?",
+        "irregular_instructions_per_call": 3237.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.1390808823659916e-05
+      },
+      {
+        "function": "at::get_overlap_status",
+        "irregular_instructions_per_call": 3150.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.108466104248648e-05
+      },
+      {
+        "function": "PyArray_Scalar",
+        "irregular_instructions_per_call": 3004.25,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.0571775535520637e-05
+      },
+      {
+        "function": "_PyErr_CheckSignalsTstate+?",
+        "irregular_instructions_per_call": 2935.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.0328968674589982e-05
+      },
+      {
+        "function": "_PyUnicode_InsertThousandsGrouping",
+        "irregular_instructions_per_call": 2877.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.0123990418804318e-05
+      },
+      {
+        "function": "at::inferExpandGeometry_dimvector",
+        "irregular_instructions_per_call": 2738.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.634857756929518e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::basic_string",
+        "irregular_instructions_per_call": 2664.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.374456195931424e-06
+      },
+      {
+        "function": "c10::get_privateuse1_backend[abi:cxx11](bool)",
+        "irregular_instructions_per_call": 2456.25,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 8.64339640812934e-06
+      },
+      {
+        "function": "torch::FunctionParameter::FunctionParameter",
+        "irregular_instructions_per_call": 2428.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.543986352748309e-06
+      },
+      {
+        "function": "__ieee754_pow_fma",
+        "irregular_instructions_per_call": 2327.25,
+        "module": "libm.so.6",
+        "share_of_irregular_instructions": 8.189453146389416e-06
+      },
+      {
+        "function": "at::native::update_result_type_state",
+        "irregular_instructions_per_call": 2326.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 8.187693676382673e-06
+      },
+      {
+        "function": "at::native::cpublas::gemm",
+        "irregular_instructions_per_call": 2326.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 8.1868139413793e-06
+      },
+      {
+        "function": "__GI___pthread_setspecific",
+        "irregular_instructions_per_call": 2206.125,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 7.76322153725571e-06
+      },
+      {
+        "function": "c10::TensorImpl::set_sizes_and_strides",
+        "irregular_instructions_per_call": 2131.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.498861168742441e-06
+      },
+      {
+        "function": "at::native::AVX2::fp16_gemv_trans_fp32_arith_by_dot_products",
+        "irregular_instructions_per_call": 2065.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.268370597858992e-06
+      },
+      {
+        "function": "_PyUnicode_ToDecimalDigit",
+        "irregular_instructions_per_call": 2056.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 7.2358204027342305e-06
+      },
+      {
+        "function": "PyArray_CopyObject",
+        "irregular_instructions_per_call": 2040.5,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 7.1803970975217976e-06
+      },
+      {
+        "function": "dynamo__custom_eval_frame",
+        "irregular_instructions_per_call": 1970.75,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.934951031581026e-06
+      },
+      {
+        "function": "npy_free_cache_dim",
+        "irregular_instructions_per_call": 1956.375,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 6.884366268887139e-06
+      },
+      {
+        "function": "at::TensorIteratorBase::numel",
+        "irregular_instructions_per_call": 1905.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.705340195700949e-06
+      },
+      {
+        "function": "PyNumber_AsSsize_t",
+        "irregular_instructions_per_call": 1848.875,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.506080217437204e-06
+      },
+      {
+        "function": "PyInit__stat+?",
+        "irregular_instructions_per_call": 1785.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.281307924075672e-06
+      },
+      {
+        "function": "PyFloat_FromDouble",
+        "irregular_instructions_per_call": 1719.375,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.050377485690537e-06
+      },
+      {
+        "function": "c10::SmallVectorImpl<>::operator=",
+        "irregular_instructions_per_call": 1699.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.980438552922468e-06
+      },
+      {
+        "function": "gentype_alloc",
+        "irregular_instructions_per_call": 1590.75,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 5.597753826455672e-06
+      },
+      {
+        "function": "PyWeakref_GetObject+?",
+        "irregular_instructions_per_call": 1566.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 5.51066006112185e-06
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 1500.375,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 5.279729622736715e-06
+      },
+      {
+        "function": "PyArray_AssignArray",
+        "irregular_instructions_per_call": 1428.75,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 5.0276855442706535e-06
+      },
+      {
+        "function": "set_eval_frame_py",
+        "irregular_instructions_per_call": 1377.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 4.847339868579406e-06
+      },
+      {
+        "function": "at::native::to",
+        "irregular_instructions_per_call": 1368.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.814789673454643e-06
+      },
+      {
+        "function": "at::native::blas_impl::fp16_gemv_trans",
+        "irregular_instructions_per_call": 1353.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.761125838248955e-06
+      },
+      {
+        "function": "at::infer_size_dimvector",
+        "irregular_instructions_per_call": 1331.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.683709157952224e-06
+      },
+      {
+        "function": "at::native::AVX2::fp16_gemv_trans",
+        "irregular_instructions_per_call": 1322.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.652918432834206e-06
+      },
+      {
+        "function": "IsAligned",
+        "irregular_instructions_per_call": 1293.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 4.549989437439689e-06
+      },
+      {
+        "function": "c10::Dispatcher::findOp",
+        "irregular_instructions_per_call": 1251.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.403953426879946e-06
+      },
+      {
+        "function": "PyArray_CanCastTypeTo",
+        "irregular_instructions_per_call": 1238.25,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 4.357327471701233e-06
+      },
+      {
+        "function": "PyNumber_TrueDivide",
+        "irregular_instructions_per_call": 1237.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.353808531687745e-06
+      },
+      {
+        "function": "_npy_parse_arguments",
+        "irregular_instructions_per_call": 1226.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 4.314220456536008e-06
+      },
+      {
+        "function": "PyArray_SetBaseObject",
+        "irregular_instructions_per_call": 1167.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 4.1066029957402295e-06
+      },
+      {
+        "function": "_PyLong_FormatAdvancedWriter",
+        "irregular_instructions_per_call": 1110.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 3.9060234149714265e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::basic_string",
+        "irregular_instructions_per_call": 1093.375,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.847521037247192e-06
+      },
+      {
+        "function": "at::_ops::to_dtype::call",
+        "irregular_instructions_per_call": 1068.875,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.7613070069167417e-06
+      },
+      {
+        "function": "PyThread_acquire_lock_timed",
+        "irregular_instructions_per_call": 1040.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 3.6596976140272824e-06
+      },
+      {
+        "function": "Struct_dealloc_nogc",
+        "irregular_instructions_per_call": 1020.0,
+        "module": "_core.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 3.589318813757527e-06
+      },
+      {
+        "function": "c10::TensorImpl::copy_generic_tensor_metadata",
+        "irregular_instructions_per_call": 993.75,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 3.496946638403473e-06
+      },
+      {
+        "function": "c10::impl::wrap_kernel_functor_unboxed_<c10::impl::detail::WrapFunctionIntoFunctor_<c10::CompileTimeFunctionPointer<at::Tensor (at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>), &at::(anonymous namespace)::to_dtype_layout>, at::Tensor, c10::guts::typelist::typelist<at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat> > >, at::Tensor (at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>)>::call(c10::OperatorKernel*, c10::DispatchKeySet, at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>)",
+        "irregular_instructions_per_call": 993.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.495187168396729e-06
+      },
+      {
+        "function": "torch::FunctionSignature::FunctionSignature",
+        "irregular_instructions_per_call": 977.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.4397638631842966e-06
+      },
+      {
+        "function": "std::_Hashtable<>::_M_insert_multi_node",
+        "irregular_instructions_per_call": 975.625,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.4331658506590073e-06
+      },
+      {
+        "function": "__offtime",
+        "irregular_instructions_per_call": 900.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.1670460121389943e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_dispose",
+        "irregular_instructions_per_call": 893.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.14241343204458e-06
+      },
+      {
+        "function": "at::native::addmm_impl_cpu_",
+        "irregular_instructions_per_call": 844.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.971744841390423e-06
+      },
+      {
+        "function": "at::native::fill_out",
+        "irregular_instructions_per_call": 817.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.8767334610262534e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_assign",
+        "irregular_instructions_per_call": 762.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.681432290277682e-06
+      },
+      {
+        "function": "at::TensorIteratorBase::compatible_stride",
+        "irregular_instructions_per_call": 756.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.6603186501967554e-06
+      },
+      {
+        "function": "at::TensorIteratorBase::build",
+        "irregular_instructions_per_call": 691.875,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.434666621831852e-06
+      },
+      {
+        "function": "at::_ops::to_dtype_layout::redispatch",
+        "irregular_instructions_per_call": 633.625,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.229688366046189e-06
+      },
+      {
+        "function": "__GI___cxa_atexit",
+        "irregular_instructions_per_call": 630.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 2.2169322084972963e-06
+      },
+      {
+        "function": "at::_ops::to_dtype_layout::call",
+        "irregular_instructions_per_call": 619.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.1782238683489305e-06
+      },
+      {
+        "function": "alloc_perturb",
+        "irregular_instructions_per_call": 616.125,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 2.1681069158101534e-06
+      },
+      {
+        "function": "PySet_Discard+?",
+        "irregular_instructions_per_call": 607.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.1368763231904494e-06
+      },
+      {
+        "function": "PyThread_tss_set+?",
+        "irregular_instructions_per_call": 536.625,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.8883511847378753e-06
+      },
+      {
+        "function": "PyList_SetItem+?",
+        "irregular_instructions_per_call": 533.25,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.8764747621923543e-06
+      },
+      {
+        "function": "get_array_function",
+        "irregular_instructions_per_call": 527.0,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.8544813871080557e-06
+      },
+      {
+        "function": "LONG_setitem",
+        "irregular_instructions_per_call": 526.5,
+        "module": "_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 1.8527219171013118e-06
+      },
+      {
+        "function": "_PyMem_Strdup+?",
+        "irregular_instructions_per_call": 485.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.708445376548313e-06
+      },
+      {
+        "function": "std::operator==<>",
+        "irregular_instructions_per_call": 472.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.662699156372972e-06
+      },
+      {
+        "function": "c10::impl::tls_is_dispatch_key_excluded",
+        "irregular_instructions_per_call": 447.0,
+        "module": "libc10.so",
+        "share_of_irregular_instructions": 1.572966186029034e-06
+      },
+      {
+        "function": "c10::impl::wrap_kernel_functor_unboxed_<c10::impl::detail::WrapFunctionIntoFunctor_<c10::CompileTimeFunctionPointer<at::Tensor (at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>), &at::(anonymous namespace)::(anonymous namespace)::wrapper_CompositeImplicitAutograd_dtype_layout_to>, at::Tensor, c10::guts::typelist::typelist<at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat> > >, at::Tensor (at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>)>::call(c10::OperatorKernel*, c10::DispatchKeySet, at::Tensor const&, std::optional<c10::ScalarType>, std::optional<c10::Layout>, std::optional<c10::Device>, std::optional<bool>, bool, bool, std::optional<c10::MemoryFormat>)",
+        "irregular_instructions_per_call": 445.25,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.5668080410054304e-06
+      },
+      {
+        "function": "at::native::(anonymous namespace)::fill_kernel(at::TensorIterator&, c10::Scalar const&)::{lambda()#1}::operator()() const [clone ]",
+        "irregular_instructions_per_call": 436.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.5342578458806684e-06
+      },
+      {
+        "function": "torch::dynamo::(anonymous namespace)::unwrap_size_tuple<>",
+        "irregular_instructions_per_call": 418.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.4709169256378885e-06
+      },
+      {
+        "function": "at::detail::computeStride",
+        "irregular_instructions_per_call": 413.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.4559614305805655e-06
+      },
+      {
+        "function": "at::TensorIteratorBase::build_borrowing_except_last_argument_comparison_op",
+        "irregular_instructions_per_call": 413.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.4533222255704498e-06
+      },
+      {
+        "function": "PyType_GetModule+?",
+        "irregular_instructions_per_call": 403.5,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.4198922954423158e-06
+      },
+      {
+        "function": "__new_exitfn",
+        "irregular_instructions_per_call": 390.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.372386605260231e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::operator=",
+        "irregular_instructions_per_call": 382.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.3442350851523288e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::basic_string<>",
+        "irregular_instructions_per_call": 365.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.2861725749297806e-06
+      },
+      {
+        "function": "PyModule_GetState",
+        "irregular_instructions_per_call": 361.125,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.2707772123707714e-06
+      },
+      {
+        "function": "torch::autograd::dispatch_to",
+        "irregular_instructions_per_call": 352.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.2404263547544394e-06
+      },
+      {
+        "function": "at::(anonymous namespace)::wrapper_CPU_sub_Tensor",
+        "irregular_instructions_per_call": 348.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.2263505947004884e-06
+      },
+      {
+        "function": "c10::Dispatcher::findSchemaOrThrow",
+        "irregular_instructions_per_call": 301.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.0592009440598192e-06
+      },
+      {
+        "function": "__free",
+        "irregular_instructions_per_call": 286.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.0064168438575027e-06
+      },
+      {
+        "function": "at::(anonymous namespace)::wrapper_CPU_mul_Tensor",
+        "irregular_instructions_per_call": 285.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.0028979038440148e-06
+      },
+      {
+        "function": "at::(anonymous namespace)::wrapper_CPU_gt_Scalar",
+        "irregular_instructions_per_call": 285.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.0028979038440148e-06
+      },
+      {
+        "function": "at::RecordFunction::RecordFunction",
+        "irregular_instructions_per_call": 263.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.272406935540278e-07
+      },
+      {
+        "function": "operator new",
+        "irregular_instructions_per_call": 262.5,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 9.237217535405401e-07
+      },
+      {
+        "function": "torch::PythonArgParser::PythonArgParser",
+        "irregular_instructions_per_call": 253.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.902918234124062e-07
+      },
+      {
+        "function": "_PyObject_GetMethod",
+        "irregular_instructions_per_call": 238.75,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.401469282202055e-07
+      },
+      {
+        "function": "at::(anonymous namespace)::wrapper_CPU_sub__Tensor",
+        "irregular_instructions_per_call": 220.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.741668029673097e-07
+      },
+      {
+        "function": "PyObject_ClearWeakRefs+?",
+        "irregular_instructions_per_call": 215.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 7.565721028998709e-07
+      },
+      {
+        "function": "dynamo__custom_eval_frame::{lambda()#1}::operator()() const",
+        "irregular_instructions_per_call": 201.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 7.073069427110421e-07
+      },
+      {
+        "function": "torch::autograd::THPVariable_ones_like",
+        "irregular_instructions_per_call": 195.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.861933026301155e-07
+      },
+      {
+        "function": "torch::dynamo::(anonymous namespace)::_empty_strided_device",
+        "irregular_instructions_per_call": 190.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.685986025626766e-07
+      },
+      {
+        "function": "at::(anonymous namespace)::wrapper_CPU_lt_Scalar",
+        "irregular_instructions_per_call": 180.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.351686724345428e-07
+      },
+      {
+        "function": "eval_frame_callback_set",
+        "irregular_instructions_per_call": 178.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.281307924075672e-07
+      },
+      {
+        "function": "torch::should_allow_numbers_as_tensors",
+        "irregular_instructions_per_call": 177.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.228523823873355e-07
+      },
+      {
+        "function": "at::native::zeros_symint",
+        "irregular_instructions_per_call": 175.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.1581450236036e-07
+      },
+      {
+        "function": "_PyInterpreterState_GetEvalFrameFunc",
+        "irregular_instructions_per_call": 171.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.017387423064089e-07
+      },
+      {
+        "function": "std::vector<>::vector<>",
+        "irregular_instructions_per_call": 162.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.718277521917629e-07
+      },
+      {
+        "function": "__cxa_guard_acquire",
+        "irregular_instructions_per_call": 158.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 5.559925221310679e-07
+      },
+      {
+        "function": "at::native::(anonymous namespace)::cpu_scatter_gather_base_kernel<>::operator()<>",
+        "irregular_instructions_per_call": 131.75,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.636203467770139e-07
+      },
+      {
+        "function": "c10::impl::operator==",
+        "irregular_instructions_per_call": 103.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.6421029139598436e-07
+      },
+      {
+        "function": "<tokenizers::tokenizer::added_vocabulary::AddedVocabulary>::is_special_token",
+        "irregular_instructions_per_call": 100.75,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 3.5453320635889296e-07
+      },
+      {
+        "function": "std::vector<>::vector<>",
+        "irregular_instructions_per_call": 73.625,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.590819584930372e-07
+      },
+      {
+        "function": "_Py_dg_dtoa",
+        "irregular_instructions_per_call": 23.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.093562031021875e-08
+      }
+    ],
+    "irregular_basic_blocks": 1325,
+    "total_irregular_instructions_per_call": 284176483.875
+  },
+  "max_unexplained_share": 0.025305873931006983,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "request_count_proxy",
     "decode_rounds_proxy",
     "long_prompt_requests",
     "initial_batch"
   ],
-  "distinct_states": 8,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "b0df3fcbe4b0b6edbf272e293a5cbb6fd7dcf47ecc99fb87699b2eb3560728d6",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2659678.json"
+  ],
   "required_states": 6,
-  "calls": 8,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 1,
+      "instructions_per_call": 985741530.0,
       "state": {
-        "request_count_proxy": 1,
         "decode_rounds_proxy": 1,
+        "initial_batch": 1,
         "long_prompt_requests": 0,
-        "initial_batch": 1
+        "request_count_proxy": 1
       },
-      "calls": 1,
-      "instructions_per_call": 985627368.0,
-      "unexplained_instructions_per_call": 4899366.0,
-      "unexplained_share": 0.004970809617372556
+      "unexplained_instructions_per_call": 5164669.0,
+      "unexplained_share": 0.005239374463608122
     },
     {
+      "calls": 1,
+      "instructions_per_call": 19319980978.0,
       "state": {
-        "request_count_proxy": 2,
         "decode_rounds_proxy": 3,
+        "initial_batch": 0,
         "long_prompt_requests": 0,
-        "initial_batch": 0
+        "request_count_proxy": 2
       },
-      "calls": 1,
-      "instructions_per_call": 19373604950.0,
-      "unexplained_instructions_per_call": 200469119.0,
-      "unexplained_share": 0.01034753828816975
+      "unexplained_instructions_per_call": 215168988.0,
+      "unexplained_share": 0.011137122145462601
     },
     {
-      "state": {
-        "request_count_proxy": 3,
-        "decode_rounds_proxy": 4,
-        "long_prompt_requests": 0,
-        "initial_batch": 0
-      },
       "calls": 1,
-      "instructions_per_call": 7138981861.0,
-      "unexplained_instructions_per_call": 180265232.0,
-      "unexplained_share": 0.02525083205278647
+      "instructions_per_call": 7139187190.0,
+      "state": {
+        "decode_rounds_proxy": 4,
+        "initial_batch": 0,
+        "long_prompt_requests": 0,
+        "request_count_proxy": 3
+      },
+      "unexplained_instructions_per_call": 180663371.0,
+      "unexplained_share": 0.025305873931006983
     },
     {
-      "state": {
-        "request_count_proxy": 4,
-        "decode_rounds_proxy": 4,
-        "long_prompt_requests": 0,
-        "initial_batch": 0
-      },
       "calls": 1,
-      "instructions_per_call": 9008833754.0,
-      "unexplained_instructions_per_call": 204107639.0,
-      "unexplained_share": 0.022656388670661665
+      "instructions_per_call": 9008712519.0,
+      "state": {
+        "decode_rounds_proxy": 4,
+        "initial_batch": 0,
+        "long_prompt_requests": 0,
+        "request_count_proxy": 4
+      },
+      "unexplained_instructions_per_call": 204422359.0,
+      "unexplained_share": 0.022691628639370947
     },
     {
+      "calls": 1,
+      "instructions_per_call": 22628203928.0,
       "state": {
-        "request_count_proxy": 5,
         "decode_rounds_proxy": 4,
+        "initial_batch": 0,
         "long_prompt_requests": 5,
-        "initial_batch": 0
+        "request_count_proxy": 5
       },
-      "calls": 1,
-      "instructions_per_call": 22628210880.0,
-      "unexplained_instructions_per_call": 259274343.0,
-      "unexplained_share": 0.011458013378740441
+      "unexplained_instructions_per_call": 259652918.0,
+      "unexplained_share": 0.011474747126470213
     },
     {
+      "calls": 1,
+      "instructions_per_call": 26866536323.0,
       "state": {
-        "request_count_proxy": 6,
         "decode_rounds_proxy": 4,
+        "initial_batch": 0,
         "long_prompt_requests": 6,
-        "initial_batch": 0
+        "request_count_proxy": 6
       },
-      "calls": 1,
-      "instructions_per_call": 26866144117.0,
-      "unexplained_instructions_per_call": 344028885.0,
-      "unexplained_share": 0.01280529440703439
+      "unexplained_instructions_per_call": 344493612.0,
+      "unexplained_share": 0.012822405086326096
     },
     {
+      "calls": 1,
+      "instructions_per_call": 32157860881.0,
       "state": {
-        "request_count_proxy": 7,
         "decode_rounds_proxy": 4,
+        "initial_batch": 0,
         "long_prompt_requests": 7,
-        "initial_batch": 0
+        "request_count_proxy": 7
       },
-      "calls": 1,
-      "instructions_per_call": 32157517119.0,
-      "unexplained_instructions_per_call": 502054937.0,
-      "unexplained_share": 0.015612366313671805
+      "unexplained_instructions_per_call": 502544134.0,
+      "unexplained_share": 0.015627411781513143
     },
     {
-      "state": {
-        "request_count_proxy": 8,
-        "decode_rounds_proxy": 4,
-        "long_prompt_requests": 8,
-        "initial_batch": 0
-      },
       "calls": 1,
-      "instructions_per_call": 36654560958.0,
-      "unexplained_instructions_per_call": 560815064.0,
-      "unexplained_share": 0.015300007675514114
+      "instructions_per_call": 36654796496.0,
+      "state": {
+        "decode_rounds_proxy": 4,
+        "initial_batch": 0,
+        "long_prompt_requests": 8,
+        "request_count_proxy": 8
+      },
+      "unexplained_instructions_per_call": 561301820.0,
+      "unexplained_share": 0.01531318882267571
     }
   ],
-  "max_unexplained_share": 0.02525083205278647,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "request_count_proxy": 2335464034.412502,
-      "decode_rounds_proxy": -14830992410.896395,
-      "long_prompt_requests": 2203436544.241828,
-      "initial_batch": -45518111452.06441
-    },
-    "constant": 58997176248.753365,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 72.34116250416264,
-  "raw_files": [
-    "run.1791244.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

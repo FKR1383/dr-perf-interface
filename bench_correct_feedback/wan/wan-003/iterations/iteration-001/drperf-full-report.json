@@ -1,35 +1,58 @@
 {
-  "case": "wan-003",
-  "validity_warnings": [],
-  "pcv_names": [
-    "tensor_rank"
-  ],
-  "distinct_states": 1,
-  "required_states": 3,
+  "automatic_regime_splitting": false,
   "calls": 18,
+  "case": "wan-003",
+  "distinct_states": 1,
   "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
-  "states": [
-    {
-      "state": {
-        "tensor_rank": 4
-      },
-      "calls": 18,
-      "instructions_per_call": 24291.944444444445
-    }
-  ],
-  "max_unexplained_share": null,
-  "threshold": 0.05,
-  "sufficient_points": false,
+  "formula": {
+    "coefficients": {
+      "tensor_rank": 0.0
+    },
+    "constant": 24453.11111111113,
+    "dependent_columns": [
+      0
+    ]
+  },
   "gate_pass": false,
   "gate_reasons": [
     "insufficient state points: 1; need 3"
   ],
-  "automatic_regime_splitting": false,
   "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "returncode": 0,
-  "instrumented_wall_seconds": 8.457912283018231,
+  "instrumented_wall_seconds": 9.191783851012588,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [],
+    "irregular_basic_blocks": 0,
+    "total_irregular_instructions_per_call": 0
+  },
+  "max_unexplained_share": 0.0,
+  "nested_calls_per_call": 0.0,
+  "pcv_names": [
+    "tensor_rank"
+  ],
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "7c9a2defaa1efd4864a2003d40c274025e0e8dcc1181ba682242635964b26fbe",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
   "raw_files": [
-    "run.1538175.json"
-  ]
+    "run.2541963.json"
+  ],
+  "required_states": 3,
+  "returncode": 0,
+  "states": [
+    {
+      "calls": 18,
+      "instructions_per_call": 24453.11111111111,
+      "state": {
+        "tensor_rank": 4
+      },
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    }
+  ],
+  "sufficient_points": false,
+  "threshold": 0.05,
+  "validity_warnings": []
 }

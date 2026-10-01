@@ -1,111 +1,154 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 36,
   "case": "vllm-001",
-  "validity_warnings": [],
+  "distinct_states": 6,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "default_options": 10604019.054761896,
+      "longer_than_100_chars": 197259.26309523793,
+      "longer_than_40_chars": 102780.13988095241,
+      "special_tokens_without_truncation": 21156.825000000004
+    },
+    "constant": 425869.96726190875,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 101.91787844058126,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 9874.164285714287,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.843151071914116
+      },
+      {
+        "function": "<tokenizers::models::bpe::word::Word>::merge_all",
+        "irregular_instructions_per_call": 643.3746031746032,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.05493750869567839
+      },
+      {
+        "function": "alloc::fmt::format::format_inner",
+        "irregular_instructions_per_call": 483.26666666666665,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.041265953880256515
+      },
+      {
+        "function": "<dary_heap::DaryHeap<tokenizers::models::bpe::word::Merge, 4: usize>>::pop",
+        "irregular_instructions_per_call": 417.42063492063494,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.03564338667947781
+      },
+      {
+        "function": "<&mut <tokenizers::models::bpe::word::Word>::merge_all::{closure#0} as core::ops::function::FnMut<((usize, &[tokenizers::models::bpe::word::Symbol]),)>>::call_mut",
+        "irregular_instructions_per_call": 292.8,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.02500207883047132
+      }
+    ],
+    "irregular_basic_blocks": 9,
+    "total_irregular_instructions_per_call": 11711.026190476192
+  },
+  "max_unexplained_share": 0.017325268967431747,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "default_options",
     "longer_than_40_chars",
     "longer_than_100_chars",
     "special_tokens_without_truncation"
   ],
-  "distinct_states": 6,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "86db8772438020c57c7e6af198ee8f735d53e7a0b69c227aaeae4597c44443f9",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2652031.json"
+  ],
   "required_states": 6,
-  "calls": 36,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
-      "state": {
-        "default_options": 0,
-        "longer_than_40_chars": 0,
-        "longer_than_100_chars": 0,
-        "special_tokens_without_truncation": 0
-      },
       "calls": 2,
-      "instructions_per_call": 417176.0,
-      "unexplained_instructions_per_call": 2339.0,
-      "unexplained_share": 0.005606746313306614
-    },
-    {
+      "instructions_per_call": 420537.5,
       "state": {
         "default_options": 0,
-        "longer_than_40_chars": 1,
         "longer_than_100_chars": 0,
+        "longer_than_40_chars": 0,
         "special_tokens_without_truncation": 0
       },
+      "unexplained_instructions_per_call": 3247.5,
+      "unexplained_share": 0.007722260202716762
+    },
+    {
       "calls": 4,
-      "instructions_per_call": 516179.75,
-      "unexplained_instructions_per_call": 1231.5,
-      "unexplained_share": 0.0023857968081855206
-    },
-    {
+      "instructions_per_call": 521289.0,
       "state": {
         "default_options": 0,
-        "longer_than_40_chars": 1,
         "longer_than_100_chars": 0,
-        "special_tokens_without_truncation": 1
-      },
-      "calls": 3,
-      "instructions_per_call": 567495.6666666666,
-      "unexplained_instructions_per_call": 6071.0,
-      "unexplained_share": 0.010697879044010322
-    },
-    {
-      "state": {
-        "default_options": 0,
         "longer_than_40_chars": 1,
-        "longer_than_100_chars": 1,
         "special_tokens_without_truncation": 0
       },
-      "calls": 21,
-      "instructions_per_call": 721587.0952380953,
-      "unexplained_instructions_per_call": 5185.999999999999,
-      "unexplained_share": 0.007186935623188804
+      "unexplained_instructions_per_call": 3357.0,
+      "unexplained_share": 0.006439805942576958
     },
     {
+      "calls": 3,
+      "instructions_per_call": 572905.6666666666,
       "state": {
         "default_options": 0,
+        "longer_than_100_chars": 0,
         "longer_than_40_chars": 1,
-        "longer_than_100_chars": 1,
         "special_tokens_without_truncation": 1
       },
-      "calls": 5,
-      "instructions_per_call": 758439.4,
-      "unexplained_instructions_per_call": 7451.400000000001,
-      "unexplained_share": 0.00982464782288473
+      "unexplained_instructions_per_call": 8569.0,
+      "unexplained_share": 0.014957087176073781
     },
     {
+      "calls": 21,
+      "instructions_per_call": 729305.8095238095,
+      "state": {
+        "default_options": 0,
+        "longer_than_100_chars": 1,
+        "longer_than_40_chars": 1,
+        "special_tokens_without_truncation": 0
+      },
+      "unexplained_instructions_per_call": 10103.857142857145,
+      "unexplained_share": 0.013854074670616327
+    },
+    {
+      "calls": 5,
+      "instructions_per_call": 769442.6,
+      "state": {
+        "default_options": 0,
+        "longer_than_100_chars": 1,
+        "longer_than_40_chars": 1,
+        "special_tokens_without_truncation": 1
+      },
+      "unexplained_instructions_per_call": 13330.8,
+      "unexplained_share": 0.017325268967431747
+    },
+    {
+      "calls": 1,
+      "instructions_per_call": 11085134.0,
       "state": {
         "default_options": 1,
-        "longer_than_40_chars": 0,
         "longer_than_100_chars": 0,
+        "longer_than_40_chars": 0,
         "special_tokens_without_truncation": 1
       },
-      "calls": 1,
-      "instructions_per_call": 11059410.0,
-      "unexplained_instructions_per_call": 13043.0,
-      "unexplained_share": 0.0011793576691704168
+      "unexplained_instructions_per_call": 31658.0,
+      "unexplained_share": 0.0028558969156349395
     }
   ],
-  "max_unexplained_share": 0.010697879044010322,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "default_options": 10600323.004761891,
-      "longer_than_40_chars": 100402.36011904765,
-      "longer_than_100_chars": 196224.89285714267,
-      "special_tokens_without_truncation": 19483.600000000002
-    },
-    "constant": 425355.49682540016,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 132.47218784317374,
-  "raw_files": [
-    "run.1778492.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

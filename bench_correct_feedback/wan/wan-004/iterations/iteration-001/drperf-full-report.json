@@ -1,103 +1,140 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 18,
   "case": "wan-004",
-  "validity_warnings": [],
+  "distinct_states": 6,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "batch_size": 64941.26150234741,
+      "element_count": 46.54896322378718,
+      "total_rows": 271.150234741784
+    },
+    "constant": 48909.88920187737,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 8.862723504193127,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "_PyDict_GetItemStringWithError+?",
+        "irregular_instructions_per_call": 1561.4444444444443,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.7850837988826815
+      },
+      {
+        "function": "_Py_HashPointer",
+        "irregular_instructions_per_call": 280.22222222222223,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.14089385474860336
+      },
+      {
+        "function": "__strcmp_evex",
+        "irregular_instructions_per_call": 114.33333333333333,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.05748603351955307
+      },
+      {
+        "function": "resolve_implementation_info",
+        "irregular_instructions_per_call": 32.88888888888889,
+        "module": "_multiarray_umath.cpython-310-x86_64-linux-gnu.so",
+        "share_of_irregular_instructions": 0.016536312849162016
+      }
+    ],
+    "irregular_basic_blocks": 4,
+    "total_irregular_instructions_per_call": 1988.8888888888887
+  },
+  "max_unexplained_share": 0.014768435646574431,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "batch_size",
     "element_count",
     "total_rows"
   ],
-  "distinct_states": 6,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "03c7215b4ea97e16a85ba08ee8cab14fadf5d993e04568fc44f80002d70c8ea5",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2542062.json"
+  ],
   "required_states": 5,
-  "calls": 18,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 3,
+      "instructions_per_call": 127185.66666666667,
       "state": {
         "batch_size": 1,
         "element_count": 144,
         "total_rows": 6
       },
-      "calls": 3,
-      "instructions_per_call": 127398.66666666667,
-      "unexplained_instructions_per_call": 1846.6666666666665,
-      "unexplained_share": 0.014495180483312225
+      "unexplained_instructions_per_call": 1878.3333333333335,
+      "unexplained_share": 0.014768435646574431
     },
     {
+      "calls": 3,
+      "instructions_per_call": 121629.0,
       "state": {
         "batch_size": 1,
         "element_count": 192,
         "total_rows": 8
       },
-      "calls": 3,
-      "instructions_per_call": 121387.33333333333,
-      "unexplained_instructions_per_call": 1364.0,
-      "unexplained_share": 0.011236757267370017
+      "unexplained_instructions_per_call": 1578.6666666666665,
+      "unexplained_share": 0.012979360733596975
     },
     {
+      "calls": 3,
+      "instructions_per_call": 122679.66666666667,
       "state": {
         "batch_size": 1,
         "element_count": 216,
         "total_rows": 6
       },
-      "calls": 3,
-      "instructions_per_call": 122615.33333333333,
-      "unexplained_instructions_per_call": 1364.0,
-      "unexplained_share": 0.011124220461823698
+      "unexplained_instructions_per_call": 1462.0,
+      "unexplained_share": 0.01191721529511818
     },
     {
+      "calls": 3,
+      "instructions_per_call": 132448.66666666666,
       "state": {
         "batch_size": 1,
         "element_count": 360,
         "total_rows": 10
       },
-      "calls": 3,
-      "instructions_per_call": 132089.66666666666,
-      "unexplained_instructions_per_call": 1364.0,
-      "unexplained_share": 0.010326318738028965
+      "unexplained_instructions_per_call": 1415.3333333333333,
+      "unexplained_share": 0.010685900952821974
     },
     {
+      "calls": 3,
+      "instructions_per_call": 201991.66666666666,
       "state": {
         "batch_size": 2,
         "element_count": 288,
         "total_rows": 12
       },
-      "calls": 3,
-      "instructions_per_call": 201840.0,
-      "unexplained_instructions_per_call": 2663.0,
-      "unexplained_share": 0.013193618707887435
+      "unexplained_instructions_per_call": 2779.6666666666665,
+      "unexplained_share": 0.013761293782746813
     },
     {
+      "calls": 3,
+      "instructions_per_call": 214001.66666666666,
       "state": {
         "batch_size": 2,
         "element_count": 480,
         "total_rows": 20
       },
-      "calls": 3,
-      "instructions_per_call": 213487.66666666666,
-      "unexplained_instructions_per_call": 2663.0,
-      "unexplained_share": 0.012473788493636635
+      "unexplained_instructions_per_call": 2819.3333333333335,
+      "unexplained_share": 0.013174352224671148
     }
   ],
-  "max_unexplained_share": 0.014495180483312225,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "batch_size": 64888.47042253521,
-      "element_count": 44.954127543035995,
-      "total_rows": 274.3807511737087
-    },
-    "constant": 49318.61596244079,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 8.173608039971441,
-  "raw_files": [
-    "run.1538787.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

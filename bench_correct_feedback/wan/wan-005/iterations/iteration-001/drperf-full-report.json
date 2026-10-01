@@ -1,111 +1,1192 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 18,
   "case": "wan-005",
-  "validity_warnings": [],
+  "distinct_states": 6,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "attention_work": 3842.456086034809,
+      "first_frame_area": 1035811.3476080019,
+      "latent_frames": 24794573.63765457,
+      "subsequent_frame_area": 3759377.176890303
+    },
+    "constant": -7168038.522838619,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 43.83745242096484,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "void c10::function_ref<void (char**, long const*, long, long)>::callback_fn<at::native::AVX2::VectorizedLoop2d<at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(float)#1}, at::native::AVX2::direct_copy_kernel(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#15}::operator()() const::{lambda(at::vec::AVX2::Vectorized<float>)#1}> >(long, char**, long const*, long, long)",
+        "irregular_instructions_per_call": 768911.8333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.23092447638478097
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 324231.8333333334,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.09737535968876047
+      },
+      {
+        "function": "at::native::(anonymous namespace)::cat_serial_kernel",
+        "irregular_instructions_per_call": 263516.3333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.07914089581640903
+      },
+      {
+        "function": "Xbyak::CodeArray::db",
+        "irregular_instructions_per_call": 224886.72222222225,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.06753940611100366
+      },
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 215738.3333333333,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.06479190396271094
+      },
+      {
+        "function": "Xbyak::CodeGenerator::evex",
+        "irregular_instructions_per_call": 205563.94444444438,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.061736266989982407
+      },
+      {
+        "function": "Xbyak::CodeGenerator::opVex",
+        "irregular_instructions_per_call": 147338.38888888896,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.044249599018453455
+      },
+      {
+        "function": "Xbyak::operator+",
+        "irregular_instructions_per_call": 133137.8888888889,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.039984814832877656
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::_jit_avx512_common_conv_fwd_kernel<>::compute_loop_fma",
+        "irregular_instructions_per_call": 118790.99999999999,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.03567606620814286
+      },
+      {
+        "function": "Xbyak::CodeGenerator::opAddr",
+        "irregular_instructions_per_call": 112324.66666666669,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.03373405598747026
+      },
+      {
+        "function": "_int_free_merge_chunk",
+        "irregular_instructions_per_call": 85290.55555555553,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.025615000352966863
+      },
+      {
+        "function": "Xbyak::CodeGenerator::vex",
+        "irregular_instructions_per_call": 65478.66666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.019664968282285002
+      },
+      {
+        "function": "_int_free_maybe_consolidate",
+        "irregular_instructions_per_call": 57848.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.017373278093531064
+      },
+      {
+        "function": "Xbyak::RegExp::RegExp",
+        "irregular_instructions_per_call": 49239.666666666664,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.014787968853422274
+      },
+      {
+        "function": "Py_UniversalNewlineFgets+?",
+        "irregular_instructions_per_call": 47192.833333333336,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.014173250890638617
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll_generic_step",
+        "irregular_instructions_per_call": 40844.33333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.012266629123649578
+      },
+      {
+        "function": "_int_memalign",
+        "irregular_instructions_per_call": 31531.72222222222,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0094698067164749
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll_generic",
+        "irregular_instructions_per_call": 25750.500000000004,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.007733553408025718
+      },
+      {
+        "function": "_Unwind_GetTextRelBase+?",
+        "irregular_instructions_per_call": 24195.0,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 0.007266395786768499
+      },
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 20093.333333333332,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00603455725048433
+      },
+      {
+        "function": "dnnl::impl::primitive_hashing::get_md_hash",
+        "irregular_instructions_per_call": 16661.888888888887,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.005004004100922796
+      },
+      {
+        "function": "at::DimCounter::increment",
+        "irregular_instructions_per_call": 16509.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.004958237703726164
+      },
+      {
+        "function": "Xbyak::Address::hasRex2",
+        "irregular_instructions_per_call": 16387.555555555555,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.004921614575090869
+      },
+      {
+        "function": "dnnl::impl::memory_desc_init_by_tag",
+        "irregular_instructions_per_call": 14638.166666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.004396227013543366
+      },
+      {
+        "function": "Xbyak::RegExp::verify",
+        "irregular_instructions_per_call": 13513.222222222223,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.004058376566283199
+      },
+      {
+        "function": "_PyDict_GetItemStringWithError+?",
+        "irregular_instructions_per_call": 12847.666666666666,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0038584927024787248
+      },
+      {
+        "function": "__strlen_evex",
+        "irregular_instructions_per_call": 12134.777777777777,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0036443933919328973
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::(anonymous namespace)::max_cpu_isa",
+        "irregular_instructions_per_call": 10794.666666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.003241922727267494
+      },
+      {
+        "function": "at::TensorIteratorBase::serial_for_each",
+        "irregular_instructions_per_call": 10605.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0031849608315222123
+      },
+      {
+        "function": "PyDescr_NewGetSet+?",
+        "irregular_instructions_per_call": 9874.0,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.002965422277270186
+      },
+      {
+        "function": "PyUnicode_FromStringAndSize+?",
+        "irregular_instructions_per_call": 8391.055555555555,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0025200550004310512
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::get_max_cpu_isa_mask",
+        "irregular_instructions_per_call": 7992.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.002400208106131591
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_generator::is_valid_isa",
+        "irregular_instructions_per_call": 7718.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0023179186890795317
+      },
+      {
+        "function": "PyException_SetTraceback+?",
+        "irregular_instructions_per_call": 7706.055555555556,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.002314331457800904
+      },
+      {
+        "function": "malloc_consolidate",
+        "irregular_instructions_per_call": 7387.333333333333,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.002218610779449796
+      },
+      {
+        "function": "dnnl::impl::malloc",
+        "irregular_instructions_per_call": 6765.61111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.002031891220198054
+      },
+      {
+        "function": "dnnl::impl::convolution_fwd_pd_t::convolution_fwd_pd_t",
+        "irregular_instructions_per_call": 6725.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.002019694633850719
+      },
+      {
+        "function": "_PyType_Lookup",
+        "irregular_instructions_per_call": 6712.444444444444,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.002015923869808999
+      },
+      {
+        "function": "_PyCode_ConstantKey+?",
+        "irregular_instructions_per_call": 6588.444444444444,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.001978683403697848
+      },
+      {
+        "function": "_Py_HashPointer+?",
+        "irregular_instructions_per_call": 6449.444444444445,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0019369380424926067
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_append",
+        "irregular_instructions_per_call": 6417.5,
+        "module": "libcufile.so.0",
+        "share_of_irregular_instructions": 0.0019273442844218575
+      },
+      {
+        "function": "dnnl_primitive_attr::dnnl_primitive_attr",
+        "irregular_instructions_per_call": 6162.222222222222,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0018506776438390893
+      },
+      {
+        "function": "Xbyak::CodeGenerator::opAVX_X_XM_IMM",
+        "irregular_instructions_per_call": 5787.055555555553,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0017380052120968838
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::o_addr",
+        "irregular_instructions_per_call": 5747.111111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0017260088433092872
+      },
+      {
+        "function": "_Unwind_Find_FDE",
+        "irregular_instructions_per_call": 5692.333333333333,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 0.0017095576338175332
+      },
+      {
+        "function": "unlink_chunk",
+        "irregular_instructions_per_call": 5208.222222222222,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.001564166315854913
+      },
+      {
+        "function": "__GI__dl_find_object",
+        "irregular_instructions_per_call": 4946.0,
+        "module": "ld-linux-x86-64.so.2",
+        "share_of_irregular_instructions": 0.0014854140756915477
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 4818.61111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.001447155836985065
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_single_blk_kernel_t::gen_tr8x8",
+        "irregular_instructions_per_call": 4469.333333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0013422585204793283
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_generator::EVEX_compress_addr<>",
+        "irregular_instructions_per_call": 4310.833333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0012946567956517684
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll_generic_step(int, int const*, int const*, int const*, int const*, int const*, bool)::{lambda(Xbyak::Xmm, Xbyak::Operand const&, dnnl_data_type_t)#1}::operator()(Xbyak::Xmm, Xbyak::Operand const&, dnnl_data_type_t) const",
+        "irregular_instructions_per_call": 4031.5555555555557,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0012107823229184553
+      },
+      {
+        "function": "dnnl::impl::types::is_zero_md",
+        "irregular_instructions_per_call": 4015.0000000000005,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0012058102535183106
+      },
+      {
+        "function": "_PyUnicode_FromId+?",
+        "irregular_instructions_per_call": 3761.0,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0011295273632583726
+      },
+      {
+        "function": "PyMember_GetOne+?",
+        "irregular_instructions_per_call": 3686.833333333333,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.00110725315973759
+      },
+      {
+        "function": "dnnl::impl::primitive_hashing::get_desc_hash",
+        "irregular_instructions_per_call": 3675.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0011036992980522518
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_single_blk_kernel_t::gen_transpose_8x8",
+        "irregular_instructions_per_call": 3438.2222222222217,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0010325886947521957
+      },
+      {
+        "function": "__cxa_get_globals",
+        "irregular_instructions_per_call": 3276.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0009838690885494359
+      },
+      {
+        "function": "__memcpy_evex_unaligned_erms",
+        "irregular_instructions_per_call": 3181.3888888888887,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0009554548798633741
+      },
+      {
+        "function": "dnnl::impl::primitive_hashing::get_attr_hash",
+        "irregular_instructions_per_call": 2984.111111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0008962071669777574
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_generator::jit_generator",
+        "irregular_instructions_per_call": 2887.1111111111113,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0008670755120359702
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::cpu",
+        "irregular_instructions_per_call": 2794.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0008391117928593174
+      },
+      {
+        "function": "__memcmp_evex_movbe",
+        "irregular_instructions_per_call": 2728.8888888888887,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0008195572111916342
+      },
+      {
+        "function": "std::hash<>::operator()",
+        "irregular_instructions_per_call": 2438.6666666666665,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0007323958335192992
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::process_unroll_generic_step(int, int const*, int const*, int const*, int const*, int const*, bool)::{lambda(Xbyak::Xmm const&, dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::scale_arg_t, dnnl::impl::cpu::x64::tr::scale_type_t)#1}::operator()(Xbyak::Xmm const&, dnnl::impl::cpu::x64::tr::jit_uni_reorder_kernel_f32_t::scale_arg_t, dnnl::impl::cpu::x64::tr::scale_type_t) const",
+        "irregular_instructions_per_call": 2401.777777777778,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0007213171285471648
+      },
+      {
+        "function": "dnnl::impl::rnn_create_time_scales_t::set",
+        "irregular_instructions_per_call": 2400.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0007207832150545318
+      },
+      {
+        "function": "std::__detail::_Prime_rehash_policy::_M_need_rehash",
+        "irregular_instructions_per_call": 2322.4444444444443,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0006974912389384177
+      },
+      {
+        "function": "std::__ostream_insert<>",
+        "irregular_instructions_per_call": 2268.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0006811401382265325
+      },
+      {
+        "function": "at::native::structured_cat_out_cpu::impl",
+        "irregular_instructions_per_call": 2198.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0006601172944541087
+      },
+      {
+        "function": "dnnl::impl::operator==",
+        "irregular_instructions_per_call": 2012.1666666666665,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0006043066496773168
+      },
+      {
+        "function": "__cxxabiv1::__class_type_info::__do_upcast",
+        "irregular_instructions_per_call": 2006.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0006024546372497461
+      },
+      {
+        "function": "PyFloat_AsDouble+?",
+        "irregular_instructions_per_call": 1940.6666666666667,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.000582833316395484
+      },
+      {
+        "function": "__gxx_personality_v0",
+        "irregular_instructions_per_call": 1920.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0005766265720436255
+      },
+      {
+        "function": "std::basic_streambuf<>::xsputn",
+        "irregular_instructions_per_call": 1764.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0005297756630650808
+      },
+      {
+        "function": "dnnl::impl::fill_blocked",
+        "irregular_instructions_per_call": 1721.5555555555559,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0005170284784284684
+      },
+      {
+        "function": "Xbyak::CodeGenerator::rex",
+        "irregular_instructions_per_call": 1700.3333333333337,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0005106548861101622
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_replace",
+        "irregular_instructions_per_call": 1674.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0005027462925005359
+      },
+      {
+        "function": "PyObject_GC_Del",
+        "irregular_instructions_per_call": 1475.2222222222224,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.00044304809010551016
+      },
+      {
+        "function": "std::_Hashtable<>::_M_assign_elements<>",
+        "irregular_instructions_per_call": 1410.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00042346013884453744
+      },
+      {
+        "function": "__strcmp_evex",
+        "irregular_instructions_per_call": 1369.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0004111467589206892
+      },
+      {
+        "function": "__strub_leave+?",
+        "irregular_instructions_per_call": 1367.0,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 0.00041054610624147706
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::find",
+        "irregular_instructions_per_call": 1335.7777777777778,
+        "module": "libcufile.so.0",
+        "share_of_irregular_instructions": 0.0004011692505271103
+      },
+      {
+        "function": "PyType_GenericAlloc",
+        "irregular_instructions_per_call": 1254.0555555555557,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0003766259146626377
+      },
+      {
+        "function": "dnnl::impl::convolution_pd_t::query",
+        "irregular_instructions_per_call": 1177.7222222222224,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00035370100407270885
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_construct<>",
+        "irregular_instructions_per_call": 1066.7222222222222,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.00032036478037643666
+      },
+      {
+        "function": "Xbyak::CodeGenerator::opRext",
+        "irregular_instructions_per_call": 1055.5555555555554,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0003170111362508357
+      },
+      {
+        "function": "std::vector<>::vector",
+        "irregular_instructions_per_call": 1017.8888888888888,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00030569884412567433
+      },
+      {
+        "function": "_Unwind_Backtrace+?",
+        "irregular_instructions_per_call": 1005.0,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 0.0003018279713040852
+      },
+      {
+        "function": "__cxxabiv1::__si_class_type_info::__do_upcast",
+        "irregular_instructions_per_call": 924.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.00027750153779599473
+      },
+      {
+        "function": "Xbyak::Operand::hasRex2",
+        "irregular_instructions_per_call": 919.4444444444445,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0002761333844711227
+      },
+      {
+        "function": "std::__detail::_Prime_rehash_policy::_M_next_bkt",
+        "irregular_instructions_per_call": 916.2222222222222,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0002751656662657254
+      },
+      {
+        "function": "dnnl_primitive_attr::has_default_values",
+        "irregular_instructions_per_call": 895.9999999999999,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00026909240028702517
+      },
+      {
+        "function": "dnnl::impl::primitive_hashing::get_zero_points_hash",
+        "irregular_instructions_per_call": 864.5555555555555,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00025964880538607924
+      },
+      {
+        "function": "std::_Hash_bytes",
+        "irregular_instructions_per_call": 766.3333333333334,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.00023015008491810676
+      },
+      {
+        "function": "std::ostream::sentry::sentry",
+        "irregular_instructions_per_call": 756.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.00022704671274217751
+      },
+      {
+        "function": "std::_Hashtable<>::_M_assign<>",
+        "irregular_instructions_per_call": 720.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00021623496451635954
+      },
+      {
+        "function": "dnnl::impl::get_verbose",
+        "irregular_instructions_per_call": 700.7777777777778,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0002104620248772654
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::(anonymous namespace)::mayiuse",
+        "irregular_instructions_per_call": 630.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00018920559395181459
+      },
+      {
+        "function": "__memchr_evex",
+        "irregular_instructions_per_call": 629.0555555555555,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00018892195240885332
+      },
+      {
+        "function": "std::_Rb_tree<>::_M_get_insert_unique_pos",
+        "irregular_instructions_per_call": 615.7222222222223,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00018491760121410594
+      },
+      {
+        "function": "__cxxabiv1::__class_type_info::__do_catch",
+        "irregular_instructions_per_call": 594.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0001783938457259966
+      },
+      {
+        "function": "Xbyak::LabelManager::decRefCount",
+        "irregular_instructions_per_call": 557.3333333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.0001673818799404413
+      },
+      {
+        "function": "PyUnicode_DecodeUTF32Stateful+?",
+        "irregular_instructions_per_call": 548.0,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 0.0001645788341041181
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::cvt_mem_desc_to_layout_desc",
+        "irregular_instructions_per_call": 516.4444444444445,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00015510186960988258
+      },
+      {
+        "function": "dnnl::impl::cpu::(anonymous namespace)::impl_list_map",
+        "irregular_instructions_per_call": 474.7222222222222,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00014257158732965217
+      },
+      {
+        "function": "dnnl_status_t dnnl::impl::primitive_desc_t::create<dnnl::impl::cpu::x64::jit_avx512_common_1x1_convolution_fwd_t<(dnnl_data_type_t)3, (dnnl_data_type_t)3, (dnnl_data_type_t)3>::pd_t>(dnnl::impl::primitive_desc_t**, dnnl::impl::op_desc_t const*, dnnl_primitive_attr const*, dnnl_engine*, dnnl::impl::primitive_desc_t const*)",
+        "irregular_instructions_per_call": 456.6666666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00013714902842009843
+      },
+      {
+        "function": "Xbyak::LabelManager::define_inner<>",
+        "irregular_instructions_per_call": 452.22222222222223,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00013581424468851595
+      },
+      {
+        "function": "Xbyak::LabelManager::defineClabel",
+        "irregular_instructions_per_call": 425.94444444444446,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00012792233587553462
+      },
+      {
+        "function": "torch::FunctionParameter::FunctionParameter",
+        "irregular_instructions_per_call": 400.3888888888889,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.00012024732941893544
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_blk_reorder_t::pd_t::create",
+        "irregular_instructions_per_call": 390.22222222222223,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00011719401163294054
+      },
+      {
+        "function": "torch::processErrorMsgInplace",
+        "irregular_instructions_per_call": 386.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.0001159259670879372
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_generator::make_safe_addr",
+        "irregular_instructions_per_call": 368.5,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00011067025614483124
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::brgemm_convolution_utils::init_jcp",
+        "irregular_instructions_per_call": 356.6666666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00010711639445949292
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_blk_reorder_t::pd_t::clone",
+        "irregular_instructions_per_call": 348.44444444444446,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00010464704455606536
+      },
+      {
+        "function": "std::unique_ptr<dnnl::impl::primitive_desc_t::make_unique_pd<dnnl::impl::cpu::x64::brgemm_matmul_copy_reorder_t::pd_t, dnnl_primitive_attr const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&>(dnnl_primitive_attr const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&)::pd_t_compat, std::default_delete<dnnl::impl::primitive_desc_t::make_unique_pd<dnnl::impl::cpu::x64::brgemm_matmul_copy_reorder_t::pd_t, dnnl_primitive_attr const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&>(dnnl_primitive_attr const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&)::pd_t_compat> > dnnl::impl::utils::make_unique<dnnl::impl::primitive_desc_t::make_unique_pd<dnnl::impl::cpu::x64::brgemm_matmul_copy_reorder_t::pd_t, dnnl_primitive_attr const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&>(dnnl_primitive_attr const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&)::pd_t_compat, dnnl_primitive_attr const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&, dnnl_engine_kind_t, dnnl_memory_desc const*&>(dnnl_primitive_attr const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&, dnnl_engine_kind_t&&, dnnl_memory_desc const*&)",
+        "irregular_instructions_per_call": 344.66666666666663,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00010351247838422025
+      },
+      {
+        "function": "dnnl::impl::primitive_desc_t::invariant_src_md",
+        "irregular_instructions_per_call": 334.8888888888889,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 0.00010057595417473885
+      },
+      {
+        "function": "dnnl::impl::memory_desc_wrapper::compute_blocking",
+        "irregular_instructions_per_call": 329.6666666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.900758329012944e-05
+      },
+      {
+        "function": "dnnl::impl::rnn_create_time_scales_t::set_single_scale",
+        "irregular_instructions_per_call": 323.55555555555554,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.717225565920354e-05
+      },
+      {
+        "function": "Xbyak::CodeGenerator::opOI",
+        "irregular_instructions_per_call": 321.1111111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.643812460683318e-05
+      },
+      {
+        "function": "Xbyak::CodeGenerator::mov",
+        "irregular_instructions_per_call": 313.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.400214429669518e-05
+      },
+      {
+        "function": "PyErr_SetString+?",
+        "irregular_instructions_per_call": 306.0,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 9.18998599194528e-05
+      },
+      {
+        "function": "Xbyak::CodeGenerator::writeCode",
+        "irregular_instructions_per_call": 300.6666666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.029811944155385e-05
+      },
+      {
+        "function": "void std::vector<torch::FunctionParameter, std::allocator<torch::FunctionParameter> >::_M_realloc_insert<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool&>(__gnu_cxx::__normal_iterator<torch::FunctionParameter*, std::vector<torch::FunctionParameter, std::allocator<torch::FunctionParameter> > >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&, bool&)",
+        "irregular_instructions_per_call": 289.5,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.69444753159529e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_uni_reorder_direct_copy_t::pd_t::create",
+        "irregular_instructions_per_call": 283.55555555555554,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 8.515920207496134e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::_jit_avx512_common_conv_fwd_kernel<>::store_output",
+        "irregular_instructions_per_call": 272.3333333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 8.178887315271561e-05
+      },
+      {
+        "function": "at::Tensor::narrow",
+        "irregular_instructions_per_call": 264.3333333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.938626243586717e-05
+      },
+      {
+        "function": "__GI_getenv",
+        "irregular_instructions_per_call": 234.66666666666663,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 7.04765810275542e-05
+      },
+      {
+        "function": "dnnl::impl::primitive_desc_t::create<>",
+        "irregular_instructions_per_call": 233.33333333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 7.007614590807948e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::prb_init",
+        "irregular_instructions_per_call": 227.33333333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.827418787044315e-05
+      },
+      {
+        "function": "printf_positional",
+        "irregular_instructions_per_call": 223.2222222222222,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 6.703951291872936e-05
+      },
+      {
+        "function": "std::_Rb_tree_insert_and_rebalance",
+        "irregular_instructions_per_call": 217.38888888888889,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 6.528760927102737e-05
+      },
+      {
+        "function": "std::__once_callable+?",
+        "irregular_instructions_per_call": 210.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 6.306853131727154e-05
+      },
+      {
+        "function": "std::unique_ptr<dnnl::impl::primitive_desc_iterator_t, std::default_delete<dnnl::impl::primitive_desc_iterator_t> > dnnl::impl::utils::make_unique<dnnl::impl::primitive_desc_iterator_t, dnnl_engine*&, dnnl::impl::op_desc_t const*&, dnnl_primitive_attr const*&, dnnl::impl::primitive_desc_t const*&>(dnnl_engine*&, dnnl::impl::op_desc_t const*&, dnnl_primitive_attr const*&, dnnl::impl::primitive_desc_t const*&)",
+        "irregular_instructions_per_call": 207.22222222222223,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.22342914850325e-05
+      },
+      {
+        "function": "_Unwind_RaiseException",
+        "irregular_instructions_per_call": 207.0,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 6.216755229845337e-05
+      },
+      {
+        "function": "dnnl::impl::convolution_fwd_pd_t::src_md",
+        "irregular_instructions_per_call": 205.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 6.156689961924126e-05
+      },
+      {
+        "function": "std::_Rb_tree<>::_M_erase",
+        "irregular_instructions_per_call": 198.44444444444446,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.9598093615157124e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_conv_conf_t::jit_conv_conf_t",
+        "irregular_instructions_per_call": 195.55555555555554,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.873048418962851e-05
+      },
+      {
+        "function": "dnnl::impl::primitive_desc_t::invariant_dst_md",
+        "irregular_instructions_per_call": 195.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.856363622318071e-05
+      },
+      {
+        "function": "dnnl::impl::memory_desc_matches_tag",
+        "irregular_instructions_per_call": 180.55555555555554,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.422558909553769e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::prb_normalize",
+        "irregular_instructions_per_call": 175.66666666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.275732699079698e-05
+      },
+      {
+        "function": "dnnl::impl::primitive_desc_t::invariant_bia_md",
+        "irregular_instructions_per_call": 147.33333333333334,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.424808070195876e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::_jit_avx512_common_conv_fwd_kernel<>::compute_loop",
+        "irregular_instructions_per_call": 143.55555555555557,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.3113514530113664e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::cpu_engine_impl_list_t::get_reorder_implementation_list",
+        "irregular_instructions_per_call": 128.33333333333331,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.854188024944371e-05
+      },
+      {
+        "function": "torch::FunctionSignature::FunctionSignature",
+        "irregular_instructions_per_call": 120.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.603916075272659e-05
+      },
+      {
+        "function": "__parse_one_specmb",
+        "irregular_instructions_per_call": 109.33333333333333,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.283567979692867e-05
+      },
+      {
+        "function": "__printf_buffer_write",
+        "irregular_instructions_per_call": 107.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 3.213491833784788e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_uni_reorder_t::pd_t::create",
+        "irregular_instructions_per_call": 104.33333333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 3.1334048098898394e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::prb_simplify",
+        "irregular_instructions_per_call": 96.11111111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.8864698195470833e-05
+      },
+      {
+        "function": "<no symbol>",
+        "irregular_instructions_per_call": 92.0,
+        "module": "libgcc_s.so.1",
+        "share_of_irregular_instructions": 2.7630023243757052e-05
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_assign",
+        "irregular_instructions_per_call": 92.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.7630023243757052e-05
+      },
+      {
+        "function": "c10::Dispatcher::findOp",
+        "irregular_instructions_per_call": 88.8888888888889,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.669567463164933e-05
+      },
+      {
+        "function": "dnnl_format_tag_t dnnl::impl::memory_desc_wrapper::mb_stride_relaxed_match<dnnl_format_tag_t, dnnl_format_tag_t>(dnnl_format_tag_t, dnnl_format_tag_t) const",
+        "irregular_instructions_per_call": 88.8888888888889,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.669567463164933e-05
+      },
+      {
+        "function": "PyDict_SetDefault",
+        "irregular_instructions_per_call": 76.1111111111111,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 2.2858171403349732e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::kernel_t::create",
+        "irregular_instructions_per_call": 72.66666666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.1823714011373322e-05
+      },
+      {
+        "function": "torch::(anonymous namespace)::_formattedArgDesc",
+        "irregular_instructions_per_call": 70.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.1022843772423845e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_uni_reorder_t::pd_t::clone",
+        "irregular_instructions_per_call": 69.66666666666666,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.0922734992555158e-05
+      },
+      {
+        "function": "_dl_find_object",
+        "irregular_instructions_per_call": 69.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 2.072251743281779e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::get_convolution_impl_list",
+        "irregular_instructions_per_call": 66.66666666666667,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.0021755973736996e-05
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::operator=",
+        "irregular_instructions_per_call": 65.77777777777779,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.9754799227420503e-05
+      },
+      {
+        "function": "std::__detail::_List_node_base::_M_hook",
+        "irregular_instructions_per_call": 64.5,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 1.9371048904590543e-05
+      },
+      {
+        "function": "dnnl::impl::zero_points_t::has_default_groups",
+        "irregular_instructions_per_call": 64.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.9220885734787516e-05
+      },
+      {
+        "function": "dnnl::impl::zero_points_t::has_default_data_type",
+        "irregular_instructions_per_call": 64.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.9220885734787516e-05
+      },
+      {
+        "function": "PyUnicode_InternInPlace",
+        "irregular_instructions_per_call": 63.77777777777778,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 1.9154146548208393e-05
+      },
+      {
+        "function": "PyUnicode_InternFromString",
+        "irregular_instructions_per_call": 63.77777777777778,
+        "module": "python3.10",
+        "share_of_irregular_instructions": 1.9154146548208393e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::regular_impl_list_map",
+        "irregular_instructions_per_call": 61.33333333333333,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.8420015495838035e-05
+      },
+      {
+        "function": "dnnl::impl::utils::cache_t<>::get_or_create",
+        "irregular_instructions_per_call": 58.666666666666664,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.7619145256888554e-05
+      },
+      {
+        "function": "dnnl_status_t dnnl::impl::primitive_desc_t::create<dnnl::impl::cpu::x64::jit_uni_dw_convolution_fwd_t<(dnnl::impl::cpu::x64::cpu_isa_t)880, (dnnl_data_type_t)3, (dnnl_data_type_t)3>::pd_t>(dnnl::impl::primitive_desc_t**, dnnl::impl::op_desc_t const*, dnnl_primitive_attr const*, dnnl_engine*, dnnl::impl::primitive_desc_t const*)",
+        "irregular_instructions_per_call": 57.77777777777777,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.735218851057206e-05
+      },
+      {
+        "function": "dnnl_status_t dnnl::impl::primitive_desc_t::create<dnnl::impl::cpu::x64::jit_avx512_common_convolution_fwd_t<(dnnl_data_type_t)3, (dnnl_data_type_t)3, (dnnl_data_type_t)3>::pd_t>(dnnl::impl::primitive_desc_t**, dnnl::impl::op_desc_t const*, dnnl_primitive_attr const*, dnnl_engine*, dnnl::impl::primitive_desc_t const*)",
+        "irregular_instructions_per_call": 57.77777777777777,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.735218851057206e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::jit_avx512_common_conv_fwd_kernel::init_conf",
+        "irregular_instructions_per_call": 57.77777777777777,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.735218851057206e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::platform::get_per_core_cache_size",
+        "irregular_instructions_per_call": 57.333333333333336,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.7218710137413815e-05
+      },
+      {
+        "function": "dnnl::impl::primitive_desc_iterator_t::operator++",
+        "irregular_instructions_per_call": 55.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.651794867833302e-05
+      },
+      {
+        "function": "dnnl::impl::convolution_pd_t::has_zero_dim_memory",
+        "irregular_instructions_per_call": 54.444444444444436,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.635110071188521e-05
+      },
+      {
+        "function": "___pthread_rwlock_wrlock",
+        "irregular_instructions_per_call": 53.333333333333336,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.6017404778989596e-05
+      },
+      {
+        "function": "___pthread_rwlock_unlock",
+        "irregular_instructions_per_call": 49.77777777777778,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 1.4949577793723623e-05
+      },
+      {
+        "function": "dnnl::impl::reorder_primitive_desc_create",
+        "irregular_instructions_per_call": 47.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.4115337961484581e-05
+      },
+      {
+        "function": "std::vector<>::~vector",
+        "irregular_instructions_per_call": 39.11111111111111,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.1746096837925701e-05
+      },
+      {
+        "function": "dnnl::impl::cpu::x64::tr::kernel_t::desc_init",
+        "irregular_instructions_per_call": 34.666666666666664,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.0411313106343237e-05
+      },
+      {
+        "function": "__itt_string_handle_create_init_3_0",
+        "irregular_instructions_per_call": 33.0,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.910769206999813e-06
+      },
+      {
+        "function": "__itt_is_collector_available",
+        "irregular_instructions_per_call": 31.944444444444443,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.593758070748975e-06
+      }
+    ],
+    "irregular_basic_blocks": 1191,
+    "total_irregular_instructions_per_call": 3329711.277777778
+  },
+  "max_unexplained_share": 0.038270381040632157,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "latent_frames",
     "first_frame_area",
     "subsequent_frame_area",
     "attention_work"
   ],
-  "distinct_states": 6,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "33c9f215c5e8bf7989d2c85e9f89f42418280f3a99003de6ae33e0497361476d",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2542094.json"
+  ],
   "required_states": 6,
-  "calls": 18,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 3,
+      "instructions_per_call": 21846319.0,
       "state": {
+        "attention_work": 16,
+        "first_frame_area": 4,
         "latent_frames": 1,
-        "first_frame_area": 4,
-        "subsequent_frame_area": 0,
-        "attention_work": 16
+        "subsequent_frame_area": 0
       },
-      "calls": 3,
-      "instructions_per_call": 21845730.333333332,
-      "unexplained_instructions_per_call": 441479.0,
-      "unexplained_share": 0.02020893754814728
+      "unexplained_instructions_per_call": 453223.33333333343,
+      "unexplained_share": 0.0207459816609532
     },
     {
+      "calls": 3,
+      "instructions_per_call": 35223791.0,
       "state": {
+        "attention_work": 256,
+        "first_frame_area": 16,
         "latent_frames": 1,
-        "first_frame_area": 16,
-        "subsequent_frame_area": 0,
-        "attention_work": 256
+        "subsequent_frame_area": 0
       },
-      "calls": 3,
-      "instructions_per_call": 35197193.0,
-      "unexplained_instructions_per_call": 492790.3333333333,
-      "unexplained_share": 0.014000841866376484
+      "unexplained_instructions_per_call": 512829.3333333332,
+      "unexplained_share": 0.014559174886466172
     },
     {
+      "calls": 3,
+      "instructions_per_call": 64174319.666666664,
       "state": {
-        "latent_frames": 2,
+        "attention_work": 32,
         "first_frame_area": 4,
-        "subsequent_frame_area": 4,
-        "attention_work": 32
-      },
-      "calls": 3,
-      "instructions_per_call": 64155181.0,
-      "unexplained_instructions_per_call": 2457607.333333335,
-      "unexplained_share": 0.03830723092080957
-    },
-    {
-      "state": {
         "latent_frames": 2,
+        "subsequent_frame_area": 4
+      },
+      "unexplained_instructions_per_call": 2455975.6666666674,
+      "unexplained_share": 0.038270381040632157
+    },
+    {
+      "calls": 3,
+      "instructions_per_call": 124827705.0,
+      "state": {
+        "attention_work": 512,
         "first_frame_area": 16,
-        "subsequent_frame_area": 16,
-        "attention_work": 512
+        "latent_frames": 2,
+        "subsequent_frame_area": 16
       },
-      "calls": 3,
-      "instructions_per_call": 124785181.33333333,
-      "unexplained_instructions_per_call": 3759529.999999999,
-      "unexplained_share": 0.030128016482640893
+      "unexplained_instructions_per_call": 3752172.999999999,
+      "unexplained_share": 0.030058815869441795
     },
     {
+      "calls": 3,
+      "instructions_per_call": 104752970.66666667,
       "state": {
-        "latent_frames": 3,
+        "attention_work": 48,
         "first_frame_area": 4,
-        "subsequent_frame_area": 8,
-        "attention_work": 48
+        "latent_frames": 3,
+        "subsequent_frame_area": 8
       },
-      "calls": 3,
-      "instructions_per_call": 104710440.33333333,
-      "unexplained_instructions_per_call": 2697191.9999999995,
-      "unexplained_share": 0.025758577572721566
+      "unexplained_instructions_per_call": 2696728.3333333335,
+      "unexplained_share": 0.02574369314942451
     },
     {
+      "calls": 3,
+      "instructions_per_call": 400741791.6666667,
       "state": {
-        "latent_frames": 3,
+        "attention_work": 3888,
         "first_frame_area": 36,
-        "subsequent_frame_area": 72,
-        "attention_work": 3888
+        "latent_frames": 3,
+        "subsequent_frame_area": 72
       },
-      "calls": 3,
-      "instructions_per_call": 400685740.0,
-      "unexplained_instructions_per_call": 10149252.33333334,
-      "unexplained_share": 0.025329706850394377
+      "unexplained_instructions_per_call": 10107338.000000002,
+      "unexplained_share": 0.02522157211995297
     }
   ],
-  "max_unexplained_share": 0.03830723092080957,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "latent_frames": 24776574.214815047,
-      "first_frame_area": 1033758.8398919515,
-      "subsequent_frame_area": 3757393.8800153,
-      "attention_work": 3882.5445312508496
-    },
-    "constant": -7137870.397195613,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 41.682182237971574,
-  "raw_files": [
-    "run.1539345.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

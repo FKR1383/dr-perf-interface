@@ -1,169 +1,194 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 12,
   "case": "vllm-005",
-  "validity_warnings": [],
+  "distinct_states": 12,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "new_block_count": 7752.957575757577,
+      "single_block_batch": 7950.0,
+      "two_block_batch": 5617.866666666668
+    },
+    "constant": 5973.203535353537,
+    "dependent_columns": []
+  },
+  "gate_pass": true,
+  "gate_reasons": [],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 12.846009029075503,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 720.6666666666666,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.8100412139378044
+      },
+      {
+        "function": "PyDict_Contains+?",
+        "irregular_instructions_per_call": 169.0,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.1899587860621956
+      }
+    ],
+    "irregular_basic_blocks": 3,
+    "total_irregular_instructions_per_call": 889.6666666666666
+  },
+  "max_unexplained_share": 0.01898915930791873,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "new_block_count",
     "single_block_batch",
     "two_block_batch"
   ],
-  "distinct_states": 12,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "3ba497b14728b5680051da874f03cbbcc5be3ee070487ed3733aaf7251dca280",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2667121.json"
+  ],
   "required_states": 5,
-  "calls": 12,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
+      "calls": 1,
+      "instructions_per_call": 21570.0,
       "state": {
         "new_block_count": 1,
         "single_block_batch": 1,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 21606.0,
       "unexplained_instructions_per_call": 299.0,
-      "unexplained_share": 0.013838748495788207
+      "unexplained_share": 0.013861845155308299
     },
     {
+      "calls": 1,
+      "instructions_per_call": 27858.0,
       "state": {
         "new_block_count": 2,
         "single_block_batch": 0,
         "two_block_batch": 1
       },
-      "calls": 1,
-      "instructions_per_call": 27898.0,
       "unexplained_instructions_per_call": 529.0,
-      "unexplained_share": 0.018961932755036204
+      "unexplained_share": 0.01898915930791873
     },
     {
+      "calls": 1,
+      "instructions_per_call": 29288.0,
       "state": {
         "new_block_count": 3,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 29331.0,
       "unexplained_instructions_per_call": 414.0,
-      "unexplained_share": 0.014114759128567045
+      "unexplained_share": 0.014135482108713467
     },
     {
+      "calls": 1,
+      "instructions_per_call": 36790.0,
       "state": {
         "new_block_count": 4,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 36826.0,
       "unexplained_instructions_per_call": 414.0,
-      "unexplained_share": 0.011242057242165862
+      "unexplained_share": 0.011253057896167437
     },
     {
+      "calls": 1,
+      "instructions_per_call": 45267.0,
       "state": {
         "new_block_count": 5,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 45310.0,
       "unexplained_instructions_per_call": 644.0,
-      "unexplained_share": 0.014213197969543147
+      "unexplained_share": 0.014226699361565821
     },
     {
+      "calls": 1,
+      "instructions_per_call": 52953.0,
       "state": {
         "new_block_count": 6,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 52987.0,
       "unexplained_instructions_per_call": 754.0,
-      "unexplained_share": 0.014229905448506237
+      "unexplained_share": 0.01423904216947104
     },
     {
+      "calls": 1,
+      "instructions_per_call": 61664.0,
       "state": {
         "new_block_count": 7,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 61687.0,
       "unexplained_instructions_per_call": 1055.0,
-      "unexplained_share": 0.01710246891565484
+      "unexplained_share": 0.017108847950181628
     },
     {
+      "calls": 1,
+      "instructions_per_call": 69309.0,
       "state": {
         "new_block_count": 8,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 69336.0,
       "unexplained_instructions_per_call": 1211.0,
-      "unexplained_share": 0.017465674397138573
+      "unexplained_share": 0.01747247832171868
     },
     {
+      "calls": 1,
+      "instructions_per_call": 76376.0,
       "state": {
         "new_block_count": 9,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 76406.0,
       "unexplained_instructions_per_call": 991.0,
-      "unexplained_share": 0.012970185587519304
+      "unexplained_share": 0.0129752801927307
     },
     {
+      "calls": 1,
+      "instructions_per_call": 84568.0,
       "state": {
         "new_block_count": 10,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 84612.0,
       "unexplained_instructions_per_call": 1122.0,
-      "unexplained_share": 0.01326053042121685
+      "unexplained_share": 0.013267429760665974
     },
     {
+      "calls": 1,
+      "instructions_per_call": 93598.0,
       "state": {
         "new_block_count": 11,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 93638.0,
       "unexplained_instructions_per_call": 1423.0,
-      "unexplained_share": 0.01519682180311412
+      "unexplained_share": 0.015203316310177567
     },
     {
+      "calls": 1,
+      "instructions_per_call": 101412.0,
       "state": {
         "new_block_count": 12,
         "single_block_batch": 0,
         "two_block_batch": 0
       },
-      "calls": 1,
-      "instructions_per_call": 101456.0,
       "unexplained_instructions_per_call": 1820.0,
-      "unexplained_share": 0.017938810913105188
+      "unexplained_share": 0.017946594091429024
     }
   ],
-  "max_unexplained_share": 0.018961932755036204,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": true,
-  "gate_reasons": [],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "new_block_count": 7752.957575757577,
-      "single_block_batch": 7938.0,
-      "two_block_batch": 5617.866666666668
-    },
-    "constant": 6010.870202020204,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 12.246002874337137,
-  "raw_files": [
-    "run.1802433.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

@@ -24,7 +24,20 @@
           "name": "tensor_rank",
           "rationale": "The CPU float32 input needs no device transfer or dtype conversion. Permutation and NumPy conversion share storage, so work primarily handles tensor metadata and scales with rank rather than pixel count."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 0.0,
+          "reasons": [
+            "insufficient state points: 1; need 3"
+          ],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": false
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-002/annotation.diff",
@@ -46,7 +59,18 @@
           "name": "elements",
           "rationale": "Provides six distinct entry states across the fixed workload and captures any size-dependent storage or allocation overhead accompanying conversion."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 0.4285873316264055,
+          "reasons": [],
+          "success": true,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     }
   ],
   "case": "wan-003",

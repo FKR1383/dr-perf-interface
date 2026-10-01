@@ -1,161 +1,420 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 36,
   "case": "vllm-001",
-  "validity_warnings": [],
+  "distinct_states": 10,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "default_options_scaled": 10531.358462655144,
+      "option_count_scaled": -2.7768379768291513,
+      "prompt_chars_scaled": 1.8853494038736778,
+      "special_tokens_scaled": 1.4691929928205036
+    },
+    "constant": 294288.5659046882,
+    "dependent_columns": []
+  },
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 123.98330989666283,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "<std::hash::random::RandomState as core::hash::BuildHasher>::hash_one::<&usize>",
+        "irregular_instructions_per_call": 26221.4,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.19263693937453533
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 23962.215714285707,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.17603971930684073
+      },
+      {
+        "function": "PyDict_Contains+?",
+        "irregular_instructions_per_call": 15426.200714285715,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.11332942145641617
+      },
+      {
+        "function": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+        "irregular_instructions_per_call": 13110.699999999999,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.09631846968726765
+      },
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 9365.753333333334,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.06880601558536865
+      },
+      {
+        "function": "_PyType_Lookup",
+        "irregular_instructions_per_call": 6061.128333333332,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.044528408524701635
+      },
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 4760.546904761905,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.03497361641568532
+      },
+      {
+        "function": "_int_free",
+        "irregular_instructions_per_call": 4116.206904761904,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.030239937606903623
+      },
+      {
+        "function": "<hashbrown::raw::RawTable<(usize, usize)>>::reserve_rehash::<hashbrown::map::make_hasher<usize, usize, std::hash::random::RandomState>::{closure#0}>",
+        "irregular_instructions_per_call": 3823.2000000000003,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.028087346465738804
+      },
+      {
+        "function": "malloc_consolidate",
+        "irregular_instructions_per_call": 3779.494285714286,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.027766260061764268
+      },
+      {
+        "function": "unlink_chunk",
+        "irregular_instructions_per_call": 3132.0233333333335,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.02300957954125117
+      },
+      {
+        "function": "__rustc::__rdl_alloc",
+        "irregular_instructions_per_call": 2509.221666666667,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.018434133268206015
+      },
+      {
+        "function": "_PyOS_URandom+?",
+        "irregular_instructions_per_call": 1945.529761904762,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.01429294007167435
+      },
+      {
+        "function": "<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::iter::adapters::map::Map<core::slice::iter::Iter<tokenizers::models::bpe::word::Symbol>, <tokenizers::models::bpe::word::Word>::get_chars_iter::{closure#0}>, core::iter::adapters::map::Map<core::slice::iter::Iter<tokenizers::models::bpe::word::Symbol>, <tokenizers::models::bpe::word::Word>::get_offsets_iter::{closure#0}>>, <tokenizers::models::bpe::model::BPE>::word_to_tokens::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<tokenizers::tokenizer::Token, <alloc::vec::Vec<tokenizers::tokenizer::Token>>::extend_trusted<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::iter::adapters::map::Map<core::slice::iter::Iter<tokenizers::models::bpe::word::Symbol>, <tokenizers::models::bpe::word::Word>::get_chars_iter::{closure#0}>, core::iter::adapters::map::Map<core::slice::iter::Iter<tokenizers::models::bpe::word::Symbol>, <tokenizers::models::bpe::word::Word>::get_offsets_iter::{closure#0}>>, <tokenizers::models::bpe::model::BPE>::word_to_tokens::{closure#0}>>::{closure#0}>::{closure#0}>",
+        "irregular_instructions_per_call": 1698.6,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.012478857163293557
+      },
+      {
+        "function": "__memcpy_evex_unaligned_erms",
+        "irregular_instructions_per_call": 1682.5564285714286,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.012360992194350757
+      },
+      {
+        "function": "_PyObject_GC_New",
+        "irregular_instructions_per_call": 1622.6571428571428,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.011920938838285832
+      },
+      {
+        "function": "core::iter::adapters::flatten::and_then_or_clear::<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<tokenizers::tokenizer::Token>, <tokenizers::tokenizer::pre_tokenizer::PreTokenizedString>::into_encoding::{closure#2}::{closure#0}>, (u32, alloc::string::String, (usize, usize), core::option::Option<u32>, u32), <core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<tokenizers::tokenizer::Token>, <tokenizers::tokenizer::pre_tokenizer::PreTokenizedString>::into_encoding::{closure#2}::{closure#0}> as core::iter::traits::iterator::Iterator>::next>",
+        "irregular_instructions_per_call": 1460.2,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.010727438614059375
+      },
+      {
+        "function": "<alloc::string::String as core::clone::Clone>::clone",
+        "irregular_instructions_per_call": 1220.0,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.008962796267054127
+      },
+      {
+        "function": "_PyType_GetDict",
+        "irregular_instructions_per_call": 965.9119047619047,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.007096124274018968
+      },
+      {
+        "function": "_PyDict_GetItem_KnownHash",
+        "irregular_instructions_per_call": 870.6028571428571,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0063959311787595554
+      },
+      {
+        "function": "<tokenizers::models::bpe::word::Word>::merge_all",
+        "irregular_instructions_per_call": 798.3321428571429,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.00586499045071256
+      },
+      {
+        "function": "___pthread_cond_broadcast",
+        "irregular_instructions_per_call": 790.03,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.005803998307262928
+      },
+      {
+        "function": "PyLong_FromLong",
+        "irregular_instructions_per_call": 785.2,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.005768514449910575
+      },
+      {
+        "function": "<ahash::random_state::RandomState as core::hash::BuildHasher>::hash_one::<&str>",
+        "irregular_instructions_per_call": 747.0871428571429,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0054885162747247
+      },
+      {
+        "function": "<dary_heap::DaryHeap<tokenizers::models::bpe::word::Merge, 4: usize>>::pop",
+        "irregular_instructions_per_call": 635.5419047619048,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0046690431242266146
+      },
+      {
+        "function": "alloc::fmt::format::format_inner",
+        "irregular_instructions_per_call": 613.2952380952381,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.004505606779182027
+      },
+      {
+        "function": "_PyDict_DelItem_KnownHash+?",
+        "irregular_instructions_per_call": 581.8657142857143,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.004274708075349822
+      },
+      {
+        "function": "<tokenizers::models::bpe::model::BPE>::merge_word",
+        "irregular_instructions_per_call": 503.2519047619048,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.003697167453596623
+      },
+      {
+        "function": "PyErr_Occurred",
+        "irregular_instructions_per_call": 442.60428571428577,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00325161642605095
+      },
+      {
+        "function": "PyObject_Free",
+        "irregular_instructions_per_call": 436.6742857142857,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0032080513589496126
+      },
+      {
+        "function": "<core::fmt::Formatter>::pad",
+        "irregular_instructions_per_call": 383.30952380952385,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0028160042369887667
+      },
+      {
+        "function": "<alloc::string::String as core::fmt::Write>::write_str",
+        "irregular_instructions_per_call": 337.312380952381,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0024780837285501146
+      },
+      {
+        "function": "core::fmt::write",
+        "irregular_instructions_per_call": 268.3166666666667,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.001971202965892137
+      },
+      {
+        "function": "<dary_heap::RebuildOnDrop<tokenizers::models::bpe::word::Merge, 4: usize> as core::ops::drop::Drop>::drop",
+        "irregular_instructions_per_call": 263.8726190476191,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0019385545286703246
+      },
+      {
+        "function": "<&mut <tokenizers::models::bpe::word::Word>::merge_all::{closure#0} as core::ops::function::FnMut<((usize, &[tokenizers::models::bpe::word::Symbol]),)>>::call_mut",
+        "irregular_instructions_per_call": 203.4942857142857,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.001494981823251513
+      },
+      {
+        "function": "<alloc::raw_vec::RawVecInner>::finish_grow",
+        "irregular_instructions_per_call": 163.09,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0011981495436015227
+      },
+      {
+        "function": "<tokenizers::tokenizer::pre_tokenizer::PreTokenizedString>::tokenize_with_limit::<<tokenizers::models::PyModel as tokenizers::tokenizer::Model>::tokenize_in_pretokenized::{closure#0}>",
+        "irregular_instructions_per_call": 128.8,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0009462361960627637
+      },
+      {
+        "function": "<alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global>",
+        "irregular_instructions_per_call": 99.66047619047619,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0007321611016170793
+      },
+      {
+        "function": "<ahash::random_state::RandomState as core::hash::BuildHasher>::hash_one::<&alloc::string::String>",
+        "irregular_instructions_per_call": 77.04428571428572,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0005660100298343047
+      },
+      {
+        "function": "<str as core::fmt::Display>::fmt",
+        "irregular_instructions_per_call": 76.66190476190476,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0005632008473977533
+      },
+      {
+        "function": "<hashbrown::raw::RawTable<(alloc::string::String, tokenizers::models::bpe::word::Word)>>::reserve_rehash::<hashbrown::map::make_hasher<alloc::string::String, tokenizers::models::bpe::word::Word, ahash::random_state::RandomState>::{closure#0}>",
+        "irregular_instructions_per_call": 48.64,
+        "module": "tokenizers.abi3.so",
+        "share_of_irregular_instructions": 0.0003573364019914039
+      }
+    ],
+    "irregular_basic_blocks": 190,
+    "total_irregular_instructions_per_call": 136118.23404761904
+  },
+  "max_unexplained_share": 0.22516516807068787,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "prompt_chars_scaled",
     "default_options_scaled",
     "special_tokens_scaled",
     "option_count_scaled"
   ],
-  "distinct_states": 10,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "311d068b551d92ebba49527cc3bcd680ad0e3fcb64377216629c4febc467fd62",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2544785.json"
+  ],
   "required_states": 6,
-  "calls": 36,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
-      "state": {
-        "prompt_chars_scaled": 21000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 1000
-      },
       "calls": 1,
-      "instructions_per_call": 416339.0,
-      "unexplained_instructions_per_call": 96629.0,
-      "unexplained_share": 0.23209211724099832
+      "instructions_per_call": 415570.0,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 1000,
+        "prompt_chars_scaled": 21000,
+        "special_tokens_scaled": 0
+      },
+      "unexplained_instructions_per_call": 88004.0,
+      "unexplained_share": 0.211766970666795
     },
     {
+      "calls": 1,
+      "instructions_per_call": 11079083.0,
       "state": {
-        "prompt_chars_scaled": 21000,
         "default_options_scaled": 1000,
-        "special_tokens_scaled": 1000,
-        "option_count_scaled": 0
+        "option_count_scaled": 0,
+        "prompt_chars_scaled": 21000,
+        "special_tokens_scaled": 1000
       },
-      "calls": 1,
-      "instructions_per_call": 11058042.0,
-      "unexplained_instructions_per_call": 291374.0,
-      "unexplained_share": 0.026349511061723223
+      "unexplained_instructions_per_call": 198150.0,
+      "unexplained_share": 0.017885054205298397
     },
     {
+      "calls": 1,
+      "instructions_per_call": 417885.0,
       "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 1000,
         "prompt_chars_scaled": 33000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 1000
+        "special_tokens_scaled": 0
       },
-      "calls": 1,
-      "instructions_per_call": 418955.0,
-      "unexplained_instructions_per_call": 78868.0,
-      "unexplained_share": 0.18824933465407978
+      "unexplained_instructions_per_call": 69683.0,
+      "unexplained_share": 0.16675161826818383
     },
     {
-      "state": {
-        "prompt_chars_scaled": 83000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 3000
-      },
       "calls": 4,
-      "instructions_per_call": 517932.75,
-      "unexplained_instructions_per_call": 103817.0,
-      "unexplained_share": 0.2004449419350292
+      "instructions_per_call": 520563.0,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 3000,
+        "prompt_chars_scaled": 83000,
+        "special_tokens_scaled": 0
+      },
+      "unexplained_instructions_per_call": 88934.0,
+      "unexplained_share": 0.17084195380770434
     },
     {
-      "state": {
-        "prompt_chars_scaled": 83000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 1000,
-        "option_count_scaled": 2000
-      },
       "calls": 3,
-      "instructions_per_call": 567258.6666666666,
-      "unexplained_instructions_per_call": 128887.99999999997,
-      "unexplained_share": 0.22721204200787878
+      "instructions_per_call": 572312.6666666666,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 2000,
+        "prompt_chars_scaled": 83000,
+        "special_tokens_scaled": 1000
+      },
+      "unexplained_instructions_per_call": 113717.99999999997,
+      "unexplained_share": 0.19869907940764311
     },
     {
-      "state": {
-        "prompt_chars_scaled": 156000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 5000
-      },
       "calls": 6,
-      "instructions_per_call": 719932.6666666666,
-      "unexplained_instructions_per_call": 182429.33333333337,
-      "unexplained_share": 0.2533977714582568
+      "instructions_per_call": 722095.6666666666,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 5000,
+        "prompt_chars_scaled": 156000,
+        "special_tokens_scaled": 0
+      },
+      "unexplained_instructions_per_call": 156845.83333333334,
+      "unexplained_share": 0.21720921558408468
     },
     {
-      "state": {
-        "prompt_chars_scaled": 156000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 7000
-      },
       "calls": 4,
-      "instructions_per_call": 718982.25,
-      "unexplained_instructions_per_call": 180729.75,
-      "unexplained_share": 0.2513688620268442
+      "instructions_per_call": 719622.0,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 7000,
+        "prompt_chars_scaled": 156000,
+        "special_tokens_scaled": 0
+      },
+      "unexplained_instructions_per_call": 155049.75,
+      "unexplained_share": 0.21545999149553516
     },
     {
-      "state": {
-        "prompt_chars_scaled": 156000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 1000,
-        "option_count_scaled": 4000
-      },
       "calls": 5,
-      "instructions_per_call": 763051.8,
-      "unexplained_instructions_per_call": 199231.7999999999,
-      "unexplained_share": 0.261098656736017
-    },
-    {
+      "instructions_per_call": 764827.0,
       "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 4000,
         "prompt_chars_scaled": 156000,
-        "default_options_scaled": 0,
-        "special_tokens_scaled": 1000,
-        "option_count_scaled": 6000
+        "special_tokens_scaled": 1000
       },
-      "calls": 7,
-      "instructions_per_call": 728592.2857142857,
-      "unexplained_instructions_per_call": 184474.85714285716,
-      "unexplained_share": 0.25319353602818434
+      "unexplained_instructions_per_call": 172212.4,
+      "unexplained_share": 0.22516516807068787
     },
     {
+      "calls": 7,
+      "instructions_per_call": 729641.5714285715,
       "state": {
-        "prompt_chars_scaled": 162000,
         "default_options_scaled": 0,
-        "special_tokens_scaled": 0,
-        "option_count_scaled": 7000
+        "option_count_scaled": 6000,
+        "prompt_chars_scaled": 156000,
+        "special_tokens_scaled": 1000
       },
+      "unexplained_instructions_per_call": 158616.85714285716,
+      "unexplained_share": 0.21739010406479425
+    },
+    {
       "calls": 4,
-      "instructions_per_call": 731878.75,
-      "unexplained_instructions_per_call": 184047.25,
-      "unexplained_share": 0.2514723237968038
+      "instructions_per_call": 735991.0,
+      "state": {
+        "default_options_scaled": 0,
+        "option_count_scaled": 7000,
+        "prompt_chars_scaled": 162000,
+        "special_tokens_scaled": 0
+      },
+      "unexplained_instructions_per_call": 159968.5,
+      "unexplained_share": 0.21735116326150727
     }
   ],
-  "max_unexplained_share": 0.261098656736017,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": false,
-  "gate_reasons": [
-    "unexplained share exceeds 5% at an observed state"
-  ],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "prompt_chars_scaled": 1.7177119984626652,
-      "default_options_scaled": 10426.318339797604,
-      "special_tokens_scaled": 1.7329341847634374,
-      "option_count_scaled": -2.4823800747716853
-    },
-    "constant": 290250.1562305421,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 111.57792634982616,
-  "raw_files": [
-    "run.1775561.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }

@@ -21,7 +21,18 @@
           "name": "new_block_count",
           "rationale": "Counts loop iterations and newly inserted cache entries. In the fixed workload every block is non-null, unmasked, and initially unhashed, with cache events disabled."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 19.590209530873352,
+          "reasons": [],
+          "success": false,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     },
     {
       "annotation_diff": "iterations/iteration-002/annotation.diff",
@@ -53,7 +64,18 @@
           "name": "two_block_batch",
           "rationale": "Allows a separate offset for the two-block state, the other observed state with substantial unexplained cost."
         }
-      ]
+      ],
+      "posthoc_remeasurement": {
+        "agent_rerun": false,
+        "assessment": {
+          "irregularity_percent": 1.898915930791873,
+          "reasons": [],
+          "success": true,
+          "threshold_percent": 10.0,
+          "valid": true
+        },
+        "historical_feedback_unchanged": true
+      }
     }
   ],
   "case": "vllm-005",

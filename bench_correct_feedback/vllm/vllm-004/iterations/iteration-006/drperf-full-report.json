@@ -1,449 +1,1278 @@
 {
+  "automatic_regime_splitting": false,
+  "calls": 336,
   "case": "vllm-004",
-  "validity_warnings": [],
+  "distinct_states": 34,
+  "dropped_calls": 0,
+  "formula": {
+    "coefficients": {
+      "first_layer_query_tokens": 0.0,
+      "first_layer_request_blocks": 0.0,
+      "query_tokens": 3665.6691042992934,
+      "request_blocks": 300.50535616349987
+    },
+    "constant": 63755.841452452456,
+    "dependent_columns": []
+  },
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "instrumented_wall_seconds": 111.52059342432767,
+  "irregularity_breakdown": {
+    "basis": "mean instructions per call across observed states for basic blocks classified as non-affine",
+    "functions": [
+      {
+        "function": "cpu_attention::(anonymous namespace)::TileGemm82<>::gemm_micro<>",
+        "irregular_instructions_per_call": 1050941.6470588236,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.8131277169836407
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::operator()",
+        "irregular_instructions_per_call": 142436.2352941176,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.11020483501113726
+      },
+      {
+        "function": "cpu_attention::AttentionMainLoop<>::Attention<>::apply_softmax",
+        "irregular_instructions_per_call": 60801.17647058824,
+        "module": "_C_AVX512.abi3.so",
+        "share_of_irregular_instructions": 0.0470426897171786
+      },
+      {
+        "function": "_PyObject_GenericGetAttrWithDict",
+        "irregular_instructions_per_call": 2714.9679144385027,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0021006072679006227
+      },
+      {
+        "function": "_PyEval_EvalFrameDefault",
+        "irregular_instructions_per_call": 2049.546345811052,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0015857616316619564
+      },
+      {
+        "function": "__tls_get_addr",
+        "irregular_instructions_per_call": 1706.8235294117646,
+        "module": "ld-linux-x86-64.so.2",
+        "share_of_irregular_instructions": 0.001320592369375258
+      },
+      {
+        "function": "PyObject_Free",
+        "irregular_instructions_per_call": 1675.3856951871658,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0012962684933146803
+      },
+      {
+        "function": "PyType_IsSubtype",
+        "irregular_instructions_per_call": 1629.1764705882351,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0012605157934318012
+      },
+      {
+        "function": "PyCMethod_New+?",
+        "irregular_instructions_per_call": 1609.2058823529417,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0012450642801493748
+      },
+      {
+        "function": "_PyType_Lookup",
+        "irregular_instructions_per_call": 1597.4360516934046,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.001235957803533611
+      },
+      {
+        "function": "PyDict_Contains+?",
+        "irregular_instructions_per_call": 1508.155971479501,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0011668806021498653
+      },
+      {
+        "function": "PyDescr_IsData+?",
+        "irregular_instructions_per_call": 1451.1764705882354,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0011227947943371801
+      },
+      {
+        "function": "PyObject_Malloc",
+        "irregular_instructions_per_call": 1221.7027629233512,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0009452478938565347
+      },
+      {
+        "function": "__GI___libc_malloc",
+        "irregular_instructions_per_call": 1012.2976827094476,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0007832283609208711
+      },
+      {
+        "function": "_int_malloc",
+        "irregular_instructions_per_call": 936.1927361853833,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0007243449380481921
+      },
+      {
+        "function": "___pthread_mutex_lock",
+        "irregular_instructions_per_call": 890.0294117647059,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0006886277517518728
+      },
+      {
+        "function": "_int_free",
+        "irregular_instructions_per_call": 823.0967023172907,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0006368410123293559
+      },
+      {
+        "function": "_PyObject_GC_New+?",
+        "irregular_instructions_per_call": 821.2352941176471,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006354008157171209
+      },
+      {
+        "function": "pybind11::detail::get_internals",
+        "irregular_instructions_per_call": 820.5882352941177,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.0006349001775842587
+      },
+      {
+        "function": "_PyTrash_end",
+        "irregular_instructions_per_call": 817.5882352941177,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006325790371500798
+      },
+      {
+        "function": "PyObject_IsInstance",
+        "irregular_instructions_per_call": 800.4705882352941,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0006193348829079995
+      },
+      {
+        "function": "_PyObject_LookupAttr",
+        "irregular_instructions_per_call": 772.1176470588235,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0005973978301771312
+      },
+      {
+        "function": "___pthread_mutex_unlock",
+        "irregular_instructions_per_call": 678.5882352941176,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0005250328636997854
+      },
+      {
+        "function": "_PyObject_LookupSpecial",
+        "irregular_instructions_per_call": 661.1764705882354,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0005115611466700407
+      },
+      {
+        "function": "_PyTrash_begin",
+        "irregular_instructions_per_call": 615.4411764705883,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00047617513318819405
+      },
+      {
+        "function": "PyObject_GC_Del",
+        "irregular_instructions_per_call": 573.8823529411765,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0004440205112911848
+      },
+      {
+        "function": "PyObject_GC_UnTrack",
+        "irregular_instructions_per_call": 562.1176470588235,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00043491799978460043
+      },
+      {
+        "function": "PyObject_CallOneArg",
+        "irregular_instructions_per_call": 549.1470588235295,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00042488248084859127
+      },
+      {
+        "function": "PyType_GenericAlloc",
+        "irregular_instructions_per_call": 490.61764705882354,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00037959748610333404
+      },
+      {
+        "function": "__free",
+        "irregular_instructions_per_call": 444.11764705882354,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00034361980937355936
+      },
+      {
+        "function": "_PyType_GetDict",
+        "irregular_instructions_per_call": 435.1519607843137,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0003366829370629165
+      },
+      {
+        "function": "_PyTuple_Resize+?",
+        "irregular_instructions_per_call": 429.0882352941177,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00033199135092389786
+      },
+      {
+        "function": "PyUnicode_FromFormatV",
+        "irregular_instructions_per_call": 425.8529411764706,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0003294881602595872
+      },
+      {
+        "function": "_PyObject_RealIsInstance",
+        "irregular_instructions_per_call": 380.1764705882353,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0002941476593352734
+      },
+      {
+        "function": "__memset_evex_unaligned_erms",
+        "irregular_instructions_per_call": 364.47860962566847,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0002820020127318287
+      },
+      {
+        "function": "__memcpy_evex_unaligned_erms",
+        "irregular_instructions_per_call": 328.5,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0002541648775426016
+      },
+      {
+        "function": "operator new",
+        "irregular_instructions_per_call": 327.05882352941177,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.00025304981988304506
+      },
+      {
+        "function": "_Py_NewReference",
+        "irregular_instructions_per_call": 316.5882352941177,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000244948584642185
+      },
+      {
+        "function": "epoll_wait",
+        "irregular_instructions_per_call": 274.4090909090909,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0002123140121384649
+      },
+      {
+        "function": "_PyTrash_cond",
+        "irregular_instructions_per_call": 246.1764705882353,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00019047005327527762
+      },
+      {
+        "function": "___pthread_cond_broadcast",
+        "irregular_instructions_per_call": 233.73083778966128,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0001808406994360394
+      },
+      {
+        "function": "pybind11::cpp_function::dispatcher",
+        "irregular_instructions_per_call": 226.11764705882354,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.00017495027115655128
+      },
+      {
+        "function": "PyObject_GetAttr",
+        "irregular_instructions_per_call": 225.50802139037432,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000174478595560301
+      },
+      {
+        "function": "PyTuple_New+?",
+        "irregular_instructions_per_call": 225.44117647058823,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.0001744268767449227
+      },
+      {
+        "function": "std::_Hash_bytes",
+        "irregular_instructions_per_call": 222.64705882352942,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.0001722650302621089
+      },
+      {
+        "function": "__GI___pthread_enable_asynccancel",
+        "irregular_instructions_per_call": 186.09625668449198,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.0001439851820132434
+      },
+      {
+        "function": "_PyThreadState_UncheckedGet",
+        "irregular_instructions_per_call": 177.08823529411765,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.000137015554452861
+      },
+      {
+        "function": "PyType_GetModuleByDef+?",
+        "irregular_instructions_per_call": 167.64705882352942,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00012971078896882704
+      },
+      {
+        "function": "__GI___pthread_disable_asynccancel",
+        "irregular_instructions_per_call": 155.0802139037433,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 0.00011998765167770284
+      },
+      {
+        "function": "PyObject_IsTrue",
+        "irregular_instructions_per_call": 153.79411764705884,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 0.00011899258166982398
+      },
+      {
+        "function": "pybind11::detail::all_type_info_get_cache",
+        "irregular_instructions_per_call": 139.35294117647058,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 0.00010781924879549166
+      },
+      {
+        "function": "std::__once_callable+?",
+        "irregular_instructions_per_call": 130.44206773618538,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 0.00010092478591345907
+      },
+      {
+        "function": "gloo::transport::tcp::Loop::run",
+        "irregular_instructions_per_call": 121.94652406417113,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 9.43516692709771e-05
+      },
+      {
+        "function": "_PyObject_MakeTpCall",
+        "irregular_instructions_per_call": 121.88235294117646,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 9.43020192082139e-05
+      },
+      {
+        "function": "PyType_GetModule+?",
+        "irregular_instructions_per_call": 115.70588235294117,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.952320066725712e-05
+      },
+      {
+        "function": "PyBool_FromLong",
+        "irregular_instructions_per_call": 114.70588235294117,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.874948718919745e-05
+      },
+      {
+        "function": "_Py_Dealloc",
+        "irregular_instructions_per_call": 113.98729946524065,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.819350992388052e-05
+      },
+      {
+        "function": "pybind11::detail::clear_instance",
+        "irregular_instructions_per_call": 108.67647058823535,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.408445004207302e-05
+      },
+      {
+        "function": "unlink_chunk",
+        "irregular_instructions_per_call": 106.16644385026738,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 8.214240852461705e-05
+      },
+      {
+        "function": "pybind11::detail::get_local_internals",
+        "irregular_instructions_per_call": 104.41176470588235,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.078478962093613e-05
+      },
+      {
+        "function": "std::__ostream_insert<>",
+        "irregular_instructions_per_call": 100.58823529411765,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 7.782647338129624e-05
+      },
+      {
+        "function": "pybind11::detail::get_type_info",
+        "irregular_instructions_per_call": 100.17647058823529,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 7.750788547856577e-05
+      },
+      {
+        "function": "__strlen_evex",
+        "irregular_instructions_per_call": 92.70588235294119,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 7.172779067188472e-05
+      },
+      {
+        "function": "PyDict_GetItemWithError",
+        "irregular_instructions_per_call": 90.77540106951872,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 7.023415128375883e-05
+      },
+      {
+        "function": "PyType_GetSlot+?",
+        "irregular_instructions_per_call": 87.85026737967914,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 6.797093592280352e-05
+      },
+      {
+        "function": "std::basic_streambuf<>::xsputn",
+        "irregular_instructions_per_call": 77.29411764705883,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 5.9803500598259206e-05
+      },
+      {
+        "function": "std::_Hashtable<>::_M_find_before_node",
+        "irregular_instructions_per_call": 75.88235294117646,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 5.871119921746908e-05
+      },
+      {
+        "function": "PyUnicode_Concat+?",
+        "irregular_instructions_per_call": 70.58823529411764,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 5.461506903950612e-05
+      },
+      {
+        "function": "_PyDictView_New+?",
+        "irregular_instructions_per_call": 65.88235294117646,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 5.097406443687238e-05
+      },
+      {
+        "function": "PyEval_EvalCode+?",
+        "irregular_instructions_per_call": 65.47058823529412,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 5.065547653414193e-05
+      },
+      {
+        "function": "std::ostream::sentry::sentry",
+        "irregular_instructions_per_call": 65.3529411764706,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 5.056445141907609e-05
+      },
+      {
+        "function": "pybind11::detail::type_caster_generic::cast",
+        "irregular_instructions_per_call": 59.02941176470589,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 4.5671851484287006e-05
+      },
+      {
+        "function": "operator delete",
+        "irregular_instructions_per_call": 57.23529411764706,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 4.4283718479532884e-05
+      },
+      {
+        "function": "PyException_SetCause+?",
+        "irregular_instructions_per_call": 54.70588235294118,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.232667850561725e-05
+      },
+      {
+        "function": "std::_Hashtable<>::equal_range",
+        "irregular_instructions_per_call": 53.23529411764706,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 4.11888645672942e-05
+      },
+      {
+        "function": "PyModule_GetName+?",
+        "irregular_instructions_per_call": 52.58823529411765,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.0688226434432064e-05
+      },
+      {
+        "function": "std::_Hashtable<>::_M_insert_multi_node",
+        "irregular_instructions_per_call": 51.23529411764705,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.964143761117486e-05
+      },
+      {
+        "function": "PyTuple_GetSlice",
+        "irregular_instructions_per_call": 48.705882352941174,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 3.768439763725923e-05
+      },
+      {
+        "function": "std::ostream::put",
+        "irregular_instructions_per_call": 47.029411764705884,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 3.638728974757096e-05
+      },
+      {
+        "function": "pybind11::detail::loader_life_support::~loader_life_support",
+        "irregular_instructions_per_call": 43.67647058823529,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.379307396819441e-05
+      },
+      {
+        "function": "malloc_consolidate",
+        "irregular_instructions_per_call": 37.14705882352941,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 2.8741180082040098e-05
+      },
+      {
+        "function": "pybind11::detail::keep_alive_impl",
+        "irregular_instructions_per_call": 36.52941176470588,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.8263298227944415e-05
+      },
+      {
+        "function": "_PyErr_ChainStackItem+?",
+        "irregular_instructions_per_call": 36.23529411764706,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.803573544027981e-05
+      },
+      {
+        "function": "pybind11::detail::register_instance",
+        "irregular_instructions_per_call": 33.529411764705884,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.594215779376541e-05
+      },
+      {
+        "function": "PyInterpreterState_Get+?",
+        "irregular_instructions_per_call": 32.94117647058823,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.548703221843619e-05
+      },
+      {
+        "function": "std::_Hashtable<>::erase",
+        "irregular_instructions_per_call": 31.76470588235295,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.4576781067777763e-05
+      },
+      {
+        "function": "pybind11::cpp_function::initialize<pybind11::cpp_function::initialize<c10::Type::SingletonOrSharedTypePtr<c10::Type> const&, c10::Argument>(c10::Type::SingletonOrSharedTypePtr<c10::Type> const& (c10::Argument::*)() const)::{lambda(c10::Argument const*)#1}, c10::Type::SingletonOrSharedTypePtr<c10::Type> const&, c10::Argument const*>(pybind11::cpp_function::initialize<c10::Type::SingletonOrSharedTypePtr<c10::Type> const&, c10::Argument>(c10::Type::SingletonOrSharedTypePtr<c10::Type> const& (c10::Argument::*)() const)::{lambda(c10::Argument const*)#1}&&, c10::Type::SingletonOrSharedTypePtr<c10::Type> const& (*)(c10::Argument const*))::{lambda(pybind11::detail::function_call&)#1}::_FUN(pybind11::detail::function_call&)",
+        "irregular_instructions_per_call": 31.235294117647058,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.416716804998146e-05
+      },
+      {
+        "function": "pybind11::detail::get_global_type_info_lock_held",
+        "irregular_instructions_per_call": 30.882352941176475,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.3894092704783932e-05
+      },
+      {
+        "function": "std::__detail::_Map_base<>::operator[]",
+        "irregular_instructions_per_call": 30.823529411764707,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.384858014725101e-05
+      },
+      {
+        "function": "pybind11::detail::instance::get_value_and_holder",
+        "irregular_instructions_per_call": 27.17647058823529,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 2.1026801580209853e-05
+      },
+      {
+        "function": "PyErr_Occurred",
+        "irregular_instructions_per_call": 26.45053475935829,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.0465135245201304e-05
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 24.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.8569123473432082e-05
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::push_back",
+        "irregular_instructions_per_call": 23.823529411764703,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.8432585800833313e-05
+      },
+      {
+        "function": "std::__detail::_Prime_rehash_policy::_M_need_rehash",
+        "irregular_instructions_per_call": 22.588235294117645,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 1.7476822092641957e-05
+      },
+      {
+        "function": "c10::operator<<",
+        "irregular_instructions_per_call": 22.558823529411764,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.7454065813875497e-05
+      },
+      {
+        "function": "pybind11::detail::instance::allocate_layout",
+        "irregular_instructions_per_call": 22.058823529411764,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.7067209074845664e-05
+      },
+      {
+        "function": "pybind11::detail::find_registered_python_instance",
+        "irregular_instructions_per_call": 21.205882352941174,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.6407276990618295e-05
+      },
+      {
+        "function": "pybind11::detail::cast_sources::resolve",
+        "irregular_instructions_per_call": 21.14705882352941,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.6361764433085376e-05
+      },
+      {
+        "function": "std::condition_variable::notify_all",
+        "irregular_instructions_per_call": 20.324420677361854,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 1.5725278211829516e-05
+      },
+      {
+        "function": "_init",
+        "irregular_instructions_per_call": 20.324420677361854,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.5725278211829516e-05
+      },
+      {
+        "function": "std::operator<< <>",
+        "irregular_instructions_per_call": 19.0,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 1.4700556083133732e-05
+      },
+      {
+        "function": "void pybind11::class_<c10::Argument>::init_instance<std::unique_ptr<c10::Argument, std::default_delete<c10::Argument> >, 0>(pybind11::detail::instance*, void const*)",
+        "irregular_instructions_per_call": 18.52941176470588,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.4336455622870356e-05
+      },
+      {
+        "function": "c10::FunctionSchema::FunctionSchema",
+        "irregular_instructions_per_call": 16.76470588235294,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.2971078896882703e-05
+      },
+      {
+        "function": "pybind11::detail::type_caster_generic::load_impl<>",
+        "irregular_instructions_per_call": 15.647058823529413,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.2106340303757191e-05
+      },
+      {
+        "function": "pybind11_object_dealloc",
+        "irregular_instructions_per_call": 15.0,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.1605702170895052e-05
+      },
+      {
+        "function": "_PyDict_GetItem_KnownHash",
+        "irregular_instructions_per_call": 12.404188948306595,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 9.597288173703617e-06
+      },
+      {
+        "function": "<no symbol>",
+        "irregular_instructions_per_call": 12.176470588235293,
+        "module": "linux-vdso.so.1",
+        "share_of_irregular_instructions": 9.421099409314807e-06
+      },
+      {
+        "function": "__strcmp_evex",
+        "irregular_instructions_per_call": 12.0,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 9.284561736716041e-06
+      },
+      {
+        "function": "__dynamic_cast",
+        "irregular_instructions_per_call": 11.647058823529411,
+        "module": "libstdc++.so.6.0.33",
+        "share_of_irregular_instructions": 9.01148639151851e-06
+      },
+      {
+        "function": "_PyObject_GetDictPtr",
+        "irregular_instructions_per_call": 11.470588235294118,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.874948718919746e-06
+      },
+      {
+        "function": "PyErr_WarnExplicit+?",
+        "irregular_instructions_per_call": 11.205882352941176,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 8.670142210021597e-06
+      },
+      {
+        "function": "pybind11::cpp_function::initialize<pybind11::cpp_function::initialize<std::vector<c10::Argument, std::allocator<c10::Argument> > const&, c10::FunctionSchema>(std::vector<c10::Argument, std::allocator<c10::Argument> > const& (c10::FunctionSchema::*)() const)::{lambda(c10::FunctionSchema const*)#1}, std::vector<c10::Argument, std::allocator<c10::Argument> > const&, c10::FunctionSchema const*>(pybind11::cpp_function::initialize<std::vector<c10::Argument, std::allocator<c10::Argument> > const&, c10::FunctionSchema>(std::vector<c10::Argument, std::allocator<c10::Argument> > const& (c10::FunctionSchema::*)() const)::{lambda(c10::FunctionSchema const*)#1}&&, std::vector<c10::Argument, std::allocator<c10::Argument> > const& (*)(c10::FunctionSchema const*))::{lambda(pybind11::detail::function_call&)#1}::_FUN(pybind11::detail::function_call&)",
+        "irregular_instructions_per_call": 11.117647058823529,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.601873373722215e-06
+      },
+      {
+        "function": "pybind11::detail::type_caster_generic::load_value",
+        "irregular_instructions_per_call": 10.617647058823529,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 8.21501663469238e-06
+      },
+      {
+        "function": "pybind11::detail::type_caster_generic::type_caster_generic",
+        "irregular_instructions_per_call": 8.382352941176471,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.485539448441352e-06
+      },
+      {
+        "function": "pybind11::detail::function_call::~function_call",
+        "irregular_instructions_per_call": 8.088235294117647,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 6.257976660776743e-06
+      },
+      {
+        "function": "std::operator<< <>",
+        "irregular_instructions_per_call": 6.882352941176471,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 5.324969231351847e-06
+      },
+      {
+        "function": "PyObject_SetAttr",
+        "irregular_instructions_per_call": 5.411764705882353,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 4.187155293028803e-06
+      },
+      {
+        "function": "std::__shared_ptr<>::__shared_ptr",
+        "irregular_instructions_per_call": 5.294117647058823,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.096130177962959e-06
+      },
+      {
+        "function": "std::_Sp_counted_base<>::_M_release",
+        "irregular_instructions_per_call": 5.176470588235294,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 4.005105062897116e-06
+      },
+      {
+        "function": "pybind11::detail::generate_function_signature[abi:cxx11](char const*, pybind11::detail::function_record*, std::type_info const* const*, unsigned long&, unsigned long&)",
+        "irregular_instructions_per_call": 5.029411764705882,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.891323669064811e-06
+      },
+      {
+        "function": "void pybind11::class_<c10::TensorType, c10::Type, std::shared_ptr<c10::TensorType> >::init_instance<std::shared_ptr<c10::TensorType>, 0>(pybind11::detail::instance*, void const*)",
+        "irregular_instructions_per_call": 4.705882352941177,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 3.641004602633742e-06
+      },
+      {
+        "function": "_PyErr_Restore",
+        "irregular_instructions_per_call": 3.5294117647058822,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.7307534519753063e-06
+      },
+      {
+        "function": "PyContext_Exit+?",
+        "irregular_instructions_per_call": 3.176470588235294,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.4576781067777755e-06
+      },
+      {
+        "function": "PyUnicode_InternInPlace",
+        "irregular_instructions_per_call": 3.0588235294117645,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.366652991711932e-06
+      },
+      {
+        "function": "c10::TensorType::str[abi:cxx11]() const [clone .localalias]",
+        "irregular_instructions_per_call": 2.911764705882353,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 2.2528715978796275e-06
+      },
+      {
+        "function": "___pthread_cond_timedwait",
+        "irregular_instructions_per_call": 2.823529411764706,
+        "module": "libc.so.6",
+        "share_of_irregular_instructions": 2.184602761580245e-06
+      },
+      {
+        "function": "PyErr_Fetch",
+        "irregular_instructions_per_call": 2.823529411764706,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.184602761580245e-06
+      },
+      {
+        "function": "PyErr_Restore",
+        "irregular_instructions_per_call": 2.823529411764706,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.184602761580245e-06
+      },
+      {
+        "function": "PyObject_Print+?",
+        "irregular_instructions_per_call": 2.6470588235294117,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 2.0480650889814794e-06
+      },
+      {
+        "function": "do_lookup_x",
+        "irregular_instructions_per_call": 2.4705882352941178,
+        "module": "ld-linux-x86-64.so.2",
+        "share_of_irregular_instructions": 1.9115274163827142e-06
+      },
+      {
+        "function": "_PyErr_Fetch",
+        "irregular_instructions_per_call": 2.4705882352941178,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.9115274163827142e-06
+      },
+      {
+        "function": "_PyTime_AsTimespec_clamp",
+        "irregular_instructions_per_call": 2.3529411764705883,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.820502301316871e-06
+      },
+      {
+        "function": "_dl_lookup_symbol_x",
+        "irregular_instructions_per_call": 2.1176470588235294,
+        "module": "ld-linux-x86-64.so.2",
+        "share_of_irregular_instructions": 1.6384520711851838e-06
+      },
+      {
+        "function": "std::__cxx11::basic_string<>::_M_dispose",
+        "irregular_instructions_per_call": 2.1176470588235294,
+        "module": "libtorch_cpu.so",
+        "share_of_irregular_instructions": 1.6384520711851838e-06
+      },
+      {
+        "function": "c10::FunctionSchema::~FunctionSchema",
+        "irregular_instructions_per_call": 2.1176470588235294,
+        "module": "libtorch_python.so",
+        "share_of_irregular_instructions": 1.6384520711851838e-06
+      },
+      {
+        "function": "_PyArg_ParseTupleAndKeywords_SizeT",
+        "irregular_instructions_per_call": 2.1176470588235294,
+        "module": "python3.12",
+        "share_of_irregular_instructions": 1.6384520711851838e-06
+      }
+    ],
+    "irregular_basic_blocks": 809,
+    "total_irregular_instructions_per_call": 1292468.1143048129
+  },
+  "max_unexplained_share": 0.8004378622566541,
+  "nested_calls_per_call": 0.0,
   "pcv_names": [
     "query_tokens",
     "request_blocks",
     "first_layer_query_tokens",
     "first_layer_request_blocks"
   ],
-  "distinct_states": 34,
+  "posthoc_remeasurement": {
+    "agent_rerun": false,
+    "candidate_sha256": "2cd4f1ec48e41e747c72334386b7ed8c3919ec23d57709d1c22ef1d28f8dc54c",
+    "historical_agent_feedback_unchanged": true,
+    "purpose": "populate function-level irregularity breakdown"
+  },
+  "raw_files": [
+    "run.2663872.json"
+  ],
   "required_states": 6,
-  "calls": 336,
-  "dropped_calls": 0,
-  "nested_calls_per_call": 0.0,
+  "returncode": 0,
   "states": [
     {
-      "state": {
-        "query_tokens": 1,
-        "request_blocks": 1,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 33,
-      "instructions_per_call": 123351.30303030302,
-      "unexplained_instructions_per_call": 55591.57575757579,
-      "unexplained_share": 0.450676842415835
+      "instructions_per_call": 123388.0,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 1,
+        "request_blocks": 1
+      },
+      "unexplained_instructions_per_call": 57255.15151515151,
+      "unexplained_share": 0.46402528215994676
     },
     {
-      "state": {
-        "query_tokens": 1,
-        "request_blocks": 1,
-        "first_layer_query_tokens": 1,
-        "first_layer_request_blocks": 1
-      },
       "calls": 3,
-      "instructions_per_call": 123347.66666666667,
-      "unexplained_instructions_per_call": 55539.00000000001,
-      "unexplained_share": 0.450263888250825
-    },
-    {
+      "instructions_per_call": 123496.0,
       "state": {
-        "query_tokens": 1,
-        "request_blocks": 2,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
-      "calls": 22,
-      "instructions_per_call": 138538.68181818182,
-      "unexplained_instructions_per_call": 70638.59090909091,
-      "unexplained_share": 0.509883521208878
-    },
-    {
-      "state": {
-        "query_tokens": 1,
-        "request_blocks": 2,
         "first_layer_query_tokens": 1,
-        "first_layer_request_blocks": 2
+        "first_layer_request_blocks": 1,
+        "query_tokens": 1,
+        "request_blocks": 1
       },
-      "calls": 2,
-      "instructions_per_call": 138345.5,
-      "unexplained_instructions_per_call": 70434.5,
-      "unexplained_share": 0.5091202821920482
+      "unexplained_instructions_per_call": 57276.666666666664,
+      "unexplained_share": 0.4637936991211591
     },
     {
+      "calls": 22,
+      "instructions_per_call": 138680.0,
       "state": {
-        "query_tokens": 2,
-        "request_blocks": 2,
         "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
+        "first_layer_request_blocks": 0,
+        "query_tokens": 1,
+        "request_blocks": 2
       },
+      "unexplained_instructions_per_call": 72385.81818181818,
+      "unexplained_share": 0.5219629231455017
+    },
+    {
+      "calls": 2,
+      "instructions_per_call": 138372.0,
+      "state": {
+        "first_layer_query_tokens": 1,
+        "first_layer_request_blocks": 2,
+        "query_tokens": 1,
+        "request_blocks": 2
+      },
+      "unexplained_instructions_per_call": 72101.5,
+      "unexplained_share": 0.5210700141647154
+    },
+    {
       "calls": 44,
-      "instructions_per_call": 152085.25,
-      "unexplained_instructions_per_call": 80031.18181818178,
-      "unexplained_share": 0.5262257965067735
+      "instructions_per_call": 152274.36363636365,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 2,
+        "request_blocks": 2
+      },
+      "unexplained_instructions_per_call": 81841.65909090902,
+      "unexplained_share": 0.5374618362310131
     },
     {
-      "state": {
-        "query_tokens": 2,
-        "request_blocks": 2,
-        "first_layer_query_tokens": 2,
-        "first_layer_request_blocks": 2
-      },
       "calls": 4,
-      "instructions_per_call": 152699.5,
-      "unexplained_instructions_per_call": 80287.0,
-      "unexplained_share": 0.5257843018477467
-    },
-    {
+      "instructions_per_call": 152878.0,
       "state": {
-        "query_tokens": 2,
-        "request_blocks": 4,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
-      "calls": 33,
-      "instructions_per_call": 182964.0909090909,
-      "unexplained_instructions_per_call": 110641.7575757576,
-      "unexplained_share": 0.604718428769348
-    },
-    {
-      "state": {
-        "query_tokens": 2,
-        "request_blocks": 4,
         "first_layer_query_tokens": 2,
-        "first_layer_request_blocks": 4
+        "first_layer_request_blocks": 2,
+        "query_tokens": 2,
+        "request_blocks": 2
       },
+      "unexplained_instructions_per_call": 82059.0,
+      "unexplained_share": 0.5367613391070003
+    },
+    {
+      "calls": 33,
+      "instructions_per_call": 182972.57575757575,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 2,
+        "request_blocks": 4
+      },
+      "unexplained_instructions_per_call": 112264.84848484857,
+      "unexplained_share": 0.6135610652035125
+    },
+    {
       "calls": 3,
-      "instructions_per_call": 182669.66666666666,
-      "unexplained_instructions_per_call": 110350.0,
-      "unexplained_share": 0.6040959181327314
+      "instructions_per_call": 182958.66666666666,
+      "state": {
+        "first_layer_query_tokens": 2,
+        "first_layer_request_blocks": 4,
+        "query_tokens": 2,
+        "request_blocks": 4
+      },
+      "unexplained_instructions_per_call": 112239.33333333331,
+      "unexplained_share": 0.6134682514812088
     },
     {
-      "state": {
-        "query_tokens": 3,
-        "request_blocks": 3,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 180425.81818181818,
-      "unexplained_instructions_per_call": 104369.36363636368,
-      "unexplained_share": 0.5784613570724612
+      "instructions_per_call": 180485.0,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 3,
+        "request_blocks": 3
+      },
+      "unexplained_instructions_per_call": 106046.09090909097,
+      "unexplained_share": 0.5875617968755906
     },
     {
-      "state": {
-        "query_tokens": 3,
-        "request_blocks": 3,
-        "first_layer_query_tokens": 3,
-        "first_layer_request_blocks": 3
-      },
       "calls": 1,
-      "instructions_per_call": 180120.0,
-      "unexplained_instructions_per_call": 104058.0,
-      "unexplained_share": 0.5777148567621586
-    },
-    {
+      "instructions_per_call": 180417.0,
       "state": {
-        "query_tokens": 3,
-        "request_blocks": 6,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
-      "calls": 22,
-      "instructions_per_call": 227427.22727272726,
-      "unexplained_instructions_per_call": 150901.49999999997,
-      "unexplained_share": 0.6635155421344568
-    },
-    {
-      "state": {
-        "query_tokens": 3,
-        "request_blocks": 6,
         "first_layer_query_tokens": 3,
-        "first_layer_request_blocks": 6
+        "first_layer_request_blocks": 3,
+        "query_tokens": 3,
+        "request_blocks": 3
       },
-      "calls": 2,
-      "instructions_per_call": 227161.0,
-      "unexplained_instructions_per_call": 150604.0,
-      "unexplained_share": 0.6629835226997592
+      "unexplained_instructions_per_call": 105990.0,
+      "unexplained_share": 0.5874723557092735
     },
     {
-      "state": {
-        "query_tokens": 4,
-        "request_blocks": 8,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 22,
-      "instructions_per_call": 271407.45454545453,
-      "unexplained_instructions_per_call": 190651.3636363635,
-      "unexplained_share": 0.7024544110465241
+      "instructions_per_call": 227707.77272727274,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 3,
+        "request_blocks": 6
+      },
+      "unexplained_instructions_per_call": 152748.36363636365,
+      "unexplained_share": 0.6708087379138853
     },
     {
+      "calls": 2,
+      "instructions_per_call": 227294.0,
       "state": {
+        "first_layer_query_tokens": 3,
+        "first_layer_request_blocks": 6,
+        "query_tokens": 3,
+        "request_blocks": 6
+      },
+      "unexplained_instructions_per_call": 152393.0,
+      "unexplained_share": 0.6704664443408097
+    },
+    {
+      "calls": 22,
+      "instructions_per_call": 271508.86363636365,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
         "query_tokens": 4,
-        "request_blocks": 8,
+        "request_blocks": 8
+      },
+      "unexplained_instructions_per_call": 192351.13636363635,
+      "unexplained_share": 0.7084525115955531
+    },
+    {
+      "calls": 2,
+      "instructions_per_call": 271447.0,
+      "state": {
         "first_layer_query_tokens": 4,
-        "first_layer_request_blocks": 8
+        "first_layer_request_blocks": 8,
+        "query_tokens": 4,
+        "request_blocks": 8
       },
-      "calls": 2,
-      "instructions_per_call": 271080.5,
-      "unexplained_instructions_per_call": 190337.0,
-      "unexplained_share": 0.7021419836543019
+      "unexplained_instructions_per_call": 192224.5,
+      "unexplained_share": 0.7081474468312414
     },
     {
-      "state": {
-        "query_tokens": 5,
-        "request_blocks": 10,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 22,
-      "instructions_per_call": 314938.7727272727,
-      "unexplained_instructions_per_call": 229979.04545454547,
-      "unexplained_share": 0.7302341450784158
-    },
-    {
+      "instructions_per_call": 314879.04545454547,
       "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
         "query_tokens": 5,
-        "request_blocks": 10,
-        "first_layer_query_tokens": 5,
-        "first_layer_request_blocks": 10
+        "request_blocks": 10
       },
+      "unexplained_instructions_per_call": 231531.72727272715,
+      "unexplained_share": 0.7353037003097433
+    },
+    {
       "calls": 2,
-      "instructions_per_call": 314831.0,
-      "unexplained_instructions_per_call": 229863.0,
-      "unexplained_share": 0.730115522296089
-    },
-    {
+      "instructions_per_call": 314544.5,
       "state": {
-        "query_tokens": 6,
-        "request_blocks": 12,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
+        "first_layer_query_tokens": 5,
+        "first_layer_request_blocks": 10,
+        "query_tokens": 5,
+        "request_blocks": 10
       },
-      "calls": 11,
-      "instructions_per_call": 358847.45454545453,
-      "unexplained_instructions_per_call": 269719.54545454547,
-      "unexplained_share": 0.751627305803783
+      "unexplained_instructions_per_call": 231239.0,
+      "unexplained_share": 0.7351551211354832
     },
     {
+      "calls": 11,
+      "instructions_per_call": 358744.0909090909,
       "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
         "query_tokens": 6,
-        "request_blocks": 12,
+        "request_blocks": 12
+      },
+      "unexplained_instructions_per_call": 271232.0909090909,
+      "unexplained_share": 0.7560600934826928
+    },
+    {
+      "calls": 1,
+      "instructions_per_call": 358513.0,
+      "state": {
         "first_layer_query_tokens": 6,
-        "first_layer_request_blocks": 12
+        "first_layer_request_blocks": 12,
+        "query_tokens": 6,
+        "request_blocks": 12
       },
-      "calls": 1,
-      "instructions_per_call": 358205.0,
-      "unexplained_instructions_per_call": 269110.0,
-      "unexplained_share": 0.7512737119805698
+      "unexplained_instructions_per_call": 271013.0,
+      "unexplained_share": 0.7559363258793963
     },
     {
-      "state": {
-        "query_tokens": 10,
-        "request_blocks": 1,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 261551.0,
-      "unexplained_instructions_per_call": 159853.54545454553,
-      "unexplained_share": 0.611175432151074
+      "instructions_per_call": 261752.72727272726,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 10,
+        "request_blocks": 1
+      },
+      "unexplained_instructions_per_call": 161730.00000000006,
+      "unexplained_share": 0.6178732183045764
     },
     {
+      "calls": 1,
+      "instructions_per_call": 509188.0,
       "state": {
-        "query_tokens": 10,
-        "request_blocks": 1,
         "first_layer_query_tokens": 10,
-        "first_layer_request_blocks": 1
+        "first_layer_request_blocks": 1,
+        "query_tokens": 10,
+        "request_blocks": 1
       },
-      "calls": 1,
-      "instructions_per_call": 494168.0,
-      "unexplained_instructions_per_call": 346631.0,
-      "unexplained_share": 0.7014436386006379
+      "unexplained_instructions_per_call": 358664.0,
+      "unexplained_share": 0.7043842352922692
     },
     {
-      "state": {
-        "query_tokens": 20,
-        "request_blocks": 2,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 446006.1818181818,
-      "unexplained_instructions_per_call": 307781.727272727,
-      "unexplained_share": 0.6900839939438257
+      "instructions_per_call": 446315.1818181818,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 20,
+        "request_blocks": 2
+      },
+      "unexplained_instructions_per_call": 309688.63636363635,
+      "unexplained_share": 0.6938787856197016
     },
     {
+      "calls": 1,
+      "instructions_per_call": 446148.0,
       "state": {
-        "query_tokens": 20,
-        "request_blocks": 2,
         "first_layer_query_tokens": 20,
-        "first_layer_request_blocks": 2
+        "first_layer_request_blocks": 2,
+        "query_tokens": 20,
+        "request_blocks": 2
       },
-      "calls": 1,
-      "instructions_per_call": 445926.0,
-      "unexplained_instructions_per_call": 307744.0,
-      "unexplained_share": 0.6901234734014163
+      "unexplained_instructions_per_call": 309549.0,
+      "unexplained_share": 0.6938258156486189
     },
     {
-      "state": {
-        "query_tokens": 66,
-        "request_blocks": 3,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 1149354.7272727273,
-      "unexplained_instructions_per_call": 842015.2727272724,
-      "unexplained_share": 0.7325982594818813
+      "instructions_per_call": 1149318.2727272727,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 66,
+        "request_blocks": 3
+      },
+      "unexplained_instructions_per_call": 843625.2727272727,
+      "unexplained_share": 0.7340223267532271
     },
     {
+      "calls": 1,
+      "instructions_per_call": 1148831.0,
       "state": {
-        "query_tokens": 66,
-        "request_blocks": 3,
         "first_layer_query_tokens": 66,
-        "first_layer_request_blocks": 3
+        "first_layer_request_blocks": 3,
+        "query_tokens": 66,
+        "request_blocks": 3
       },
-      "calls": 1,
-      "instructions_per_call": 1148975.0,
-      "unexplained_instructions_per_call": 841754.0,
-      "unexplained_share": 0.7326129811353598
+      "unexplained_instructions_per_call": 843270.0,
+      "unexplained_share": 0.7340244126420683
     },
     {
-      "state": {
-        "query_tokens": 84,
-        "request_blocks": 4,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 1477973.1818181819,
-      "unexplained_instructions_per_call": 1104467.272727273,
-      "unexplained_share": 0.747285056531657
+      "instructions_per_call": 1478634.0909090908,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 84,
+        "request_blocks": 4
+      },
+      "unexplained_instructions_per_call": 1106744.4545454555,
+      "unexplained_share": 0.7484910982033487
     },
     {
+      "calls": 1,
+      "instructions_per_call": 1478122.0,
       "state": {
-        "query_tokens": 84,
-        "request_blocks": 4,
         "first_layer_query_tokens": 84,
-        "first_layer_request_blocks": 4
+        "first_layer_request_blocks": 4,
+        "query_tokens": 84,
+        "request_blocks": 4
       },
-      "calls": 1,
-      "instructions_per_call": 1477877.0,
-      "unexplained_instructions_per_call": 1104388.0,
-      "unexplained_share": 0.7472800510461967
+      "unexplained_instructions_per_call": 1106285.0,
+      "unexplained_share": 0.7484395739999811
     },
     {
-      "state": {
-        "query_tokens": 230,
-        "request_blocks": 10,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 4391315.7272727275,
-      "unexplained_instructions_per_call": 3481491.000000001,
-      "unexplained_share": 0.792812727715713
+      "instructions_per_call": 4391461.363636363,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 230,
+        "request_blocks": 10
+      },
+      "unexplained_instructions_per_call": 3483329.545454546,
+      "unexplained_share": 0.7932050989445946
     },
     {
+      "calls": 1,
+      "instructions_per_call": 4390796.0,
       "state": {
-        "query_tokens": 230,
-        "request_blocks": 10,
         "first_layer_query_tokens": 230,
-        "first_layer_request_blocks": 10
+        "first_layer_request_blocks": 10,
+        "query_tokens": 230,
+        "request_blocks": 10
       },
-      "calls": 1,
-      "instructions_per_call": 4390723.0,
-      "unexplained_instructions_per_call": 3480976.0,
-      "unexplained_share": 0.7928024610069914
+      "unexplained_instructions_per_call": 3482687.0,
+      "unexplained_share": 0.7931789588949247
     },
     {
-      "state": {
-        "query_tokens": 270,
-        "request_blocks": 12,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 5212975.636363637,
-      "unexplained_instructions_per_call": 4156087.5454545445,
-      "unexplained_share": 0.7972581948135988
+      "instructions_per_call": 5212956.0,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 270,
+        "request_blocks": 12
+      },
+      "unexplained_instructions_per_call": 4157654.999999999,
+      "unexplained_share": 0.7975618823561909
     },
     {
+      "calls": 1,
+      "instructions_per_call": 5212554.0,
       "state": {
-        "query_tokens": 270,
-        "request_blocks": 12,
         "first_layer_query_tokens": 270,
-        "first_layer_request_blocks": 12
+        "first_layer_request_blocks": 12,
+        "query_tokens": 270,
+        "request_blocks": 12
       },
-      "calls": 1,
-      "instructions_per_call": 5213330.0,
-      "unexplained_instructions_per_call": 4156475.0,
-      "unexplained_share": 0.7972783230679815
+      "unexplained_instructions_per_call": 4157319.0,
+      "unexplained_share": 0.7975589317635846
     },
     {
-      "state": {
-        "query_tokens": 322,
-        "request_blocks": 14,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 6103502.363636363,
-      "unexplained_instructions_per_call": 4855482.6363636395,
-      "unexplained_share": 0.7955240036100888
+      "instructions_per_call": 6103957.181818182,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 322,
+        "request_blocks": 14
+      },
+      "unexplained_instructions_per_call": 4857495.545454546,
+      "unexplained_share": 0.7957944986776017
     },
     {
+      "calls": 1,
+      "instructions_per_call": 6103235.0,
       "state": {
-        "query_tokens": 322,
-        "request_blocks": 14,
         "first_layer_query_tokens": 322,
-        "first_layer_request_blocks": 14
+        "first_layer_request_blocks": 14,
+        "query_tokens": 322,
+        "request_blocks": 14
       },
-      "calls": 1,
-      "instructions_per_call": 6103258.0,
-      "unexplained_instructions_per_call": 4855324.0,
-      "unexplained_share": 0.7955298629027316
+      "unexplained_instructions_per_call": 4856925.0,
+      "unexplained_share": 0.7957951807525026
     },
     {
-      "state": {
-        "query_tokens": 368,
-        "request_blocks": 16,
-        "first_layer_query_tokens": 0,
-        "first_layer_request_blocks": 0
-      },
       "calls": 11,
-      "instructions_per_call": 7092418.0,
-      "unexplained_instructions_per_call": 5675407.909090908,
-      "unexplained_share": 0.8002077583541901
+      "instructions_per_call": 7092221.454545454,
+      "state": {
+        "first_layer_query_tokens": 0,
+        "first_layer_request_blocks": 0,
+        "query_tokens": 368,
+        "request_blocks": 16
+      },
+      "unexplained_instructions_per_call": 5676805.545454544,
+      "unexplained_share": 0.8004270004592482
     },
     {
-      "state": {
-        "query_tokens": 368,
-        "request_blocks": 16,
-        "first_layer_query_tokens": 368,
-        "first_layer_request_blocks": 16
-      },
       "calls": 1,
-      "instructions_per_call": 7091802.0,
-      "unexplained_instructions_per_call": 5674816.0,
-      "unexplained_share": 0.8001938012369776
+      "instructions_per_call": 7093555.0,
+      "state": {
+        "first_layer_query_tokens": 368,
+        "first_layer_request_blocks": 16,
+        "query_tokens": 368,
+        "request_blocks": 16
+      },
+      "unexplained_instructions_per_call": 5677950.0,
+      "unexplained_share": 0.8004378622566541
     }
   ],
-  "max_unexplained_share": 0.8002077583541901,
-  "threshold": 0.05,
   "sufficient_points": true,
-  "gate_pass": false,
-  "gate_reasons": [
-    "unexplained share exceeds 5% at an observed state"
-  ],
-  "automatic_regime_splitting": false,
-  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
-  "formula": {
-    "coefficients": {
-      "query_tokens": 3665.6691042992934,
-      "request_blocks": 300.50535616349987,
-      "first_layer_query_tokens": 0.0,
-      "first_layer_request_blocks": 0.0
-    },
-    "constant": 65229.697513058396,
-    "dependent_columns": []
-  },
-  "returncode": 0,
-  "instrumented_wall_seconds": 126.02362585999072,
-  "raw_files": [
-    "run.1797370.json"
-  ]
+  "threshold": 0.05,
+  "validity_warnings": []
 }
