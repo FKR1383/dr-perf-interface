@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Logical table occupancy missed retained storage capacity. The interaction of an empty request table with its allocated storage may distinguish costly initial insertions from subsequent allocations; cached-block cardinality was constant and is removed.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+      "name": "new_block_count",
+      "rationale": "Captures the dominant per-block allocation work."
+    },
+    {
+      "expression": "self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__()",
+      "name": "request_table_bytes",
+      "rationale": "Cheap container-capacity state distinguishes newly created tables from tables retaining storage after previous requests."
+    },
+    {
+      "expression": "int(len(self.coordinator.single_type_managers[0].req_to_blocks) == 0)",
+      "name": "empty_request_table",
+      "rationale": "Both unusually expensive allocations entered with an empty request table; this models that branch separately."
+    },
+    {
+      "expression": "num_tokens_need_slot",
+      "name": "num_tokens_need_slot",
+      "rationale": "Retains allocation extent and distinguishes sequence lengths within table-storage regimes."
+    }
+  ]
+}

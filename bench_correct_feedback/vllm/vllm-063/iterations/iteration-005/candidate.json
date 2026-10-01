@@ -1,0 +1,11 @@
+{
+  "hypothesis": "The observed instruction counts closely follow a single combined work measure. Sharing one fitted scale across these components may improve estimation over four correlated predictors.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0)) + 10 * int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0) + len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added)) + 10 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+      "name": "combined_refresh_work",
+      "rationale": "Combines metadata reconstruction, tensor copies, prompt padding, minimum-token transitions, and admissions into one approximate work measure using the relative costs observed across prior reports."
+    }
+  ]
+}

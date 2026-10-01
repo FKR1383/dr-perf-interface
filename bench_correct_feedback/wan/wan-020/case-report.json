@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0ed9a-07c1-7543-b4ab-ca347a471316",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 5.503519216784547,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed per-call overhead plus a linear term in attention-output elements; the workload fixes projection width and disables image addition and dropout.",
+      "irregularity_percent": 5.503519216784547,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "hidden_states.numel()",
+          "name": "output_elements",
+          "rationale": "With fixed projection dimensions, tensor flattening or copying and the output linear projection scale with the number of attention-output elements. Evaluation-mode dropout adds only fixed overhead."
+        }
+      ]
+    }
+  ],
+  "case": "wan-020",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "923482999621e619de756443771491091d4247f7e1a8724ce007b5c0724aa10d",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

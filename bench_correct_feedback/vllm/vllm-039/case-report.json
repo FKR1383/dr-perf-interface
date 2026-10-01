@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0f5d0-66b5-7451-bbaf-0a0864399c22",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.841862912774635,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is explained by the singleton fast-path overhead, filtering traversal, and the number of retained elements. The empty-set path supplies the baseline.",
+      "irregularity_percent": 1.841862912774635,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(len(items_to_remove) == 1)",
+          "name": "single_removal",
+          "rationale": "Captures the distinct list.remove and contextlib.suppress fast path."
+        },
+        {
+          "expression": "len(lst) if len(items_to_remove) > 1 else 0",
+          "name": "filter_length",
+          "rationale": "Models list-comprehension traversal and membership checks; also distinguishes filtering from the empty-set return."
+        },
+        {
+          "expression": "len(items_to_remove) if len(items_to_remove) > 1 else 0",
+          "name": "filter_removals",
+          "rationale": "In this workload, each removal item appears exactly once, so this captures how many append operations are skipped."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-039",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5d5c8db5de45d8481da6b3a1d5acc5e82994423b18725663f9cb11265913f688",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

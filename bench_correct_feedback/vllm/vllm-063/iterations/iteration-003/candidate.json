@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Minimum-token processor transitions may explain cost differences among batches with identical sampling-copy requirements; the cardinality of short output lists exposes these transitions.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed)",
+      "name": "batch_changed",
+      "rationale": "Captures the fixed metadata reconstruction path."
+    },
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+      "name": "metadata_tensor_copies",
+      "rationale": "Counts enabled sampling tensor copies."
+    },
+    {
+      "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+      "name": "minimum_token_transition",
+      "rationale": "Identifies newly admitted requests or requests reaching the workload's one-token minimum, potentially triggering logits-processor mask updates."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added) + len(self.batch_update_builder.removed) + len(self.batch_update_builder.moved) + (self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0)",
+      "name": "request_update_work",
+      "rationale": "Captures request-level batch updates and prompt-padding iterations."
+    }
+  ]
+}

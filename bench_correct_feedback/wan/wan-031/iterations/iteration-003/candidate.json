@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Loaded-module cardinality was constant and could not explain the variation. Existing source-cache cardinality tests a different runtime initialization state that can change without additional imports.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0",
+      "name": "source_cache_entries",
+      "rationale": "Tests whether populated runtime source caches distinguish warmup states; reads an existing cache without loading source files."
+    },
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Models per-prompt cleaning, tokenization, and embedding reconstruction."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "token_positions",
+      "rationale": "Models encoder and tensor processing over padded sequences."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Models text processing and preserves distinctions between positive and negative prompts."
+    }
+  ]
+}

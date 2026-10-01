@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ed6a-cdfe-7100-90e7-789dc185d2e0",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.8307230920809574,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count combines per-frame overhead, distinct spatial costs for first and subsequent frames, and quadratic spatial attention work.",
+      "irregularity_percent": 3.8307230920809574,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "z.shape[2]",
+          "name": "latent_frames",
+          "rationale": "Tracks decoder invocations and per-frame cache-management overhead."
+        },
+        {
+          "expression": "z.shape[0] * z.shape[3] * z.shape[4]",
+          "name": "first_frame_area",
+          "rationale": "Tracks spatial work for the first frame, which skips cached temporal upsampling."
+        },
+        {
+          "expression": "z.shape[0] * (z.shape[2] - 1) * z.shape[3] * z.shape[4]",
+          "name": "subsequent_frame_area",
+          "rationale": "Tracks convolution, normalization, copying, and upsampling work for subsequent frames."
+        },
+        {
+          "expression": "z.shape[0] * z.shape[2] * (z.shape[3] * z.shape[4]) ** 2",
+          "name": "attention_work",
+          "rationale": "Tracks the quadratic spatial component of decoder attention."
+        }
+      ]
+    }
+  ],
+  "case": "wan-005",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "b34d534f6ef832cbab0df579c271bf69c121f030f01a79e4a5da3954c005a008",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

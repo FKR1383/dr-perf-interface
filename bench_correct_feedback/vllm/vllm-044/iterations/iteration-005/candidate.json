@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The tested tokenizer, renderer, regex, and copy-dispatch cardinalities were constant. Configuration, parameter, or source-introspection caches may distinguish the expensive initial request and explain work omitted by the current fit.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures linear token-ID validation work."
+    },
+    {
+      "expression": "len(getattr(__import__('sys').modules.get('linecache'), 'cache', {}))",
+      "name": "source_cache_size",
+      "rationale": "Observes cached source metadata that may distinguish initial introspection from warmed request processing."
+    },
+    {
+      "expression": "len(getattr(self.model_config, '__dict__', {}))",
+      "name": "model_config_state_size",
+      "rationale": "Tests whether model configuration validation initializes cached properties on the first request."
+    },
+    {
+      "expression": "len(getattr(params, '__dict__', {}))",
+      "name": "sampling_params_state_size",
+      "rationale": "Measures auxiliary parameter state, including cached properties that can affect verification and cloning."
+    }
+  ]
+}

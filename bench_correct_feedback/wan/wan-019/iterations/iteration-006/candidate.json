@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Matrix-kernel work may scale with the product of rounded tile counts. This captures a joint boundary effect that separate linear remainder terms cannot represent, while retaining scalar key-tail and query-block costs.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear query and output processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "key_tail_pairs",
+      "rationale": "Retains the key-remainder feature that substantially reduced unexplained work."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 15) // 16) * ((key.shape[1] + 15) // 16)",
+      "name": "matrix_tiles",
+      "rationale": "Tests matrix multiplication work counted in full or partial 16-by-16 tiles instead of individual attention pairs."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+      "name": "query_tiles",
+      "rationale": "Tracks setup and dispatch work for 32-row query blocks."
+    }
+  ]
+}

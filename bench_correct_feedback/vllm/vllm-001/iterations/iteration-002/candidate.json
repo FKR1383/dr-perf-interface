@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Separating the exceptional default-options state should prevent its cost from distorting the fit. Remaining costs should largely follow text length and special-token processing, with smaller option-handling costs.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+      "name": "prompt_chars",
+      "rationale": "Captures text-length-dependent tokenization work."
+    },
+    {
+      "expression": "int(tokenization_kwargs is None)",
+      "name": "default_tokenization_options",
+      "rationale": "Separates the default-options entry state, which contains the observed exceptionally expensive call."
+    },
+    {
+      "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True))",
+      "name": "add_special_tokens",
+      "rationale": "Special-token processing plausibly explains the higher costs in alternating batches with similar text lengths."
+    },
+    {
+      "expression": "len(tokenization_kwargs or {})",
+      "name": "tokenization_option_count",
+      "rationale": "Captures option merging and validation while preserving distinctions among entry states."
+    }
+  ]
+}

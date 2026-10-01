@@ -1,0 +1,76 @@
+{
+  "agent_PCVs_thread": "01a0f56f-45a4-7ae1-ad71-9574dd3a01b7",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 5",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed entry cost plus active-path overhead, per-block work, and per-token hashing preparation.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes))",
+          "name": "new_full_blocks",
+          "rationale": "Counts loop iterations, each generating extra keys, slicing tokens, and computing one chained hash."
+        },
+        {
+          "expression": "int(request.num_tokens // hash_block_size > len(request.block_hashes))",
+          "name": "hashing_active",
+          "rationale": "Captures setup and termination costs skipped by the early return."
+        },
+        {
+          "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes)) * hash_block_size",
+          "name": "new_full_block_tokens",
+          "rationale": "Captures token slicing, tuple construction, and serialization work proportional to the number of tokens hashed."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "All 124 measured calls returned before hashing. Their cost should be approximately constant across token counts; including token count exposes the distinct entry states hidden by the previous all-zero predictors.",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "request.num_tokens",
+          "name": "num_tokens",
+          "rationale": "Distinguishes entry states within the observed early-return path, allowing its approximately constant instruction cost to be evaluated across sufficient states."
+        },
+        {
+          "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes))",
+          "name": "new_full_blocks",
+          "rationale": "Retains the actual loop-work predictor for any entry with full blocks remaining to hash."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-013",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5f00eac657525e2c6fff57ddd974b54402cd14e9e3895ee1e5ee46511f913e3b",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

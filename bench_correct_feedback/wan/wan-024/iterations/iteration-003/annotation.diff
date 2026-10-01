@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/transformers/transformer_wan.py
++++ candidate/src/diffusers/models/transformers/transformer_wan.py
+@@ -467,7 +467,7 @@
+         temb: torch.Tensor,
+         rotary_emb: torch.Tensor,
+     ) -> torch.Tensor:
+-        with perfmark.region("wan-024"):
++        with perfmark.region("wan-024", hidden_elements=(hidden_states.numel()), encoder_elements=(encoder_hidden_states.numel()), attention_work=(hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]), token_tile_remainder=(hidden_states.shape[0] * (hidden_states.shape[1] % 8))):
+             if temb.ndim == 4:
+                 # temb: batch_size, seq_len, 6, inner_dim (wan2.2 ti2v)
+                 shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = (

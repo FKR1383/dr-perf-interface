@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous model omitted fixed setup for additions and processing of removals and moves. Separating addition presence from request-level work should better explain admission and condensation updates.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed)",
+      "name": "batch_changed",
+      "rationale": "Captures the fixed cost of rebuilding sampling metadata."
+    },
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+      "name": "metadata_tensor_copies",
+      "rationale": "Captures conditional tensor-copy work across sampling configurations."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.added))",
+      "name": "has_added_requests",
+      "rationale": "Models fixed logits-processor setup costs when an update contains new requests, which an added-request count alone underestimates."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added) + len(self.batch_update_builder.removed) + len(self.batch_update_builder.moved) + (self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0)",
+      "name": "request_update_work",
+      "rationale": "Combines request-level update processing with the prompt-padding loop, including previously omitted removals and moves."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/core.py
++++ candidate/vllm/v1/engine/core.py
+@@ -443,7 +443,7 @@
+         belong to in DP case
+         """
+         # Validate the request_id type.
+-        with perfmark.region("vllm-041"):
++        with perfmark.region("vllm-041", waiting_depth=(len(self.scheduler.waiting)), heap_height=(int(len(self.scheduler.waiting) > 0) + int(len(self.scheduler.waiting) > 1) + int(len(self.scheduler.waiting) > 3) + int(len(self.scheduler.waiting) > 7)), highest_priority=(int(request.priority == 0)), empty_waiting_queue=(int(len(self.scheduler.waiting) == 0))):
+             if not isinstance(request.request_id, str):
+                 raise TypeError(
+                     f"request_id must be a string, got {type(request.request_id)}"

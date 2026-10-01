@@ -1,0 +1,372 @@
+{
+  "agent_PCVs_thread": "01a0ed7e-bfb9-7683-b332-61afede24844",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.749205918488673,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is explained by spatial work, temporal-volume work, bottleneck attention pairs, and the fixed overhead of processing a populated feature cache.",
+      "irregularity_percent": 28.749205918488673,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+          "name": "spatial_sites",
+          "rationale": "Captures spatial convolution, padding, normalization, and cached-frame copying costs."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "input_sites",
+          "rationale": "Captures convolution and elementwise work that scales with the input chunk's temporal length."
+        },
+        {
+          "expression": "x.shape[0] * (x.shape[3] // 8) ** 2 * (x.shape[4] // 8) ** 2",
+          "name": "attention_pairs",
+          "rationale": "Captures quadratic spatial attention work at the encoder bottleneck, which has one temporal frame in this workload."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "warm_cache",
+          "rationale": "Distinguishes initial chunks from subsequent chunks with cached concatenations and temporal downsampling."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.94279022713213,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The state means are approximately linear in spatial area and temporal volume. Large unexplained variation within those states may reflect differing input-view layouts; channel stride exposes that entry-state distinction.",
+      "irregularity_percent": 38.94279022713213,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+          "name": "spatial_sites",
+          "rationale": "Models spatial convolution, normalization, padding, and cache-copy work."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "input_sites",
+          "rationale": "Models work proportional to the temporal chunk volume."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "warm_cache",
+          "rationale": "Models the additional operations performed with populated convolution caches."
+        },
+        {
+          "expression": "x.stride(1)",
+          "name": "channel_stride",
+          "rationale": "Distinguishes input views with identical shapes but different channel strides, exposing layout variation hidden by the previous state grouping."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 23.44710442000314,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Input layout did not explain the residual. Separating initial and cached spatial work supplies direct predictors for mutually exclusive execution paths, while temporal perimeter accounts for convolution boundary costs.",
+      "irregularity_percent": 23.44710442000314,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_spatial_work",
+          "rationale": "Separately models spatial work on the initial-cache execution path."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_spatial_work",
+          "rationale": "Separately models spatial work on the populated-cache path, including its larger temporal chunks."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "warm_cache",
+          "rationale": "Captures fixed overhead from cache concatenations and temporal downsampling."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+          "name": "spatial_boundary_work",
+          "rationale": "Captures convolution padding and boundary work that scales with spatial perimeter rather than area."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 26.64553829192972,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Separating spatial execution paths reduced irregularity. Independent area and perimeter predictors for each path should better explain their different convolution shapes and padding costs than a shared temporal-perimeter term.",
+      "irregularity_percent": 26.64553829192972,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_area",
+          "rationale": "Captures area-dependent work exclusively on the initial-cache path."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_area",
+          "rationale": "Captures area-dependent work exclusively on the populated-cache path."
+        },
+        {
+          "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_perimeter",
+          "rationale": "Allows initial-chunk convolution boundaries and padding to have an independent spatial scaling."
+        },
+        {
+          "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_perimeter",
+          "rationale": "Allows cached-chunk boundary work to scale independently of initial chunks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 41.7056086896743,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Observed instruction means closely follow separate affine functions of area for initial and cached chunks. Removing perimeter and attention terms should give a better-conditioned fit with three predictors.",
+      "irregularity_percent": 41.7056086896743,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_area",
+          "rationale": "Models spatially proportional computation for initial chunks."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_area",
+          "rationale": "Models the larger spatially proportional computation for cached chunks."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "warm_cache",
+          "rationale": "Allows an independent fixed cost for cached execution."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 5; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Explicit shape regimes may capture kernel-dependent instruction costs missed by polynomial work estimates. The two remaining regimes\u2014medium initial chunks and small temporal chunks\u2014have similar observed total costs and share the fitted baseline.",
+      "irregularity_percent": null,
+      "iteration": 6,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] < 1024)",
+          "name": "initial_small_spatial",
+          "rationale": "Separates initial chunks below the medium spatial size into their own execution regime."
+        },
+        {
+          "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] > 1024)",
+          "name": "initial_large_spatial",
+          "rationale": "Separates large initial chunks, whose instruction scaling remains poorly explained by area."
+        },
+        {
+          "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+          "name": "temporal_medium_spatial",
+          "rationale": "Allows an independent cost for medium spatial inputs with multiple temporal frames."
+        },
+        {
+          "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+          "name": "temporal_large_spatial",
+          "rationale": "Allows an independent cost for large spatial inputs with multiple temporal frames."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.8765622178793,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "This candidate retains six distinct states, correcting the previous validity failure. It models initial chunks with spatial area while allowing independent costs for all three multi-frame spatial regimes.",
+      "irregularity_percent": 38.8765622178793,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] if x.shape[2] == 1 else 0",
+          "name": "initial_area",
+          "rationale": "Preserves distinct initial-chunk spatial states and models their approximately affine instruction growth."
+        },
+        {
+          "expression": "int(x.shape[2] > 1)",
+          "name": "temporal_chunk",
+          "rationale": "Provides a separate baseline for multi-frame chunks."
+        },
+        {
+          "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+          "name": "temporal_medium_spatial",
+          "rationale": "Captures the medium multi-frame execution regime independently."
+        },
+        {
+          "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+          "name": "temporal_large_spatial",
+          "rationale": "Captures the large multi-frame execution regime independently."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 58.51451850931816,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "A populated-cache flag hides differences between the first continuation and later continuations. Actual cached element and frame cardinalities may explain variation that remains even with explicit input-shape regimes.",
+      "irregularity_percent": 58.51451850931816,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+          "name": "spatial_sites",
+          "rationale": "Models spatial computation shared by all chunks."
+        },
+        {
+          "expression": "x.numel()",
+          "name": "input_sites",
+          "rationale": "Models computation proportional to input temporal volume."
+        },
+        {
+          "expression": "sum((v.numel() for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+          "name": "cached_elements",
+          "rationale": "Measures cached tensor volume using metadata, distinguishing partially filled histories from mature histories."
+        },
+        {
+          "expression": "sum((v.shape[2] for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+          "name": "cached_frames",
+          "rationale": "Captures cache occupancy and temporal history lengths that affect concatenation, padding, and short-history branches."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 83.33835973317522,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Detailed cache and categorical predictors increased irregularity. A compact model with one combined spatial-temporal work term and one execution-path offset may fit more robustly; the combined term gives multi-frame chunks three times the spatial work of initial chunks.",
+      "irregularity_percent": 83.33835973317522,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4] * (2 * x.shape[2] + 1)",
+          "name": "effective_spatiotemporal_work",
+          "rationale": "Combines temporal work in the early encoder stages with spatial work in later stages into one predictor."
+        },
+        {
+          "expression": "int(x.shape[2] > 1)",
+          "name": "temporal_chunk",
+          "rationale": "Captures the additional fixed overhead of cached multi-frame execution."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.821004730730586,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "The combined work predictor lost most explanatory power, suggesting separate kernel loop bounds are necessary. Independent area, temporal volume, spatial perimeter, and frame count restore these bounds without imposing proportionality between their costs.",
+      "irregularity_percent": 28.821004730730586,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "x.shape[3] * x.shape[4]",
+          "name": "spatial_area",
+          "rationale": "Provides the direct spatial loop bound for convolution and elementwise kernels."
+        },
+        {
+          "expression": "x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "temporal_volume",
+          "rationale": "Provides an independent temporal-volume bound rather than imposing a shared coefficient with spatial work."
+        },
+        {
+          "expression": "x.shape[3] + x.shape[4]",
+          "name": "spatial_perimeter",
+          "rationale": "Models row traversal and padding boundaries independently of temporal length."
+        },
+        {
+          "expression": "x.shape[2]",
+          "name": "chunk_frames",
+          "rationale": "Models temporal loop overhead and distinguishes initial from continuation chunks."
+        }
+      ]
+    }
+  ],
+  "case": "wan-015",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "133a62d4e4508720f10ab2bd19a05c8f0fbceeb046cf23196a9867b8656cc261",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

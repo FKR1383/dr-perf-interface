@@ -1,0 +1,78 @@
+{
+  "agent_PCVs_thread": "01a0f6bf-a8fd-7ea0-b9e4-ff313834c0f1",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 37.831066571224056,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "For this text-only, non-speculative CPU workload, instruction count should be approximately a fixed overhead plus linear costs in active requests and scheduled tokens.",
+      "irregularity_percent": 37.831066571224056,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "self.input_batch.num_reqs",
+          "name": "num_requests",
+          "rationale": "Captures per-request metadata construction, cumulative sums, request-state lookups, and block-table row processing."
+        },
+        {
+          "expression": "scheduler_output.total_num_scheduled_tokens",
+          "name": "num_scheduled_tokens",
+          "rationale": "Captures token-sized repeats, position arithmetic, token gathers, copies, and slot mapping."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 9.791532344723834,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The observed counts suggest approximately linear steady-state work with additional overhead concentrated in the smallest prefill batches. These entry-state indicators test that distinction; they do not establish whether the excess comes from initialization or batch shape.",
+      "irregularity_percent": 9.791532344723834,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "self.input_batch.num_reqs",
+          "name": "num_requests",
+          "rationale": "Models per-request bookkeeping and metadata work."
+        },
+        {
+          "expression": "scheduler_output.total_num_scheduled_tokens",
+          "name": "num_scheduled_tokens",
+          "rationale": "Models token-sized array operations and copies."
+        },
+        {
+          "expression": "int(self.input_batch.num_reqs == 1 and scheduler_output.total_num_scheduled_tokens > self.input_batch.num_reqs)",
+          "name": "single_request_prefill",
+          "rationale": "Separates the single-request prefill state, which exhibited substantially higher instruction count."
+        },
+        {
+          "expression": "int(self.input_batch.num_reqs == 2 and scheduler_output.total_num_scheduled_tokens > self.input_batch.num_reqs)",
+          "name": "two_request_prefill",
+          "rationale": "Separates the smaller excess observed for two-request prefill from ordinary token-dependent work."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-065",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "0811b4193812c2fecefaf6ed7da5b285d4fa13a8745ffe989379f7b1ba2850d1",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

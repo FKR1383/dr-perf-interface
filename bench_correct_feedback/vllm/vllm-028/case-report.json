@@ -1,0 +1,15 @@
+{
+  "agent_PCVs_thread": null,
+  "attempts": [],
+  "case": "vllm-028",
+  "comparison": "strictly-less-than",
+  "error": "native workload validation failed for vllm-028: returncode=1, marker_hits=None, required_marker_hits=8, stderr='rocessed prompts:  57%|\u2588\u2588\u2588\u2588\u2588\u258b    | 4/7 [00:03<00:02,  1.15it/s, est. speed input: 50.05 toks/s, output: 1.90 toks/s]\\nProcessed prompts:  86%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u258c | 6/7 [00:04<00:00,  1.47it/s, est. speed input: 59.34 toks/s, output: 3.01 toks/s]\\nProcessed prompts: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 7/7 [00:04<00:00,  1.47it/s, est. speed input: 69.22 toks/s, output: 3.87 toks/s]\\nProcessed prompts: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 7/7 [00:04<00:00,  1.50it/s, est. speed input: 69.22 toks/s, output: 3.87 toks/s]\\n\\nRendering prompts:   0%|          | 0/8 [00:00<?, ?it/s]\\nRendering prompts: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:00<00:00, 2230.86it/s]\\n\\nProcessed prompts:   0%|          | 0/8 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]\\nProcessed prompts:  12%|\u2588\u258e        | 1/8 [00:01<00:12,  1.74s/it, est. speed input: 26.95 toks/s, output: 0.57 toks/s]\\nProcessed prompts:  38%|\u2588\u2588\u2588\u258a      | 3/8 [00:02<00:03,  1.60it/s, est. speed input: 62.77 toks/s, output: 1.81 toks/s]\\nProcessed prompts: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:02<00:00,  1.60it/s, est. speed input: 162.83 toks/s, output: 8.85 toks/s]\\nProcessed prompts: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 8/8 [00:02<00:00,  3.54it/s, est. speed input: 162.83 toks/s, output: 8.85 toks/s]\\n[rank0]: Traceback (most recent call last):\\n[rank0]:   File \"/home/pouria/dr-perf-jiacheng/dr-perf-interface/bench_correct/vllm/.vllm-028-prepare-toup3swt/staged/tests/test_case.py\", line 8, in <module>\\n[rank0]:     run(TARGET)\\n[rank0]:   File \"/home/pouria/dr-perf-jiacheng/dr-perf-interface/bench_correct/vllm/.vllm-028-prepare-toup3swt/staged/tests/driver.py\", line 432, in run\\n[rank0]:     probe.finish(case_id)\\n[rank0]:   File \"/home/pouria/dr-perf-jiacheng/dr-perf-interface/bench_correct/vllm/.vllm-028-prepare-toup3swt/staged/tests/marker_probe.py\", line 35, in finish\\n[rank0]:     assert self.hits[target]>0, f\\'test passed its value assertions but did not reach marker {target}\\'\\n[rank0]:            ^^^^^^^^^^^^^^^^^^^\\n[rank0]: AssertionError: test passed its value assertions but did not reach marker vllm-028\\n'",
+  "fixed_workload_digest": null,
+  "iterations": 0,
+  "measurement_agent": null,
+  "measurement_and_scoring": "not started",
+  "reason": "native workload did not reach the target marker",
+  "schema_version": 1,
+  "status": "never-reached",
+  "threshold_percent": 10.0
+}

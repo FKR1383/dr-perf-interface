@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A separate prefill-batch indicator may explain fixed first-output costs that a new-request count alone cannot represent. This tests an independent branch term without combining unrelated regimes.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures per-request processing."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures completion and resource release."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures per-request first-output processing."
+    },
+    {
+      "expression": "int(len(scheduler_output.scheduled_new_reqs) > 0)",
+      "name": "has_new_requests",
+      "rationale": "Separates fixed work associated with a prefill-completion batch from work proportional to its request count."
+    }
+  ]
+}

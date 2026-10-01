@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Retaining the useful cold-cache feature while restoring quadratic attention work should better explain sequence-length costs. Text length had a small fitted contribution compared with encoder and runtime overhead.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "int(len(re._main._cache) < 15)",
+      "name": "regex_cache_cold",
+      "rationale": "Captures the observed first-call regex compilation transition."
+    },
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Models per-prompt tokenization and embedding reconstruction overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "token_positions",
+      "rationale": "Models linear encoder and tensor processing over padded tokens."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+      "name": "attention_pairs",
+      "rationale": "Models quadratic attention work and sequence-length curvature omitted by the previous candidate."
+    }
+  ]
+}

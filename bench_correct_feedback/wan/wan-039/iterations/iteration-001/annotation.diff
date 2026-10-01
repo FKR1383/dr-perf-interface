@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
++++ candidate/src/diffusers/schedulers/scheduling_flow_match_euler_discrete.py
+@@ -465,7 +465,7 @@
+                 otherwise a tuple is returned where the first element is the sample tensor.
+         """
+ 
+-        with perfmark.region("wan-039"):
++        with perfmark.region("wan-039", sample_elements=(sample.numel())):
+             if (
+                 isinstance(timestep, int)
+                 or isinstance(timestep, torch.IntTensor)

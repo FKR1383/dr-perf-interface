@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A piecewise volume model may capture size-dependent kernel behavior better than boundary terms. This candidate retains fourfold temporal scaling for smaller inputs while allowing separate large-input corrections for both cache regimes.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+      "name": "expanded_volume",
+      "rationale": "Captures the dominant volume work with fourfold temporal expansion for cached chunks."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures fixed overhead associated with cached execution."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_volume_above_16",
+      "rationale": "Allows the initial-path spatial slope to change beyond sixteen latent positions."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_volume_above_16",
+      "rationale": "Allows an independent spatial slope change for larger cached inputs."
+    }
+  ]
+}

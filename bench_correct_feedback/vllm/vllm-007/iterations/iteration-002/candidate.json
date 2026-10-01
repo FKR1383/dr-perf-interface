@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Full-attention removal should remain approximately constant across processed-prefix lengths, with a near-zero fitted slope. This varying entry argument supplies the distinct states missing from the previous candidate.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "max(0, total_computed_tokens - request.num_in_flight_tokens)",
+      "name": "processed_tokens",
+      "rationale": "This is the processed-prefix length passed to skipped-block removal. It varies across prefill and decode calls and determines potential eviction boundaries."
+    }
+  ]
+}

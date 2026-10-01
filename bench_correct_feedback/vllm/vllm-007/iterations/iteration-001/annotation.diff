@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -505,7 +505,7 @@
+         # Free on the processed-token basis: in-flight steps' attention windows
+         # still read blocks below the optimistic boundary, and rejected spec
+         # tokens can roll it back.
+-        with perfmark.region("vllm-007"):
++        with perfmark.region("vllm-007", cache_groups=(len(self.coordinator.single_type_managers))):
+             self.coordinator.remove_skipped_blocks(
+                 request.request_id,
+                 max(0, total_computed_tokens - request.num_in_flight_tokens),

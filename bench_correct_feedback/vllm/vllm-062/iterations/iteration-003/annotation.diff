@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -716,7 +716,7 @@
+           swaps: list of (from,to) swap tuples for moved requests
+           empty_req_indices: indices not filled by condensation
+         """
+-        with perfmark.region("vllm-062"):
++        with perfmark.region("vllm-062", moved_requests=(sum((i < self.num_reqs for i in self.batch_update_builder.removed))), removed_requests=(len(self.batch_update_builder.removed)), nonempty_condensation=(int(bool(self.batch_update_builder.removed) and self.num_reqs > 0))):
+             num_reqs = self.num_reqs
+ 
+             if not (empty_req_indices := self.batch_update_builder.removed):

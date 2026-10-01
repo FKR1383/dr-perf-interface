@@ -1,0 +1,108 @@
+{
+  "agent_PCVs_thread": "01a0f54c-0407-7221-a104-dd8c67c6a14b",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 2; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "For this single-group full-attention workload, instruction count is driven by cached-prefix traversal and fixed branch costs for existing versus newly needed blocks.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "len(new_computed_block_list[0])",
+          "name": "prefix_blocks",
+          "rationale": "Counts cached prefix blocks potentially inspected when determining allocation requirements."
+        },
+        {
+          "expression": "int(bool(new_computed_block_list[0]))",
+          "name": "has_prefix_blocks",
+          "rationale": "Captures fixed overhead of handling a nonempty cached prefix."
+        },
+        {
+          "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+          "name": "has_existing_blocks",
+          "rationale": "Distinguishes initial allocation from requests with an existing block table."
+        },
+        {
+          "expression": "int((num_tokens_need_slot + self.coordinator.single_type_managers[0].block_size - 1) // self.coordinator.single_type_managers[0].block_size > len(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())) + len(new_computed_block_list[0]))",
+          "name": "needs_additional_blocks",
+          "rationale": "Captures the branch where existing and prefix blocks cannot cover the requested token slots."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.974138859954742,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The observed workload has no prefix blocks and nearly constant query cost. Token extent provides sufficient distinct states, while existing-block status explains the small initial-allocation overhead.",
+      "irregularity_percent": 19.974138859954742,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "num_tokens_need_slot",
+          "name": "tokens_needing_slots",
+          "rationale": "The allocation query rounds this token extent into required blocks; its variation also supplies distinct entry states."
+        },
+        {
+          "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+          "name": "has_existing_blocks",
+          "rationale": "Captures the initial-versus-existing allocation distinction associated with the measured instruction-count difference."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Token extent had a fitted coefficient of zero. Request-table cardinality is a more relevant source of distinct states for this nearly constant-cost query, potentially explaining bookkeeping variation alongside initial-versus-existing allocation.",
+      "irregularity_percent": 0.0,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+          "name": "tracked_requests",
+          "rationale": "Measures the request-table size governing dictionary lookup and possible insertion or resizing costs."
+        },
+        {
+          "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+          "name": "has_existing_blocks",
+          "rationale": "Distinguishes initial allocation queries from queries for requests already holding blocks."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-008",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "9f0e8a724f225ddc4534162ff5c6c3a385ac129c9e7406d944948753ea0627c2",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

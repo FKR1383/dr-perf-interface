@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily determined by whether the request exists, successful sampling-state removals, removal-registration state, and the optional previous-batch mapping cleanup.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(req_id in self.req_id_to_index)",
+      "name": "request_present",
+      "rationale": "Distinguishes the early return from full request cleanup."
+    },
+    {
+      "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+      "name": "sampling_entries_removed",
+      "rationale": "Counts successful sampling-set removals, which vary with sampling and penalty options."
+    },
+    {
+      "expression": "len(self.batch_update_builder.removed) if req_id in self.req_id_to_index else 0",
+      "name": "pending_removals",
+      "rationale": "Captures possible size-dependent work when registering another removed index."
+    },
+    {
+      "expression": "int(req_id in self.req_id_to_index and self.prev_req_id_to_index is not None)",
+      "name": "previous_mapping_cleanup",
+      "rationale": "Captures the optional cleanup of the previous batch's request mapping."
+    }
+  ]
+}

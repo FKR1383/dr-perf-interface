@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The best previous feature set closely tracks observed costs, but fitted coefficients substantially understate their apparent slopes. Rescaling that same basis tests whether numerical scaling contributes to the unexplained share.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "1024 * int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0))",
+      "name": "metadata_work_scaled",
+      "rationale": "Preserves the strongest previous metadata predictor while testing sensitivity to feature scale."
+    },
+    {
+      "expression": "1024 * int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+      "name": "minimum_token_transition_scaled",
+      "rationale": "Captures fixed minimum-token transition work using the same scale."
+    },
+    {
+      "expression": "1024 * (len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added)))",
+      "name": "addition_work_scaled",
+      "rationale": "Captures fixed admission setup and per-request initialization."
+    },
+    {
+      "expression": "1024 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+      "name": "greedy_admission_scaled",
+      "rationale": "Separates the unusually expensive all-greedy admission path."
+    }
+  ]
+}

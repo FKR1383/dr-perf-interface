@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Prompt length alone omits fixed first-output initialization costs. Adding a small per-request offset to the prefill work measure should better explain both short and long prompts while retaining completion and exceptional-regime features.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures completion statistics and cleanup."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].prompt_len + 6 for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_work",
+      "rationale": "Combines prompt-length-dependent work with fixed initialization work per prefilling request."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Separates the exceptional regime where every request finishes on its first output."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed overhead plus per-image, per-element, and per-row costs for converting the NumPy batch into PIL images.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "image.shape[0]",
+      "name": "batch_size",
+      "rationale": "Counts per-image PIL construction and list iteration overhead."
+    },
+    {
+      "expression": "image.size",
+      "name": "element_count",
+      "rationale": "Tracks multiplication, rounding, uint8 conversion, and pixel serialization work."
+    },
+    {
+      "expression": "image.shape[0] * image.shape[1]",
+      "name": "total_rows",
+      "rationale": "Captures per-row copying and RGB decoding overhead."
+    }
+  ]
+}

@@ -1,0 +1,369 @@
+{
+  "agent_PCVs_thread": "01a0f6a1-073c-7bc3-bf0f-50f25b0c9b5f",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 45.81107473809117,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily explained by metadata reconstruction, its enabled tensor copies, per-request prompt preparation for penalties, and logits-processor initialization for added requests.",
+      "irregularity_percent": 45.81107473809117,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed)",
+          "name": "batch_changed",
+          "rationale": "Separates metadata reconstruction from the unchanged-batch path."
+        },
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+          "name": "metadata_tensor_copies",
+          "rationale": "Counts conditional tensor-copy operations during metadata reconstruction."
+        },
+        {
+          "expression": "self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0",
+          "name": "penalized_batch_size",
+          "rationale": "Captures the per-request loop that constructs and pads prompt token tensors when penalties are enabled."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added)",
+          "name": "added_requests",
+          "rationale": "Captures request initialization work performed by logits processors when applying batch updates."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 40.67821599705124,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The previous model omitted fixed setup for additions and processing of removals and moves. Separating addition presence from request-level work should better explain admission and condensation updates.",
+      "irregularity_percent": 40.67821599705124,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed)",
+          "name": "batch_changed",
+          "rationale": "Captures the fixed cost of rebuilding sampling metadata."
+        },
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+          "name": "metadata_tensor_copies",
+          "rationale": "Captures conditional tensor-copy work across sampling configurations."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.added))",
+          "name": "has_added_requests",
+          "rationale": "Models fixed logits-processor setup costs when an update contains new requests, which an added-request count alone underestimates."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added) + len(self.batch_update_builder.removed) + len(self.batch_update_builder.moved) + (self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0)",
+          "name": "request_update_work",
+          "rationale": "Combines request-level update processing with the prompt-padding loop, including previously omitted removals and moves."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.56720602407972,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Minimum-token processor transitions may explain cost differences among batches with identical sampling-copy requirements; the cardinality of short output lists exposes these transitions.",
+      "irregularity_percent": 38.56720602407972,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed)",
+          "name": "batch_changed",
+          "rationale": "Captures the fixed metadata reconstruction path."
+        },
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+          "name": "metadata_tensor_copies",
+          "rationale": "Counts enabled sampling tensor copies."
+        },
+        {
+          "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+          "name": "minimum_token_transition",
+          "rationale": "Identifies newly admitted requests or requests reaching the workload's one-token minimum, potentially triggering logits-processor mask updates."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added) + len(self.batch_update_builder.removed) + len(self.batch_update_builder.moved) + (self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0)",
+          "name": "request_update_work",
+          "rationale": "Captures request-level batch updates and prompt-padding iterations."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 32.18449907583696,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "A compressed metadata-work predictor permits separate modeling of minimum-token transitions, admission work, and the unusually expensive all-greedy admission regime.",
+      "irregularity_percent": 32.18449907583696,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0))",
+          "name": "metadata_work_units",
+          "rationale": "Combines metadata setup, tensor copies, and penalty prompt construction into approximate work units, freeing features for processor transitions."
+        },
+        {
+          "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+          "name": "minimum_token_transition",
+          "rationale": "Separates minimum-token mask transitions, which the previous report associates with roughly 60000 additional instructions."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added))",
+          "name": "addition_work",
+          "rationale": "Represents both fixed admission setup and per-request processor initialization."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "greedy_admission",
+          "rationale": "Separates admission into an all-greedy batch, which showed substantially greater residual cost than other admissions."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 46.20521346108428,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The observed instruction counts closely follow a single combined work measure. Sharing one fitted scale across these components may improve estimation over four correlated predictors.",
+      "irregularity_percent": 46.20521346108428,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0)) + 10 * int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0) + len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added)) + 10 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "combined_refresh_work",
+          "rationale": "Combines metadata reconstruction, tensor copies, prompt padding, minimum-token transitions, and admissions into one approximate work measure using the relative costs observed across prior reports."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 36.6344532069107,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Explicitly separating steady refreshes, minimum-token transitions, and admission regimes may explain instruction paths that a single combined predictor merged.",
+      "irregularity_percent": 36.6344532069107,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "2 + int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0)) if not self.batch_update_builder.added and len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) == 0 else 0",
+          "name": "steady_refresh_work",
+          "rationale": "Models baseline and metadata work when neither admissions nor minimum-token transitions occur."
+        },
+        {
+          "expression": "12 + int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0)) if not self.batch_update_builder.added and len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0 else 0",
+          "name": "transition_refresh_work",
+          "rationale": "Separates refreshes that update minimum-token masks for existing requests."
+        },
+        {
+          "expression": "25 + len(self.batch_update_builder.added) + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0) if self.batch_update_builder.added and (not self.all_greedy) else 0",
+          "name": "sampled_admission_work",
+          "rationale": "Models admission setup, request initialization, and metadata construction for batches containing sampled requests."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "greedy_admission",
+          "rationale": "Retains a separate predictor for the observed expensive all-greedy admission path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 50.62654792157658,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Direct cardinalities may explain instruction-level variation better than compressed cost estimates. This candidate exposes batch size and minimum-token request count independently, including on unchanged-batch calls.",
+      "irregularity_percent": 50.62654792157658,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "self.num_reqs",
+          "name": "active_requests",
+          "rationale": "Exposes batch cardinality directly for processor updates, tensor operations, and prompt-padding loops."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added)",
+          "name": "added_requests",
+          "rationale": "Separately measures per-request admission processing."
+        },
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (1 + int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 4 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+          "name": "metadata_paths",
+          "rationale": "Counts metadata reconstruction plus enabled copy and prompt-construction paths."
+        },
+        {
+          "expression": "len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1])",
+          "name": "minimum_token_requests",
+          "rationale": "Measures requests involved in minimum-token initialization or expiration rather than recording only transition presence."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 32.91733245174206,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "The best previous feature set closely tracks observed costs, but fitted coefficients substantially understate their apparent slopes. Rescaling that same basis tests whether numerical scaling contributes to the unexplained share.",
+      "irregularity_percent": 32.91733245174206,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1024 * int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0))",
+          "name": "metadata_work_scaled",
+          "rationale": "Preserves the strongest previous metadata predictor while testing sensitivity to feature scale."
+        },
+        {
+          "expression": "1024 * int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+          "name": "minimum_token_transition_scaled",
+          "rationale": "Captures fixed minimum-token transition work using the same scale."
+        },
+        {
+          "expression": "1024 * (len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added)))",
+          "name": "addition_work_scaled",
+          "rationale": "Captures fixed admission setup and per-request initialization."
+        },
+        {
+          "expression": "1024 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "greedy_admission_scaled",
+          "rationale": "Separates the unusually expensive all-greedy admission path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 41.71792982779262,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Separating penalty preparation from other metadata work permits independent fitted scales for their different instruction paths. Rescaling alone did not help; this candidate changes the decomposition.",
+      "irregularity_percent": 41.71792982779262,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (3 + int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + int(not self.no_allowed_token_ids))",
+          "name": "sampling_metadata_work",
+          "rationale": "Groups metadata setup with sampling copies while separating penalty-specific work."
+        },
+        {
+          "expression": "14 + self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0",
+          "name": "penalty_metadata_work",
+          "rationale": "Represents fixed penalty tensor preparation and the per-request prompt-padding loop."
+        },
+        {
+          "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+          "name": "minimum_token_transition",
+          "rationale": "Captures the fixed cost associated with initializing or expiring minimum-token masks."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added) + 2 * int(bool(self.batch_update_builder.added)) + 8 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "admission_work",
+          "rationale": "Combines per-request initialization, admission setup, and the observed additional cost of all-greedy admission."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 36.953002096032215,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Keeping metadata reconstruction, tensor preparation, mask transitions, and request-level work separate should preserve the main control-flow distinctions while accommodating the expensive initial admission without a dedicated feature.",
+      "irregularity_percent": 36.953002096032215,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "int(self.batch_update_builder.batch_changed)",
+          "name": "batch_changed",
+          "rationale": "Separates fixed metadata reconstruction from unchanged-batch processing."
+        },
+        {
+          "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 4 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+          "name": "tensor_preparation_paths",
+          "rationale": "Counts sampling copies and, for penalties, three copies plus prompt-tensor construction."
+        },
+        {
+          "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0) + int(bool(self.batch_update_builder.added) and self.all_greedy)",
+          "name": "mask_transition_work",
+          "rationale": "Combines minimum-token transitions with the additional fixed work observed during all-greedy admission."
+        },
+        {
+          "expression": "len(self.batch_update_builder.added) + 2 * int(bool(self.batch_update_builder.added)) + (self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0)",
+          "name": "request_preparation_work",
+          "rationale": "Represents admission setup, per-request initialization, and prompt-padding iterations."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-063",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "15cb069e1e164957204fba6aa8507df88818eecdc1a5ee90ac4f12b853520ba6",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

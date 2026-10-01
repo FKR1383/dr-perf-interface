@@ -1,0 +1,379 @@
+{
+  "agent_PCVs_thread": "01a0f5b9-b937-7a62-99e9-864c98f3f648",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 61.55625182075993,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily additive in scheduled requests, requests finishing, blocks released, and prefill statistics finalized.",
+      "irregularity_percent": 61.55625182075993,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures the main per-request loop and output construction."
+        },
+        {
+          "expression": "sum((self.requests[rid].num_output_tokens + len(model_runner_output.sampled_token_ids[model_runner_output.req_id_to_index[rid]]) >= self.requests[rid].max_tokens for rid in scheduler_output.num_scheduled_tokens if rid in self.requests))",
+          "name": "finishing_requests",
+          "rationale": "Predicts requests reaching their output limit, triggering cleanup and queue removal."
+        },
+        {
+          "expression": "sum(((self.requests[rid].num_computed_tokens + self.block_size - 1) // self.block_size for rid in scheduler_output.num_scheduled_tokens if rid in self.requests and self.requests[rid].num_output_tokens + len(model_runner_output.sampled_token_ids[model_runner_output.req_id_to_index[rid]]) >= self.requests[rid].max_tokens))",
+          "name": "finishing_blocks",
+          "rationale": "Estimates KV blocks traversed and released when requests finish."
+        },
+        {
+          "expression": "sum((self.requests[rid].prefill_stats is not None and bool(model_runner_output.sampled_token_ids[model_runner_output.req_id_to_index[rid]]) for rid in scheduler_output.num_scheduled_tokens if rid in self.requests))",
+          "name": "prefill_completions",
+          "rationale": "Captures first-output prefill statistics finalization and cache estimation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 61.19383262557887,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Request count, finishing count, and new-request count explain the dominant work. Removing redundant block estimation and repeated indexed scans should substantially reduce observation overhead, which appears to dominate the previous unexplained instructions.",
+      "irregularity_percent": 61.19383262557887,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Measures the main request-processing loop with constant-time observation."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Predicts cleanup for the workload's single-token outputs using one short scan."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Provides a constant-time proxy for prefill completion and first-output statistics."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 61.36240699114087,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The stable unexplained fraction did not decrease with cheaper observations. Explicit sampled-token cardinality may account for nested token-processing work that scheduled-request cardinality alone leaves unexplained.",
+      "irregularity_percent": 61.36240699114087,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures iteration over scheduled requests."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures request completion and cleanup."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures first-output processing and prefill statistics."
+        },
+        {
+          "expression": "sum((len(token_ids) for token_ids in model_runner_output.sampled_token_ids))",
+          "name": "sampled_tokens",
+          "rationale": "Measures the token-processing loops inside request updates, including token appends and stop checks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 43.70279427783896,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Sampled-token count was redundant. A piecewise term for small prefill batches tests the consistently elevated costs of the one- and two-request prefill observations while retaining the main request and completion predictors.",
+      "irregularity_percent": 43.70279427783896,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures per-request processing."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures completion and resource cleanup."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures prefill completion and first-output processing."
+        },
+        {
+          "expression": "max(0, 3 - len(scheduler_output.scheduled_new_reqs)) if scheduler_output.scheduled_new_reqs else 0",
+          "name": "small_prefill_batch",
+          "rationale": "Separates the smallest prefill batches, which show disproportionately high instruction counts in repeated measurements."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 45.110465731519476,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Cleanup has a fixed branch cost in addition to its per-finishing-request cost. Combining that branch indicator with the small-prefill term tests both effects within four expressions.",
+      "irregularity_percent": 45.110465731519476,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures per-request processing."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures per-request completion and resource release."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures prefill completion work."
+        },
+        {
+          "expression": "2 * (len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens]) > 0) + (3 * max(0, 3 - len(scheduler_output.scheduled_new_reqs)) if scheduler_output.scheduled_new_reqs else 0)",
+          "name": "cleanup_and_small_prefill",
+          "rationale": "Combines the fixed cost of stopped-request queue cleanup with the observed excess cost of small prefill batches."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 62.52695711608942,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The small-prefill correction left substantial unexplained work and did not distinguish repeated decode states. Aggregate prompt length tests whether request sequence size explains those differences and costs in token bookkeeping or cache-related helpers.",
+      "irregularity_percent": 62.52695711608942,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures per-request processing."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures completion and resource release."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures prefill completion work."
+        },
+        {
+          "expression": "sum((r.num_prompt_tokens for r in self.running))",
+          "name": "prompt_tokens",
+          "rationale": "Distinguishes requests with different prompt histories, including observations previously grouped under identical batch and completion counts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 46.71143033728766,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Prompt-length feedback isolated three elevated observations: singleton short prefill, paired short prefill, and paired short decode. A shared piecewise entry-state predictor tests their excess cost alongside the main workload dimensions.",
+      "irregularity_percent": 46.71143033728766,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures per-request processing."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures request completion and resource release."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures prefill completion work."
+        },
+        {
+          "expression": "(2 if len(scheduler_output.scheduled_new_reqs) == 1 else 1) if self.running and max((r.num_prompt_tokens for r in self.running)) < 20 and (scheduler_output.scheduled_new_reqs or len(scheduler_output.num_scheduled_tokens) == 2) else 0",
+          "name": "short_batch_regime",
+          "rationale": "Separates the short-prompt prefill and two-request decode observations with consistently elevated costs, while excluding the ordinary short-prompt singleton decode."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 52.98555723216211,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "The previous regime term constrained singleton and paired excess costs to one coefficient. Combining the similar base request and prefill costs frees a dimension to fit those two regimes independently.",
+      "irregularity_percent": 52.98555723216211,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens) + len(scheduler_output.scheduled_new_reqs)",
+          "name": "request_processing_units",
+          "rationale": "Combines ordinary request processing and additional first-output work, whose observed marginal costs are similar."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures completion and resource release."
+        },
+        {
+          "expression": "int(len(scheduler_output.scheduled_new_reqs) == 1 and self.running[0].num_prompt_tokens < 20)",
+          "name": "singleton_short_prefill",
+          "rationale": "Allows an independent coefficient for the elevated singleton short-prefill cost."
+        },
+        {
+          "expression": "int(len(scheduler_output.num_scheduled_tokens) == 2 and max((r.num_prompt_tokens for r in self.running)) < 20)",
+          "name": "paired_short_batch",
+          "rationale": "Separates elevated paired short-prompt processing during both prefill and decode."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 59.8148170301341,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Queue removal introduces a batch-size-by-completion interaction. Earlier additive predictors and combined regime terms did not represent this conditional scan independently; this candidate tests that structural cost directly.",
+      "irregularity_percent": 59.8148170301341,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures the main request-processing loop."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures completion and resource release."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures prefill completion work."
+        },
+        {
+          "expression": "len(self.running) if len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens]) > 0 else 0",
+          "name": "cleanup_scan_requests",
+          "rationale": "Measures the full running-queue scan performed only when at least one request stops."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 56.20427021099373,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "A separate prefill-batch indicator may explain fixed first-output costs that a new-request count alone cannot represent. This tests an independent branch term without combining unrelated regimes.",
+      "irregularity_percent": 56.20427021099373,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(scheduler_output.num_scheduled_tokens)",
+          "name": "scheduled_requests",
+          "rationale": "Captures per-request processing."
+        },
+        {
+          "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+          "name": "finishing_requests",
+          "rationale": "Captures completion and resource release."
+        },
+        {
+          "expression": "len(scheduler_output.scheduled_new_reqs)",
+          "name": "new_requests",
+          "rationale": "Captures per-request first-output processing."
+        },
+        {
+          "expression": "int(len(scheduler_output.scheduled_new_reqs) > 0)",
+          "name": "has_new_requests",
+          "rationale": "Separates fixed work associated with a prefill-completion batch from work proportional to its request count."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-038",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e8366b64069aef3ad064cf968312fc6f336a6a87766f55d9ce3bbe751715ad89",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

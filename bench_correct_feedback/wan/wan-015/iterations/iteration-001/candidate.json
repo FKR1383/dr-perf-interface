@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is explained by spatial work, temporal-volume work, bottleneck attention pairs, and the fixed overhead of processing a populated feature cache.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+      "name": "spatial_sites",
+      "rationale": "Captures spatial convolution, padding, normalization, and cached-frame copying costs."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "input_sites",
+      "rationale": "Captures convolution and elementwise work that scales with the input chunk's temporal length."
+    },
+    {
+      "expression": "x.shape[0] * (x.shape[3] // 8) ** 2 * (x.shape[4] // 8) ** 2",
+      "name": "attention_pairs",
+      "rationale": "Captures quadratic spatial attention work at the encoder bottleneck, which has one temporal frame in this workload."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "warm_cache",
+      "rationale": "Distinguishes initial chunks from subsequent chunks with cached concatenations and temporal downsampling."
+    }
+  ]
+}

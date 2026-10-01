@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_model_runner.py
++++ candidate/vllm/v1/worker/gpu_model_runner.py
+@@ -4292,7 +4292,7 @@
+         scheduler_output: "SchedulerOutput",
+         intermediate_tensors: IntermediateTensors | None = None,
+     ) -> ModelRunnerOutput | AsyncModelRunnerOutput | IntermediateTensors | None:
+-        with perfmark.region("vllm-067"):
++        with perfmark.region("vllm-067", scheduled_tokens=(scheduler_output.total_num_scheduled_tokens), scheduled_requests=(len(scheduler_output.num_scheduled_tokens)), attention_pairs=(sum((scheduler_output.num_scheduled_tokens[r.req_id] * (2 * r.num_computed_tokens + scheduler_output.num_scheduled_tokens[r.req_id] + 1) // 2 for r in scheduler_output.scheduled_new_reqs)) + sum((scheduler_output.num_scheduled_tokens[r] * (2 * self.requests[r].num_computed_tokens + scheduler_output.num_scheduled_tokens[r] + 1) // 2 for r in scheduler_output.scheduled_cached_reqs.req_ids))), new_requests=(len(scheduler_output.scheduled_new_reqs))):
+             if self.execute_model_state is not None:
+                 raise RuntimeError(
+                     "State error: sample_tokens() must be called "

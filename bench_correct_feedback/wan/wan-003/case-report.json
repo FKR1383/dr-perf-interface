@@ -1,0 +1,61 @@
+{
+  "agent_PCVs_thread": "01a0ed69-c512-7790-a4b1-681737c2af87",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 3",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "For these fixed-rank CPU float32 inputs, the marked conversion has approximately constant instruction count across batch sizes and image dimensions.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "image.ndim",
+          "name": "tensor_rank",
+          "rationale": "The CPU float32 input needs no device transfer or dtype conversion. Permutation and NumPy conversion share storage, so work primarily handles tensor metadata and scales with rank rather than pixel count."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.42979302953850285,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Conversion primarily performs constant-cost metadata operations; element count should permit a nearly flat fitted model while supplying the required distinct states.",
+      "irregularity_percent": 0.42979302953850285,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "image.numel()",
+          "name": "elements",
+          "rationale": "Provides six distinct entry states across the fixed workload and captures any size-dependent storage or allocation overhead accompanying conversion."
+        }
+      ]
+    }
+  ],
+  "case": "wan-003",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "32416729259fb0230b59508c775f9ebf141f189bf9bdedf3e589d826df7d799b",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Layer identity did not explain the persistent discrepancy. Rounded query tiles and causal tile traversal may capture native loop counts more accurately than unrounded token-context products.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+      "name": "query_tokens",
+      "rationale": "Captures processing proportional to actual query rows."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_query_len + 15) // 16)",
+      "name": "query_tiles",
+      "rationale": "Models query work rounded to 16-row tiles."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * (((attn_metadata.max_query_len + 15) // 16 + 1) ** 2 // 4 if attn_metadata.causal and attn_metadata.max_query_len == attn_metadata.max_seq_len else (attn_metadata.max_query_len + 15) // 16 * ((attn_metadata.max_seq_len + 31) // 32))",
+      "name": "causal_attention_tiles",
+      "rationale": "Approximates triangular tile traversal for full causal prefill and rectangular traversal for cached queries."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+      "name": "requests",
+      "rationale": "Separates per-request setup from tiled kernel work."
+    }
+  ]
+}

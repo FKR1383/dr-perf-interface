@@ -1,0 +1,16 @@
+{
+  "hypothesis": "The observed workload has no prefix blocks and nearly constant query cost. Token extent provides sufficient distinct states, while existing-block status explains the small initial-allocation overhead.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "num_tokens_need_slot",
+      "name": "tokens_needing_slots",
+      "rationale": "The allocation query rounds this token extent into required blocks; its variation also supplies distinct entry states."
+    },
+    {
+      "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+      "name": "has_existing_blocks",
+      "rationale": "Captures the initial-versus-existing allocation distinction associated with the measured instruction-count difference."
+    }
+  ]
+}

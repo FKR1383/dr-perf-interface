@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Indicator scaling did not improve the fit. The remaining unexplained cost may include substantial observation overhead from repeated type checks and fallback expressions; direct access to the workload's rendered prompt fields preserves the predictive features while making their evaluation cheaper.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Measures token-dependent work directly from the rendered input dictionary used by this workload."
+    },
+    {
+      "expression": "len(prompt['prompt'])",
+      "name": "prompt_characters",
+      "rationale": "Measures prompt text size with minimal observation overhead."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) == 10)",
+      "name": "ten_token_regime",
+      "rationale": "Isolates the exceptionally costly short-prompt state observed in every measurement."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) == 9)",
+      "name": "nine_token_regime",
+      "rationale": "Isolates the second short-prompt state with elevated admission cost."
+    }
+  ]
+}

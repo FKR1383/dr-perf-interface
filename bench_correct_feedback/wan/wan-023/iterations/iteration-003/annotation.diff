@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/transformers/transformer_wan.py
++++ candidate/src/diffusers/models/transformers/transformer_wan.py
+@@ -660,7 +660,7 @@
+             If `return_dict` is True, an [`~models.transformer_2d.Transformer2DModelOutput`] is returned, otherwise a
+             `tuple` where the first element is the sample tensor.
+         """
+-        with perfmark.region("wan-023"):
++        with perfmark.region("wan-023", video_tokens=(hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])), self_attention_pairs=(hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2), frame_planes=(hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0])), text_tokens=(encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1])):
+             batch_size, num_channels, num_frames, height, width = hidden_states.shape
+             p_t, p_h, p_w = self.config.patch_size
+             post_patch_num_frames = num_frames // p_t

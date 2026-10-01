@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed call cost plus an insertion-path overhead and a linear cost per newly cached full block.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, num_tokens_to_cache // self.coordinator.single_type_managers[0].block_size - self.coordinator.single_type_managers[0].num_cached_block.get(request.request_id, 0))",
+      "name": "new_full_blocks",
+      "rationale": "Counts newly completed blocks requiring hash assignment and prefix-cache insertion in this single-group workload."
+    },
+    {
+      "expression": "int(num_tokens_to_cache // self.coordinator.single_type_managers[0].block_size > self.coordinator.single_type_managers[0].num_cached_block.get(request.request_id, 0))",
+      "name": "has_new_full_blocks",
+      "rationale": "Captures the fixed cost of entering block-cache insertion instead of taking the no-new-blocks path."
+    }
+  ]
+}

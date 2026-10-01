@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_model_runner.py
++++ candidate/vllm/v1/worker/gpu_model_runner.py
+@@ -1250,7 +1250,7 @@
+         new/resumed/paused/finished request in the batch.
+         """
+         # Remove finished requests from the cached states.
+-        with perfmark.region("vllm-066"):
++        with perfmark.region("vllm-066", new_requests=(len(scheduler_output.scheduled_new_reqs)), cached_requests=(len(scheduler_output.scheduled_cached_reqs.req_ids)), batch_changed=(int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))), refreshed_prompt_elements=(len(scheduler_output.num_scheduled_tokens) * max([0] + [len(req.prompt_token_ids) if req.prompt_token_ids is not None else 0 for req in scheduler_output.scheduled_new_reqs] + [self.requests[req_id].num_prompt_tokens for req_id in scheduler_output.scheduled_cached_reqs.req_ids]) if scheduler_output.scheduled_new_reqs or scheduler_output.finished_req_ids or scheduler_output.scheduled_cached_reqs.resumed_req_ids else 0)):
+             for req_id in scheduler_output.finished_req_ids:
+                 req_state = self.requests.pop(req_id, None)
+                 self._on_request_state_removed(req_id, req_state)

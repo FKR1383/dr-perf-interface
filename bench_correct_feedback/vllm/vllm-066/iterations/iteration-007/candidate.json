@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Variation among similarly sized decode batches may arise from block-table updates at allocation boundaries. Counting non-None cached block updates distinguishes these paths from ordinary request updates.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks new request creation and batch insertion."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_cached_reqs.req_ids)",
+      "name": "cached_requests",
+      "rationale": "Tracks ordinary running-request updates."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Captures metadata reconstruction following membership changes."
+    },
+    {
+      "expression": "sum((1 for block_ids in scheduler_output.scheduled_cached_reqs.new_block_ids if block_ids is not None))",
+      "name": "cached_block_table_updates",
+      "rationale": "Counts cached requests taking the additional block-extension and persistent block-table append paths."
+    }
+  ]
+}

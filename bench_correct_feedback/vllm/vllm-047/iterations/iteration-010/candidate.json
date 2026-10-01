@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The sensitivity to token-count offsets suggests that the relevant loop cardinality may exclude a fixed decoding context. This candidate tests a five-token lookback; its applicability to the pinned detokenizer remains unverified.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures completion statistics and cleanup."
+    },
+    {
+      "expression": "sum((max(self.request_states[o.request_id].prompt_len - 5, 0) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_tokens_beyond_lookback",
+      "rationale": "Tests whether variable initialization work excludes a fixed five-token decoding lookback."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Separates the exceptional first-output completion regime."
+    }
+  ]
+}

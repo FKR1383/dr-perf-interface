@@ -1,0 +1,11 @@
+{
+  "hypothesis": "With tensor size fixed, instruction count is approximately constant across conditioning lengths; observed state means differ by less than 0.2%. One predictor should satisfy the three-state requirement.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "conditioning_length",
+      "rationale": "Distinguishes three observed execution contexts with nearly constant instruction counts. Removing the constant tensor-size feature leaves three states for one predictor."
+    }
+  ]
+}

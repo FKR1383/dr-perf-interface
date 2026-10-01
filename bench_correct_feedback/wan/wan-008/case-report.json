@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0ed6d-381b-7e22-8478-5224de60f856",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.16963386240548192,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately affine in the number of blended rows, with fixed entry overhead.",
+      "irregularity_percent": 0.16963386240548192,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "max(0, min(a.shape[-2], b.shape[-2], blend_extent))",
+          "name": "blended_rows",
+          "rationale": "Counts executed loop iterations. The fixed workload keeps row shape and dtype constant, so each iteration performs the same slicing, arithmetic, and assignment work."
+        }
+      ]
+    }
+  ],
+  "case": "wan-008",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "2b1bab1c694d5e317eac6f0f5042e9c3c63ccd14e8f1d4ba87d3ab1dba8d3e96",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Warm stochastic execution requires independent fixed and per-row features. An explicitly nonzero baseline combined with penalty-row cardinality may improve attribution for greedy calls while preserving those features and the compilation indicator.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "1 + (logits.shape[0] if not sampling_metadata.no_penalties else 0)",
+      "name": "baseline_and_penalty_rows",
+      "rationale": "Provides an explicit nonzero baseline for every call plus the number of rows receiving penalties."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy)",
+      "name": "random_sampling",
+      "rationale": "Captures fixed stochastic-path overhead."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.all_greedy else 0",
+      "name": "random_rows",
+      "rationale": "Captures stochastic work proportional to batch size."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Separates initial compilation from subsequent sampling."
+    }
+  ]
+}

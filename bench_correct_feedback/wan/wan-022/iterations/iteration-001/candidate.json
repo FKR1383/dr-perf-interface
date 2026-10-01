@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a constant timestep and dispatch cost plus a linear term in text tensor size.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "encoder_hidden_states.numel()",
+      "name": "text_elements",
+      "rationale": "Text projection and activation work scales with text elements because the model widths are fixed. Timestep processing is constant across this workload, and image embedding is absent."
+    }
+  ]
+}

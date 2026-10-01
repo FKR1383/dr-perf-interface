@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Regex cache state may distinguish compilation and initialization costs from warmed calls, while prompt dimensions explain steady-state cleaning work.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(prompt)",
+      "name": "prompt_count",
+      "rationale": "Captures fixed cleaning overhead per prompt."
+    },
+    {
+      "expression": "sum((len(u) for u in prompt))",
+      "name": "total_characters",
+      "rationale": "Captures text scanning work."
+    },
+    {
+      "expression": "sum((u.count(' ') for u in prompt))",
+      "name": "space_count",
+      "rationale": "Captures whitespace substitution work."
+    },
+    {
+      "expression": "len(getattr(re, '_main', getattr(re, 'regex', None))._cache)",
+      "name": "regex_cache_size",
+      "rationale": "Captures entry-time regex cache state without accessing dunder attributes."
+    }
+  ]
+}

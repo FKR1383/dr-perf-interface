@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The fitted prompt-length slope is small. Replacing it with scheduler request cardinality may explain batch-position variation that length-only models leave unresolved, while retaining the observed startup and medium-prompt regimes.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(self.scheduler.requests)",
+      "name": "resident_requests",
+      "rationale": "Exposes request population at entry, distinguishing positions within each submitted batch and possible batch-start effects."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+      "name": "nine_token_prompt",
+      "rationale": "Retains the indicator for the elevated nine-token state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+      "name": "ten_token_prompt",
+      "rationale": "Retains the indicator for the highest-cost observed state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+      "name": "medium_prompt",
+      "rationale": "Retains the medium-prompt regime from the best-performing candidate."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is explained by the singleton fast-path overhead, filtering traversal, and the number of retained elements. The empty-set path supplies the baseline.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(len(items_to_remove) == 1)",
+      "name": "single_removal",
+      "rationale": "Captures the distinct list.remove and contextlib.suppress fast path."
+    },
+    {
+      "expression": "len(lst) if len(items_to_remove) > 1 else 0",
+      "name": "filter_length",
+      "rationale": "Models list-comprehension traversal and membership checks; also distinguishes filtering from the empty-set return."
+    },
+    {
+      "expression": "len(items_to_remove) if len(items_to_remove) > 1 else 0",
+      "name": "filter_removals",
+      "rationale": "In this workload, each removal item appears exactly once, so this captures how many append operations are skipped."
+    }
+  ]
+}

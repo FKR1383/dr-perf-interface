@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Scalar sampling settings did not explain the excess cost. This candidate tests the cloning branch and collection cardinalities that more directly determine parameter validation and copying work.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures the linear token-ID validation scans."
+    },
+    {
+      "expression": "int(not getattr(params, 'skip_clone', False))",
+      "name": "clone_required",
+      "rationale": "Distinguishes parameter cloning from any configured clone bypass."
+    },
+    {
+      "expression": "len(getattr(params, 'stop_token_ids', None) or ()) + len(getattr(params, '_all_stop_token_ids', None) or ())",
+      "name": "stop_token_entries",
+      "rationale": "Measures stop-token collection sizes relevant to cloning and generation-configuration updates."
+    },
+    {
+      "expression": "len(getattr(params, 'allowed_token_ids', None) or ()) + len(getattr(params, 'bad_words', None) or ()) + len(getattr(params, 'logit_bias', None) or {})",
+      "name": "tokenizer_constraint_entries",
+      "rationale": "Measures optional tokenizer constraints that can add validation and copying work."
+    }
+  ]
+}

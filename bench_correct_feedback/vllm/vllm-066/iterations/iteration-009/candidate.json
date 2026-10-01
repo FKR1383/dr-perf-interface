@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Admission batches may have a distinct fixed cost that a shared batch-change indicator misses. Separate admission setup and per-request work, while modeling removal-only calls through refreshed survivors and row-maintenance operations.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks per-request admission work."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs))",
+      "name": "has_new_requests",
+      "rationale": "Separates fixed setup for admitting requests from ordinary removal-only metadata refresh."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_cached_reqs.req_ids) if scheduler_output.finished_req_ids or scheduler_output.scheduled_new_reqs or scheduler_output.scheduled_cached_reqs.resumed_req_ids else 0",
+      "name": "refreshed_cached_requests",
+      "rationale": "Tracks surviving requests whose metadata is rebuilt after membership changes."
+    },
+    {
+      "expression": "len(scheduler_output.finished_req_ids) + sum((1 for req_id in self.input_batch.req_id_to_index if req_id not in scheduler_output.finished_req_ids and req_id in scheduler_output.num_scheduled_tokens and (req_id not in scheduler_output.scheduled_cached_reqs.resumed_req_ids) and (self.input_batch.req_id_to_index[req_id] >= len(scheduler_output.num_scheduled_tokens))))",
+      "name": "removed_and_relocated_rows",
+      "rationale": "Counts row removals and subsequent relocations as batch-maintenance operations."
+    }
+  ]
+}

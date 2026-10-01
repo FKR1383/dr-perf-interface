@@ -1,0 +1,185 @@
+{
+  "case": "wan-017",
+  "validity_warnings": [],
+  "pcv_names": [
+    "uses_rotary",
+    "self_attention_work",
+    "cross_attention_work",
+    "self_attention_tail"
+  ],
+  "distinct_states": 12,
+  "required_states": 6,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 452,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 681960.6666666666,
+      "unexplained_instructions_per_call": 51975.333333333336,
+      "unexplained_share": 0.07621456173914234
+    },
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 800,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 714711.3333333334,
+      "unexplained_instructions_per_call": 80665.33333333334,
+      "unexplained_share": 0.11286421464330122
+    },
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 1026,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 740796.0,
+      "unexplained_instructions_per_call": 105283.99999999999,
+      "unexplained_share": 0.14212279763929608
+    },
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 1218,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 755290.0,
+      "unexplained_instructions_per_call": 116302.0,
+      "unexplained_share": 0.15398323822637663
+    },
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 1280,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 744744.0,
+      "unexplained_instructions_per_call": 107269.66666666667,
+      "unexplained_share": 0.14403562387433355
+    },
+    {
+      "state": {
+        "uses_rotary": 0,
+        "self_attention_work": 0,
+        "cross_attention_work": 2256,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 881778.3333333334,
+      "unexplained_instructions_per_call": 226642.0,
+      "unexplained_share": 0.2570283158843776
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 657,
+        "cross_attention_work": 0,
+        "self_attention_tail": 9
+      },
+      "calls": 3,
+      "instructions_per_call": 1099423.6666666667,
+      "unexplained_instructions_per_call": 118607.99999999999,
+      "unexplained_share": 0.1078819781637106
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 1280,
+        "cross_attention_work": 0,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 1085584.6666666667,
+      "unexplained_instructions_per_call": 122377.66666666669,
+      "unexplained_share": 0.11272973027744805
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 1476,
+        "cross_attention_work": 0,
+        "self_attention_tail": 2
+      },
+      "calls": 3,
+      "instructions_per_call": 1124152.6666666667,
+      "unexplained_instructions_per_call": 152790.33333333334,
+      "unexplained_share": 0.135915999546918
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 2457,
+        "cross_attention_work": 0,
+        "self_attention_tail": 11
+      },
+      "calls": 3,
+      "instructions_per_call": 1266836.0,
+      "unexplained_instructions_per_call": 285144.00000000006,
+      "unexplained_share": 0.22508359408794829
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 3072,
+        "cross_attention_work": 0,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 1206477.0,
+      "unexplained_instructions_per_call": 223637.3333333333,
+      "unexplained_share": 0.1853639425644528
+    },
+    {
+      "state": {
+        "uses_rotary": 1,
+        "self_attention_work": 5376,
+        "cross_attention_work": 0,
+        "self_attention_tail": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 1350076.6666666667,
+      "unexplained_instructions_per_call": 337397.3333333334,
+      "unexplained_share": 0.2499097582112621
+    }
+  ],
+  "max_unexplained_share": 0.2570283158843776,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "uses_rotary": 323756.048740348,
+      "self_attention_work": 9.37018293456428,
+      "cross_attention_work": 11.555205248956932,
+      "self_attention_tail": 73.62896930346027
+    },
+    "constant": 630346.9489721201,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 20.605225889012218,
+  "raw_files": [
+    "run.1560083.json"
+  ]
+}

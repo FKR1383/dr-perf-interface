@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Explicitly separating prefill and decode removes overlapping token/request predictors. Each regime appears approximately linear, with an additional cost when context exceeds 32 tokens; this tests whether regime mixing caused the persistent underprediction.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.query_start_loc.numel() - 1",
+      "name": "decode_requests",
+      "rationale": "Separates decode setup from prefill processing so their coefficients can differ."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "decode_extra_kv_blocks",
+      "rationale": "Models the approximately 15,000 additional instructions per decode request when context crosses 32 tokens."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens",
+      "name": "prefill_tokens",
+      "rationale": "Models the dominant prefill cost independently of decode."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "prefill_extra_kv_blocks",
+      "rationale": "Allows a separate prefill cost increase for additional KV blocks."
+    }
+  ]
+}

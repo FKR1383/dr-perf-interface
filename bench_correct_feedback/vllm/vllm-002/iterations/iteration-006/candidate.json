@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Exact batch character counts and a simple word-count estimate should explain tokenizer work more accurately than prompt-length categories, especially for heterogeneous short prompts and the final batch's modified prefixes.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates the initial call and its substantial initialization cost."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks common rendering and engine-insertion work per request."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+      "name": "total_prompt_characters",
+      "rationale": "Measures actual batch text size, including variations that the first-prompt approximation missed, without consuming the rendering generator."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum(((p['prompt'] if 'prompt' in p else p).count(' ') + 1 for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+      "name": "prompt_word_work",
+      "rationale": "Provides a cheap lexical-unit estimate for tokenization work, distinguishing texts with different word lengths."
+    }
+  ]
+}

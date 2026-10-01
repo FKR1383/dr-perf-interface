@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Compilation and warm execution may traverse different instruction paths. Making warm features zero during initial compilation separates those paths and may remove constraints that caused severe warm-cost underprediction.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "logits.numel() if sampling_metadata.all_greedy or getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {}) else 0",
+      "name": "warm_logit_elements",
+      "rationale": "Models baseline execution while excluding the distinct initial compilation path."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy and getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {}) else 0",
+      "name": "warm_random_logit_elements",
+      "rationale": "Models stochastic processing exclusively after compiled code exists."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide penalty work."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Separately represents the initial compilation path."
+    }
+  ]
+}

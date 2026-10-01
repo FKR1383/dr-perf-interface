@@ -1,0 +1,125 @@
+{
+  "agent_PCVs_thread": "01a0ed9e-09da-7c00-8175-9bbcae3bc1bc",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.614283380361252,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "With fixed model dimensions and execution branches, instruction count is approximately a constant overhead plus linear hidden and encoder processing and the self-attention and cross-attention interaction costs.",
+      "irregularity_percent": 10.614283380361252,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.numel()",
+          "name": "hidden_elements",
+          "rationale": "Captures tokenwise normalization, modulation, projections, and feed-forward work at fixed model dimensions."
+        },
+        {
+          "expression": "encoder_hidden_states.numel()",
+          "name": "encoder_elements",
+          "rationale": "Captures cross-attention key/value projections and key normalization."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] ** 2 * hidden_states.shape[2]",
+          "name": "self_attention_work",
+          "rationale": "Captures quadratic self-attention score and value aggregation work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * encoder_hidden_states.shape[1] * hidden_states.shape[2]",
+          "name": "cross_attention_work",
+          "rationale": "Captures cross-attention work proportional to video tokens times conditioning tokens."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.090402949748473,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The higher instruction count at 27 tokens than at 32 suggests CPU kernel alignment costs. Combining attention interactions frees a feature to capture token tile remainders and may reduce the previous 10.61% irregularity.",
+      "irregularity_percent": 10.090402949748473,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.numel()",
+          "name": "hidden_elements",
+          "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+        },
+        {
+          "expression": "encoder_hidden_states.numel()",
+          "name": "encoder_elements",
+          "rationale": "Captures conditioning key/value projections and normalization."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+          "name": "attention_work",
+          "rationale": "Combines self-attention and cross-attention interaction work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16)",
+          "name": "token_tile_remainder",
+          "rationale": "Models CPU kernel remainder handling that can make unaligned token counts more expensive than nearby aligned counts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 9.162603023651688,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The sixteen-token remainder feature reduced irregularity to 10.09%. Testing eight-token granularity may better explain CPU kernel tail costs, particularly the different behavior of 18 and 27 tokens, while retaining the main processing and attention terms.",
+      "irregularity_percent": 9.162603023651688,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "hidden_states.numel()",
+          "name": "hidden_elements",
+          "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+        },
+        {
+          "expression": "encoder_hidden_states.numel()",
+          "name": "encoder_elements",
+          "rationale": "Captures conditioning key/value projections and normalization."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+          "name": "attention_work",
+          "rationale": "Captures combined self-attention and cross-attention interaction work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 8)",
+          "name": "token_tile_remainder",
+          "rationale": "Captures remainder handling for eight-token CPU kernel tiles."
+        }
+      ]
+    }
+  ],
+  "case": "wan-024",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "9e9db6b65c85c9f5e43f7675aa549ef9f2429cf8375c73fd3ac84f6265d51ffe",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

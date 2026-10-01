@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Combining query and context sizes may leave their independently scaling operations unexplained. Separate query, context, and rotary element counts should capture these costs, while the fixed rotary indicator accounts for branch overhead.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+      "name": "query_elements",
+      "rationale": "Separately exposes query and output projection work, rather than combining it with context length."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) * attn.inner_dim",
+      "name": "context_elements",
+      "rationale": "Separately exposes key/value projection and key normalization work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+      "name": "rotary_elements",
+      "rationale": "Captures the additional token-dependent work specific to rotary self-attention."
+    },
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Captures fixed rotary operator overhead independently of sequence length."
+    }
+  ]
+}

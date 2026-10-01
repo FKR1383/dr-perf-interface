@@ -1,0 +1,166 @@
+{
+  "agent_PCVs_thread": "01a0f6b7-c49a-7d82-a857-7c7dfe5b529c",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "workload return code 1",
+          "insufficient state points: 1; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily determined by whether the request exists, successful sampling-state removals, removal-registration state, and the optional previous-batch mapping cleanup.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "int(req_id in self.req_id_to_index)",
+          "name": "request_present",
+          "rationale": "Distinguishes the early return from full request cleanup."
+        },
+        {
+          "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+          "name": "sampling_entries_removed",
+          "rationale": "Counts successful sampling-set removals, which vary with sampling and penalty options."
+        },
+        {
+          "expression": "len(self.batch_update_builder.removed) if req_id in self.req_id_to_index else 0",
+          "name": "pending_removals",
+          "rationale": "Captures possible size-dependent work when registering another removed index."
+        },
+        {
+          "expression": "int(req_id in self.req_id_to_index and self.prev_req_id_to_index is not None)",
+          "name": "previous_mapping_cleanup",
+          "rationale": "Captures the optional cleanup of the previous batch's request mapping."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 40.09815812484134,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Direct container observations capture cleanup branches and batch structure. The previous run failed after one observation, so it provides insufficient evidence to assess instruction-count fit or diagnose the workload failure.",
+      "irregularity_percent": 40.09815812484134,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(req_id in self.req_id_to_index)",
+          "name": "request_present",
+          "rationale": "Separates the early return from full cleanup."
+        },
+        {
+          "expression": "len(self.req_id_to_index)",
+          "name": "active_requests",
+          "rationale": "Observes batch cardinality directly without accessing removal-builder properties."
+        },
+        {
+          "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+          "name": "sampling_entries_removed",
+          "rationale": "Captures variation in successful sampling-state deletions."
+        },
+        {
+          "expression": "self.req_id_to_index.get(req_id, -1)",
+          "name": "request_index",
+          "rationale": "Captures the removed row's position, which may affect removal registration."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.93353636184192,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Most observed cleanup costs are nearly constant; a few early calls dominate irregularity. Runtime module cardinality may expose lazy initialization responsible for those outliers, while generator ownership captures a potentially expensive cleanup branch.",
+      "irregularity_percent": 38.93353636184192,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Cheap runtime entry state that may distinguish lazy initialization from steady-state cleanup."
+        },
+        {
+          "expression": "len(self.req_id_to_index)",
+          "name": "active_requests",
+          "rationale": "Captures batch cardinality and preserves distinct workload states."
+        },
+        {
+          "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+          "name": "sampling_entries_removed",
+          "rationale": "Captures successful sampling-set deletions."
+        },
+        {
+          "expression": "int(self.req_id_to_index.get(req_id, -1) in self.generators)",
+          "name": "generator_present",
+          "rationale": "Distinguishes generator removal and possible native resource destruction."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 2.5483402257740027,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "The two large outliers occupy different entry-state regimes: fewer loaded modules, and unpenalized greedy removal from a multi-request batch. An explicit interaction tests whether these regimes explain the excess cost; their causal relationship remains unverified.",
+      "irregularity_percent": 2.5483402257740027,
+      "iteration": 4,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Distinguishes observed runtime initialization states."
+        },
+        {
+          "expression": "int(len(self.req_id_to_index) > 1 and req_id in self.greedy_reqs and (req_id not in self.frequency_penalties_reqs) and (req_id not in self.presence_penalties_reqs) and (req_id not in self.repetition_penalties_reqs))",
+          "name": "unpenalized_greedy_multi_request",
+          "rationale": "Tests the interaction between batch occupancy and the sampling configuration associated with the remaining high-cost observation."
+        },
+        {
+          "expression": "len(self.req_id_to_index)",
+          "name": "active_requests",
+          "rationale": "Captures batch cardinality across cleanup states."
+        },
+        {
+          "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+          "name": "sampling_entries_removed",
+          "rationale": "Captures successful sampling-state removals."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-064",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "da6a1a9e25e0d2864f4e99c80a3cbd237bb3de23e4d4277f992b89e6a323cf45",
+  "iterations": 4,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

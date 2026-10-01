@@ -1,0 +1,171 @@
+{
+  "case": "vllm-052",
+  "validity_warnings": [],
+  "pcv_names": [
+    "logit_elements",
+    "singleton_batch",
+    "first_nonsingleton_shape"
+  ],
+  "distinct_states": 12,
+  "required_states": 5,
+  "calls": 12,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "logit_elements": 16,
+        "singleton_batch": 1,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 17099430308.0,
+      "unexplained_instructions_per_call": 96332929.0,
+      "unexplained_share": 0.005633692308154294
+    },
+    {
+      "state": {
+        "logit_elements": 32,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 373584516.0,
+      "unexplained_instructions_per_call": 33046145.0,
+      "unexplained_share": 0.08845694504105196
+    },
+    {
+      "state": {
+        "logit_elements": 48,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 483927.0,
+      "unexplained_instructions_per_call": 41457.0,
+      "unexplained_share": 0.08566787965953543
+    },
+    {
+      "state": {
+        "logit_elements": 64,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 468865.0,
+      "unexplained_instructions_per_call": 29313.0,
+      "unexplained_share": 0.0625190619901251
+    },
+    {
+      "state": {
+        "logit_elements": 80,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 475175.0,
+      "unexplained_instructions_per_call": 31074.0,
+      "unexplained_share": 0.06539485452727942
+    },
+    {
+      "state": {
+        "logit_elements": 96,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 472547.0,
+      "unexplained_instructions_per_call": 27580.0,
+      "unexplained_share": 0.05836456479461302
+    },
+    {
+      "state": {
+        "logit_elements": 112,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 476885.0,
+      "unexplained_instructions_per_call": 26358.0,
+      "unexplained_share": 0.055271186973798715
+    },
+    {
+      "state": {
+        "logit_elements": 128,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 476621.0,
+      "unexplained_instructions_per_call": 25115.0,
+      "unexplained_share": 0.052693859481642645
+    },
+    {
+      "state": {
+        "logit_elements": 144,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 485302.0,
+      "unexplained_instructions_per_call": 28274.0,
+      "unexplained_share": 0.05826062946371538
+    },
+    {
+      "state": {
+        "logit_elements": 160,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 486945.0,
+      "unexplained_instructions_per_call": 26566.0,
+      "unexplained_share": 0.054556469416463874
+    },
+    {
+      "state": {
+        "logit_elements": 176,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 493016.0,
+      "unexplained_instructions_per_call": 27783.0,
+      "unexplained_share": 0.05635314066886268
+    },
+    {
+      "state": {
+        "logit_elements": 192,
+        "singleton_batch": 0,
+        "first_nonsingleton_shape": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 502956.0,
+      "unexplained_instructions_per_call": 32857.0,
+      "unexplained_share": 0.06532778215191787
+    }
+  ],
+  "max_unexplained_share": 0.08845694504105196,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "logit_elements": 219.50643939259558,
+      "singleton_batch": 17002666493.327303,
+      "first_nonsingleton_shape": 340022912.86666656
+    },
+    "constant": 433188.4808082101,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 41.81978722847998,
+  "raw_files": [
+    "run.2339800.json"
+  ]
+}

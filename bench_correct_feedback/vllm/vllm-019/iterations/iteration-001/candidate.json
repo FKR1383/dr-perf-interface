@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately affine in queue length because each additional queued request adds one unsuccessful comparison before the target is found.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self)",
+      "name": "queue_length",
+      "rationale": "Deque removal scans to the target. In this workload, the target is at index len(self) - 2, so comparison work grows linearly with queue length while deletion stays near the right end."
+    }
+  ]
+}

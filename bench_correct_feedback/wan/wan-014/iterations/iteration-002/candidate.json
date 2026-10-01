@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The persistent unexplained work across all six shape/cache states suggests runtime variability. Replacing the boundary correction with garbage-collector entry state tests whether allocation history explains that variation.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Captures the dominant spatial scaling of decoder operations."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Captures the additional volume-dependent work from temporal upsampling on cached chunks."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Separates fixed overhead for initial and cached chunks."
+    },
+    {
+      "expression": "__import__('gc').get_count()[0]",
+      "name": "gc_allocation_balance",
+      "rationale": "Cheap runtime entry state that may explain allocation and garbage-collection variability within otherwise identical decoder shapes."
+    }
+  ]
+}

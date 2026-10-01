@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Larger admission batches follow a nearly linear cost, while singleton and two-request batches have distinct positive residuals. Explicit indicators can represent those observed regimes without distorting the empty-queue baseline. Their association with cold execution remains unverified.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Admission costs for batches of three through eight requests are approximately linear in queue size."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "single_waiting_request",
+      "rationale": "Captures the observed excess cost of the singleton admission state."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "two_waiting_requests",
+      "rationale": "Captures the separate excess cost observed for the two-request admission state."
+    },
+    {
+      "expression": "len(self.running) if len(self.waiting) + len(self.skipped_waiting) == 0 else 0",
+      "name": "running_with_empty_waiting",
+      "rationale": "Distinguishes empty-queue entries by live batch size to test whether their instruction variation follows scheduler state."
+    }
+  ]
+}

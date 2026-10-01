@@ -1,0 +1,78 @@
+{
+  "agent_PCVs_thread": "01a0ed9f-f949-7b11-9fe4-02cc6fe2da05",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.040900640285034,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count should be approximately fixed setup cost plus per-step cost and per-step text-token cost, since this workload supplies embeddings directly and returns latents without VAE decoding.",
+      "irregularity_percent": 17.040900640285034,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "num_inference_steps",
+          "name": "denoising_steps",
+          "rationale": "Each step repeats two transformer calls, classifier-free guidance, and a scheduler update; latent dimensions and model configuration are fixed in this workload."
+        },
+        {
+          "expression": "num_inference_steps * prompt_embeds.shape[1]",
+          "name": "step_text_tokens",
+          "rationale": "Text projection and cross-attention work scale with the supplied embedding sequence length on every denoising step."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 8.96085906139225,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The substantial unexplained work across repeated identical input shapes suggests runtime initialization effects. Loaded-module cardinality and its interaction with step count may distinguish these regimes while retaining the main workload scaling terms.",
+      "irregularity_percent": 8.96085906139225,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "num_inference_steps",
+          "name": "denoising_steps",
+          "rationale": "Captures repeated transformer and scheduler work."
+        },
+        {
+          "expression": "num_inference_steps * prompt_embeds.shape[1]",
+          "name": "step_text_tokens",
+          "rationale": "Captures sequence-length-dependent work within each denoising step."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Cheap runtime-state cardinality that may distinguish library initialization regimes across repeated pipeline runs."
+        },
+        {
+          "expression": "num_inference_steps * len(__import__('sys').modules)",
+          "name": "steps_loaded_modules",
+          "rationale": "Allows per-step instruction cost to vary with the observable library initialization regime."
+        }
+      ]
+    }
+  ],
+  "case": "wan-025",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "27359e61ef134af714c23c0befcb1d3a221123d691a7f2d9347de7190de65960",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

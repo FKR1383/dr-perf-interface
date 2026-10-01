@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/pipelines/wan/pipeline_wan.py
++++ candidate/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -164,7 +164,7 @@
+         device: torch.device | None = None,
+         dtype: torch.dtype | None = None,
+     ):
+-        with perfmark.region("wan-031"):
++        with perfmark.region("wan-031", regex_cache_cold=(int(len(re._main._cache) < 15)), batch_size=(1 if isinstance(prompt, str) else len(prompt)), token_positions=((1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length), prompt_characters=(len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt)))):
+             device = device or self._execution_device
+             dtype = dtype or self.text_encoder.dtype
+ 

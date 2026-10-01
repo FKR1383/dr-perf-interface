@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Empty-history state may be essential to the successful penalty attribution in iteration 2. Restoring it while using a compact batch-sensitive masking feature should address both penalized and unpenalized variation within four expressions.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed penalty overhead."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Models dense penalty work proportional to batch size."
+    },
+    {
+      "expression": "sum((int(len(row) == 0) for row in sampling_metadata.output_token_ids))",
+      "name": "requests_without_output",
+      "rationale": "Restores the empty-history feature from iteration 2, which achieved less than 4 percent unexplained work on penalized calls."
+    },
+    {
+      "expression": "sum((int(len(getattr(processor, 'logits_slice', ([], []))[0]) > 0) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) * (1 + 2 // logits.shape[0]) if sampling_metadata.no_penalties else 0",
+      "name": "unpenalized_mask_batch_factor",
+      "rationale": "Combines masking activation with a larger singleton-batch factor, approximating the observed masking overhead in one feature."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed attribute-assignment overhead, new cache-list construction, and disposal of previous cache lists. The varying index values should not materially affect reset cost.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "self._cached_conv_counts['decoder'] + self._cached_conv_counts['encoder']",
+      "name": "cache_slots",
+      "rationale": "Captures the work of allocating and filling the two feature-cache lists."
+    },
+    {
+      "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+      "name": "existing_cache_slots",
+      "rationale": "Captures disposal of existing cache lists and distinguishes initial cache creation from subsequent resets."
+    }
+  ]
+}

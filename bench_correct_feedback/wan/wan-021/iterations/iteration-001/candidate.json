@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is primarily fixed tensor-operation overhead plus work proportional to the materialized rotary embeddings, with a possible separate cost for singleton temporal layouts.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[2] // self.patch_size[0] * (hidden_states.shape[3] // self.patch_size[1]) * (hidden_states.shape[4] // self.patch_size[2]) * self.attention_head_dim",
+      "name": "rotary_output_elements",
+      "rationale": "Tracks the elements materialized by each cosine and sine concatenation; slicing, views, and expansion otherwise have mostly fixed overhead."
+    },
+    {
+      "expression": "int(hidden_states.shape[2] // self.patch_size[0] == 1)",
+      "name": "singleton_temporal_axis",
+      "rationale": "Captures changes in broadcast strides and concatenation iteration when the temporal axis is a singleton."
+    }
+  ]
+}

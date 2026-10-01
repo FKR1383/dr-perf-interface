@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is explained by per-prompt overhead, linear padded-token processing, quadratic attention work, and input text length.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt cleaning, tokenization, slicing, and padding overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "token_positions",
+      "rationale": "Models encoder projections and elementwise work on padded tokens."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+      "name": "attention_pairs",
+      "rationale": "Models quadratic attention and relative-position processing."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Captures text-dependent cleaning and tokenizer work using cheap string lengths."
+    }
+  ]
+}

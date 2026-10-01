@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately fixed dispatch and allocation overhead plus a linear term in tensor elements. The fixture uses a constant tensor shape, so counts should be nearly constant across entries.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "noise_pred.numel()",
+      "name": "noise_elements",
+      "rationale": "The region performs subtraction, scalar multiplication, and addition over the noise tensor; its element count captures the arithmetic work."
+    }
+  ]
+}

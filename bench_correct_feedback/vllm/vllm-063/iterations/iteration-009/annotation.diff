@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -841,7 +841,7 @@
+     def refresh_metadata(self):
+         """Apply any batch updates to sampling metadata."""
+ 
+-        with perfmark.region("vllm-063"):
++        with perfmark.region("vllm-063", sampling_metadata_work=(int(self.batch_update_builder.batch_changed) * (3 + int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + int(not self.no_allowed_token_ids))), penalty_metadata_work=(14 + self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0), minimum_token_transition=(int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)), admission_work=(len(self.batch_update_builder.added) + 2 * int(bool(self.batch_update_builder.added)) + 8 * int(bool(self.batch_update_builder.added) and self.all_greedy))):
+             if self.is_pooling_model:
+                 batch_changed = self.batch_update_builder.reset()
+                 if batch_changed:

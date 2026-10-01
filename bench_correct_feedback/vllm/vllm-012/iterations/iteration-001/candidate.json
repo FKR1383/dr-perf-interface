@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count depends on lookup overhead, whether the first block misses, and the eligible prefix length when the first block hits.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache))",
+      "name": "lookup_enabled",
+      "rationale": "Separates the early return from cache lookup."
+    },
+    {
+      "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache) and (min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) > 0))",
+      "name": "has_lookup_blocks",
+      "rationale": "Distinguishes empty searches from searches requiring a hash lookup."
+    },
+    {
+      "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache) and bool(request.block_hashes) and (request.block_hashes[0] + b'\\x00\\x00\\x00\\x00' in self.block_pool.cached_block_hash_to_block._cache))",
+      "name": "first_block_cached",
+      "rationale": "Uses direct dictionary membership for the group-zero hash to distinguish immediate misses from reusable prefixes."
+    },
+    {
+      "expression": "min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) if self.enable_caching and (not request.skip_reading_prefix_cache) and request.block_hashes and (request.block_hashes[0] + b'\\x00\\x00\\x00\\x00' in self.block_pool.cached_block_hash_to_block._cache) else 0",
+      "name": "cached_prefix_search_extent",
+      "rationale": "Estimates shared-prefix traversal work using a bounded dictionary membership check and the eligible block count."
+    }
+  ]
+}

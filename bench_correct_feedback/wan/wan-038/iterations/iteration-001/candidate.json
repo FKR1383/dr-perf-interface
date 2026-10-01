@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count follows a fixed overhead plus linear schedule work, with a separate offset for singleton schedules.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)",
+      "name": "schedule_length",
+      "rationale": "Schedule construction, array arithmetic, tensor conversion, and concatenation scale with the number of steps."
+    },
+    {
+      "expression": "int((num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)) == 1)",
+      "name": "singleton_schedule",
+      "rationale": "A single-step schedule takes a distinct NumPy linspace branch."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The best model narrowly misses the threshold. Replacing its small linear length term with a quadratic term tests whether residual length dependence is nonlinear; the successful regime structure remains intact.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(request.prompt_token_ids) ** 2 if request.prompt_token_ids is not None else 0",
+      "name": "prompt_tokens_squared",
+      "rationale": "Tests curvature in the residual length dependence while preserving all eight observed states."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and 9 <= len(request.prompt_token_ids) <= 10)",
+      "name": "early_short_prompt",
+      "rationale": "Retains the shared indicator for the two elevated short-prompt states."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+      "name": "ten_token_prompt",
+      "rationale": "Retains an independent increment for the highest-cost state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+      "name": "medium_prompt",
+      "rationale": "Retains the medium-prompt regime."
+    }
+  ]
+}

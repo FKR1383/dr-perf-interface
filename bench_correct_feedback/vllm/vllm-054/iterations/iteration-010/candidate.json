@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Dropping the fixed penalty indicator frees a feature for independently fitting singleton masking. Batch size and empty-history cardinality retain the dominant penalty predictors, while separate masking indicators avoid imposing an inaccurate cost ratio.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Captures the dominant batch-dependent penalty cost."
+    },
+    {
+      "expression": "sum((int(len(row) == 0) for row in sampling_metadata.output_token_ids))",
+      "name": "requests_without_output",
+      "rationale": "Retains the feature consistently associated with substantially better penalty attribution."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 0)",
+      "name": "unpenalized_mask_active",
+      "rationale": "Separately captures activation of masking in unpenalized calls."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+      "name": "unpenalized_single_mask",
+      "rationale": "Allows an independent contribution for the more expensive singleton masking case."
+    }
+  ]
+}

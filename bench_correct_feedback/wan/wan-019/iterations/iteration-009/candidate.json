@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Two unresolved effects may be mixed: an eight-element cleanup path within 16-element vector remainders, and key processing repeated per query block. These features test both directly.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear query and output processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "key_remainder_16",
+      "rationale": "Tracks remainder processing after full 16-element key vectors."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 8)",
+      "name": "key_remainder_8",
+      "rationale": "Tests whether eight-element vectors handle part of the 16-element remainder, leaving a separate scalar tail."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32) * key.shape[1]",
+      "name": "keys_per_query_block",
+      "rationale": "Tracks key processing repeated for each 32-row query block, including the interaction omitted by a standalone query-block count."
+    }
+  ]
+}

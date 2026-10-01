@@ -1,0 +1,229 @@
+{
+  "agent_PCVs_thread": "01a0edae-ecab-7610-908d-af6e94e6e697",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 5; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed encoder overhead, per-prompt tokenization, linear padded-token processing, and quadratic attention and relative-position operations.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenizer operations and batch-dependent encoder overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Tracks linear encoder, padding, and mask work."
+        },
+        {
+          "expression": "batch_size * max_sequence_length ** 2",
+          "name": "attention_elements",
+          "rationale": "Tracks quadratic self-attention work."
+        },
+        {
+          "expression": "max_sequence_length ** 2",
+          "name": "position_pairs",
+          "rationale": "Captures relative-position bias construction shared across the batch."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 18.343258652438738,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Adding prompt character count separates enough entry states for validation while retaining the dominant batch and sequence-size predictors. The previous measurements suggest shape-dependent variation is small relative to fixed encoder overhead.",
+      "irregularity_percent": 18.343258652438738,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenizer and encoder overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Tracks linear tensor processing."
+        },
+        {
+          "expression": "batch_size * max_sequence_length ** 2",
+          "name": "attention_elements",
+          "rationale": "Tracks quadratic attention processing."
+        },
+        {
+          "expression": "sum((len(text) for text in prompt))",
+          "name": "prompt_characters",
+          "rationale": "Cheap string lengths approximate tokenizer input processing and distinguish prompts sharing the same padded tensor shape."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.62697602507666,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The substantial unexplained work across repeated identical input states suggests runtime initialization contributes beyond tensor dimensions. Loaded-module cardinality may distinguish initialization regimes, including the unusually costly red-kite state.",
+      "irregularity_percent": 19.62697602507666,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenizer and encoder overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Tracks encoder tensor-processing volume."
+        },
+        {
+          "expression": "sum((len(text) for text in prompt))",
+          "name": "prompt_characters",
+          "rationale": "Approximates tokenizer input work and distinguishes prompts with identical padded shapes."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Cheap runtime entry state that can distinguish library initialization regimes involving lazy imports."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.45057052025854,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Loaded-module cardinality was constant. Model-local initialization may explain the elevated first prompt and repeated-state variability, so this candidate tests entry-state cardinality on the encoder and its stack.",
+      "irregularity_percent": 19.45057052025854,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenizer overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Tracks linear encoder processing."
+        },
+        {
+          "expression": "sum((len(text) for text in prompt))",
+          "name": "prompt_characters",
+          "rationale": "Approximates tokenizer work and separates prompts with equal tensor dimensions."
+        },
+        {
+          "expression": "len(self.text_encoder.__dict__) + len(self.text_encoder.encoder.__dict__)",
+          "name": "encoder_state_size",
+          "rationale": "Cheap cardinality of model runtime state may distinguish lazy per-instance initialization that loaded-module cardinality did not capture."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.320960226490776,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Source-cache cardinality may distinguish cache-warming regimes that module count and encoder attribute count could not separate.",
+      "irregularity_percent": 19.320960226490776,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenizer and encoder overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Tracks linear tensor-processing work."
+        },
+        {
+          "expression": "sum((len(text) for text in prompt))",
+          "name": "prompt_characters",
+          "rationale": "Approximates tokenizer input work and distinguishes equal-shape prompts."
+        },
+        {
+          "expression": "len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0",
+          "name": "source_cache_entries",
+          "rationale": "Reads existing runtime cache cardinality without importing linecache or accessing files."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 8.947147771802642,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "A simpler two-feature model avoids redundant predictors and requires fewer distinct states. The five observed batch-and-length configurations should support validation, while prompt-content costs appear small for most measurements.",
+      "irregularity_percent": 8.947147771802642,
+      "iteration": 6,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Captures tokenizer operations repeated for each prompt and batch-dependent encoder overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Captures the principal variable tensor-processing work for this small fixed encoder."
+        }
+      ]
+    }
+  ],
+  "case": "wan-033",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "a9b5db5abd9f157a11666922e5bfb352229008463251da0d1d8b6d9004cad2de",
+  "iterations": 6,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

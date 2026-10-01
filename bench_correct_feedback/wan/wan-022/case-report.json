@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0ed9b-06e6-7f62-9f5f-da1e3ad09631",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.9447182023998478,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a constant timestep and dispatch cost plus a linear term in text tensor size.",
+      "irregularity_percent": 0.9447182023998478,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "encoder_hidden_states.numel()",
+          "name": "text_elements",
+          "rationale": "Text projection and activation work scales with text elements because the model widths are fixed. Timestep processing is constant across this workload, and image embedding is absent."
+        }
+      ]
+    }
+  ],
+  "case": "wan-022",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "4ff3f27d7a79054f81f6b9070bf5f8e8e289af5383470984c3ba5f43eae0b967",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

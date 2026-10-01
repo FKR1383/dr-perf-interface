@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is primarily proportional to request count, with additional per-request work depending on the number of tokenization options.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Each request incurs rendering, validation, engine insertion, and result-list overhead."
+    },
+    {
+      "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+      "name": "tokenization_option_work",
+      "rationale": "The generator captures tokenization options that are processed separately for every prompt."
+    }
+  ]
+}

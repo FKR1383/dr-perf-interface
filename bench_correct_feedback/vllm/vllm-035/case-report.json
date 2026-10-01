@@ -1,0 +1,152 @@
+{
+  "agent_PCVs_thread": "01a0f5aa-3f39-7872-98a5-c465699b8550",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 58.65014263825753,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count should primarily follow admitted request count, KV block demand, and priority-queue removal work. Empty waiting queues should incur nearly constant cost.",
+      "irregularity_percent": 58.65014263825753,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures per-request queue traversal, admission checks, and scheduling bookkeeping."
+        },
+        {
+          "expression": "sum(((r.num_tokens + self.block_size - 1) // self.block_size for r in self.waiting))",
+          "name": "waiting_blocks",
+          "rationale": "Estimates block allocation and prefix-cache processing work across waiting requests."
+        },
+        {
+          "expression": "len(self.waiting) * (0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 2 else 2 if len(self.waiting) < 4 else 3 if len(self.waiting) < 8 else 4)",
+          "name": "priority_queue_work",
+          "rationale": "Approximates heap removal work for the workload's queues of at most eight requests using cheap comparisons."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 43.796508514512155,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The previous block-count feature was redundant with request count. Removing its queue traversal reduces observation overhead, while a nonempty indicator captures the substantial difference between admission and empty decode steps. A quadratic term accommodates remaining batch-size effects.",
+      "irregularity_percent": 43.796508514512155,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Models per-request admission and allocation work without traversing either queue."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) > 0)",
+          "name": "nonempty_waiting",
+          "rationale": "Separates admission-path setup from the inexpensive empty-queue path."
+        },
+        {
+          "expression": "(len(self.waiting) + len(self.skipped_waiting)) ** 2",
+          "name": "waiting_requests_squared",
+          "rationale": "Allows nonlinear queue and allocation costs across the bounded batch sizes."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 13.999786484466744,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Larger admission batches follow a nearly linear cost, while singleton and two-request batches have distinct positive residuals. Explicit indicators can represent those observed regimes without distorting the empty-queue baseline. Their association with cold execution remains unverified.",
+      "irregularity_percent": 13.999786484466744,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Admission costs for batches of three through eight requests are approximately linear in queue size."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "single_waiting_request",
+          "rationale": "Captures the observed excess cost of the singleton admission state."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "two_waiting_requests",
+          "rationale": "Captures the separate excess cost observed for the two-request admission state."
+        },
+        {
+          "expression": "len(self.running) if len(self.waiting) + len(self.skipped_waiting) == 0 else 0",
+          "name": "running_with_empty_waiting",
+          "rationale": "Distinguishes empty-queue entries by live batch size to test whether their instruction variation follows scheduler state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 6.066849746445782,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "The remaining admission residuals include fixed work shared across nonempty batches. Replacing the weak running-count feature with a nonempty indicator should explain this work while preserving the successful linear and small-batch terms. Empty-queue residuals were already below 10 percent.",
+      "irregularity_percent": 6.066849746445782,
+      "iteration": 4,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures approximately linear per-request admission work."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "single_waiting_request",
+          "rationale": "Retains the distinct singleton admission regime supported by previous measurements."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "two_waiting_requests",
+          "rationale": "Retains the distinct two-request admission regime."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) > 0)",
+          "name": "nonempty_waiting",
+          "rationale": "Captures fixed admission-path costs shared by all nonempty batches, independently of the empty-queue baseline."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-035",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e0089cc65a4a7aeff1ced94a1a01c7c91a1294c6c5c4a8f7f4abd224aecec46b",
+  "iterations": 4,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

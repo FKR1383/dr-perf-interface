@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count varies mainly with prefix lookup length, sequence block count, cache state, and priority-queue removal cost.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(request.block_hashes)",
+      "name": "prefix_blocks",
+      "rationale": "Bounds the number of full blocks examined during prefix-cache lookup."
+    },
+    {
+      "expression": "(request.num_tokens + self.block_size - 1) // self.block_size",
+      "name": "sequence_blocks",
+      "rationale": "Tracks block allocation and block-table processing work."
+    },
+    {
+      "expression": "len(request_queue)",
+      "name": "waiting_queue_size",
+      "rationale": "Captures variation in priority-queue removal work."
+    },
+    {
+      "expression": "len(self.kv_cache_manager.block_pool.cached_block_hash_to_block)",
+      "name": "cached_blocks",
+      "rationale": "Provides cheap cache-state information distinguishing cold and populated prefix caches."
+    }
+  ]
+}

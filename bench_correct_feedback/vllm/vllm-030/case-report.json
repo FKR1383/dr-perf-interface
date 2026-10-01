@@ -1,0 +1,110 @@
+{
+  "agent_PCVs_thread": "01a0f585-afbd-7232-acee-e632b28c4bb5",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.086371158921143,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "The workload adds new requests to a priority queue; insertion depth and incoming priority should explain its main instruction-count variation.",
+      "irregularity_percent": 17.086371158921143,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting)",
+          "name": "waiting_depth",
+          "rationale": "Queue size captures variation in priority-queue insertion and allocation costs."
+        },
+        {
+          "expression": "0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 3 else 2 if len(self.waiting) < 7 else 3",
+          "name": "heap_height",
+          "rationale": "Gives the maximum sift-up distance for the fixed workload's queue sizes of zero through seven."
+        },
+        {
+          "expression": "request.priority",
+          "name": "incoming_priority",
+          "rationale": "Incoming priority influences comparisons and movement during heap insertion."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 35.53653799465889,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The largest unexplained shares occur where multiple calls share queue size and priority. Adding prompt cardinality may distinguish these heterogeneous entry states while retaining the heap-cost predictors.",
+      "irregularity_percent": 35.53653799465889,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting)",
+          "name": "waiting_depth",
+          "rationale": "Captures queue insertion size and allocation boundaries."
+        },
+        {
+          "expression": "0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 3 else 2 if len(self.waiting) < 7 else 3",
+          "name": "heap_height",
+          "rationale": "Captures maximum heap insertion depth for the bounded workload."
+        },
+        {
+          "expression": "request.priority",
+          "name": "incoming_priority",
+          "rationale": "Distinguishes insertion paths with different priority comparisons."
+        },
+        {
+          "expression": "request.num_prompt_tokens",
+          "name": "prompt_tokens",
+          "rationale": "Separates short- and long-prompt entry states previously grouped together, testing whether their differing request construction and allocation state explains the observed variation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 6.595026185502103,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Actual sift distance should explain priority-queue work better than maximum height or raw priority. Removing prompt length and using two causal expressions also reduces observation overhead.",
+      "irregularity_percent": 6.595026185502103,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.waiting)",
+          "name": "waiting_depth",
+          "rationale": "Captures queue-size-dependent insertion and allocation costs."
+        },
+        {
+          "expression": "(1 if len(self.waiting) >= 1 and request < self.waiting._heap[(len(self.waiting) - 1) // 2] else 0) + (1 if len(self.waiting) >= 3 and request < self.waiting._heap[(len(self.waiting) - 3) // 4] else 0) + (1 if len(self.waiting) >= 7 and request < self.waiting._heap[(len(self.waiting) - 7) // 8] else 0)",
+          "name": "sift_levels",
+          "rationale": "Counts insertion ancestors outranked by the incoming request, giving the exact sift distance for the workload's heaps using at most three comparisons."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-030",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "8eb6d70fe60623b2729daa842cd8e42e6a6b7fe234f8ebf98236010cbf25c786",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

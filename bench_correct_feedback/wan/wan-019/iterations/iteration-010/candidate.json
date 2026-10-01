@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Explicit loop-trip counts may explain instruction paths better than total pair counts. This candidate separates full-vector iterations, scalar remainder iterations, per-row work, and key/value preparation.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1]",
+      "name": "query_rows",
+      "rationale": "Counts per-head query rows directly."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] // 16)",
+      "name": "full_key_vectors",
+      "rationale": "Directly counts complete 16-element key-vector iterations instead of requiring their reconstruction from total pairs and remainders."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "scalar_key_elements",
+      "rationale": "Counts remaining key elements processed for each query row."
+    },
+    {
+      "expression": "key.numel() + value.numel()",
+      "name": "key_value_elements",
+      "rationale": "Tracks key/value preparation independently of query-row processing."
+    }
+  ]
+}

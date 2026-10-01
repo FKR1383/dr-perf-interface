@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0f62b-330f-7cc3-b0e9-a0a554a1aa68",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 86.82993124018176,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily linear in batch size, with additional costs for first outputs, finished requests, and accumulated generation length.",
+      "irregularity_percent": 86.82993124018176,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-output iteration, detokenization, and request-output construction overhead."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures request cleanup and completion-statistics processing."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+          "name": "prefilling_requests",
+          "rationale": "Captures first-output statistics and prefill-state transitions."
+        },
+        {
+          "expression": "sum((len(self.request_states[o.request_id].detokenizer.output_token_ids) + len(o.new_token_ids) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].detokenizer is not None))",
+          "name": "accumulated_output_tokens",
+          "rationale": "Captures accumulated generation length affecting incremental decoding and cumulative output construction."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 71.39358990430821,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "First-output cost scales with total prompt length in addition to request count. Replacing accumulated generation length with prefill prompt tokens should explain the large increases for long-prompt batches.",
+      "irregularity_percent": 71.39358990430821,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Measures per-output processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Measures completion statistics and request cleanup."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+          "name": "prefilling_requests",
+          "rationale": "Separates first-output processing from subsequent decoding steps."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_prompt_tokens",
+          "rationale": "Measures prompt-dependent work during initial detokenization; the largest unexplained costs occur on first outputs with long prompts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 39.29481326492725,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Batch size, completions, and first-output prompt length explain ordinary work. A separate regime for batches that finish entirely on their first output may isolate the largest residual; this remains a hypothesis rather than an established cause.",
+      "irregularity_percent": 39.29481326492725,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_prompt_tokens",
+          "rationale": "Captures prompt-dependent first-output detokenization work."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Separates batches completed entirely on their first output, including the exceptional high-cost observation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 72.21743023745003,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Prompt length alone omits fixed first-output initialization costs. Adding a small per-request offset to the prefill work measure should better explain both short and long prompts while retaining completion and exceptional-regime features.",
+      "irregularity_percent": 72.21743023745003,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len + 6 for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_work",
+          "rationale": "Combines prompt-length-dependent work with fixed initialization work per prefilling request."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Separates the exceptional regime where every request finishes on its first output."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 60.87374445223078,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The combined token-count feature worsened attribution. Initial decoding may instead scale with prompt characters processed by the tokenizer; this candidate tests that alternative while preserving the other workload dimensions.",
+      "irregularity_percent": 60.87374445223078,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((len(self.request_states[o.request_id].prompt or '') for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_prompt_characters",
+          "rationale": "Tests whether initial tokenizer work follows text length more closely than token count."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Retains separation of the exceptional first-output completion regime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.733773280539666,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Token-processing loops may follow prompt plus incoming token counts rather than gated prompt length alone. This natural combined cardinality could explain work shared between prefill and subsequent decoding calls.",
+      "irregularity_percent": 38.733773280539666,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((len(o.new_token_ids) + (self.request_states[o.request_id].prompt_len if self.request_states[o.request_id].is_prefilling else 0) for o in engine_core_outputs if o.request_id in self.request_states))",
+          "name": "detokenization_tokens",
+          "rationale": "Counts incoming tokens on every update and prompt tokens on initial updates, matching the combined token-processing workload."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Separates the exceptional first-output completion regime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 67.13959460929068,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Independent prefill count and prompt length may be necessary for attribution. Combining the exceptional completion regime with ordinary completion work frees a feature for prefill count while retaining an approximation of the exceptional cost.",
+      "irregularity_percent": 67.13959460929068,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs)) + 5 * int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "completion_work",
+          "rationale": "Combines ordinary completion work with the observed additional cost when the entire batch completes on its first output."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+          "name": "prefilling_requests",
+          "rationale": "Restores an independent measure of fixed initialization work per first output."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_prompt_tokens",
+          "rationale": "Separately measures prompt-dependent initialization work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 44.05742739746292,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Initial text conversion may scale with non-special prompt tokens. Removing the optional leading special token tests a structural source of mismatch in the raw prompt-length feature.",
+      "irregularity_percent": 44.05742739746292,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Restores an independent count of completion-statistics and cleanup operations."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len - int(bool(self.request_states[o.request_id].prompt_token_ids) and self.request_states[o.request_id].prompt_token_ids[0] == 2) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_text_tokens",
+          "rationale": "Counts initial prompt tokens excluding OPT's leading special token, accounting for the workload's alternating add_special_tokens setting."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Restores independent separation of the exceptional first-output completion regime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 45.814680086066666,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "The dominant initialization loops may process prompt tokens plus the first generated tokens specifically on initial outputs. This differs from both prompt-only counts and counting incoming tokens on every decoding call.",
+      "irregularity_percent": 45.814680086066666,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((self.request_states[o.request_id].prompt_len + len(o.new_token_ids) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "initial_decode_tokens",
+          "rationale": "Measures the complete token sequence available for initial decoding, including newly generated tokens."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Separates the exceptional first-output completion regime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 77.47244493681582,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "The sensitivity to token-count offsets suggests that the relevant loop cardinality may exclude a fixed decoding context. This candidate tests a five-token lookback; its applicability to the pinned detokenizer remains unverified.",
+      "irregularity_percent": 77.47244493681582,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(engine_core_outputs)",
+          "name": "batch_size",
+          "rationale": "Captures per-request processing and output construction."
+        },
+        {
+          "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+          "name": "finished_requests",
+          "rationale": "Captures completion statistics and cleanup."
+        },
+        {
+          "expression": "sum((max(self.request_states[o.request_id].prompt_len - 5, 0) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+          "name": "prefill_tokens_beyond_lookback",
+          "rationale": "Tests whether variable initialization work excludes a fixed five-token decoding lookback."
+        },
+        {
+          "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+          "name": "entire_batch_finishes_on_first_output",
+          "rationale": "Separates the exceptional first-output completion regime."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-047",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "ab8cc6ad2c39a430fbeaabf84126c47218f5526ef51e2f197b1fc22c9ef3de17",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

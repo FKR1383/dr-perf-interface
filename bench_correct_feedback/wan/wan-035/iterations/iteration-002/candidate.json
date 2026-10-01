@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Measured instruction counts vary only modestly with tensor dimensions. Per-prompt overhead, padded token volume, and input text length should explain that variation while distinguishing all six workload states with three features.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenization, cleaning, and tensor assembly overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Captures encoder and embedding work proportional to padded token volume."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else sum((len(text) for text in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Captures text-processing work and distinguishes the two workloads with identical batch size and sequence length."
+    }
+  ]
+}

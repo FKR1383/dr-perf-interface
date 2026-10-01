@@ -1,0 +1,113 @@
+{
+  "case": "wan-015",
+  "validity_warnings": [],
+  "pcv_names": [
+    "spatial_sites",
+    "input_sites",
+    "attention_pairs",
+    "warm_cache"
+  ],
+  "distinct_states": 6,
+  "required_states": 6,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "spatial_sites": 256,
+        "input_sites": 256,
+        "attention_pairs": 16,
+        "warm_cache": 0
+      },
+      "calls": 9,
+      "instructions_per_call": 12886785.888888888,
+      "unexplained_instructions_per_call": 1847510.2222222222,
+      "unexplained_share": 0.1433647022734477
+    },
+    {
+      "state": {
+        "spatial_sites": 256,
+        "input_sites": 1024,
+        "attention_pairs": 16,
+        "warm_cache": 1
+      },
+      "calls": 9,
+      "instructions_per_call": 22422185.555555556,
+      "unexplained_instructions_per_call": 4333175.444444441,
+      "unexplained_share": 0.19325392851237055
+    },
+    {
+      "state": {
+        "spatial_sites": 1024,
+        "input_sites": 1024,
+        "attention_pairs": 256,
+        "warm_cache": 0
+      },
+      "calls": 6,
+      "instructions_per_call": 19079706.0,
+      "unexplained_instructions_per_call": 4445745.333333334,
+      "unexplained_share": 0.23300911100691665
+    },
+    {
+      "state": {
+        "spatial_sites": 1024,
+        "input_sites": 4096,
+        "attention_pairs": 256,
+        "warm_cache": 1
+      },
+      "calls": 3,
+      "instructions_per_call": 42075646.0,
+      "unexplained_instructions_per_call": 10789936.999999996,
+      "unexplained_share": 0.2564413865446058
+    },
+    {
+      "state": {
+        "spatial_sites": 2304,
+        "input_sites": 2304,
+        "attention_pairs": 1296,
+        "warm_cache": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 30012662.0,
+      "unexplained_instructions_per_call": 8628402.000000002,
+      "unexplained_share": 0.28749205918488674
+    },
+    {
+      "state": {
+        "spatial_sites": 2304,
+        "input_sites": 9216,
+        "attention_pairs": 1296,
+        "warm_cache": 1
+      },
+      "calls": 6,
+      "instructions_per_call": 75501966.5,
+      "unexplained_instructions_per_call": 21427431.999999985,
+      "unexplained_share": 0.2837996544103257
+    }
+  ],
+  "max_unexplained_share": 0.28749205918488674,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "spatial_sites": -88.84386026004539,
+      "input_sites": 4171.038196658872,
+      "attention_pairs": 994.2743634259303,
+      "warm_cache": 3757146.9285714226
+    },
+    "constant": 10334848.84354062,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 39.34647286776453,
+  "raw_files": [
+    "run.1552075.json"
+  ]
+}

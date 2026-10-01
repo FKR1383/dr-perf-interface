@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The combined work predictor lost most explanatory power, suggesting separate kernel loop bounds are necessary. Independent area, temporal volume, spatial perimeter, and frame count restore these bounds without imposing proportionality between their costs.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "x.shape[3] * x.shape[4]",
+      "name": "spatial_area",
+      "rationale": "Provides the direct spatial loop bound for convolution and elementwise kernels."
+    },
+    {
+      "expression": "x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "temporal_volume",
+      "rationale": "Provides an independent temporal-volume bound rather than imposing a shared coefficient with spatial work."
+    },
+    {
+      "expression": "x.shape[3] + x.shape[4]",
+      "name": "spatial_perimeter",
+      "rationale": "Models row traversal and padding boundaries independently of temporal length."
+    },
+    {
+      "expression": "x.shape[2]",
+      "name": "chunk_frames",
+      "rationale": "Models temporal loop overhead and distinguishes initial from continuation chunks."
+    }
+  ]
+}

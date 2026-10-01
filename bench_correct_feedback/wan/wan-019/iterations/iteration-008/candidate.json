@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A second key-axis blocking period may explain the work left unresolved by 16-element vector remainders. The six-column remainder tests this independently of the unsuccessful query-axis tiling features.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks total attention arithmetic."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear query and output processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "key_vector_remainder",
+      "rationale": "Tracks the observed sensitivity to key lengths outside complete 16-element vectors."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 6)",
+      "name": "key_microkernel_remainder",
+      "rationale": "Tests a separate six-column matrix-multiplication blocking effect, allowing matrix kernels and softmax to use different block widths."
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "agent_PCVs_thread": "01a0eda1-7f20-70e1-bbe3-cb1b2d4813bf",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 15.815992566985079,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed transformer overhead plus work proportional to text length, with an additional cost when the scheduler initializes its step index.",
+      "irregularity_percent": 15.815992566985079,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "text_length",
+          "rationale": "Tracks text projection and cross-attention work in both transformer calls; latent dimensions and model size are fixed."
+        },
+        {
+          "expression": "int(self.scheduler.step_index is None)",
+          "name": "scheduler_initialization",
+          "rationale": "Captures scheduler initialization performed on the first denoising step of each pipeline call."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 39.33769590858765,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The similar unexplained instruction share across text lengths suggests runtime overhead beyond tensor dimensions. Cheap garbage-collector entry state may explain variation caused by collections during the marked region.",
+      "irregularity_percent": 39.33769590858765,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "text_length",
+          "rationale": "Tracks text projection and cross-attention work."
+        },
+        {
+          "expression": "int(self.scheduler.step_index is None)",
+          "name": "scheduler_initialization",
+          "rationale": "Separates scheduler initialization from subsequent steps."
+        },
+        {
+          "expression": "__import__('gc').get_count()[0]",
+          "name": "gc_allocation_pressure",
+          "rationale": "Measures entry-state allocation pressure that can affect collection work during transformer execution."
+        },
+        {
+          "expression": "__import__('gc').get_count()[1]",
+          "name": "gc_older_generation_pressure",
+          "rationale": "Tracks progress toward more costly older-generation garbage collection."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 5.531316917545084,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Text length alone captures the repeatable workload variation. Scheduler initialization has a small fitted effect, while garbage-collector state did not explain the observed overhead; removing both may improve the measured irregularity.",
+      "irregularity_percent": 5.531316917545084,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "text_length",
+          "rationale": "The three text lengths determine the varying text-projection and cross-attention workload; latent shape, model size, and guidance are fixed."
+        }
+      ]
+    }
+  ],
+  "case": "wan-026",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "39be52c5c8b8b33c748dd1ce77571405e796a315d8b13bdd0fa573c1ad6905ca",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

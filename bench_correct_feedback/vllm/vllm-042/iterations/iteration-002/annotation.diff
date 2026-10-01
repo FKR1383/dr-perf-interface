@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/core.py
++++ candidate/vllm/v1/engine/core.py
+@@ -975,7 +975,7 @@
+         # Note on thread safety: no race condition.
+         # `mm_receiver_cache` is reset at the end of LLMEngine init,
+         # and will only be accessed in the input processing thread afterwards.
+-        with perfmark.region("vllm-042"):
++        with perfmark.region("vllm-042", prompt_tokens=(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0), random_sampling=(int(request.sampling_params is not None and request.sampling_params.temperature > 0)), penalties_enabled=(int(request.sampling_params is not None and (request.sampling_params.presence_penalty != 0 or request.sampling_params.frequency_penalty != 0 or request.sampling_params.repetition_penalty != 1))), max_tokens=(request.sampling_params.max_tokens if request.sampling_params is not None else 0)):
+             if self.mm_receiver_cache is not None and request.mm_features:
+                 request.mm_features = self.mm_receiver_cache.get_and_update_features(
+                     request.mm_features

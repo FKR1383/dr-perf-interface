@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Remaining irregularity is concentrated in inexpensive unpenalized calls. Minimum-token processor entry state should distinguish their tracking and masking work more directly than batch size or penalty output histories.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed penalty invocation overhead."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Retains the feature that explained penalized calls to within 4 percent."
+    },
+    {
+      "expression": "sum((len(getattr(processor, 'min_toks', {})) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+      "name": "minimum_token_tracked_requests",
+      "rationale": "Measures minimum-token processor tracking state, which can vary even when penalty metadata contains no output histories."
+    },
+    {
+      "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+      "name": "minimum_token_mask_entries",
+      "rationale": "Measures cached masking-index cardinality associated with minimum-token enforcement."
+    }
+  ]
+}

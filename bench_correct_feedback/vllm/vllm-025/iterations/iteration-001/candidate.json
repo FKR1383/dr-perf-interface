@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is dominated by heapify's linear traversal, its number of internal nodes, and variation in the removed request's position.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self._heap)",
+      "name": "queue_size",
+      "rationale": "Captures linear heap rebuilding and list element shifting after removal."
+    },
+    {
+      "expression": "(len(self._heap) - 1) // 2",
+      "name": "heapify_internal_nodes",
+      "rationale": "Counts internal nodes processed by heapify after removing one request."
+    },
+    {
+      "expression": "int(len(self._heap) > 1 and self._heap[1] is request)",
+      "name": "target_at_second_slot",
+      "rationale": "Cheap indicator of removal search length and which early heap position is disturbed in this workload."
+    }
+  ]
+}

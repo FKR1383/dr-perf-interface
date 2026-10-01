@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The largest deviations are concentrated in the one-token and two-token inputs. Explicit indicators for these observed regimes, together with completion status and token count, should substantially reduce unexplained cost.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(finish_reason is not None)",
+      "name": "finished",
+      "rationale": "Separates completion-specific work from ordinary output construction."
+    },
+    {
+      "expression": "len(new_token_ids)",
+      "name": "new_token_count",
+      "rationale": "Retains token-size dependence and distinguishes the observed entry states."
+    },
+    {
+      "expression": "int(len(new_token_ids) == 1)",
+      "name": "single_token_output",
+      "rationale": "Tests the unusually high cost observed for the single-token input, potentially associated with runtime initialization in this fixed workload."
+    },
+    {
+      "expression": "int(len(new_token_ids) == 2)",
+      "name": "two_token_output",
+      "rationale": "Separates the second unusually expensive input from the relatively stable remaining calls."
+    }
+  ]
+}

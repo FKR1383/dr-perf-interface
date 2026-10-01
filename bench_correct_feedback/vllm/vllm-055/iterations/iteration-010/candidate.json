@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Aggregate top-k support may explain filtering costs that batch size alone misses, particularly in batches mixing random and greedy requests.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures batch-wide baseline tensor processing."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide penalty processing."
+    },
+    {
+      "expression": "sum((int(k) for k in sampling_metadata.top_k)) if not sampling_metadata.all_greedy and sampling_metadata.top_k is not None else logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "retained_topk_elements",
+      "rationale": "Aggregates the small CPU metadata vector of per-row top-k limits."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Separates the observed initial compilation call."
+    }
+  ]
+}

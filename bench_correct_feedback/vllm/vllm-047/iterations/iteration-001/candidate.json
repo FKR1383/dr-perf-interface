@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily linear in batch size, with additional costs for first outputs, finished requests, and accumulated generation length.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-output iteration, detokenization, and request-output construction overhead."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures request cleanup and completion-statistics processing."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+      "name": "prefilling_requests",
+      "rationale": "Captures first-output statistics and prefill-state transitions."
+    },
+    {
+      "expression": "sum((len(self.request_states[o.request_id].detokenizer.output_token_ids) + len(o.new_token_ids) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].detokenizer is not None))",
+      "name": "accumulated_output_tokens",
+      "rationale": "Captures accumulated generation length affecting incremental decoding and cumulative output construction."
+    }
+  ]
+}

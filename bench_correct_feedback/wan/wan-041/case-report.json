@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0edb8-8c9a-7d53-a773-d5f043520f48",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Stacking instruction count consists of fixed overhead, per-input array handling, and copying costs governed by total bytes and frame-channel blocks.",
+      "irregularity_percent": 0.0,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(outputs)",
+          "name": "array_count",
+          "rationale": "Captures per-array validation, view creation, and concatenation setup in np.stack."
+        },
+        {
+          "expression": "len(outputs) * outputs[0].nbytes",
+          "name": "copy_bytes",
+          "rationale": "Captures the total data copied into the stacked array."
+        },
+        {
+          "expression": "len(outputs) * outputs[0].shape[0] * outputs[0].shape[3]",
+          "name": "frame_channel_blocks",
+          "rationale": "Captures copy-loop overhead associated with frame and channel planes in the transposed NumPy arrays."
+        }
+      ]
+    }
+  ],
+  "case": "wan-041",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "a716242edc10ca2f3eb60c2cb206c33e9ba13ecbbadc12d2dfbd0c1a68b0a301",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

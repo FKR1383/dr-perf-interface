@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The largest unexplained shares occur where multiple calls share queue size and priority. Adding prompt cardinality may distinguish these heterogeneous entry states while retaining the heap-cost predictors.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting)",
+      "name": "waiting_depth",
+      "rationale": "Captures queue insertion size and allocation boundaries."
+    },
+    {
+      "expression": "0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 3 else 2 if len(self.waiting) < 7 else 3",
+      "name": "heap_height",
+      "rationale": "Captures maximum heap insertion depth for the bounded workload."
+    },
+    {
+      "expression": "request.priority",
+      "name": "incoming_priority",
+      "rationale": "Distinguishes insertion paths with different priority comparisons."
+    },
+    {
+      "expression": "request.num_prompt_tokens",
+      "name": "prompt_tokens",
+      "rationale": "Separates short- and long-prompt entry states previously grouped together, testing whether their differing request construction and allocation state explains the observed variation."
+    }
+  ]
+}

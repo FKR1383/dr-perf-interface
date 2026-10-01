@@ -1,0 +1,185 @@
+{
+  "case": "vllm-041",
+  "validity_warnings": [],
+  "pcv_names": [
+    "waiting_depth",
+    "heap_height",
+    "highest_priority",
+    "empty_waiting_queue"
+  ],
+  "distinct_states": 12,
+  "required_states": 6,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "waiting_depth": 0,
+        "heap_height": 0,
+        "highest_priority": 0,
+        "empty_waiting_queue": 1
+      },
+      "calls": 7,
+      "instructions_per_call": 11163.142857142857,
+      "unexplained_instructions_per_call": 608.0,
+      "unexplained_share": 0.054464948427222236
+    },
+    {
+      "state": {
+        "waiting_depth": 0,
+        "heap_height": 0,
+        "highest_priority": 1,
+        "empty_waiting_queue": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 7998.0,
+      "unexplained_instructions_per_call": 196.0,
+      "unexplained_share": 0.024506126531632907
+    },
+    {
+      "state": {
+        "waiting_depth": 1,
+        "heap_height": 1,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 6,
+      "instructions_per_call": 9611.166666666666,
+      "unexplained_instructions_per_call": 247.33333333333334,
+      "unexplained_share": 0.0257339552950561
+    },
+    {
+      "state": {
+        "waiting_depth": 1,
+        "heap_height": 1,
+        "highest_priority": 1,
+        "empty_waiting_queue": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 10104.0,
+      "unexplained_instructions_per_call": 350.0,
+      "unexplained_share": 0.03463974663499604
+    },
+    {
+      "state": {
+        "waiting_depth": 2,
+        "heap_height": 2,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 5,
+      "instructions_per_call": 8906.0,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.01886368740175163
+    },
+    {
+      "state": {
+        "waiting_depth": 2,
+        "heap_height": 2,
+        "highest_priority": 1,
+        "empty_waiting_queue": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 8818.0,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.01905193921524155
+    },
+    {
+      "state": {
+        "waiting_depth": 3,
+        "heap_height": 2,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 4,
+      "instructions_per_call": 9747.5,
+      "unexplained_instructions_per_call": 210.0,
+      "unexplained_share": 0.02154398563734291
+    },
+    {
+      "state": {
+        "waiting_depth": 3,
+        "heap_height": 2,
+        "highest_priority": 1,
+        "empty_waiting_queue": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 10327.0,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.016268035247409704
+    },
+    {
+      "state": {
+        "waiting_depth": 4,
+        "heap_height": 3,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 4,
+      "instructions_per_call": 9386.75,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.017897568380962528
+    },
+    {
+      "state": {
+        "waiting_depth": 5,
+        "heap_height": 3,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 9496.333333333334,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.017691038646495138
+    },
+    {
+      "state": {
+        "waiting_depth": 6,
+        "heap_height": 3,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 2,
+      "instructions_per_call": 9644.0,
+      "unexplained_instructions_per_call": 252.0,
+      "unexplained_share": 0.02613023641642472
+    },
+    {
+      "state": {
+        "waiting_depth": 7,
+        "heap_height": 3,
+        "highest_priority": 0,
+        "empty_waiting_queue": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 10062.0,
+      "unexplained_instructions_per_call": 168.0,
+      "unexplained_share": 0.016696481812760882
+    }
+  ],
+  "max_unexplained_share": 0.054464948427222236,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "waiting_depth": 75.38888888888884,
+      "heap_height": -215.01438492063454,
+      "highest_priority": 0.0,
+      "empty_waiting_queue": 6.999999999999999
+    },
+    "constant": 9545.471147486762,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 116.83691567322239,
+  "raw_files": [
+    "run.2288500.json"
+  ]
+}

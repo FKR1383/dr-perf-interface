@@ -1,0 +1,88 @@
+{
+  "agent_PCVs_thread": "01a0f55d-776b-7961-808e-f1926b7ca522",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed call cost plus an insertion-path overhead and a linear cost per newly cached full block.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "max(0, num_tokens_to_cache // self.coordinator.single_type_managers[0].block_size - self.coordinator.single_type_managers[0].num_cached_block.get(request.request_id, 0))",
+          "name": "new_full_blocks",
+          "rationale": "Counts newly completed blocks requiring hash assignment and prefix-cache insertion in this single-group workload."
+        },
+        {
+          "expression": "int(num_tokens_to_cache // self.coordinator.single_type_managers[0].block_size > self.coordinator.single_type_managers[0].num_cached_block.get(request.request_id, 0))",
+          "name": "has_new_full_blocks",
+          "rationale": "Captures the fixed cost of entering block-cache insertion instead of taking the no-new-blocks path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 18.729482743323576,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "This workload consistently takes the no-new-full-blocks path, so instruction count should be approximately constant across token counts. A token-count PCV supplies the state diversity needed to test that hypothesis.",
+      "irregularity_percent": 18.729482743323576,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "num_tokens_to_cache",
+          "name": "tokens_to_cache",
+          "rationale": "Provides distinct entry states across prompt and decode lengths; the previous measurement showed that every call had zero newly completed cache blocks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "With no newly completed cache blocks, cost is largely constant. Grouping by generation progress should capture any prefill/decode differences and reduce the influence of isolated startup overhead in sparsely observed prompt-length states.",
+      "irregularity_percent": 0.0,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "request.num_output_tokens",
+          "name": "output_tokens",
+          "rationale": "A cheap request-lifecycle cardinality that distinguishes prefill and successive decode stages while pooling calls across prompt lengths."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-010",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "ecacc321a55fa07cb7cc03fd3e337574e0d78d7642b22a2040e5d86833c586a4",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

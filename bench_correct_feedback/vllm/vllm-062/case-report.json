@@ -1,0 +1,120 @@
+{
+  "agent_PCVs_thread": "01a0f69a-a3ac-7aa0-8ca1-31bf7ba0e4e6",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 29.074528023409524,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by the number of request-state moves, with smaller contributions from removal handling, entering the condensation path, and copying active token prefixes.",
+      "irregularity_percent": 29.074528023409524,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+          "name": "moved_requests",
+          "rationale": "Each hole below the final batch size requires one complete request-state move."
+        },
+        {
+          "expression": "len(self.batch_update_builder.removed)",
+          "name": "removed_requests",
+          "rationale": "Captures removal-dependent scanning and list trimming."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+          "name": "nonempty_condensation",
+          "rationale": "Separates the full condensation path from the early-return paths."
+        },
+        {
+          "expression": "sum((int(self.num_tokens_no_spec[i]) + len(self.spec_token_ids[i]) for i in range(self.num_reqs, len(self._req_ids)) if self._req_ids[i] is not None))",
+          "name": "moved_tokens",
+          "rationale": "Active requests beyond the final batch boundary are moved; their token counts determine the copied token-prefix volume."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 12.620020276717558,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Token-copy volume showed little positive relationship with cost. Generator transfers may explain the remaining variation among calls with equal movement and removal counts.",
+      "irregularity_percent": 12.620020276717558,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+          "name": "moved_requests",
+          "rationale": "Counts complete request-state moves."
+        },
+        {
+          "expression": "len(self.batch_update_builder.removed)",
+          "name": "removed_requests",
+          "rationale": "Captures removal scanning and list trimming."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+          "name": "nonempty_condensation",
+          "rationale": "Distinguishes full condensation from early returns."
+        },
+        {
+          "expression": "sum((i in self.generators for i in range(self.num_reqs, len(self._req_ids)) if self._req_ids[i] is not None))",
+          "name": "moved_generators",
+          "rationale": "Counts moved requests taking the additional generator-transfer branch, which varies with sampling configuration."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.4987947633550323,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Movement count, removal count, and the condensation branch explain the structural cost. The fitted generator contribution was negligible, so removing that feature should retain the useful explanatory state without unnecessary fragmentation.",
+      "irregularity_percent": 3.4987947633550323,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+          "name": "moved_requests",
+          "rationale": "Counts complete request-state moves, the dominant repeated work."
+        },
+        {
+          "expression": "len(self.batch_update_builder.removed)",
+          "name": "removed_requests",
+          "rationale": "Captures removal-dependent scanning and list trimming."
+        },
+        {
+          "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+          "name": "nonempty_condensation",
+          "rationale": "Separates full condensation from early-return paths."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-062",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5d5c42c050835a2697879e5bc95684ef555e184babedd62402ed5c5b8e00bc58",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

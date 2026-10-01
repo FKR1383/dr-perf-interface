@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -352,7 +352,7 @@
+         self,
+         request: "CachedRequestState",
+     ) -> int:
+-        with perfmark.region("vllm-061"):
++        with perfmark.region("vllm-061", copied_token_count=((len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)), block_count=(sum((len(block_ids) for block_ids in request.block_ids))), random_sampling=(int(request.sampling_params is not None and request.sampling_params.temperature != 0.0)), penalty_count=(int(request.sampling_params.frequency_penalty != 0.0) + int(request.sampling_params.presence_penalty != 0.0) + int(request.sampling_params.repetition_penalty != 1.0) if request.sampling_params is not None else 0)):
+             req_index = self._register_add_request(request)
+ 
+             req_id = request.req_id

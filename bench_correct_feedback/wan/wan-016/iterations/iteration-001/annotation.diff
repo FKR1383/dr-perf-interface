@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/vae.py
++++ candidate/src/diffusers/models/autoencoders/vae.py
+@@ -687,7 +687,7 @@
+ 
+ class DiagonalGaussianDistribution(object):
+     def __init__(self, parameters: torch.Tensor, deterministic: bool = False):
+-        with perfmark.region("wan-016"):
++        with perfmark.region("wan-016", distribution_elements=(parameters.numel() // 2), strided_channel_chunk=(int(parameters.shape[0] > 1))):
+             self.parameters = parameters
+             self.mean, self.logvar = torch.chunk(parameters, 2, dim=1)
+             self.logvar = torch.clamp(self.logvar, -30.0, 20.0)

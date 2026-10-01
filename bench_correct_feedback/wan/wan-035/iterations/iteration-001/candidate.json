@@ -1,0 +1,26 @@
+{
+  "hypothesis": "With two encoder calls per invocation and fixed model dimensions, instruction count is primarily explained by per-prompt overhead, padded token volume, batched attention size, and shared relative-position work.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt cleaning, tokenization, slicing, and padding overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Models encoder projections, feed-forward computation, and embedding copies."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+      "name": "attention_elements",
+      "rationale": "Models quadratic attention computation across the batch."
+    },
+    {
+      "expression": "max_sequence_length ** 2",
+      "name": "position_pairs",
+      "rationale": "Captures relative-position bias construction shared across batch elements."
+    }
+  ]
+}

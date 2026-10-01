@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately constant across the supplied nonempty queues; heap cardinality and front priority do not affect the work of peeking.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(bool(self._heap))",
+      "name": "heap_nonempty",
+      "rationale": "Captures the branch between raising on an empty heap and returning its first element. The tested nonempty path performs constant work regardless of queue size or request attributes."
+    }
+  ]
+}

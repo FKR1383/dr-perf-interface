@@ -1,0 +1,26 @@
+{
+  "hypothesis": "CPU instruction count is primarily explained by scheduled token volume, approximate attention query-key pairs, output projection rows, and new-request initialization.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "scheduler_output.total_num_scheduled_tokens",
+      "name": "scheduled_tokens",
+      "rationale": "Tracks token-wise model computation and input preparation."
+    },
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Tracks per-request metadata work and vocabulary projection rows."
+    },
+    {
+      "expression": "sum((scheduler_output.num_scheduled_tokens[r.req_id] * (2 * r.num_computed_tokens + scheduler_output.num_scheduled_tokens[r.req_id] + 1) // 2 for r in scheduler_output.scheduled_new_reqs)) + sum((scheduler_output.num_scheduled_tokens[r] * (2 * self.requests[r].num_computed_tokens + scheduler_output.num_scheduled_tokens[r] + 1) // 2 for r in scheduler_output.scheduled_cached_reqs.req_ids))",
+      "name": "attention_pairs",
+      "rationale": "Approximates causal query-key pairs from scheduled query lengths and cached entry-state context lengths."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures request initialization and persistent-batch insertion costs."
+    }
+  ]
+}

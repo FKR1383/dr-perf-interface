@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Actual sift distance should explain priority-queue work better than maximum height or raw priority. Removing prompt length and using two causal expressions also reduces observation overhead.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting)",
+      "name": "waiting_depth",
+      "rationale": "Captures queue-size-dependent insertion and allocation costs."
+    },
+    {
+      "expression": "(1 if len(self.waiting) >= 1 and request < self.waiting._heap[(len(self.waiting) - 1) // 2] else 0) + (1 if len(self.waiting) >= 3 and request < self.waiting._heap[(len(self.waiting) - 3) // 4] else 0) + (1 if len(self.waiting) >= 7 and request < self.waiting._heap[(len(self.waiting) - 7) // 8] else 0)",
+      "name": "sift_levels",
+      "rationale": "Counts insertion ancestors outranked by the incoming request, giving the exact sift distance for the workload's heaps using at most three comparisons."
+    }
+  ]
+}

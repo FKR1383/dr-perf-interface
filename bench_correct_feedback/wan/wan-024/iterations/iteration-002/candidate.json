@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The higher instruction count at 27 tokens than at 32 suggests CPU kernel alignment costs. Combining attention interactions frees a feature to capture token tile remainders and may reduce the previous 10.61% irregularity.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "hidden_states.numel()",
+      "name": "hidden_elements",
+      "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+    },
+    {
+      "expression": "encoder_hidden_states.numel()",
+      "name": "encoder_elements",
+      "rationale": "Captures conditioning key/value projections and normalization."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+      "name": "attention_work",
+      "rationale": "Combines self-attention and cross-attention interaction work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16)",
+      "name": "token_tile_remainder",
+      "rationale": "Models CPU kernel remainder handling that can make unaligned token counts more expensive than nearby aligned counts."
+    }
+  ]
+}

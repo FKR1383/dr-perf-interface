@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The substantial unexplained work across repeated identical input states suggests runtime initialization contributes beyond tensor dimensions. Loaded-module cardinality may distinguish initialization regimes, including the unusually costly red-kite state.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer and encoder overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Tracks encoder tensor-processing volume."
+    },
+    {
+      "expression": "sum((len(text) for text in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Approximates tokenizer input work and distinguishes prompts with identical padded shapes."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Cheap runtime entry state that can distinguish library initialization regimes involving lazy imports."
+    }
+  ]
+}

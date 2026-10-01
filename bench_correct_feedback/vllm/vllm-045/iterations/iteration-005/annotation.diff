@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/llm_engine.py
++++ candidate/vllm/v1/engine/llm_engine.py
+@@ -230,7 +230,7 @@
+         prompt_text: str | None = None,
+     ) -> str:
+         # Validate the request_id type.
+-        with perfmark.region("vllm-045"):
++        with perfmark.region("vllm-045", prompt_tokens=(len(prompt['prompt_token_ids'])), complete_token_blocks=(len(prompt['prompt_token_ids']) // 16), outside_ten_token_regime=(int(len(prompt['prompt_token_ids']) != 10)), outside_nine_token_regime=(int(len(prompt['prompt_token_ids']) != 9))):
+             if not isinstance(request_id, str):
+                 raise TypeError(f"request_id must be a string, got {type(request_id)}")
+ 

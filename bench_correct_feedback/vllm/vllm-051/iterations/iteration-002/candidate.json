@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A singleton-state indicator captures the observed cost discontinuity, while batch size and tensor cardinalities explain the remaining scaling. The current measurements cannot distinguish singleton-specific overhead from first-call initialization.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(output_token_ids)",
+      "name": "batch_size",
+      "rationale": "Captures per-row conversion and penalty setup."
+    },
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures dense vocabulary-wide penalty work."
+    },
+    {
+      "expression": "prompt_token_ids.numel()",
+      "name": "prompt_elements",
+      "rationale": "Captures prompt-token scatter work."
+    },
+    {
+      "expression": "int(len(output_token_ids) == 1)",
+      "name": "singleton_batch",
+      "rationale": "Separates the singleton entry state, which exhibited substantially higher instruction count than the remaining batches."
+    }
+  ]
+}

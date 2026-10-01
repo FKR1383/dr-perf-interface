@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Iteration 2 substantially improved penalty attribution when both penalized and unpenalized batch sizes were available. Retaining equivalent batch information while replacing empty output histories with actual masking cardinality should improve the remaining processor attribution.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed penalty invocation overhead."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Models batch-dependent penalty operations."
+    },
+    {
+      "expression": "logits.shape[0]",
+      "name": "batch_size",
+      "rationale": "Exposes batch size independently of the penalty branch, restoring the information present in iteration 2."
+    },
+    {
+      "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+      "name": "minimum_token_mask_entries",
+      "rationale": "Distinguishes active minimum-token masking from the inexpensive unmasked calls using actual processor state."
+    }
+  ]
+}

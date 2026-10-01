@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0f602-ff0c-7da0-8906-8dfad287f1b1",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.74054429761641,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Admission cost combines fixed overhead, prompt-size-dependent work, initial task discovery, and sampling-mode-dependent processing.",
+      "irregularity_percent": 99.74054429761641,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent validation, detokenizer initialization, and request construction."
+        },
+        {
+          "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+          "name": "prompt_characters",
+          "rationale": "Captures processing proportional to prompt text size."
+        },
+        {
+          "expression": "int('_supported_tasks' not in self.__dict__)",
+          "name": "supported_tasks_uncached",
+          "rationale": "Distinguishes initial supported-task discovery and first-request overhead."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and params.temperature == 0)",
+          "name": "greedy_sampling",
+          "rationale": "Separates greedy and stochastic sampling parameter processing."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 13.83110693878333,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The measurements suggest exceptional initialization costs in two distinct short-prompt states, followed by relatively uniform admission costs. Explicit indicators isolate these exceptions while prompt sizes model steady-state variation.",
+      "irregularity_percent": 13.83110693878333,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+          "name": "prompt_tokens",
+          "rationale": "Models token-dependent admission work across the observed prompt sizes."
+        },
+        {
+          "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+          "name": "prompt_characters",
+          "rationale": "Models text-dependent request and detokenizer setup."
+        },
+        {
+          "expression": "int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Separates the observed ten-token state with exceptionally high cost; this is a workload-specific proxy for initialization, not an assumed general token-length effect."
+        },
+        {
+          "expression": "int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Separates the other short-prompt state, whose cost exceeds the steady-state calls."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.035040078207613,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The previous features isolated the exceptional states but still underpredicted their costs. Scaling the sparse regime indicators tests whether fitting regularization contributes to the remaining irregularity.",
+      "irregularity_percent": 14.035040078207613,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent admission work."
+        },
+        {
+          "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+          "name": "prompt_characters",
+          "rationale": "Captures text-dependent initialization work."
+        },
+        {
+          "expression": "1024 * int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 10)",
+          "name": "ten_token_regime",
+          "rationale": "Retains the observed initialization proxy, scaled to reduce possible fitting shrinkage of a sparse indicator."
+        },
+        {
+          "expression": "1024 * int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 9)",
+          "name": "nine_token_regime",
+          "rationale": "Retains the second exceptional short-prompt regime with the same numerical scaling."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.293552899086235,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Indicator scaling did not improve the fit. The remaining unexplained cost may include substantial observation overhead from repeated type checks and fallback expressions; direct access to the workload's rendered prompt fields preserves the predictive features while making their evaluation cheaper.",
+      "irregularity_percent": 14.293552899086235,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Measures token-dependent work directly from the rendered input dictionary used by this workload."
+        },
+        {
+          "expression": "len(prompt['prompt'])",
+          "name": "prompt_characters",
+          "rationale": "Measures prompt text size with minimal observation overhead."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) == 10)",
+          "name": "ten_token_regime",
+          "rationale": "Isolates the exceptionally costly short-prompt state observed in every measurement."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) == 9)",
+          "name": "nine_token_regime",
+          "rationale": "Isolates the second short-prompt state with elevated admission cost."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 12.263966615781255,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Token-block boundaries may explain steady-state variation better than text length. Complementary indicators preserve separation of the two exceptional states while testing sensitivity to how the fitted model allocates baseline costs.",
+      "irregularity_percent": 12.263966615781255,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures work proportional to prompt token count."
+        },
+        {
+          "expression": "len(prompt['prompt_token_ids']) // 16",
+          "name": "complete_token_blocks",
+          "rationale": "Tests whether block-based hashing and cache setup explain variation better than character count."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) != 10)",
+          "name": "outside_ten_token_regime",
+          "rationale": "Separates the exceptional ten-token initialization state using the steady-state regime as the active indicator."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) != 9)",
+          "name": "outside_nine_token_regime",
+          "rationale": "Separates the elevated nine-token state using a complementary indicator."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 11.470540377565573,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Complementary indicators reduced unexplained cost, suggesting sensitivity to baseline attribution. Shifting the block and regime features away from zero preserves their information while testing whether short-state cost attribution improves.",
+      "irregularity_percent": 11.470540377565573,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent admission work and preserves eight observed states."
+        },
+        {
+          "expression": "1 + len(prompt['prompt_token_ids']) // 16",
+          "name": "token_block_extent",
+          "rationale": "Represents fixed setup plus complete token blocks, remaining nonzero for short prompts."
+        },
+        {
+          "expression": "1 + int(len(prompt['prompt_token_ids']) != 10)",
+          "name": "ten_token_regime_basis",
+          "rationale": "Separates the exceptional ten-token state with a nonzero baseline."
+        },
+        {
+          "expression": "1 + int(len(prompt['prompt_token_ids']) != 9)",
+          "name": "nine_token_regime_basis",
+          "rationale": "Separates the elevated nine-token state with a nonzero baseline."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 11.34610103022987,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Positive feature offsets reduced maximum irregularity from 12.26% to 11.47%. A larger offset tests whether improved baseline attribution can bring the remaining nine-token residual below 10%, while preserving the same explanatory state distinctions.",
+      "irregularity_percent": 11.34610103022987,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent work and distinguishes the observed prompt lengths."
+        },
+        {
+          "expression": "16 + len(prompt['prompt_token_ids']) // 16",
+          "name": "token_block_basis",
+          "rationale": "Captures block-dependent work with a positive baseline."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+          "name": "ten_token_regime_basis",
+          "rationale": "Preserves separation of the exceptionally costly ten-token state."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+          "name": "nine_token_regime_basis",
+          "rationale": "Preserves separation of the elevated nine-token state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 15.563944684931638,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Offset changes have plateaued. Replacing the block feature with an explicit constant tests whether Dr. Perf can attribute more of the dominant fixed request-setup work, while retaining token scaling and both exceptional-state indicators.",
+      "irregularity_percent": 15.563944684931638,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1",
+          "name": "request_setup",
+          "rationale": "Explicitly represents fixed per-request setup, which dominates steady-state instruction counts."
+        },
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent work and preserves the eight observed states."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) == 10)",
+          "name": "ten_token_regime",
+          "rationale": "Separates the exceptional initialization cost observed in the ten-token state."
+        },
+        {
+          "expression": "int(len(prompt['prompt_token_ids']) == 9)",
+          "name": "nine_token_regime",
+          "rationale": "Separates the additional setup cost observed in the nine-token state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.49924623356837,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "An explicit constant worsened attribution. Active request cardinality adds an independent entry-state dimension that may explain initialization and container-growth costs hidden within the previous prompt-size states.",
+      "irregularity_percent": 20.49924623356837,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures token-dependent input and detokenizer setup."
+        },
+        {
+          "expression": "1 + len(self.output_processor.request_states)",
+          "name": "active_request_extent",
+          "rationale": "Captures admission-state size, including empty-to-nonempty transitions and request-table growth."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+          "name": "ten_token_regime_basis",
+          "rationale": "Retains the exceptional ten-token regime using the previously better-performing positive basis."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+          "name": "nine_token_regime_basis",
+          "rationale": "Retains separation of the elevated nine-token state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.391480296831102,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Active-request cardinality worsened the fit. A quadratic token feature may capture prompt-processing variation more effectively than block count while retaining the two exceptional regimes and the original eight states.",
+      "irregularity_percent": 10.391480296831102,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(prompt['prompt_token_ids'])",
+          "name": "prompt_tokens",
+          "rationale": "Captures linear token-dependent admission work."
+        },
+        {
+          "expression": "len(prompt['prompt_token_ids']) ** 2",
+          "name": "prompt_tokens_squared",
+          "rationale": "Tests nonlinear prompt-processing cost with a cheap polynomial feature."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+          "name": "ten_token_regime_basis",
+          "rationale": "Separates the exceptionally costly ten-token state."
+        },
+        {
+          "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+          "name": "nine_token_regime_basis",
+          "rationale": "Separates the elevated nine-token state."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-045",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "c80014ffa5ce05bf0588ae0b087391152c5bca63552a7ed09201745e6685536c",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

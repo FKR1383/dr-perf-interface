@@ -1,0 +1,113 @@
+{
+  "agent_PCVs_thread": "01a0f5a3-c2a9-7862-b2bb-ca00ce7a4ca6",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 5",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Running requests in this workload predominantly schedule one decode token. Their instruction counts should have a stable base cost, with variation explained by existing block count and allocation or caching at block boundaries.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "request.num_computed_tokens // self.block_size",
+          "name": "existing_full_blocks",
+          "rationale": "Tracks sequence-dependent block bookkeeping during slot allocation and prefix caching."
+        },
+        {
+          "expression": "int(request.num_computed_tokens % self.block_size == 0)",
+          "name": "needs_new_block",
+          "rationale": "For the workload's single-token decode steps, a block-aligned entry requires allocating another KV block."
+        },
+        {
+          "expression": "int((request.num_computed_tokens + 1) % self.block_size == 0)",
+          "name": "completes_full_block",
+          "rationale": "Identifies decode steps that complete a block and can trigger prefix-cache registration."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.533205736930572,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "All 52 observed calls stayed within one KV block without completing or allocating a block. Their costs may therefore be approximately constant; sequence length and running-request count distinguish workload states while allowing Dr. Perf to fit any residual dependence.",
+      "irregularity_percent": 20.533205736930572,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "request.num_computed_tokens",
+          "name": "sequence_tokens",
+          "rationale": "Provides varying entry states and captures any sequence-length-dependent allocation bookkeeping within the single-block regime."
+        },
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures batch-size-dependent scheduler and container costs."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 2.2512283758217526,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Most states cost approximately 63,000 instructions; the two earliest short-sequence states are substantially higher. First decode of short prompts may proxy runtime specialization overhead. Conditional prompt length allows the elevated states to differ without imposing a length trend on steady-state calls.",
+      "irregularity_percent": 2.2512283758217526,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "request.num_computed_tokens",
+          "name": "sequence_tokens",
+          "rationale": "Retains sequence-length variation across the observed workload."
+        },
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures batch-dependent container costs."
+        },
+        {
+          "expression": "int(request.num_prompt_tokens < 16 and request.num_output_tokens == 1)",
+          "name": "short_prompt_first_decode",
+          "rationale": "Tests whether the elevated costs belong to the first decode of short prompts, which occur during initial runtime specialization."
+        },
+        {
+          "expression": "request.num_prompt_tokens if request.num_prompt_tokens < 16 and request.num_output_tokens == 1 else 0",
+          "name": "short_prompt_first_decode_length",
+          "rationale": "Allows length-dependent cost within the hypothesized initial decode regime."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-033",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "30f279e661826197509547e6b241d571ed7d0d8eafddb4538fa819f91749ecfe",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

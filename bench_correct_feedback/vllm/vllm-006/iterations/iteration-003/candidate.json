@@ -1,0 +1,26 @@
+{
+  "hypothesis": "An explicit constant feature may explain the persistent fixed-work residual that remained within both allocation paths. Request-table occupancy may additionally explain variation during early allocations.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "1",
+      "name": "fixed_work",
+      "rationale": "Provides an explicit basis for fixed bookkeeping and call overhead across internal execution paths."
+    },
+    {
+      "expression": "int(request.num_computed_tokens == 0)",
+      "name": "initial_allocation",
+      "rationale": "Separates initial allocation from the substantially cheaper decoding path."
+    },
+    {
+      "expression": "num_new_tokens",
+      "name": "new_tokens",
+      "rationale": "Captures token-dependent work and distinguishes observed prompt sizes."
+    },
+    {
+      "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+      "name": "active_request_tables",
+      "rationale": "Captures request-table occupancy, which can affect dictionary insertion and allocation bookkeeping."
+    }
+  ]
+}

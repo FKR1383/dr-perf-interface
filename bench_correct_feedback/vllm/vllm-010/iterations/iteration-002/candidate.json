@@ -1,0 +1,11 @@
+{
+  "hypothesis": "This workload consistently takes the no-new-full-blocks path, so instruction count should be approximately constant across token counts. A token-count PCV supplies the state diversity needed to test that hypothesis.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "num_tokens_to_cache",
+      "name": "tokens_to_cache",
+      "rationale": "Provides distinct entry states across prompt and decode lengths; the previous measurement showed that every call had zero newly completed cache blocks."
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "agent_PCVs_thread": "01a0f572-a8a4-7483-be6a-b63e2c8430c6",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 2; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately constant across queue depths 0\u201311, with a possible first-call overhead captured by the empty-queue indicator.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "1",
+          "name": "append_operation",
+          "rationale": "Deque append performs constant work while the existing block has capacity; all twelve calls fit within the initial block."
+        },
+        {
+          "expression": "int(len(self) == 0)",
+          "name": "empty_queue",
+          "rationale": "Distinguishes the first append, which may incur initial method-dispatch overhead, from subsequent appends."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Append cost is approximately constant over these depths, with a separate first-call overhead. Queue depth supplies sufficient distinct states for validation; its fitted coefficient should be small.",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self)",
+          "name": "queue_depth",
+          "rationale": "Provides twelve distinct entry states and allows fitting any depth-dependent cost."
+        },
+        {
+          "expression": "int(len(self) == 0)",
+          "name": "empty_queue",
+          "rationale": "Captures the elevated first-append cost observed in the previous report."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-014",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "bbe309dc89d07c87a1834077955b5d2470ea1ca1891befcbb99cac93fc3c561f",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

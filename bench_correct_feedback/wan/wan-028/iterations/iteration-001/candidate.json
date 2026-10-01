@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Decoding and postprocessing dominate the region and perform approximately constant work for the identical latent shapes in this workload, independently of prompt length and denoising step count.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "latents.numel()",
+      "name": "latent_elements",
+      "rationale": "Cheap tensor metadata measures the input volume for latent normalization and VAE decoding. The fixed workload uses identical latent shapes and output formats across calls."
+    }
+  ]
+}

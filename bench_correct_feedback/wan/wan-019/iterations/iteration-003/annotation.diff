@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/transformers/transformer_wan.py
++++ candidate/src/diffusers/models/transformers/transformer_wan.py
+@@ -141,7 +141,7 @@
+             hidden_states_img = hidden_states_img.flatten(2, 3)
+             hidden_states_img = hidden_states_img.type_as(query)
+ 
+-        with perfmark.region("wan-019"):
++        with perfmark.region("wan-019", attention_pairs=(query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]), query_elements=(query.numel()), quadratic_query_work=(query.shape[0] * query.shape[2] * query.shape[1] ** 2), scalar_tail_pairs=(query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16))):
+             hidden_states = dispatch_attention_fn(
+                 query,
+                 key,

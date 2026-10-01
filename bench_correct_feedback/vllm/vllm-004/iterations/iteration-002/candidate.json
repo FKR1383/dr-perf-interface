@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The observed costs follow token and request counts interacting with 32-token KV block boundaries. Smaller-scale features should also avoid the numerical imbalance of the previous candidate.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+      "name": "query_tokens",
+      "rationale": "Captures token-dependent work without large, constant head-dimension multipliers that can impair numerical fitting."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len + 31) // 32)",
+      "name": "token_kv_blocks",
+      "rationale": "Models token processing across rounded KV blocks; measurements show a substantial cost step beyond sequence length 32."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.query_start_loc.numel() - 1",
+      "name": "requests",
+      "rationale": "Captures per-request setup in both prefill and decode."
+    },
+    {
+      "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len + 31) // 32)",
+      "name": "request_kv_blocks",
+      "rationale": "Captures per-request KV block overhead, including the observed decode cost increase for longer contexts."
+    }
+  ]
+}

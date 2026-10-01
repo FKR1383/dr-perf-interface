@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/video_processor.py
++++ candidate/src/diffusers/video_processor.py
+@@ -110,7 +110,7 @@
+             outputs.append(batch_output)
+ 
+         if output_type == "np":
+-            with perfmark.region("wan-041"):
++            with perfmark.region("wan-041", array_count=(len(outputs)), copy_bytes=(len(outputs) * outputs[0].nbytes), frame_channel_blocks=(len(outputs) * outputs[0].shape[0] * outputs[0].shape[3])):
+                 outputs = np.stack(outputs)
+         elif output_type == "pt":
+             outputs = torch.stack(outputs)

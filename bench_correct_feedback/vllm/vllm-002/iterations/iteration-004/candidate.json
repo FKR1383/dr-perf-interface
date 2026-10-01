@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Separate request-count features for observed prompt-length regimes should explain branch-specific work better than a shared linear character-cost model, while keeping initialization independent.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Isolates the initial default-options call and its initialization cost."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 64 else 0",
+      "name": "short_prompt_requests",
+      "rationale": "Models per-request processing for batches of short prompts."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if 64 <= len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 128 else 0",
+      "name": "medium_prompt_requests",
+      "rationale": "Models per-request processing for batches of medium-length prompts."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) >= 128 else 0",
+      "name": "long_prompt_requests",
+      "rationale": "Models the larger per-request tokenization and input-processing cost of long prompts."
+    }
+  ]
+}

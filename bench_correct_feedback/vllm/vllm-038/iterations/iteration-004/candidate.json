@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Sampled-token count was redundant. A piecewise term for small prefill batches tests the consistently elevated costs of the one- and two-request prefill observations while retaining the main request and completion predictors.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures per-request processing."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures completion and resource cleanup."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures prefill completion and first-output processing."
+    },
+    {
+      "expression": "max(0, 3 - len(scheduler_output.scheduled_new_reqs)) if scheduler_output.scheduled_new_reqs else 0",
+      "name": "small_prefill_batch",
+      "rationale": "Separates the smallest prefill batches, which show disproportionately high instruction counts in repeated measurements."
+    }
+  ]
+}

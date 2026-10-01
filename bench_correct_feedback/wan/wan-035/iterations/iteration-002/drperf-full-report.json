@@ -1,0 +1,105 @@
+{
+  "case": "wan-035",
+  "validity_warnings": [],
+  "pcv_names": [
+    "batch_size",
+    "padded_tokens",
+    "prompt_characters"
+  ],
+  "distinct_states": 6,
+  "required_states": 5,
+  "calls": 18,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 8,
+        "prompt_characters": 8
+      },
+      "calls": 3,
+      "instructions_per_call": 16584024.0,
+      "unexplained_instructions_per_call": 1324140.0000000005,
+      "unexplained_share": 0.07984431281575573
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 8,
+        "prompt_characters": 14
+      },
+      "calls": 3,
+      "instructions_per_call": 16098392.666666666,
+      "unexplained_instructions_per_call": 1015231.9999999998,
+      "unexplained_share": 0.0630641841717614
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 12,
+        "prompt_characters": 13
+      },
+      "calls": 3,
+      "instructions_per_call": 16289753.333333334,
+      "unexplained_instructions_per_call": 1186643.3333333333,
+      "unexplained_share": 0.07284599766806373
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 16,
+        "prompt_characters": 21
+      },
+      "calls": 3,
+      "instructions_per_call": 16263236.666666666,
+      "unexplained_instructions_per_call": 1133469.0000000005,
+      "unexplained_share": 0.06969516728014988
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 16,
+        "prompt_characters": 17
+      },
+      "calls": 3,
+      "instructions_per_call": 16687667.0,
+      "unexplained_instructions_per_call": 1201893.0000000002,
+      "unexplained_share": 0.07202282979400297
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 32,
+        "prompt_characters": 24
+      },
+      "calls": 3,
+      "instructions_per_call": 16827615.0,
+      "unexplained_instructions_per_call": 1277266.0,
+      "unexplained_share": 0.07590297258405306
+    }
+  ],
+  "max_unexplained_share": 0.07984431281575573,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "batch_size": 271571.83737401274,
+      "padded_tokens": 6428.225211114218,
+      "prompt_characters": -7126.72260056297
+    },
+    "constant": 14923227.667862222,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 28.587311937939376,
+  "raw_files": [
+    "run.1589958.json"
+  ]
+}

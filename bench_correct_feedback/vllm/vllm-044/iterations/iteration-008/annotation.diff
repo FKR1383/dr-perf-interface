@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/input_processor.py
++++ candidate/vllm/v1/engine/input_processor.py
+@@ -268,7 +268,7 @@
+         resumable: bool = False,
+         session_id: str | None = None,
+     ) -> EngineCoreRequest:
+-        with perfmark.region("vllm-044"):
++        with perfmark.region("vllm-044", prompt_token_count=(len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0), clone_required=(int(not getattr(params, 'skip_clone', False))), stop_token_entries=(len(getattr(params, 'stop_token_ids', None) or ()) + len(getattr(params, '_all_stop_token_ids', None) or ())), tokenizer_constraint_entries=(len(getattr(params, 'allowed_token_ids', None) or ()) + len(getattr(params, 'bad_words', None) or ()) + len(getattr(params, 'logit_bias', None) or {}))):
+             self._validate_params(params, supported_tasks)
+             self._validate_lora(lora_request)
+ 

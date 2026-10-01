@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/sample/sampler.py
++++ candidate/vllm/v1/sample/sampler.py
+@@ -377,7 +377,7 @@
+         sampling_metadata: SamplingMetadata,
+         predict_bonus_token: bool,
+     ) -> torch.Tensor:
+-        with perfmark.region("vllm-054"):
++        with perfmark.region("vllm-054", penalties_enabled=(int(not sampling_metadata.no_penalties)), penalty_batch_size=(logits.shape[0] if not sampling_metadata.no_penalties else 0), unpenalized_batch_size=(logits.shape[0] if sampling_metadata.no_penalties else 0), minimum_token_mask_entries=(sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)))):
+             bad_words_token_ids = sampling_metadata.bad_words_token_ids
+             any_penalties_or_bad_words = (
+                 bool(bad_words_token_ids) or not sampling_metadata.no_penalties

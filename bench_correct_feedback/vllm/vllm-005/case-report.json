@@ -1,0 +1,68 @@
+{
+  "agent_PCVs_thread": "01a0ef88-a3ad-7cb1-b351-98bc125054d7",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.569344755730494,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed entry cost plus a linear cost per newly cached block; block size does not drive token processing on this workload's event-disabled path.",
+      "irregularity_percent": 19.569344755730494,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "max(0, num_full_blocks - num_cached_blocks)",
+          "name": "new_block_count",
+          "rationale": "Counts loop iterations and newly inserted cache entries. In the fixed workload every block is non-null, unmasked, and initially unhashed, with cache events disabled."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.8961932755036204,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The remaining states follow an approximately linear per-block trend. Separate offsets for batches of one and two blocks should capture the observed small-batch deviations; these may reflect warm-up effects correlated with batch size in the fixed workload.",
+      "irregularity_percent": 1.8961932755036204,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "max(0, num_full_blocks - num_cached_blocks)",
+          "name": "new_block_count",
+          "rationale": "Models the dominant per-block hash insertion and loop cost."
+        },
+        {
+          "expression": "int(num_full_blocks - num_cached_blocks == 1)",
+          "name": "single_block_batch",
+          "rationale": "Allows a separate offset for the one-block state, which the linear model substantially underpredicts."
+        },
+        {
+          "expression": "int(num_full_blocks - num_cached_blocks == 2)",
+          "name": "two_block_batch",
+          "rationale": "Allows a separate offset for the two-block state, the other observed state with substantial unexplained cost."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-005",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "638f94e41943f192895fbd17e68d72344bfefef27c9fd71609f26fbba5d7b04a",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

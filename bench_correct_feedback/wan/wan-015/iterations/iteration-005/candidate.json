@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Observed instruction means closely follow separate affine functions of area for initial and cached chunks. Removing perimeter and attention terms should give a better-conditioned fit with three predictors.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_area",
+      "rationale": "Models spatially proportional computation for initial chunks."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_area",
+      "rationale": "Models the larger spatially proportional computation for cached chunks."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "warm_cache",
+      "rationale": "Allows an independent fixed cost for cached execution."
+    }
+  ]
+}

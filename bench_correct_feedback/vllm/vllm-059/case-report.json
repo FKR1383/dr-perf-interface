@@ -1,0 +1,41 @@
+{
+  "agent_PCVs_thread": "01a0f68b-e80f-75f1-a290-9869b2585ee3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.4090434782608696,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed per-group commit overhead on the CPU execution path, with possible additional dependence on the number of active requests.",
+      "irregularity_percent": 0.4090434782608696,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.block_tables)",
+          "name": "num_groups",
+          "rationale": "Counts loop iterations and per-buffer commit overhead, including CPU paths where no transfer is needed."
+        },
+        {
+          "expression": "num_reqs",
+          "name": "num_reqs",
+          "rationale": "Captures the active row count passed to each buffer copy and any row-dependent work."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-059",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e8fe20303955e85a5628923bb44c267fa0c486ba0a654b062dd8e76e8b30468e",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

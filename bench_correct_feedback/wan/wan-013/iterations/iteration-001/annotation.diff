@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1268,7 +1268,7 @@
+                 The latent representation of the encoded videos.
+         """
+ 
+-        with perfmark.region("wan-013"):
++        with perfmark.region("wan-013", spatial_tiles=((x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width)), cached_tile_chunks=((x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width) * ((x.shape[2] - 1) // 4)), first_chunk_tile_area=(x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1)), cached_chunk_tile_area=(x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1) * ((x.shape[2] - 1) // 4))):
+             _, _, num_frames, height, width = x.shape
+             encode_spatial_compression_ratio = self.spatial_compression_ratio
+             if self.config.patch_size is not None:

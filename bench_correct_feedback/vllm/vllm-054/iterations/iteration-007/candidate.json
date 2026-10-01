@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Shared masking features coupled small unpenalized costs to much larger penalized costs. Branch-specific masking indicators should isolate the three observed unpenalized behaviors while leaving penalty costs affine in batch size.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed overhead specific to penalty execution."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Models the nearly linear penalty cost across batch sizes."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+      "name": "unpenalized_single_mask",
+      "rationale": "Separately models the expensive single-entry masking path without coupling its coefficient to penalized calls."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 1)",
+      "name": "unpenalized_multiple_masks",
+      "rationale": "Separates multi-entry masking from the inexpensive unpenalized baseline."
+    }
+  ]
+}

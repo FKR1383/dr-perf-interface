@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -251,7 +251,7 @@
+         # disabled or the request is marked as skipping kv cache read
+         # (which happens when the request requires prompt logprobs
+         # or calls a pooling model with all pooling).
+-        with perfmark.region("vllm-012"):
++        with perfmark.region("vllm-012", lookup_enabled=(int(self.enable_caching and (not request.skip_reading_prefix_cache))), has_lookup_blocks=(int(self.enable_caching and (not request.skip_reading_prefix_cache) and (min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) > 0))), first_block_cached=(int(self.enable_caching and (not request.skip_reading_prefix_cache) and bool(request.block_hashes) and (request.block_hashes[0] + b'\x00\x00\x00\x00' in self.block_pool.cached_block_hash_to_block._cache))), cached_prefix_search_extent=(min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) if self.enable_caching and (not request.skip_reading_prefix_cache) and request.block_hashes and (request.block_hashes[0] + b'\x00\x00\x00\x00' in self.block_pool.cached_block_hash_to_block._cache) else 0)):
+             if not self.prefix_cache_lookup_enabled(request):
+                 return self.empty_kv_cache_blocks, 0, 0
+ 

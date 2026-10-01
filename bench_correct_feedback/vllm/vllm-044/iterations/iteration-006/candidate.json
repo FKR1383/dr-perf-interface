@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The first-call excess may involve class-level tokenizer initialization or import-path discovery rather than the previously tested instance caches. Generation configuration cardinality additionally describes parameter-update work.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures token-ID scanning during validation."
+    },
+    {
+      "expression": "len(getattr(getattr(self.tokenizer, '__class__', None), '__dict__', {}))",
+      "name": "tokenizer_class_state_size",
+      "rationale": "Tests for tokenizer caches installed on its class rather than its unchanged instance dictionary."
+    },
+    {
+      "expression": "len(__import__('sys').path_importer_cache)",
+      "name": "import_path_cache_size",
+      "rationale": "Observes cached import-path resolution, which can change even when loaded-module cardinality does not."
+    },
+    {
+      "expression": "len(self.generation_config_fields)",
+      "name": "generation_config_size",
+      "rationale": "Measures configuration entries available to sampling-parameter updates."
+    }
+  ]
+}

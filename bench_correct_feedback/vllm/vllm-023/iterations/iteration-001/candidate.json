@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction variation comes primarily from heap comparisons, sift swaps, priority ties, and backing-list growth. These entry-state features distinguish those costs for the tested heaps of sizes one through four.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(bool(self._heap) and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+      "name": "first_sift_swap",
+      "rationale": "Captures whether insertion moves past its first parent."
+    },
+    {
+      "expression": "int(len(self._heap) >= 3 and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+      "name": "second_comparison",
+      "rationale": "Predicts an additional heap comparison for the shallow heaps exercised here."
+    },
+    {
+      "expression": "int(bool(self._heap) and request.priority == self._heap[(len(self._heap) - 1) // 2].priority)",
+      "name": "parent_priority_tie",
+      "rationale": "Captures the arrival-time comparison needed when parent priorities tie."
+    },
+    {
+      "expression": "int(self._heap.__sizeof__() == [].__sizeof__() + 8 * len(self._heap))",
+      "name": "list_capacity_exhausted",
+      "rationale": "Predicts list growth during append on the benchmark's 64-bit Python runtime."
+    }
+  ]
+}

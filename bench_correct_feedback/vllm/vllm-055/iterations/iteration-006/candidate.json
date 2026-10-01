@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The fitted model substantially underpredicts even approximately linear warm costs. Scaling the cold-compilation feature comparably to the other columns may improve numerical conditioning while retaining the baseline feature.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Restores an explicit baseline feature for greedy calls."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Captures batch-dependent stochastic sampling work."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures batch-dependent penalty processing."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})) else 0",
+      "name": "cold_dynamo_elements",
+      "rationale": "Preserves the successful cold-compilation distinction while expressing all features on comparable numerical scales."
+    }
+  ]
+}

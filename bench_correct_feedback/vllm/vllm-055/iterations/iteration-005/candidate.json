@@ -1,0 +1,26 @@
+{
+  "hypothesis": "After isolating initial compilation, stochastic sampling needs both a fixed overhead and a batch-dependent term. Unpenalized greedy calls have a constant observed batch size, allowing the intercept to represent their baseline cost.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.all_greedy)",
+      "name": "random_sampling",
+      "rationale": "Captures fixed stochastic-path overhead that batch-size terms cannot represent."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Captures batch-dependent stochastic sampling and filtering."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures the approximately linear penalty cost visible in greedy calls."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Retains the runtime-state indicator that successfully separated the initial compilation call."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -538,7 +538,7 @@
+           Removed request index, or `None` if `req_id` not recognized
+         """
+ 
+-        with perfmark.region("vllm-064"):
++        with perfmark.region("vllm-064", loaded_modules=(len(__import__('sys').modules)), unpenalized_greedy_multi_request=(int(len(self.req_id_to_index) > 1 and req_id in self.greedy_reqs and (req_id not in self.frequency_penalties_reqs) and (req_id not in self.presence_penalties_reqs) and (req_id not in self.repetition_penalties_reqs))), active_requests=(len(self.req_id_to_index)), sampling_entries_removed=(int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs))):
+             req_index = self.req_id_to_index.pop(req_id, None)
+             if req_index is None:
+                 return None

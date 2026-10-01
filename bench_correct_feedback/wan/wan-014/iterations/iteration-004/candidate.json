@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Removing the boundary feature substantially increased irregularity. Separate area and boundary terms for each cache regime should explain instruction patterns better than fixed path indicators or a boundary term with a prescribed temporal multiplier.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_volume",
+      "rationale": "Captures spatial-area work on the initial path."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_volume",
+      "rationale": "Captures spatial-area work after cached temporal upsampling."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_boundary",
+      "rationale": "Captures row traversal and padding work on the initial path."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_boundary",
+      "rationale": "Allows cached boundary work to scale independently across temporally expanded decoder stages."
+    }
+  ]
+}

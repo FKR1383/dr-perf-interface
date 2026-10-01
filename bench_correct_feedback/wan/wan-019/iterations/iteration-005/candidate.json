@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The nearly zero fitted attention-pair coefficient suggests total pair count does not adequately describe individual matrix-kernel paths. Modeling remainders on both matrix axes may explain work that key remainders and query-tile overhead alone missed.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks total attention matrix work."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear query and output processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "key_tail_pairs",
+      "rationale": "Captures remainder work along the key dimension."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * (query.shape[1] % 16) * key.shape[1]",
+      "name": "query_tail_pairs",
+      "rationale": "Captures matrix-kernel remainder work along the query dimension, allowing full vector blocks and partial blocks to have different fitted costs."
+    }
+  ]
+}

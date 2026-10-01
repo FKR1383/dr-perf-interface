@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A separate single-element regime plus linear row, token, and padding costs explains the observations. The current measurements cannot distinguish a shape effect from first-call initialization.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(output_token_ids)",
+      "name": "row_count",
+      "rationale": "Captures per-row traversal and conversion overhead."
+    },
+    {
+      "expression": "sum((len(row) for row in output_token_ids))",
+      "name": "token_count",
+      "rationale": "Captures conversion of existing token IDs."
+    },
+    {
+      "expression": "len(output_token_ids) * max((len(row) for row in output_token_ids), default=0)",
+      "name": "padded_elements",
+      "rationale": "Captures tensor allocation and padding work."
+    },
+    {
+      "expression": "int(len(output_token_ids) * max((len(row) for row in output_token_ids), default=0) == 1)",
+      "name": "single_element_tensor",
+      "rationale": "Separates the unusually costly single-element input observed in the report."
+    }
+  ]
+}

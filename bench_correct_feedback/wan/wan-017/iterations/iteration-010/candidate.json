@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Full attention-pair work and scalar remainder work may need simultaneous features. Replacing shared query size with the second attention feature tests whether their combined explanatory value outweighs the omitted query-linear costs.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+      "name": "attention_pairs",
+      "rationale": "Captures attention matrix work across the complete context."
+    },
+    {
+      "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+      "name": "attention_tail_elements",
+      "rationale": "Separately captures scalar remainder work that complete attention-pair counts do not explain."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+      "name": "rotary_elements",
+      "rationale": "Retains independent linear scaling for the more expensive self-attention path."
+    },
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Captures fixed rotary overhead."
+    }
+  ]
+}

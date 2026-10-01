@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The first two admission states may share fixed initialization paths whose execution counts are equal even though their total excess costs differ. A binary small-admission feature preserves that shared behavior while retaining separate admission and decode costs.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures per-request decode scheduling work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures per-request admission work."
+    },
+    {
+      "expression": "int(bool(self.waiting or self.skipped_waiting))",
+      "name": "has_waiting_requests",
+      "rationale": "Captures fixed work specific to admission steps."
+    },
+    {
+      "expression": "int(0 < len(self.waiting) + len(self.skipped_waiting) <= 2)",
+      "name": "small_admission",
+      "rationale": "Identifies overhead shared by singleton and pair admissions, without imposing the unsuccessful three-to-two weighting."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Test whether the nonlinear spatial instruction patterns chiefly arise before temporal upsampling. Retain separate volume slopes and cache overhead, but use an unscaled boundary feature shared by both paths.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Captures area-dependent work common to initial and cached chunks."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Allows an independently fitted area slope for cached temporal expansion."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures fixed cache-dependent execution overhead."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+      "name": "spatial_boundary",
+      "rationale": "Captures boundary and row work without imposing temporal expansion on its contribution."
+    }
+  ]
+}

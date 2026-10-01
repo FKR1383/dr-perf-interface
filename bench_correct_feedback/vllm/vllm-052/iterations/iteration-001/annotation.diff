@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/sample/ops/topk_topp_sampler.py
++++ candidate/vllm/v1/sample/ops/topk_topp_sampler.py
+@@ -194,7 +194,7 @@
+ 
+         The logits tensor may be updated in-place.
+         """
+-        with perfmark.region("vllm-052"):
++        with perfmark.region("vllm-052", logit_elements=(logits.numel()), singleton_batch=(int(logits.shape[0] == 1)), first_nonsingleton_shape=(int(logits.shape[0] == 2))):
+             logits = apply_top_k_top_p(logits, k, p)
+             logits_to_return = None
+             if self.logprobs_mode == "processed_logits":

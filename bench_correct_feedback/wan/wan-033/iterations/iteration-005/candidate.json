@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Source-cache cardinality may distinguish cache-warming regimes that module count and encoder attribute count could not separate.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer and encoder overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Tracks linear tensor-processing work."
+    },
+    {
+      "expression": "sum((len(text) for text in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Approximates tokenizer input work and distinguishes equal-shape prompts."
+    },
+    {
+      "expression": "len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0",
+      "name": "source_cache_entries",
+      "rationale": "Reads existing runtime cache cardinality without importing linecache or accessing files."
+    }
+  ]
+}

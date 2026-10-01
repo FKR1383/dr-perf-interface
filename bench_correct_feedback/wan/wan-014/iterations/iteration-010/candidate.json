@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Fourfold boundary weighting was better than onefold, twofold, or eightfold weighting. Threefold weighting tests whether combining intermediate and final temporal scales better explains the remaining spatial instruction patterns.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Captures spatial-volume work common to both cache regimes."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Allows an independent volume slope for cached execution."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures fixed overhead from cache handling and temporal operations."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (3 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+      "name": "mixed_stage_boundary",
+      "rationale": "Approximates combined boundary work across stages with onefold, twofold, and fourfold temporal extent."
+    }
+  ]
+}

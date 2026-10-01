@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately affine in decoded token count, with fixed costs for nonempty updates and terminal-token exclusion. The supplied decoder emits one character per token and the stop list is constant.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(new_token_ids) - int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output))",
+      "name": "decoded_token_count",
+      "rationale": "Counts iterations of the decoding loop after excluding a terminal stop token."
+    },
+    {
+      "expression": "int(bool(new_token_ids))",
+      "name": "nonempty_update",
+      "rationale": "Separates the empty-input early return from decoding setup and stop-string checking."
+    },
+    {
+      "expression": "int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output))",
+      "name": "skipped_terminal_token",
+      "rationale": "Captures the extra slicing and cleanup work when the terminal token is excluded."
+    }
+  ]
+}

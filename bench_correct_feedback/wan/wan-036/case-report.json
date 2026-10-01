@@ -1,0 +1,63 @@
+{
+  "agent_PCVs_thread": "01a0edb6-2819-7041-a10a-4dda4780d633",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.268704431649512,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed setup cost plus a linear cost per generated float32 element.",
+      "irregularity_percent": 14.268704431649512,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+          "name": "generated_elements",
+          "rationale": "CPU Gaussian sampling work scales with the number of generated latent elements; the remaining shape construction and dispatch work is approximately constant for this workload."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Sampling has linear elementwise cost plus discrete RNG state-refresh costs. The unexplained counts of 5832, 11664, and 17496 correspond to ceil(generated_elements / 624).",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+          "name": "generated_elements",
+          "rationale": "Captures elementwise Gaussian sampling work."
+        },
+        {
+          "expression": "(batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) + 623) // 624 if latents is None else 0",
+          "name": "rng_state_refreshes",
+          "rationale": "For the freshly seeded CPU generators in this workload, captures MT19937 state refreshes per 624 generated values. Reported unexplained instructions follow exactly one, two, and three such blocks."
+        }
+      ]
+    }
+  ],
+  "case": "wan-036",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "32dbb465c78f01e116af8d7fca057e59845fce7f90efdd5f069280106b1cf723",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

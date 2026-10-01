@@ -1,0 +1,137 @@
+{
+  "case": "vllm-061",
+  "validity_warnings": [],
+  "pcv_names": [
+    "copied_token_count",
+    "short_prompt",
+    "short_prompt_empty_batch",
+    "short_prompt_empty_batch_append"
+  ],
+  "distinct_states": 8,
+  "required_states": 6,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "copied_token_count": 9,
+        "short_prompt": 1,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 51231.0,
+      "unexplained_instructions_per_call": 1475.0,
+      "unexplained_share": 0.02879116160137417
+    },
+    {
+      "state": {
+        "copied_token_count": 10,
+        "short_prompt": 1,
+        "short_prompt_empty_batch": 1,
+        "short_prompt_empty_batch_append": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 83189.0,
+      "unexplained_instructions_per_call": 6540.0,
+      "unexplained_share": 0.07861616319465314
+    },
+    {
+      "state": {
+        "copied_token_count": 11,
+        "short_prompt": 1,
+        "short_prompt_empty_batch": 1,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 77409.0,
+      "unexplained_instructions_per_call": 6211.0,
+      "unexplained_share": 0.0802361482514953
+    },
+    {
+      "state": {
+        "copied_token_count": 21,
+        "short_prompt": 0,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 4,
+      "instructions_per_call": 53802.5,
+      "unexplained_instructions_per_call": 939.5,
+      "unexplained_share": 0.017462013846940197
+    },
+    {
+      "state": {
+        "copied_token_count": 22,
+        "short_prompt": 0,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 57001.333333333336,
+      "unexplained_instructions_per_call": 1597.0,
+      "unexplained_share": 0.0280168884938364
+    },
+    {
+      "state": {
+        "copied_token_count": 45,
+        "short_prompt": 0,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 10,
+      "instructions_per_call": 61266.4,
+      "unexplained_instructions_per_call": 825.0,
+      "unexplained_share": 0.013465782223208806
+    },
+    {
+      "state": {
+        "copied_token_count": 46,
+        "short_prompt": 0,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 12,
+      "instructions_per_call": 62186.0,
+      "unexplained_instructions_per_call": 892.1666666666667,
+      "unexplained_share": 0.014346744712100259
+    },
+    {
+      "state": {
+        "copied_token_count": 47,
+        "short_prompt": 0,
+        "short_prompt_empty_batch": 0,
+        "short_prompt_empty_batch_append": 0
+      },
+      "calls": 4,
+      "instructions_per_call": 62195.0,
+      "unexplained_instructions_per_call": 839.0,
+      "unexplained_share": 0.013489830372216417
+    }
+  ],
+  "max_unexplained_share": 0.0802361482514953,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "copied_token_count": 324.03013742851863,
+      "short_prompt": 229.0,
+      "short_prompt_empty_batch": 16360.662802066036,
+      "short_prompt_empty_batch_append": 6565.8451392732
+    },
+    "constant": 47577.129615730526,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 110.71428719814867,
+  "raw_files": [
+    "run.2375170.json"
+  ]
+}

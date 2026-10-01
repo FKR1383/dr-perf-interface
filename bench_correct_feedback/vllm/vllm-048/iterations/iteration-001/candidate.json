@@ -1,0 +1,16 @@
+{
+  "hypothesis": "The fixed workload uses cumulative output, disabled detokenization, no parent request, and stream interval one. Cost should be mostly constant, with an additional finished-request cost and potentially a small token-count contribution.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(finish_reason is not None)",
+      "name": "finished",
+      "rationale": "Captures completion-specific branches and finish-reason string conversion; the workload finishes every third request."
+    },
+    {
+      "expression": "len(new_token_ids)",
+      "name": "new_token_count",
+      "rationale": "Captures any output construction cost that scales with the supplied token sequence."
+    }
+  ]
+}

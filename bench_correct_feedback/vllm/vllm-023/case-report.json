@@ -1,0 +1,91 @@
+{
+  "agent_PCVs_thread": "01a0f578-b826-7092-97ce-34294cd8ef56",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 5; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction variation comes primarily from heap comparisons, sift swaps, priority ties, and backing-list growth. These entry-state features distinguish those costs for the tested heaps of sizes one through four.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "int(bool(self._heap) and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+          "name": "first_sift_swap",
+          "rationale": "Captures whether insertion moves past its first parent."
+        },
+        {
+          "expression": "int(len(self._heap) >= 3 and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+          "name": "second_comparison",
+          "rationale": "Predicts an additional heap comparison for the shallow heaps exercised here."
+        },
+        {
+          "expression": "int(bool(self._heap) and request.priority == self._heap[(len(self._heap) - 1) // 2].priority)",
+          "name": "parent_priority_tie",
+          "rationale": "Captures the arrival-time comparison needed when parent priorities tie."
+        },
+        {
+          "expression": "int(self._heap.__sizeof__() == [].__sizeof__() + 8 * len(self._heap))",
+          "name": "list_capacity_exhausted",
+          "rationale": "Predicts list growth during append on the benchmark's 64-bit Python runtime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The measurements support separate costs for upward movement, shallow root insertion, and list growth. Replacing the tie feature with incoming priority provides sufficient distinct states while retaining the dominant measured cost distinctions.",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(bool(self._heap) and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+          "name": "first_sift_swap",
+          "rationale": "Separates insertions that move upward from those that stop at the first parent."
+        },
+        {
+          "expression": "int(0 < len(self._heap) < 3 and (request.priority, request.arrival_time) < (self._heap[0].priority, self._heap[0].arrival_time))",
+          "name": "shallow_root_insertion",
+          "rationale": "Distinguishes the shallow root insertions, which had higher measured costs than the deeper sift."
+        },
+        {
+          "expression": "int(self._heap.__sizeof__() == [].__sizeof__() + 8 * len(self._heap))",
+          "name": "list_capacity_exhausted",
+          "rationale": "Captures the observed extra cost of backing-list growth on 64-bit Python."
+        },
+        {
+          "expression": "request.priority",
+          "name": "incoming_priority",
+          "rationale": "Retains the raw ordering key and supplies twelve distinct entry states, resolving the previous state-count failure."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-023",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5f095c2e923b6f64b2bf1d04db8322bc54c16096a04196d08becf4f3503b7b54",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

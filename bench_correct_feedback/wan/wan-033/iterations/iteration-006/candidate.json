@@ -1,0 +1,16 @@
+{
+  "hypothesis": "A simpler two-feature model avoids redundant predictors and requires fewer distinct states. The five observed batch-and-length configurations should support validation, while prompt-content costs appear small for most measurements.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures tokenizer operations repeated for each prompt and batch-dependent encoder overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Captures the principal variable tensor-processing work for this small fixed encoder."
+    }
+  ]
+}

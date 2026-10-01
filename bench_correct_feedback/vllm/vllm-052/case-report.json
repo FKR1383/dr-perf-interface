@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0f646-a81c-7d12-ad08-22dcdc3a9b32",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 8.845694504105197,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Steady-state instruction count is approximately affine in tensor size. Singleton specialization and compilation of the first nonsingleton shape may account for large deviations in the first two calls.",
+      "irregularity_percent": 8.845694504105197,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "logits.numel()",
+          "name": "logit_elements",
+          "rationale": "Filtering, softmax, noise generation, and selection scale with the number of logits; vocabulary width is fixed in this workload."
+        },
+        {
+          "expression": "int(logits.shape[0] == 1)",
+          "name": "singleton_batch",
+          "rationale": "Singleton dimensions receive special treatment in torch.compile and can incur a distinct compilation and execution cost."
+        },
+        {
+          "expression": "int(logits.shape[0] == 2)",
+          "name": "first_nonsingleton_shape",
+          "rationale": "The first nonsingleton batch may trigger compilation of the dynamic batch graph, producing a separate cost regime."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-052",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "bfd6696ca0a948de56cb12cfdcd156a93b6b58a411bcd2f538ee9e0390a02361",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

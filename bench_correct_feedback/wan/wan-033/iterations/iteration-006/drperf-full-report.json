@@ -1,0 +1,87 @@
+{
+  "case": "wan-033",
+  "validity_warnings": [],
+  "pcv_names": [
+    "batch_size",
+    "padded_tokens"
+  ],
+  "distinct_states": 5,
+  "required_states": 4,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 8
+      },
+      "calls": 12,
+      "instructions_per_call": 3158148.5833333335,
+      "unexplained_instructions_per_call": 231810.16666666663,
+      "unexplained_share": 0.07340065248671669
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 12
+      },
+      "calls": 6,
+      "instructions_per_call": 3179360.5,
+      "unexplained_instructions_per_call": 270844.66666666674,
+      "unexplained_share": 0.08518841026887852
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 16
+      },
+      "calls": 6,
+      "instructions_per_call": 3160574.1666666665,
+      "unexplained_instructions_per_call": 240897.00000000003,
+      "unexplained_share": 0.07621937891559262
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 16
+      },
+      "calls": 6,
+      "instructions_per_call": 3279126.0,
+      "unexplained_instructions_per_call": 264206.0000000001,
+      "unexplained_share": 0.08057207926746338
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 32
+      },
+      "calls": 6,
+      "instructions_per_call": 3350956.1666666665,
+      "unexplained_instructions_per_call": 299814.9999999999,
+      "unexplained_share": 0.08947147771802642
+    }
+  ],
+  "max_unexplained_share": 0.08947147771802642,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "batch_size": 83637.63333333333,
+      "padded_tokens": 2521.2812499999995
+    },
+    "constant": 2804668.305000032,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 26.281094119884074,
+  "raw_files": [
+    "run.1588503.json"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Most observed cleanup costs are nearly constant; a few early calls dominate irregularity. Runtime module cardinality may expose lazy initialization responsible for those outliers, while generator ownership captures a potentially expensive cleanup branch.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Cheap runtime entry state that may distinguish lazy initialization from steady-state cleanup."
+    },
+    {
+      "expression": "len(self.req_id_to_index)",
+      "name": "active_requests",
+      "rationale": "Captures batch cardinality and preserves distinct workload states."
+    },
+    {
+      "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+      "name": "sampling_entries_removed",
+      "rationale": "Captures successful sampling-set deletions."
+    },
+    {
+      "expression": "int(self.req_id_to_index.get(req_id, -1) in self.generators)",
+      "name": "generator_present",
+      "rationale": "Distinguishes generator removal and possible native resource destruction."
+    }
+  ]
+}

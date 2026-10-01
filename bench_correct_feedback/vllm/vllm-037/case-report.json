@@ -1,0 +1,81 @@
+{
+  "agent_PCVs_thread": "01a0f5b4-c791-7213-84f6-a26de80cb330",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 5",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Region cost is a fixed baseline plus conditional prepend overhead, work proportional to skipped requests, and the optional capacity-bound update. The supplied workload likely leaves skipped requests empty, making the region nearly constant-cost.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "len(step_skipped_waiting)",
+          "name": "skipped_count",
+          "rationale": "Measures the number of requests passed to prepend_requests."
+        },
+        {
+          "expression": "int(bool(step_skipped_waiting))",
+          "name": "has_skipped",
+          "rationale": "Captures the fixed overhead of entering the prepend branch."
+        },
+        {
+          "expression": "int(not defer_prefills)",
+          "name": "update_capacity_bound",
+          "rationale": "Captures execution of the waiting-queue truth test and capacity-bound assignment."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The previous report confirms a single execution path across all 28 calls. Cost should remain approximately constant across varying running-batch cardinalities, with a near-zero fitted coefficient for running_count.",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_count",
+          "rationale": "Provides varying entry-state cardinality across batch sizes, allowing the expected constant region cost to be tested across at least five states."
+        },
+        {
+          "expression": "len(step_skipped_waiting)",
+          "name": "skipped_count",
+          "rationale": "Captures prepend work if skipped requests are present."
+        },
+        {
+          "expression": "int(not defer_prefills)",
+          "name": "update_capacity_bound",
+          "rationale": "Captures the optional capacity-bound assignment."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-037",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "d94390f3ac71ba1fda999b150849f9254d123a20ec8c72540ee8ec7215351563",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

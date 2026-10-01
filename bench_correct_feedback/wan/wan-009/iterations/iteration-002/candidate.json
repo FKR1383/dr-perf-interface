@@ -1,0 +1,16 @@
+{
+  "hypothesis": "The measured work is nearly constant across calls, with a small initial-creation effect. Including the supplied entry index exposes six distinct workload states; its fitted contribution should be near zero, while existing cache size captures the initialization difference.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "self._conv_idx[0]",
+      "name": "entry_cache_index",
+      "rationale": "Identifies the six supplied entry index states whose index lists are reset by the region."
+    },
+    {
+      "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+      "name": "existing_cache_slots",
+      "rationale": "Distinguishes initial cache creation from replacement and disposal of existing cache lists."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The dominant outlier is lazy Numba compilation on the first active call. A compilation-state indicator should isolate that cost, while batch size, active request count, and the active-batch indicator explain initialization and steady-state execution.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(sampled_token_ids)",
+      "name": "batch_size",
+      "rationale": "Captures filtering and output construction, particularly the 1024-entry empty initialization call."
+    },
+    {
+      "expression": "sum((1 for ids in sampled_token_ids if len(ids) > 0))",
+      "name": "sampled_requests",
+      "rationale": "Captures the approximately linear increase in steady-state proposal cost per active request."
+    },
+    {
+      "expression": "int(sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+      "name": "has_sampled_requests",
+      "rationale": "Separates fixed Numba dispatch and thread-management overhead from the empty initialization path."
+    },
+    {
+      "expression": "int(len(batch_propose_numba.signatures) == 0 and sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+      "name": "requires_initial_compilation",
+      "rationale": "Identifies the first active call using the dispatcher's entry-state compilation status, explaining its exceptional compilation cost."
+    }
+  ]
+}

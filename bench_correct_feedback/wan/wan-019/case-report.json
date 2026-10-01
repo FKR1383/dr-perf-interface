@@ -1,0 +1,379 @@
+{
+  "agent_PCVs_thread": "01a0ed92-631b-74e1-99cc-9250399cb1c3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 47.08100953439883,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "With fixed head width and CPU execution settings, instruction count should be explained by a fixed dispatch cost plus attention-pair work and linear query/key/value processing.",
+      "irregularity_percent": 47.08100953439883,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks attention-score and softmax work across batches, heads, and query-key pairs; head width is fixed in this workload."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks query processing, per-query overhead, and output writes."
+        },
+        {
+          "expression": "key.numel() + value.numel()",
+          "name": "key_value_elements",
+          "rationale": "Tracks key/value preparation and memory work as self-attention and cross-attention lengths vary."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.834629278066036,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "CPU attention has substantial per-row scalar tail costs for key lengths not divisible by 16. Adding query-weighted remainder work should explain the nonlinear differences missed by total tensor sizes.",
+      "irregularity_percent": 27.834629278066036,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks total attention matrix arithmetic."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks per-query processing and output work."
+        },
+        {
+          "expression": "key.numel() + value.numel()",
+          "name": "key_value_elements",
+          "rationale": "Tracks key/value preparation and memory work."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "scalar_tail_pairs",
+          "rationale": "Captures scalar remainder processing after 16-element vector blocks; lengths 9 and 27 have disproportionately high instruction counts compared with aligned lengths."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.400818086427627,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The remaining underprediction grows with query length, including for aligned key lengths. A quadratic query term may capture this growth better than the linear key/value term while retaining the observed key-tail effect.",
+      "irregularity_percent": 27.400818086427627,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks attention matrix arithmetic."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear per-query processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] ** 2",
+          "name": "quadratic_query_work",
+          "rationale": "Tests the additional nonlinear growth with query length visible in both self-attention and cross-attention."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "scalar_tail_pairs",
+          "rationale": "Retains the remainder feature that reduced irregularity from 47.1% to 27.8%."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.099494514907445,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "The remaining growth may reflect discrete query blocking rather than quadratic query work. A 32-row tile count captures the extra block at length 48 while preserving linear, pairwise, and key-remainder costs.",
+      "irregularity_percent": 27.099494514907445,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks attention matrix arithmetic."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks per-query processing and output work."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "scalar_tail_pairs",
+          "rationale": "Tracks scalar remainder processing along the key dimension."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+          "name": "query_tiles",
+          "rationale": "Models per-tile overhead for 32-row CPU attention blocks, including the additional block at query length 48."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.04192353122017,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The nearly zero fitted attention-pair coefficient suggests total pair count does not adequately describe individual matrix-kernel paths. Modeling remainders on both matrix axes may explain work that key remainders and query-tile overhead alone missed.",
+      "irregularity_percent": 28.04192353122017,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks total attention matrix work."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear query and output processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "key_tail_pairs",
+          "rationale": "Captures remainder work along the key dimension."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * (query.shape[1] % 16) * key.shape[1]",
+          "name": "query_tail_pairs",
+          "rationale": "Captures matrix-kernel remainder work along the query dimension, allowing full vector blocks and partial blocks to have different fitted costs."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.179076907066296,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Matrix-kernel work may scale with the product of rounded tile counts. This captures a joint boundary effect that separate linear remainder terms cannot represent, while retaining scalar key-tail and query-block costs.",
+      "irregularity_percent": 27.179076907066296,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear query and output processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "key_tail_pairs",
+          "rationale": "Retains the key-remainder feature that substantially reduced unexplained work."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 15) // 16) * ((key.shape[1] + 15) // 16)",
+          "name": "matrix_tiles",
+          "rationale": "Tests matrix multiplication work counted in full or partial 16-by-16 tiles instead of individual attention pairs."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+          "name": "query_tiles",
+          "rationale": "Tracks setup and dispatch work for 32-row query blocks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.769655161272084,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "The remaining work may follow products of block counts and remainders rather than rounded matrix area. These features distinguish complete query-block processing from per-row key-tail processing.",
+      "irregularity_percent": 27.769655161272084,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear query and output processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "key_tail_pairs",
+          "rationale": "Tracks key-axis scalar remainder work across all query rows."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * key.shape[1]",
+          "name": "query_blocks_times_keys",
+          "rationale": "Tests matrix-kernel loops operating on complete eight-row query blocks."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * (key.shape[1] % 16)",
+          "name": "query_blocks_times_key_tail",
+          "rationale": "Captures the interaction between complete query blocks and partial key vectors, which separate remainder features cannot express."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.128221749343354,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "A second key-axis blocking period may explain the work left unresolved by 16-element vector remainders. The six-column remainder tests this independently of the unsuccessful query-axis tiling features.",
+      "irregularity_percent": 28.128221749343354,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+          "name": "attention_pairs",
+          "rationale": "Tracks total attention arithmetic."
+        },
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear query and output processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "key_vector_remainder",
+          "rationale": "Tracks the observed sensitivity to key lengths outside complete 16-element vectors."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 6)",
+          "name": "key_microkernel_remainder",
+          "rationale": "Tests a separate six-column matrix-multiplication blocking effect, allowing matrix kernels and softmax to use different block widths."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.165896532781854,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Two unresolved effects may be mixed: an eight-element cleanup path within 16-element vector remainders, and key processing repeated per query block. These features test both directly.",
+      "irregularity_percent": 28.165896532781854,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.numel()",
+          "name": "query_elements",
+          "rationale": "Tracks linear query and output processing."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "key_remainder_16",
+          "rationale": "Tracks remainder processing after full 16-element key vectors."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 8)",
+          "name": "key_remainder_8",
+          "rationale": "Tests whether eight-element vectors handle part of the 16-element remainder, leaving a separate scalar tail."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32) * key.shape[1]",
+          "name": "keys_per_query_block",
+          "rationale": "Tracks key processing repeated for each 32-row query block, including the interaction omitted by a standalone query-block count."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.84440943268825,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Explicit loop-trip counts may explain instruction paths better than total pair counts. This candidate separates full-vector iterations, scalar remainder iterations, per-row work, and key/value preparation.",
+      "irregularity_percent": 27.84440943268825,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1]",
+          "name": "query_rows",
+          "rationale": "Counts per-head query rows directly."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] // 16)",
+          "name": "full_key_vectors",
+          "rationale": "Directly counts complete 16-element key-vector iterations instead of requiring their reconstruction from total pairs and remainders."
+        },
+        {
+          "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+          "name": "scalar_key_elements",
+          "rationale": "Counts remaining key elements processed for each query row."
+        },
+        {
+          "expression": "key.numel() + value.numel()",
+          "name": "key_value_elements",
+          "rationale": "Tracks key/value preparation independently of query-row processing."
+        }
+      ]
+    }
+  ],
+  "case": "wan-019",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "a74487487c642fe4275bdcfa02bb98f8966583ee5eac5e976522509b7e5751eb",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,379 @@
+{
+  "agent_PCVs_thread": "01a0f5ec-c8df-75c2-8b29-caecfd418c66",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.84690982475398,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed request processing plus linear token validation, with additional variation from raw-prompt preprocessing and sampling-specific branches.",
+      "irregularity_percent": 99.84690982475398,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Token validation scans prompt IDs for minimum and maximum values, producing cost proportional to token count."
+        },
+        {
+          "expression": "len(prompt) if isinstance(prompt, str) else len(prompt.get('prompt', '')) if isinstance(prompt, dict) and 'type' not in prompt else 0",
+          "name": "raw_prompt_characters",
+          "rationale": "If raw prompts reach this boundary, their character count approximates tokenization and preprocessing work."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+          "name": "sampling_enabled",
+          "rationale": "Separates sampling parameter validation and processing paths from greedy generation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.83679026018962,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The dominant unexplained cost is lazy runtime initialization. Module cardinality and its square may separate cold and warmed execution, while token count and sampling mode explain steady-state differences.",
+      "irregularity_percent": 99.83679026018962,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures the linear minimum and maximum token-ID validation scans."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+          "name": "sampling_enabled",
+          "rationale": "Captures differences between greedy and sampling parameter processing."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_module_count",
+          "rationale": "Runtime import state can distinguish expensive lazy initialization from subsequent requests; the first report contains one exceptionally expensive call."
+        },
+        {
+          "expression": "len(__import__('sys').modules) ** 2",
+          "name": "loaded_module_count_squared",
+          "rationale": "Allows nonlinear dependence on runtime initialization state as different sets of dependencies become loaded."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.84589023988171,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Module cardinality did not distinguish the exceptionally expensive first request. Tokenizer-local lazy vocabulary initialization may explain that cost; tokenizer dictionary state can expose this independently of prompt length.",
+      "irregularity_percent": 99.84589023988171,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures the token-ID scans performed during input validation."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+          "name": "sampling_enabled",
+          "rationale": "Distinguishes greedy and sampling parameter paths."
+        },
+        {
+          "expression": "len(getattr(self.tokenizer, '__dict__', {})) if self.tokenizer is not None else 0",
+          "name": "tokenizer_state_size",
+          "rationale": "Observes tokenizer initialization and cached-property state through a cheap dictionary cardinality."
+        },
+        {
+          "expression": "int(self.tokenizer is not None and 'max_token_id' not in getattr(self.tokenizer, '__dict__', {}))",
+          "name": "uncached_max_token_id",
+          "rationale": "Tests whether the vocabulary-bound property used by validation still requires initialization, without evaluating that property."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.8452411376301,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Renderer state and library cache cardinalities may expose initialization costs that module count and tokenizer instance fields did not distinguish.",
+      "irregularity_percent": 99.8452411376301,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Measures the token-ID validation workload."
+        },
+        {
+          "expression": "len(getattr(self.renderer, '__dict__', {}))",
+          "name": "renderer_state_size",
+          "rationale": "Observes renderer initialization and cached-property state without invoking cache methods."
+        },
+        {
+          "expression": "len(getattr(__import__('sys').modules.get('re'), '_cache', {}))",
+          "name": "regex_cache_size",
+          "rationale": "Tests whether regular-expression cache state distinguishes expensive initial validation."
+        },
+        {
+          "expression": "len(getattr(__import__('sys').modules.get('copy'), '_deepcopy_dispatch', {}))",
+          "name": "deepcopy_dispatch_size",
+          "rationale": "Observes runtime copy-handler registration relevant to sampling-parameter cloning."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.840062980261,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The tested tokenizer, renderer, regex, and copy-dispatch cardinalities were constant. Configuration, parameter, or source-introspection caches may distinguish the expensive initial request and explain work omitted by the current fit.",
+      "irregularity_percent": 99.840062980261,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures linear token-ID validation work."
+        },
+        {
+          "expression": "len(getattr(__import__('sys').modules.get('linecache'), 'cache', {}))",
+          "name": "source_cache_size",
+          "rationale": "Observes cached source metadata that may distinguish initial introspection from warmed request processing."
+        },
+        {
+          "expression": "len(getattr(self.model_config, '__dict__', {}))",
+          "name": "model_config_state_size",
+          "rationale": "Tests whether model configuration validation initializes cached properties on the first request."
+        },
+        {
+          "expression": "len(getattr(params, '__dict__', {}))",
+          "name": "sampling_params_state_size",
+          "rationale": "Measures auxiliary parameter state, including cached properties that can affect verification and cloning."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.8404496634725,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The first-call excess may involve class-level tokenizer initialization or import-path discovery rather than the previously tested instance caches. Generation configuration cardinality additionally describes parameter-update work.",
+      "irregularity_percent": 99.8404496634725,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures token-ID scanning during validation."
+        },
+        {
+          "expression": "len(getattr(getattr(self.tokenizer, '__class__', None), '__dict__', {}))",
+          "name": "tokenizer_class_state_size",
+          "rationale": "Tests for tokenizer caches installed on its class rather than its unchanged instance dictionary."
+        },
+        {
+          "expression": "len(__import__('sys').path_importer_cache)",
+          "name": "import_path_cache_size",
+          "rationale": "Observes cached import-path resolution, which can change even when loaded-module cardinality does not."
+        },
+        {
+          "expression": "len(self.generation_config_fields)",
+          "name": "generation_config_size",
+          "rationale": "Measures configuration entries available to sampling-parameter updates."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.84666862105203,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "The tested runtime cardinalities have not explained the excess instructions. This candidate tests whether detailed sampling configuration separates instruction-cost variation obscured by prompt length and a single sampling-mode flag.",
+      "irregularity_percent": 99.84666862105203,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Measures token validation work."
+        },
+        {
+          "expression": "params.max_tokens if isinstance(params, SamplingParams) and params.max_tokens is not None else 0",
+          "name": "max_output_tokens",
+          "rationale": "Exposes the output limit used in sampling validation and cloning."
+        },
+        {
+          "expression": "params.top_k if isinstance(params, SamplingParams) else 0",
+          "name": "sampling_top_k",
+          "rationale": "Captures variation in sampling configuration beyond the previously tested sampling-enabled indicator."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and (params.presence_penalty != 0 or params.frequency_penalty != 0 or params.repetition_penalty != 1))",
+          "name": "penalties_enabled",
+          "rationale": "Distinguishes requests with nondefault penalty settings during parameter verification."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.84492170935032,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Scalar sampling settings did not explain the excess cost. This candidate tests the cloning branch and collection cardinalities that more directly determine parameter validation and copying work.",
+      "irregularity_percent": 99.84492170935032,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures the linear token-ID validation scans."
+        },
+        {
+          "expression": "int(not getattr(params, 'skip_clone', False))",
+          "name": "clone_required",
+          "rationale": "Distinguishes parameter cloning from any configured clone bypass."
+        },
+        {
+          "expression": "len(getattr(params, 'stop_token_ids', None) or ()) + len(getattr(params, '_all_stop_token_ids', None) or ())",
+          "name": "stop_token_entries",
+          "rationale": "Measures stop-token collection sizes relevant to cloning and generation-configuration updates."
+        },
+        {
+          "expression": "len(getattr(params, 'allowed_token_ids', None) or ()) + len(getattr(params, 'bad_words', None) or ()) + len(getattr(params, 'logit_bias', None) or {})",
+          "name": "tokenizer_constraint_entries",
+          "rationale": "Measures optional tokenizer constraints that can add validation and copying work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.841645588073,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Input collection sizes and previously tested caches did not explain the initial excess. Logging and platform-validation state provide additional cheap observations of potentially deferred initialization.",
+      "irregularity_percent": 99.841645588073,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Captures linear token-ID validation work."
+        },
+        {
+          "expression": "len(logger.manager.loggerDict)",
+          "name": "logging_registry_size",
+          "rationale": "Tests whether lazy logger registration distinguishes initial request processing."
+        },
+        {
+          "expression": "len(getattr(logger, '_cache', {}))",
+          "name": "logger_level_cache_size",
+          "rationale": "Observes cached logging-level decisions without issuing logs or changing logger state."
+        },
+        {
+          "expression": "len(getattr(current_platform, '__dict__', {}))",
+          "name": "platform_state_size",
+          "rationale": "Tests for lazy platform state initialized by request validation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.75677221617225,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Token contents may affect validation costs beyond sequence length. A special-prefix indicator and its interaction with length test that possibility; the exceptional first-call cost remains unexplained by previous candidates.",
+      "irregularity_percent": 99.75677221617225,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+          "name": "prompt_token_count",
+          "rationale": "Measures the token-ID scans performed by input validation."
+        },
+        {
+          "expression": "int(isinstance(prompt, dict) and bool(prompt.get('prompt_token_ids')) and (prompt['prompt_token_ids'][0] in self.tokenizer.all_special_ids)) if self.tokenizer is not None else 0",
+          "name": "leading_special_token",
+          "rationale": "Distinguishes special-token prefixes that can change comparisons during minimum and maximum scans."
+        },
+        {
+          "expression": "len(prompt['prompt_token_ids']) if isinstance(prompt, dict) and prompt.get('prompt_token_ids') and (self.tokenizer is not None) and (prompt['prompt_token_ids'][0] in self.tokenizer.all_special_ids) else 0",
+          "name": "special_prefixed_token_count",
+          "rationale": "Allows token-validation cost per element to differ for prompts beginning with a special token."
+        },
+        {
+          "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+          "name": "sampling_enabled",
+          "rationale": "Captures the greedy-versus-sampling validation branch."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-044",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "26e864dcd3e0d2ad1b3e80a4999c787ab33577dbf46d93f5153ab2856c763213",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1132,7 +1132,7 @@
+         self._enc_feat_map = [None] * self._enc_conv_num
+ 
+     def _encode(self, x: torch.Tensor):
+-        with perfmark.region("wan-006"):
++        with perfmark.region("wan-006", temporal_chunks=(1 + (x.shape[2] - 1) // 4), spatial_area=(x.shape[0] * x.shape[3] * x.shape[4]), chunk_spatial_work=(x.shape[0] * (1 + (x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]), attention_pair_work=(x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2)):
+             _, _, num_frame, height, width = x.shape
+ 
+             self.clear_cache()

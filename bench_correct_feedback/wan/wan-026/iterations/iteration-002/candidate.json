@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The similar unexplained instruction share across text lengths suggests runtime overhead beyond tensor dimensions. Cheap garbage-collector entry state may explain variation caused by collections during the marked region.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "text_length",
+      "rationale": "Tracks text projection and cross-attention work."
+    },
+    {
+      "expression": "int(self.scheduler.step_index is None)",
+      "name": "scheduler_initialization",
+      "rationale": "Separates scheduler initialization from subsequent steps."
+    },
+    {
+      "expression": "__import__('gc').get_count()[0]",
+      "name": "gc_allocation_pressure",
+      "rationale": "Measures entry-state allocation pressure that can affect collection work during transformer execution."
+    },
+    {
+      "expression": "__import__('gc').get_count()[1]",
+      "name": "gc_older_generation_pressure",
+      "rationale": "Tracks progress toward more costly older-generation garbage collection."
+    }
+  ]
+}

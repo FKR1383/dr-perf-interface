@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed operation overhead, per-prompt tensor operations, and a smaller contribution proportional to the padded embedding volume.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Tracks per-prompt slicing, zero allocation, concatenation, and tensor iteration overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length * prompt_embeds.shape[2]",
+      "name": "embedding_elements",
+      "rationale": "Tracks the tensor volume processed by padding, concatenation, stacking, and repetition in the fixed workload."
+    }
+  ]
+}

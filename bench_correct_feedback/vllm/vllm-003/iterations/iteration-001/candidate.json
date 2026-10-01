@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Per-request work, decoding rounds, long-prompt processing, and initial-execution overhead explain instruction counts using cheap workload-specific entry-state proxies.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(use_tqdm) + 1",
+      "name": "request_count_proxy",
+      "rationale": "The supplied workload sets use_tqdm to batch size minus one, providing a cheap proxy for per-request work."
+    },
+    {
+      "expression": "2 * int(use_tqdm) + 1 if use_tqdm < 2 else 4",
+      "name": "decode_rounds_proxy",
+      "rationale": "Matches each batch's maximum requested generation length, approximating engine-step overhead."
+    },
+    {
+      "expression": "int(use_tqdm) + 1 if use_tqdm >= 4 else 0",
+      "name": "long_prompt_requests",
+      "rationale": "Measures batch size for the long shared-prefix prompt regime."
+    },
+    {
+      "expression": "int(use_tqdm == 0)",
+      "name": "initial_batch",
+      "rationale": "Identifies initial execution overhead and the batch without progress reporting."
+    }
+  ]
+}

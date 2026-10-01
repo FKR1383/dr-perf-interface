@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Initial text conversion may scale with non-special prompt tokens. Removing the optional leading special token tests a structural source of mismatch in the raw prompt-length feature.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Restores an independent count of completion-statistics and cleanup operations."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].prompt_len - int(bool(self.request_states[o.request_id].prompt_token_ids) and self.request_states[o.request_id].prompt_token_ids[0] == 2) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_text_tokens",
+      "rationale": "Counts initial prompt tokens excluding OPT's leading special token, accounting for the workload's alternating add_special_tokens setting."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Restores independent separation of the exceptional first-output completion regime."
+    }
+  ]
+}

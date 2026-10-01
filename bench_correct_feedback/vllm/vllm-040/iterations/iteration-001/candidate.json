@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is dominated by shared-prefix traversal. Constant-time block-list cardinality and endpoint reference-count checks should distinguish immediate exits, partial sharing, and full traversal.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.req_to_blocks[running_request_id])",
+      "name": "request_blocks",
+      "rationale": "Bounds the number of loop iterations."
+    },
+    {
+      "expression": "int(bool(self.req_to_blocks[running_request_id]) and self.req_to_blocks[running_request_id][0].ref_cnt == len(self.req_to_blocks))",
+      "name": "first_block_shared",
+      "rationale": "Distinguishes immediate termination from traversal of a shared prefix."
+    },
+    {
+      "expression": "len(self.req_to_blocks[running_request_id]) if self.req_to_blocks[running_request_id] and self.req_to_blocks[running_request_id][-1].ref_cnt == len(self.req_to_blocks) else 0",
+      "name": "fully_shared_length",
+      "rationale": "A shared final block indicates likely full traversal, including the single-request case."
+    },
+    {
+      "expression": "len(self.req_to_blocks)",
+      "name": "active_requests",
+      "rationale": "Captures changes in sharing conditions across request batches."
+    }
+  ]
+}

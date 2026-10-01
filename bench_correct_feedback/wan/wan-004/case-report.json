@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0ed6a-60d2-7493-8954-425a9455d3f3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.4495180483312224,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed overhead plus per-image, per-element, and per-row costs for converting the NumPy batch into PIL images.",
+      "irregularity_percent": 1.4495180483312224,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "image.shape[0]",
+          "name": "batch_size",
+          "rationale": "Counts per-image PIL construction and list iteration overhead."
+        },
+        {
+          "expression": "image.size",
+          "name": "element_count",
+          "rationale": "Tracks multiplication, rounding, uint8 conversion, and pixel serialization work."
+        },
+        {
+          "expression": "image.shape[0] * image.shape[1]",
+          "name": "total_rows",
+          "rationale": "Captures per-row copying and RGB decoding overhead."
+        }
+      ]
+    }
+  ],
+  "case": "wan-004",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "1d74839dae42e4660c249b59263aece41b3890443921edd37e1196726c9b290f",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,91 @@
+{
+  "agent_PCVs_thread": "01a0eda6-fab1-70d0-b7e0-1f831aa4d567",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 3",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately fixed dispatch and allocation overhead plus a linear term in tensor elements. The fixture uses a constant tensor shape, so counts should be nearly constant across entries.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "noise_pred.numel()",
+          "name": "noise_elements",
+          "rationale": "The region performs subtraction, scalar multiplication, and addition over the noise tensor; its element count captures the arithmetic work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 3; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The region's cost should remain approximately constant across conditioning lengths because its tensor sizes are unchanged. Conditioning length distinguishes existing workload states so Dr. Perf can evaluate that hypothesis.",
+      "irregularity_percent": null,
+      "iteration": 2,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "noise_pred.numel()",
+          "name": "noise_elements",
+          "rationale": "Captures the elementwise arithmetic workload, which is constant in this fixture."
+        },
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "conditioning_length",
+          "rationale": "Provides three distinct entry states from the conditioning lengths exercised by the fixed workload, allowing comparison of the otherwise constant arithmetic cost across execution contexts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "With tensor size fixed, instruction count is approximately constant across conditioning lengths; observed state means differ by less than 0.2%. One predictor should satisfy the three-state requirement.",
+      "irregularity_percent": 0.0,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "conditioning_length",
+          "rationale": "Distinguishes three observed execution contexts with nearly constant instruction counts. Removing the constant tensor-size feature leaves three states for one predictor."
+        }
+      ]
+    }
+  ],
+  "case": "wan-030",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "c130dcedd92a3b272e4f896320f2a09cb12ec4516ca9d67ef9acf4383abc38ce",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

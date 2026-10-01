@@ -1,0 +1,21 @@
+{
+  "hypothesis": "The remaining states follow an approximately linear per-block trend. Separate offsets for batches of one and two blocks should capture the observed small-batch deviations; these may reflect warm-up effects correlated with batch size in the fixed workload.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "max(0, num_full_blocks - num_cached_blocks)",
+      "name": "new_block_count",
+      "rationale": "Models the dominant per-block hash insertion and loop cost."
+    },
+    {
+      "expression": "int(num_full_blocks - num_cached_blocks == 1)",
+      "name": "single_block_batch",
+      "rationale": "Allows a separate offset for the one-block state, which the linear model substantially underpredicts."
+    },
+    {
+      "expression": "int(num_full_blocks - num_cached_blocks == 2)",
+      "name": "two_block_batch",
+      "rationale": "Allows a separate offset for the two-block state, the other observed state with substantial unexplained cost."
+    }
+  ]
+}

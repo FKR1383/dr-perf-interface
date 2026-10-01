@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Penalty cost combines fixed invocation overhead, dense batch-by-vocabulary operations, prompt-token processing, and generated-history conversion.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed penalty invocation overhead."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_logits_elements",
+      "rationale": "Models dense vocabulary operations and per-request penalty processing."
+    },
+    {
+      "expression": "sampling_metadata.prompt_token_ids.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_prompt_elements",
+      "rationale": "Models processing of padded prompt tokens."
+    },
+    {
+      "expression": "sum((len(row) for row in sampling_metadata.output_token_ids)) if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_output_tokens",
+      "rationale": "Models conversion and counting of generated token histories using list cardinalities."
+    }
+  ]
+}

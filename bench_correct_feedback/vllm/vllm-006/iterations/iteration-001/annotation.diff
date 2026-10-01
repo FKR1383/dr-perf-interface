@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -443,7 +443,7 @@
+         """
+         # When loading KV data asynchronously, we may have zero new tokens to
+         # compute while still allocating slots for externally computed tokens.
+-        with perfmark.region("vllm-006"):
++        with perfmark.region("vllm-006", new_blocks=(max(0, (min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens + num_new_tokens + num_lookahead_tokens, self.max_model_len) + self.coordinator.single_type_managers[0].block_size - 1) // self.coordinator.single_type_managers[0].block_size - max(len(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())), len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0))), new_full_cached_blocks=(max(0, min(min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens, self.max_model_len) + num_new_tokens, request.num_tokens) // self.coordinator.single_type_managers[0].block_size - (request.num_computed_tokens + num_new_computed_tokens) // self.coordinator.single_type_managers[0].block_size) if self.enable_caching and (not delay_cache_blocks) else 0), prefix_hit_blocks=(len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0), initial_allocation=(int(request.num_computed_tokens == 0))):
+             if num_new_tokens == 0 and num_external_computed_tokens == 0:
+                 raise ValueError(
+                     "num_new_tokens must be greater than 0 when there are no "

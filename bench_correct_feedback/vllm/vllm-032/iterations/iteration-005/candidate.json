@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Scaling did not help. Making admission predictors mutually exclusive may allow Dr. Perf to attribute distinct execution paths without subtractive corrections between the general request-count feature and small-batch indicators.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Models repeated decode scheduling work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting) if len(self.waiting) + len(self.skipped_waiting) >= 3 else 0",
+      "name": "larger_admission_requests",
+      "rationale": "Models larger admission batches independently of the exceptional singleton and pair states."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "singleton_admission",
+      "rationale": "Provides a separate predictor for the full singleton admission cost."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "pair_admission",
+      "rationale": "Provides a separate predictor for the full pair admission cost."
+    }
+  ]
+}

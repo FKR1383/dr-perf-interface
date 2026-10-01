@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The large deviations occur in early allocations. Request-table and prefix-cache occupancy may explain initialization or container-growth costs that allocation count and token extent miss.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+      "name": "new_block_count",
+      "rationale": "Retains the dominant distinction between allocation and no-allocation paths."
+    },
+    {
+      "expression": "num_tokens_need_slot",
+      "name": "num_tokens_need_slot",
+      "rationale": "Preserves sequence extent and sufficient distinct entry states."
+    },
+    {
+      "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+      "name": "tracked_requests",
+      "rationale": "Measures request-table occupancy, which can affect insertion and allocation bookkeeping costs."
+    },
+    {
+      "expression": "len(self.block_pool.cached_block_hash_to_block)",
+      "name": "cached_blocks",
+      "rationale": "Distinguishes initial pool use from warmed prefix-cache state and captures cache bookkeeping occupancy."
+    }
+  ]
+}

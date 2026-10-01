@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1174,7 +1174,7 @@
+                 The latent representations of the encoded videos. If `return_dict` is True, a
+                 [`~models.autoencoder_kl.AutoencoderKLOutput`] is returned, otherwise a plain `tuple` is returned.
+         """
+-        with perfmark.region("wan-011"):
++        with perfmark.region("wan-011", temporal_chunks=(1 + (x.shape[2] - 1) // 4), spatial_area=(x.shape[0] * x.shape[3] * x.shape[4]), subsequent_chunk_area=(x.shape[0] * ((x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]), attention_pairs=(x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2)):
+             if self.use_slicing and x.shape[0] > 1:
+                 encoded_slices = [self._encode(x_slice) for x_slice in x.split(1)]
+                 h = torch.cat(encoded_slices)

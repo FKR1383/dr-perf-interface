@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Active-request cardinality worsened the fit. A quadratic token feature may capture prompt-processing variation more effectively than block count while retaining the two exceptional regimes and the original eight states.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures linear token-dependent admission work."
+    },
+    {
+      "expression": "len(prompt['prompt_token_ids']) ** 2",
+      "name": "prompt_tokens_squared",
+      "rationale": "Tests nonlinear prompt-processing cost with a cheap polynomial feature."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+      "name": "ten_token_regime_basis",
+      "rationale": "Separates the exceptionally costly ten-token state."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+      "name": "nine_token_regime_basis",
+      "rationale": "Separates the elevated nine-token state."
+    }
+  ]
+}

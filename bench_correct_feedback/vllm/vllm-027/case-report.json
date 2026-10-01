@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0f580-b049-7401-b060-76cf0bbda829",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 2.742129875138601,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately affine in the number of cached requests. The fixed CPU workload should keep pipeline and runner branches stable, with little variation in per-request block conversion cost.",
+      "irregularity_percent": 2.742129875138601,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(running_reqs) + len(resumed_reqs)",
+          "name": "cached_request_count",
+          "rationale": "Counts loop iterations that gather request IDs, block IDs, and token metadata; both lengths are constant-time entry-state queries."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-027",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "162dfdc641816f42a505179bfdef867aa50e325aa413d254103447bf6ee0d994",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

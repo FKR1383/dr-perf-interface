@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ed6e-781e-70b2-adac-a22b9a2bcb07",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.6189333773632932,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count combines per-frame overhead, spatial work with different costs for first and subsequent frames, and quadratic spatial attention work.",
+      "irregularity_percent": 3.6189333773632932,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "z.shape[2]",
+          "name": "latent_frames",
+          "rationale": "Tracks decoder invocations and per-frame Python and operator overhead."
+        },
+        {
+          "expression": "z.shape[0] * z.shape[3] * z.shape[4]",
+          "name": "first_frame_area",
+          "rationale": "Tracks spatial work for the first decoded frame, whose temporal expansion differs from later frames."
+        },
+        {
+          "expression": "z.shape[0] * (z.shape[2] - 1) * z.shape[3] * z.shape[4]",
+          "name": "subsequent_frame_area",
+          "rationale": "Tracks convolution, normalization, and copying work for subsequent frames with temporal upsampling and populated caches."
+        },
+        {
+          "expression": "z.shape[0] * z.shape[2] * (z.shape[3] * z.shape[4]) ** 2",
+          "name": "attention_pairs",
+          "rationale": "Tracks quadratic spatial attention work in the decoder middle block."
+        }
+      ]
+    }
+  ],
+  "case": "wan-010",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "78fe9fcc2e058c657f2e36b91775719579cfe7a0921829839ff4ba253ff743e2",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

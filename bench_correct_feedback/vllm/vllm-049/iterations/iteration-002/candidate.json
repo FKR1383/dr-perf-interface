@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The fixed workload exhibits a nearly constant baseline, two initial elevated states, and additional excess cost at lengths 5 and 12. These entry-state indicators test that empirical pattern; they are workload-specific proxies rather than established causes.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(prompt_token_ids) if prompt_token_ids is not None else 0",
+      "name": "prompt_length",
+      "rationale": "Models the cost of copying the prompt list."
+    },
+    {
+      "expression": "int(prompt_token_ids is not None and len(prompt_token_ids) == 1)",
+      "name": "single_token_prompt",
+      "rationale": "Separates the first observed state, which has substantially higher constructor cost."
+    },
+    {
+      "expression": "int(prompt_token_ids is not None and len(prompt_token_ids) == 2)",
+      "name": "two_token_prompt",
+      "rationale": "Separates the second observed state, which also has elevated cost."
+    },
+    {
+      "expression": "int(prompt_token_ids is not None and len(prompt_token_ids) % 7 == 5)",
+      "name": "periodic_elevated_state",
+      "rationale": "Tests the shared excess cost observed at prompt lengths 5 and 12."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/scheduler.py
++++ candidate/vllm/v1/core/sched/scheduler.py
+@@ -475,7 +475,7 @@
+         return max(num_new_tokens, 0)
+ 
+     def schedule(self, throttle_prefills: bool = False) -> SchedulerOutput:
+-        with perfmark.region("vllm-032"):
++        with perfmark.region("vllm-032", decode_work=(len(self.running) + 1 if self.running else 0), larger_admission_work=(2 * (len(self.waiting) + len(self.skipped_waiting)) + 1 if len(self.waiting) + len(self.skipped_waiting) >= 3 else 0), singleton_admission=(int(len(self.waiting) + len(self.skipped_waiting) == 1)), pair_admission=(int(len(self.waiting) + len(self.skipped_waiting) == 2))):
+             self.current_step += 1
+             # NOTE(woosuk) on the scheduling algorithm:
+             # There's no "decoding phase" nor "prefill phase" in the scheduler.

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Prompt matrix size did not improve the model. New-request costs depend on seeded generator construction, while metadata reconstruction has both fixed and per-row costs.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks request creation and insertion costs."
+    },
+    {
+      "expression": "sum((1 for req in scheduler_output.scheduled_new_reqs if req.sampling_params is not None and req.sampling_params.sampling_type == SamplingType.RANDOM_SEED))",
+      "name": "seeded_new_requests",
+      "rationale": "Separates requests that construct and seed a torch.Generator."
+    },
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens) if scheduler_output.scheduled_new_reqs or scheduler_output.finished_req_ids or scheduler_output.scheduled_cached_reqs.resumed_req_ids else 0",
+      "name": "refreshed_batch_size",
+      "rationale": "Tracks per-row sampling metadata reconstruction following membership changes."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Separates fixed metadata reconstruction overhead from its per-row cost."
+    }
+  ]
+}

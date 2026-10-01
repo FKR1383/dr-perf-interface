@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed transformer and guidance cost plus a term linear in negative-prompt embedding size.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "negative_prompt_embeds.numel()",
+      "name": "negative_text_elements",
+      "rationale": "Cheap tensor metadata captures the varying text length and batch size driving unconditional text projections and cross-attention; latent dimensions and model architecture are fixed in this workload."
+    }
+  ]
+}

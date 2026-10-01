@@ -1,0 +1,78 @@
+{
+  "agent_PCVs_thread": "01a0f642-7f6c-7993-9977-db2c529131a6",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 34.4666773874888,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "The fixed workload uses cumulative output, disabled detokenization, no parent request, and stream interval one. Cost should be mostly constant, with an additional finished-request cost and potentially a small token-count contribution.",
+      "irregularity_percent": 34.4666773874888,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(finish_reason is not None)",
+          "name": "finished",
+          "rationale": "Captures completion-specific branches and finish-reason string conversion; the workload finishes every third request."
+        },
+        {
+          "expression": "len(new_token_ids)",
+          "name": "new_token_count",
+          "rationale": "Captures any output construction cost that scales with the supplied token sequence."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 9.512714237705836,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The largest deviations are concentrated in the one-token and two-token inputs. Explicit indicators for these observed regimes, together with completion status and token count, should substantially reduce unexplained cost.",
+      "irregularity_percent": 9.512714237705836,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(finish_reason is not None)",
+          "name": "finished",
+          "rationale": "Separates completion-specific work from ordinary output construction."
+        },
+        {
+          "expression": "len(new_token_ids)",
+          "name": "new_token_count",
+          "rationale": "Retains token-size dependence and distinguishes the observed entry states."
+        },
+        {
+          "expression": "int(len(new_token_ids) == 1)",
+          "name": "single_token_output",
+          "rationale": "Tests the unusually high cost observed for the single-token input, potentially associated with runtime initialization in this fixed workload."
+        },
+        {
+          "expression": "int(len(new_token_ids) == 2)",
+          "name": "two_token_output",
+          "rationale": "Separates the second unusually expensive input from the relatively stable remaining calls."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-048",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "cff3752569fb39da444bb467c2380e3851568bb416cc484d87e822a4d091ba01",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -589,7 +589,7 @@
+         self.gradient_checkpointing = False
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0]):
+-        with perfmark.region("wan-015"):
++        with perfmark.region("wan-015", initial_spatial_work=(x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0), cached_spatial_work=(x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0), warm_cache=(int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)), spatial_boundary_work=(x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]))):
+             if feat_cache is not None:
+                 idx = feat_idx[0]
+                 cache_x = x[:, :, -CACHE_T:, :, :].clone()

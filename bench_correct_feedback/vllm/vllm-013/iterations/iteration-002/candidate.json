@@ -1,0 +1,16 @@
+{
+  "hypothesis": "All 124 measured calls returned before hashing. Their cost should be approximately constant across token counts; including token count exposes the distinct entry states hidden by the previous all-zero predictors.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "request.num_tokens",
+      "name": "num_tokens",
+      "rationale": "Distinguishes entry states within the observed early-return path, allowing its approximately constant instruction cost to be evaluated across sufficient states."
+    },
+    {
+      "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes))",
+      "name": "new_full_blocks",
+      "rationale": "Retains the actual loop-work predictor for any entry with full blocks remaining to hash."
+    }
+  ]
+}

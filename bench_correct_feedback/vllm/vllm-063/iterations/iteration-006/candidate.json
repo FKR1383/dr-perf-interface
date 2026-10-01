@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Explicitly separating steady refreshes, minimum-token transitions, and admission regimes may explain instruction paths that a single combined predictor merged.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "2 + int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0)) if not self.batch_update_builder.added and len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) == 0 else 0",
+      "name": "steady_refresh_work",
+      "rationale": "Models baseline and metadata work when neither admissions nor minimum-token transitions occur."
+    },
+    {
+      "expression": "12 + int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0)) if not self.batch_update_builder.added and len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0 else 0",
+      "name": "transition_refresh_work",
+      "rationale": "Separates refreshes that update minimum-token masks for existing requests."
+    },
+    {
+      "expression": "25 + len(self.batch_update_builder.added) + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)) + (4 + self.num_reqs if not self.no_penalties else 0) if self.batch_update_builder.added and (not self.all_greedy) else 0",
+      "name": "sampled_admission_work",
+      "rationale": "Models admission setup, request initialization, and metadata construction for batches containing sampled requests."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.added) and self.all_greedy)",
+      "name": "greedy_admission",
+      "rationale": "Retains a separate predictor for the observed expensive all-greedy admission path."
+    }
+  ]
+}

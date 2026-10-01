@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/scheduler.py
++++ candidate/vllm/v1/core/sched/scheduler.py
+@@ -1736,7 +1736,7 @@
+         scheduler_output: SchedulerOutput,
+         model_runner_output: ModelRunnerOutput,
+     ) -> dict[int, EngineCoreOutputs]:
+-        with perfmark.region("vllm-038"):
++        with perfmark.region("vllm-038", scheduled_requests=(len(scheduler_output.num_scheduled_tokens)), finishing_requests=(len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])), new_requests=(len(scheduler_output.scheduled_new_reqs)), cleanup_scan_requests=(len(self.running) if len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens]) > 0 else 0)):
+             sampled_token_ids = model_runner_output.sampled_token_ids
+             logprobs = model_runner_output.logprobs
+             prompt_logprobs_dict = model_runner_output.prompt_logprobs_dict

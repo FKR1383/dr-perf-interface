@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Region cost is a fixed baseline plus conditional prepend overhead, work proportional to skipped requests, and the optional capacity-bound update. The supplied workload likely leaves skipped requests empty, making the region nearly constant-cost.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(step_skipped_waiting)",
+      "name": "skipped_count",
+      "rationale": "Measures the number of requests passed to prepend_requests."
+    },
+    {
+      "expression": "int(bool(step_skipped_waiting))",
+      "name": "has_skipped",
+      "rationale": "Captures the fixed overhead of entering the prepend branch."
+    },
+    {
+      "expression": "int(not defer_prefills)",
+      "name": "update_capacity_bound",
+      "rationale": "Captures execution of the waiting-queue truth test and capacity-bound assignment."
+    }
+  ]
+}

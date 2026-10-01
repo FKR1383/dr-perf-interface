@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ed6b-cc6c-7f22-a9d4-50b3b7d31d82",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 4.865577700645956,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a combination of per-chunk overhead, spatial work with distinct initial and subsequent chunk costs, and quadratic attention work.",
+      "irregularity_percent": 4.865577700645956,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "1 + (x.shape[2] - 1) // 4",
+          "name": "temporal_chunks",
+          "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+          "name": "spatial_area",
+          "rationale": "Captures spatial work specific to the initial single-frame chunk and fixed spatial costs."
+        },
+        {
+          "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+          "name": "chunk_spatial_work",
+          "rationale": "Models convolution, normalization, activation, and copying work across temporal chunks."
+        },
+        {
+          "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+          "name": "attention_pair_work",
+          "rationale": "Models quadratic spatial attention work at the encoder's compressed resolution."
+        }
+      ]
+    }
+  ],
+  "case": "wan-006",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "2a874d13baa67b6709ea37ebd897702edf1138939fc3b12f8bd70c3127b89c16",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

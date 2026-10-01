@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0f57a-75a3-7f02-875b-a96615fe7981",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.308575286968265,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by heapify's linear traversal, its number of internal nodes, and variation in the removed request's position.",
+      "irregularity_percent": 3.308575286968265,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self._heap)",
+          "name": "queue_size",
+          "rationale": "Captures linear heap rebuilding and list element shifting after removal."
+        },
+        {
+          "expression": "(len(self._heap) - 1) // 2",
+          "name": "heapify_internal_nodes",
+          "rationale": "Counts internal nodes processed by heapify after removing one request."
+        },
+        {
+          "expression": "int(len(self._heap) > 1 and self._heap[1] is request)",
+          "name": "target_at_second_slot",
+          "rationale": "Cheap indicator of removal search length and which early heap position is disturbed in this workload."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-025",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "ca2927f25d2a2de958640f7b30a1365d4c720c7b70c793688ec7176fb3f62482",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

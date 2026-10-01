@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The empty-cache admission remains the worst-explained observation across candidates. An explicit empty-cache indicator tests whether initial setup incurs an additional fixed cost beyond ordinary request admission and metadata refresh.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks per-request construction and insertion."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_cached_reqs.req_ids)",
+      "name": "cached_requests",
+      "rationale": "Tracks updates to existing requests."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Separates metadata reconstruction from unchanged-batch updates."
+    },
+    {
+      "expression": "int(len(self.requests) == 0)",
+      "name": "empty_request_cache",
+      "rationale": "Distinguishes entry with no initialized request state, when initial batch setup and lazy initialization may add fixed work."
+    }
+  ]
+}

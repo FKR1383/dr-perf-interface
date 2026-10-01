@@ -1,0 +1,26 @@
+{
+  "hypothesis": "With fixed model dimensions and execution branches, instruction count is approximately a constant overhead plus linear hidden and encoder processing and the self-attention and cross-attention interaction costs.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "hidden_states.numel()",
+      "name": "hidden_elements",
+      "rationale": "Captures tokenwise normalization, modulation, projections, and feed-forward work at fixed model dimensions."
+    },
+    {
+      "expression": "encoder_hidden_states.numel()",
+      "name": "encoder_elements",
+      "rationale": "Captures cross-attention key/value projections and key normalization."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] ** 2 * hidden_states.shape[2]",
+      "name": "self_attention_work",
+      "rationale": "Captures quadratic self-attention score and value aggregation work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * encoder_hidden_states.shape[1] * hidden_states.shape[2]",
+      "name": "cross_attention_work",
+      "rationale": "Captures cross-attention work proportional to video tokens times conditioning tokens."
+    }
+  ]
+}

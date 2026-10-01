@@ -1,0 +1,61 @@
+{
+  "agent_PCVs_thread": "01a0eda4-7b72-7c91-bf2e-e256f490c72f",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 3",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Decoding and postprocessing dominate the region and perform approximately constant work for the identical latent shapes in this workload, independently of prompt length and denoising step count.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "latents.numel()",
+          "name": "latent_elements",
+          "rationale": "Cheap tensor metadata measures the input volume for latent normalization and VAE decoding. The fixed workload uses identical latent shapes and output formats across calls."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.8978128837409985,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The fixed latent shape and output format make region work nearly constant. Prompt sequence length distinguishes the required state points, with an expected near-zero fitted slope.",
+      "irregularity_percent": 0.8978128837409985,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "prompt_embeds.shape[1]",
+          "name": "prompt_sequence_length",
+          "rationale": "Cheap entry-state metadata provides three distinct workload states (4, 8, and 12), allowing validation of whether decoding instruction counts remain constant across prompt configurations."
+        }
+      ]
+    }
+  ],
+  "case": "wan-028",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "1b581ee196a096aa7f87383abc9125d003ab08e909e34af5f987fd97b404fa6f",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

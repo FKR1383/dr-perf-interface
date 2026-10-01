@@ -1,0 +1,374 @@
+{
+  "agent_PCVs_thread": "01a0ef55-4073-7eb3-90a4-62068fab1538",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.52034852750626,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily proportional to request count, with additional per-request work depending on the number of tokenization options.",
+      "irregularity_percent": 99.52034852750626,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Each request incurs rendering, validation, engine insertion, and result-list overhead."
+        },
+        {
+          "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+          "name": "tokenization_option_work",
+          "rationale": "The generator captures tokenization options that are processed separately for every prompt."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 29.28536557931563,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The initial default-options call includes substantial initialization cost. Subsequent costs depend on request count and text volume, with smaller contributions from tokenization options.",
+      "irregularity_percent": 29.28536557931563,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks rendering and engine insertion work repeated for each request."
+        },
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates the default-options entry state, which coincides with the unusually expensive initial call in this workload."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) * len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0])",
+          "name": "prompt_character_work",
+          "rationale": "Estimates batch text volume from the first prompt and batch cardinality without consuming the generator; prompts within each batch have similar lengths."
+        },
+        {
+          "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+          "name": "tokenization_option_work",
+          "rationale": "Tracks per-request option processing."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 29.983967736753975,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Separating initialization from warm request processing should improve attribution. Warm costs depend on request count, prompt length, and special-token handling more directly than on option cardinality.",
+      "irregularity_percent": 29.983967736753975,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates the initial default-options call and its substantial initialization work."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params)",
+          "name": "warm_request_count",
+          "rationale": "Models per-request work in subsequent calls independently of initialization."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) * len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0])",
+          "name": "prompt_character_work",
+          "rationale": "Estimates text-processing work using constant-time access to a representative prompt."
+        },
+        {
+          "expression": "len(params) if (prompts.gi_frame.f_locals.get('tokenization_kwargs') or {}).get('add_special_tokens', False) else 0",
+          "name": "special_token_requests",
+          "rationale": "Captures the tokenization branch that inserts special tokens, which alternates across subsequent batches."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.257337181969026,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Separate request-count features for observed prompt-length regimes should explain branch-specific work better than a shared linear character-cost model, while keeping initialization independent.",
+      "irregularity_percent": 14.257337181969026,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Isolates the initial default-options call and its initialization cost."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 64 else 0",
+          "name": "short_prompt_requests",
+          "rationale": "Models per-request processing for batches of short prompts."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if 64 <= len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 128 else 0",
+          "name": "medium_prompt_requests",
+          "rationale": "Models per-request processing for batches of medium-length prompts."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) >= 128 else 0",
+          "name": "long_prompt_requests",
+          "rationale": "Models the larger per-request tokenization and input-processing cost of long prompts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.141594616079775,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "A shared request-count feature should explain common execution paths more directly than disjoint counts, while medium- and long-prompt features explain their additional work.",
+      "irregularity_percent": 14.141594616079775,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Captures the initial default-options call and its additional initialization work."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Explains common per-request work across every prompt-length regime."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if 64 <= len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 128 else 0",
+          "name": "medium_prompt_requests",
+          "rationale": "Captures additional processing associated with medium-length prompts."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) >= 128 else 0",
+          "name": "long_prompt_requests",
+          "rationale": "Captures additional processing associated with long prompts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 13.702826546967394,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Exact batch character counts and a simple word-count estimate should explain tokenizer work more accurately than prompt-length categories, especially for heterogeneous short prompts and the final batch's modified prefixes.",
+      "irregularity_percent": 13.702826546967394,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates the initial call and its substantial initialization cost."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks common rendering and engine-insertion work per request."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+          "name": "total_prompt_characters",
+          "rationale": "Measures actual batch text size, including variations that the first-prompt approximation missed, without consuming the rendering generator."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum(((p['prompt'] if 'prompt' in p else p).count(' ') + 1 for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+          "name": "prompt_word_work",
+          "rationale": "Provides a cheap lexical-unit estimate for tokenization work, distinguishing texts with different word lengths."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.904765493214924,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Remaining unexplained work may arise from sampling-parameter branches. Counting stochastic requests alongside initialization, batch size, and text volume should capture this independent source of variation.",
+      "irregularity_percent": 28.904765493214924,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates the initial call and its substantial initialization work."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks common rendering and engine-insertion work per request."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+          "name": "total_prompt_characters",
+          "rationale": "Measures batch text volume without consuming the rendering generator."
+        },
+        {
+          "expression": "sum((1 for p in params if p.temperature > 0))",
+          "name": "sampled_requests",
+          "rationale": "Counts requests using stochastic sampling, which require different sampling-parameter validation and preparation from greedy requests."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 28.183708666100575,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Token-processing volume may explain the text-dependent execution paths better than character counts. A lexical token estimate leaves a separate feature available for the alternating special-token branch.",
+      "irregularity_percent": 28.183708666100575,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates the initial call and its initialization work."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks common work per request."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((t.count(' ') + 1 + t.count('.') + t.count(',') + t.count('-') + 2 * t.count('epsilon') + t.count('zeta') + t.count(' eta') + 2 * t.count('Distinguish') + t.count('Explain') for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable for t in [p['prompt'] if 'prompt' in p else p]))",
+          "name": "estimated_prompt_tokens",
+          "rationale": "Estimates token-processing volume using word boundaries, punctuation, and likely subword splits in the supplied texts, without running the tokenizer."
+        },
+        {
+          "expression": "len(params) if (prompts.gi_frame.f_locals.get('tokenization_kwargs') or {}).get('add_special_tokens', False) else 0",
+          "name": "special_token_requests",
+          "rationale": "Captures additional processing when tokenization inserts special tokens."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 29.876403217035485,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Character volume and token volume drive distinct execution paths. Retaining both while incorporating special tokens into the token estimate should improve on the earlier character-and-word model.",
+      "irregularity_percent": 29.876403217035485,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates initialization work in the initial default-options call."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks common per-request processing."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+          "name": "total_prompt_characters",
+          "rationale": "Tracks character-dependent rendering and tokenization work independently of token volume."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((t.count(' ') + 1 + t.count('.') + t.count(',') + t.count('-') + 2 * t.count('epsilon') + t.count('zeta') + t.count(' eta') + 2 * t.count('Distinguish') + t.count('Explain') + (1 if prompts.gi_frame.f_locals['tokenization_kwargs'].get('add_special_tokens', False) else 0) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable for t in [p['prompt'] if 'prompt' in p else p]))",
+          "name": "estimated_prompt_tokens",
+          "rationale": "Estimates token-dependent processing, including punctuation, likely subword splits, and explicitly requested special tokens."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.99802102799196,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Explicitly separating long-prompt processing may allow per-request option cardinality to explain the remaining variation more effectively than it did alongside a continuous character-count feature.",
+      "irregularity_percent": 38.99802102799196,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+          "name": "default_tokenization",
+          "rationale": "Separates initialization work in the initial default-options call."
+        },
+        {
+          "expression": "len(params)",
+          "name": "request_count",
+          "rationale": "Tracks common per-request processing."
+        },
+        {
+          "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+          "name": "tokenization_option_work",
+          "rationale": "Tracks option processing repeated for each request."
+        },
+        {
+          "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((1 for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable if len(p['prompt'] if 'prompt' in p else p) >= 128))",
+          "name": "long_prompt_requests",
+          "rationale": "Separates the additional tokenization and input-processing work of long prompts using inexpensive length checks."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-002",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "b05fa43138c9699604b0b5b6cf1ba6f0f83c4757d5b0053d014f8f12bf458118",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily an affine combination of running and waiting request counts, with additional work proportional to waiting prompt blocks and new blocks required by running requests.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures per-request scheduling, allocation checks, cached output construction, and state updates."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures admission, prefix lookup, queue operations, and new-request output construction."
+    },
+    {
+      "expression": "sum(((r.num_tokens + self.block_size - 1) // self.block_size for r in self.waiting))",
+      "name": "waiting_prompt_blocks",
+      "rationale": "Approximates block-dependent prefix lookup, allocation, and block-ID materialization during admission."
+    },
+    {
+      "expression": "sum(((r.num_tokens_with_spec + self.block_size - 1) // self.block_size - (r.num_computed_tokens + self.block_size - 1) // self.block_size for r in self.running))",
+      "name": "running_block_boundaries",
+      "rationale": "Captures additional KV-block allocation when running requests cross block boundaries."
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0f5d3-4d69-7bc0-953f-87eca9c20fbd",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 5.446494842722224,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Cost is predominantly fixed scheduler admission overhead, with variation from priority-queue insertion and container growth.",
+      "irregularity_percent": 5.446494842722224,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.scheduler.waiting)",
+          "name": "waiting_depth",
+          "rationale": "Captures queue-size-dependent insertion and container growth costs."
+        },
+        {
+          "expression": "int(len(self.scheduler.waiting) > 0) + int(len(self.scheduler.waiting) > 1) + int(len(self.scheduler.waiting) > 3) + int(len(self.scheduler.waiting) > 7)",
+          "name": "heap_height",
+          "rationale": "Computes heap height over the bounded workload using comparisons."
+        },
+        {
+          "expression": "int(request.priority == 0)",
+          "name": "highest_priority",
+          "rationale": "Highest-priority requests can traverse more heap levels during insertion."
+        },
+        {
+          "expression": "int(len(self.scheduler.waiting) == 0)",
+          "name": "empty_waiting_queue",
+          "rationale": "Distinguishes initial admission into an empty queue."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-041",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "1c8bf8261f2c1c91f331b21bd6e756823d67cfb06533bfef639e58e66a4533f9",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

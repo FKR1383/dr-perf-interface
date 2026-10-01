@@ -1,0 +1,135 @@
+{
+  "case": "vllm-003",
+  "validity_warnings": [],
+  "pcv_names": [
+    "request_count_proxy",
+    "decode_rounds_proxy",
+    "long_prompt_requests",
+    "initial_batch"
+  ],
+  "distinct_states": 8,
+  "required_states": 6,
+  "calls": 8,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "request_count_proxy": 1,
+        "decode_rounds_proxy": 1,
+        "long_prompt_requests": 0,
+        "initial_batch": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 985627368.0,
+      "unexplained_instructions_per_call": 4899366.0,
+      "unexplained_share": 0.004970809617372556
+    },
+    {
+      "state": {
+        "request_count_proxy": 2,
+        "decode_rounds_proxy": 3,
+        "long_prompt_requests": 0,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 19373604950.0,
+      "unexplained_instructions_per_call": 200469119.0,
+      "unexplained_share": 0.01034753828816975
+    },
+    {
+      "state": {
+        "request_count_proxy": 3,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 0,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 7138981861.0,
+      "unexplained_instructions_per_call": 180265232.0,
+      "unexplained_share": 0.02525083205278647
+    },
+    {
+      "state": {
+        "request_count_proxy": 4,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 0,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 9008833754.0,
+      "unexplained_instructions_per_call": 204107639.0,
+      "unexplained_share": 0.022656388670661665
+    },
+    {
+      "state": {
+        "request_count_proxy": 5,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 5,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 22628210880.0,
+      "unexplained_instructions_per_call": 259274343.0,
+      "unexplained_share": 0.011458013378740441
+    },
+    {
+      "state": {
+        "request_count_proxy": 6,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 6,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 26866144117.0,
+      "unexplained_instructions_per_call": 344028885.0,
+      "unexplained_share": 0.01280529440703439
+    },
+    {
+      "state": {
+        "request_count_proxy": 7,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 7,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 32157517119.0,
+      "unexplained_instructions_per_call": 502054937.0,
+      "unexplained_share": 0.015612366313671805
+    },
+    {
+      "state": {
+        "request_count_proxy": 8,
+        "decode_rounds_proxy": 4,
+        "long_prompt_requests": 8,
+        "initial_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 36654560958.0,
+      "unexplained_instructions_per_call": 560815064.0,
+      "unexplained_share": 0.015300007675514114
+    }
+  ],
+  "max_unexplained_share": 0.02525083205278647,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": true,
+  "gate_reasons": [],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "request_count_proxy": 2335464034.412502,
+      "decode_rounds_proxy": -14830992410.896395,
+      "long_prompt_requests": 2203436544.241828,
+      "initial_batch": -45518111452.06441
+    },
+    "constant": 58997176248.753365,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 72.34116250416264,
+  "raw_files": [
+    "run.1791244.json"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "First-output cost scales with total prompt length in addition to request count. Replacing accumulated generation length with prefill prompt tokens should explain the large increases for long-prompt batches.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Measures per-output processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Measures completion statistics and request cleanup."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+      "name": "prefilling_requests",
+      "rationale": "Separates first-output processing from subsequent decoding steps."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_prompt_tokens",
+      "rationale": "Measures prompt-dependent work during initial detokenization; the largest unexplained costs occur on first outputs with long prompts."
+    }
+  ]
+}

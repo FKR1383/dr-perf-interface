@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Admission cost combines fixed overhead, prompt-size-dependent work, initial task discovery, and sampling-mode-dependent processing.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent validation, detokenizer initialization, and request construction."
+    },
+    {
+      "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+      "name": "prompt_characters",
+      "rationale": "Captures processing proportional to prompt text size."
+    },
+    {
+      "expression": "int('_supported_tasks' not in self.__dict__)",
+      "name": "supported_tasks_uncached",
+      "rationale": "Distinguishes initial supported-task discovery and first-request overhead."
+    },
+    {
+      "expression": "int(isinstance(params, SamplingParams) and params.temperature == 0)",
+      "name": "greedy_sampling",
+      "rationale": "Separates greedy and stochastic sampling parameter processing."
+    }
+  ]
+}

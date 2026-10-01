@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Fit fixed refresh overhead, per-row refresh work, and condensation together. Earlier candidates omitted either the fixed refresh term or condensation while including these other costs.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks request construction and insertion."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Captures fixed metadata reconstruction overhead."
+    },
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens) if scheduler_output.scheduled_new_reqs or scheduler_output.finished_req_ids or scheduler_output.scheduled_cached_reqs.resumed_req_ids else 0",
+      "name": "refreshed_batch_size",
+      "rationale": "Captures metadata reconstruction work proportional to the resulting batch size."
+    },
+    {
+      "expression": "sum((1 for req_id in self.input_batch.req_id_to_index if req_id not in scheduler_output.finished_req_ids and req_id in scheduler_output.num_scheduled_tokens and (req_id not in scheduler_output.scheduled_cached_reqs.resumed_req_ids) and (self.input_batch.req_id_to_index[req_id] >= len(scheduler_output.num_scheduled_tokens))))",
+      "name": "condensed_rows",
+      "rationale": "Tracks surviving rows that must move to fill holes left by removals."
+    }
+  ]
+}

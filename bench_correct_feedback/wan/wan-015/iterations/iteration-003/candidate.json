@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Input layout did not explain the residual. Separating initial and cached spatial work supplies direct predictors for mutually exclusive execution paths, while temporal perimeter accounts for convolution boundary costs.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_spatial_work",
+      "rationale": "Separately models spatial work on the initial-cache execution path."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_spatial_work",
+      "rationale": "Separately models spatial work on the populated-cache path, including its larger temporal chunks."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "warm_cache",
+      "rationale": "Captures fixed overhead from cache concatenations and temporal downsampling."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+      "name": "spatial_boundary_work",
+      "rationale": "Captures convolution padding and boundary work that scales with spatial perimeter rather than area."
+    }
+  ]
+}

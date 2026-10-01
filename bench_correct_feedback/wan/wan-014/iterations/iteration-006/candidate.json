@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The best result used fourfold temporal scaling, but constraining boundary work to that ratio left substantial irregularity. Apply that scaling to dominant volume work while allowing independent boundary slopes and fixed overhead for each cache regime.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+      "name": "expanded_volume",
+      "rationale": "Models the dominant decoder stages, whose temporal extent is four times larger for cached chunks."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+      "name": "spatial_boundary",
+      "rationale": "Captures spatial row and boundary work shared across both cache regimes."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_boundary",
+      "rationale": "Allows additional cached boundary work to have an independently fitted coefficient."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Preserves the fixed overhead difference between initial and cached execution."
+    }
+  ]
+}

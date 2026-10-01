@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Fixed tensor dispatch overhead plus schedule-length-dependent scanning and a singleton adjustment should explain instruction counts for these short CPU schedules.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "(self.timesteps if schedule_timesteps is None else schedule_timesteps).numel()",
+      "name": "schedule_size",
+      "rationale": "Equality comparison and nonzero scan traverse the schedule, so their instruction counts scale with its element count."
+    },
+    {
+      "expression": "int((self.timesteps if schedule_timesteps is None else schedule_timesteps).numel() == 1)",
+      "name": "singleton_schedule",
+      "rationale": "Captures special handling of singleton tensors in comparison and tensor iteration."
+    }
+  ]
+}

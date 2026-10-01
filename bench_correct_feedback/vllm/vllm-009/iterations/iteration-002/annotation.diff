@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -543,7 +543,7 @@
+                 num_external_computed_tokens=num_external_computed_tokens,
+             )
+ 
+-        with perfmark.region("vllm-009"):
++        with perfmark.region("vllm-009", new_block_count=(sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))), num_tokens_need_slot=(num_tokens_need_slot)):
+             new_blocks = self.coordinator.allocate_new_blocks(
+                 request.request_id,
+                 num_tokens_need_slot,

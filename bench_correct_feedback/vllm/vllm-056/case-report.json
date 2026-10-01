@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0f67b-8bc5-7d83-9d22-0a23784f1c06",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 9.893559743218058,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily explained by output batch size, active proposal count, total searched tokens, and a potentially large first-call compilation cost.",
+      "irregularity_percent": 9.893559743218058,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "num_requests",
+          "name": "request_count",
+          "rationale": "Tracks output-list construction, including the large empty initialization batch."
+        },
+        {
+          "expression": "len(valid_ngram_requests)",
+          "name": "ngram_request_count",
+          "rationale": "Tracks per-request Numba dispatch, proposal handling, and output conversion."
+        },
+        {
+          "expression": "sum((int(num_tokens_no_spec[i]) for i in valid_ngram_requests))",
+          "name": "searched_tokens",
+          "rationale": "Tracks the aggregate sequence length scanned by the n-gram search."
+        },
+        {
+          "expression": "int(bool(valid_ngram_requests) and len(batch_propose_numba.signatures) == 0)",
+          "name": "requires_numba_compilation",
+          "rationale": "Identifies the first nonempty call, which triggers lazy Numba compilation inside the region."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-056",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5bc45a94d5793c0d1e271426493d1705e20b13bd2217e889a8e46381c07f6a62",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

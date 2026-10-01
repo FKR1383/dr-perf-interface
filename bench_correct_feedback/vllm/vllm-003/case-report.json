@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ef6e-6875-7a11-bfb7-8aa02a7169ce",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 2.525083205278647,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Per-request work, decoding rounds, long-prompt processing, and initial-execution overhead explain instruction counts using cheap workload-specific entry-state proxies.",
+      "irregularity_percent": 2.525083205278647,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(use_tqdm) + 1",
+          "name": "request_count_proxy",
+          "rationale": "The supplied workload sets use_tqdm to batch size minus one, providing a cheap proxy for per-request work."
+        },
+        {
+          "expression": "2 * int(use_tqdm) + 1 if use_tqdm < 2 else 4",
+          "name": "decode_rounds_proxy",
+          "rationale": "Matches each batch's maximum requested generation length, approximating engine-step overhead."
+        },
+        {
+          "expression": "int(use_tqdm) + 1 if use_tqdm >= 4 else 0",
+          "name": "long_prompt_requests",
+          "rationale": "Measures batch size for the long shared-prefix prompt regime."
+        },
+        {
+          "expression": "int(use_tqdm == 0)",
+          "name": "initial_batch",
+          "rationale": "Identifies initial execution overhead and the batch without progress reporting."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-003",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "132be157203be0098466d2c7df6f65989232b57cef3f9847f17714366eafd1fb",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -538,7 +538,7 @@
+           Removed request index, or `None` if `req_id` not recognized
+         """
+ 
+-        with perfmark.region("vllm-064"):
++        with perfmark.region("vllm-064", request_present=(int(req_id in self.req_id_to_index)), sampling_entries_removed=(int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)), pending_removals=(len(self.batch_update_builder.removed) if req_id in self.req_id_to_index else 0), previous_mapping_cleanup=(int(req_id in self.req_id_to_index and self.prev_req_id_to_index is not None))):
+             req_index = self.req_id_to_index.pop(req_id, None)
+             if req_index is None:
+                 return None

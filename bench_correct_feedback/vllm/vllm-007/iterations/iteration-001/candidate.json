@@ -1,0 +1,11 @@
+{
+  "hypothesis": "For this full-attention workload, the marked region performs no token-dependent block eviction; instruction count should be approximately constant plus per-group dispatch overhead.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.coordinator.single_type_managers)",
+      "name": "cache_groups",
+      "rationale": "The coordinator dispatches removal to each cache-group manager. OPT uses full attention, where skipped-block removal should require constant work per group."
+    }
+  ]
+}

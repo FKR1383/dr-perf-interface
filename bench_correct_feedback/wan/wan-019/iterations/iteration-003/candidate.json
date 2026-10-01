@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The remaining underprediction grows with query length, including for aligned key lengths. A quadratic query term may capture this growth better than the linear key/value term while retaining the observed key-tail effect.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks attention matrix arithmetic."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear per-query processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] ** 2",
+      "name": "quadratic_query_work",
+      "rationale": "Tests the additional nonlinear growth with query length visible in both self-attention and cross-attention."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "scalar_tail_pairs",
+      "rationale": "Retains the remainder feature that reduced irregularity from 47.1% to 27.8%."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0ed6c-c642-71b3-8830-13e78bdbe6cc",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.17055844407553783,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately affine in the clamped nonnegative blend extent because column shapes and tensor dtype remain fixed across the measured workload.",
+      "irregularity_percent": 0.17055844407553783,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "max(0, min(a.shape[-1], b.shape[-1], blend_extent))",
+          "name": "blend_columns",
+          "rationale": "Counts executed loop iterations, each performing the same tensor slicing, arithmetic, and assignment on fixed-size columns in this workload."
+        }
+      ]
+    }
+  ],
+  "case": "wan-007",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "38c76dcd86618ec99585892e00a631adc40f4d97a2134bca645148f30efdae44",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is explained by per-chunk overhead, separate spatial costs for the initial and subsequent chunks, and quadratic attention work at the bottleneck.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1 + (x.shape[2] - 1) // 4",
+      "name": "temporal_chunks",
+      "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+      "name": "spatial_area",
+      "rationale": "Captures spatial work for the initial frame, including convolution padding and normalization."
+    },
+    {
+      "expression": "x.shape[0] * ((x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+      "name": "subsequent_chunk_area",
+      "rationale": "Captures additional convolution, normalization, and cache-copy work for subsequent four-frame chunks."
+    },
+    {
+      "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+      "name": "attention_pairs",
+      "rationale": "Captures quadratic spatial attention work at the encoder's compressed resolution."
+    }
+  ]
+}

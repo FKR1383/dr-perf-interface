@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The tested runtime cardinalities have not explained the excess instructions. This candidate tests whether detailed sampling configuration separates instruction-cost variation obscured by prompt length and a single sampling-mode flag.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Measures token validation work."
+    },
+    {
+      "expression": "params.max_tokens if isinstance(params, SamplingParams) and params.max_tokens is not None else 0",
+      "name": "max_output_tokens",
+      "rationale": "Exposes the output limit used in sampling validation and cloning."
+    },
+    {
+      "expression": "params.top_k if isinstance(params, SamplingParams) else 0",
+      "name": "sampling_top_k",
+      "rationale": "Captures variation in sampling configuration beyond the previously tested sampling-enabled indicator."
+    },
+    {
+      "expression": "int(isinstance(params, SamplingParams) and (params.presence_penalty != 0 or params.frequency_penalty != 0 or params.repetition_penalty != 1))",
+      "name": "penalties_enabled",
+      "rationale": "Distinguishes requests with nondefault penalty settings during parameter verification."
+    }
+  ]
+}

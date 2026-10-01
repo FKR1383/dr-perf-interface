@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Renderer state and library cache cardinalities may expose initialization costs that module count and tokenizer instance fields did not distinguish.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Measures the token-ID validation workload."
+    },
+    {
+      "expression": "len(getattr(self.renderer, '__dict__', {}))",
+      "name": "renderer_state_size",
+      "rationale": "Observes renderer initialization and cached-property state without invoking cache methods."
+    },
+    {
+      "expression": "len(getattr(__import__('sys').modules.get('re'), '_cache', {}))",
+      "name": "regex_cache_size",
+      "rationale": "Tests whether regular-expression cache state distinguishes expensive initial validation."
+    },
+    {
+      "expression": "len(getattr(__import__('sys').modules.get('copy'), '_deepcopy_dispatch', {}))",
+      "name": "deepcopy_dispatch_size",
+      "rationale": "Observes runtime copy-handler registration relevant to sampling-parameter cloning."
+    }
+  ]
+}

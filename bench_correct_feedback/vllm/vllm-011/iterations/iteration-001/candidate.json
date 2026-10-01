@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is primarily a fixed overhead plus work per released reference and additional work per block returned to the free queue.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "sum((len(mgr.req_to_blocks.get(request.request_id, ())) for mgr in self.coordinator.single_type_managers)) + len(self._partial_tail_pins.get(request.request_id, ()))",
+      "name": "blocks_released",
+      "rationale": "Counts block references visited and decremented when freeing the request, including off-table pins."
+    },
+    {
+      "expression": "sum((block.ref_cnt == 1 and (not block.is_null) for mgr in self.coordinator.single_type_managers for block in mgr.req_to_blocks.get(request.request_id, ()))) + sum((block.ref_cnt == 1 and (not block.is_null) for block in self._partial_tail_pins.get(request.request_id, ())))",
+      "name": "blocks_becoming_free",
+      "rationale": "Counts blocks eligible to return to the free queue, distinguishing their additional work from releasing shared cached blocks."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "agent_PCVs_thread": "01a0edb7-5277-7e43-8159-ee6db31f6a1f",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count follows a fixed overhead plus linear schedule work, with a separate offset for singleton schedules.",
+      "irregularity_percent": 0.0,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)",
+          "name": "schedule_length",
+          "rationale": "Schedule construction, array arithmetic, tensor conversion, and concatenation scale with the number of steps."
+        },
+        {
+          "expression": "int((num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)) == 1)",
+          "name": "singleton_schedule",
+          "rationale": "A single-step schedule takes a distinct NumPy linspace branch."
+        }
+      ]
+    }
+  ],
+  "case": "wan-038",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "f506703147a9440cb8e2de6b94b8f61b0f6308777744c8461fac9328dde3ca4a",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

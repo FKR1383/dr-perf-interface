@@ -1,0 +1,16 @@
+{
+  "hypothesis": "For this text-only, non-speculative CPU workload, instruction count should be approximately a fixed overhead plus linear costs in active requests and scheduled tokens.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "self.input_batch.num_reqs",
+      "name": "num_requests",
+      "rationale": "Captures per-request metadata construction, cumulative sums, request-state lookups, and block-table row processing."
+    },
+    {
+      "expression": "scheduler_output.total_num_scheduled_tokens",
+      "name": "num_scheduled_tokens",
+      "rationale": "Captures token-sized repeats, position arithmetic, token gathers, copies, and slot mapping."
+    }
+  ]
+}

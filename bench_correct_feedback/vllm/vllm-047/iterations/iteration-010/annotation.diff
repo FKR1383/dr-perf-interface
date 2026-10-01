@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/output_processor.py
++++ candidate/vllm/v1/engine/output_processor.py
+@@ -624,7 +624,7 @@
+         within the loop below.
+         """
+ 
+-        with perfmark.region("vllm-047"):
++        with perfmark.region("vllm-047", batch_size=(len(engine_core_outputs)), finished_requests=(sum((o.finish_reason is not None for o in engine_core_outputs))), prefill_tokens_beyond_lookback=(sum((max(self.request_states[o.request_id].prompt_len - 5, 0) for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))), entire_batch_finishes_on_first_output=(int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs)))):
+             request_outputs: list[RequestOutput | PoolingRequestOutput] = []
+             reqs_to_abort: list[str] = []
+             for engine_core_output in engine_core_outputs:

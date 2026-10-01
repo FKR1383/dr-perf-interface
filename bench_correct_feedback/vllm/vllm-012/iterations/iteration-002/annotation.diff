@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -251,7 +251,7 @@
+         # disabled or the request is marked as skipping kv cache read
+         # (which happens when the request requires prompt logprobs
+         # or calls a pooling model with all pooling).
+-        with perfmark.region("vllm-012"):
++        with perfmark.region("vllm-012", request_tokens=(request.num_tokens)):
+             if not self.prefix_cache_lookup_enabled(request):
+                 return self.empty_kv_cache_blocks, 0, 0
+ 

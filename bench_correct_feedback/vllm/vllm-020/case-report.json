@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0f576-650e-7da2-827c-f47cf5ec27ff",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 4.160475482912332,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count follows the number of sift-up comparisons and swaps, with separate overhead for list growth and initial insertion.",
+      "irregularity_percent": 4.160475482912332,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(len(self._heap) >= 1) + int(len(self._heap) >= 3) + int(len(self._heap) >= 7)",
+          "name": "sift_depth",
+          "rationale": "Computes the insertion depth for the exercised heap sizes 0 through 11. Decreasing incoming priorities cause each insertion to traverse this entire depth."
+        },
+        {
+          "expression": "int(len(self._heap) == 4 or len(self._heap) == 8)",
+          "name": "list_growth",
+          "rationale": "Identifies subsequent list capacity growth points for this initially empty heap under standard CPython allocation."
+        },
+        {
+          "expression": "int(len(self._heap) == 0)",
+          "name": "empty_heap",
+          "rationale": "Captures initial allocation and the distinct first-insertion path."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-020",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "d0e8d80425e60d167459bf6399d4f1c1afc3dff12180e66e725f453cbd86d7df",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

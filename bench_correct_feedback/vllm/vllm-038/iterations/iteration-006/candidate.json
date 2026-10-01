@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The small-prefill correction left substantial unexplained work and did not distinguish repeated decode states. Aggregate prompt length tests whether request sequence size explains those differences and costs in token bookkeeping or cache-related helpers.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures per-request processing."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures completion and resource release."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures prefill completion work."
+    },
+    {
+      "expression": "sum((r.num_prompt_tokens for r in self.running))",
+      "name": "prompt_tokens",
+      "rationale": "Distinguishes requests with different prompt histories, including observations previously grouped under identical batch and completion counts."
+    }
+  ]
+}

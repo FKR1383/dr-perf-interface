@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed entry cost plus a linear cost per newly cached block; block size does not drive token processing on this workload's event-disabled path.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, num_full_blocks - num_cached_blocks)",
+      "name": "new_block_count",
+      "rationale": "Counts loop iterations and newly inserted cache entries. In the fixed workload every block is non-null, unmasked, and initially unhashed, with cache events disabled."
+    }
+  ]
+}

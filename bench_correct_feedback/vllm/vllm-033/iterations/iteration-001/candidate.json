@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Running requests in this workload predominantly schedule one decode token. Their instruction counts should have a stable base cost, with variation explained by existing block count and allocation or caching at block boundaries.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "request.num_computed_tokens // self.block_size",
+      "name": "existing_full_blocks",
+      "rationale": "Tracks sequence-dependent block bookkeeping during slot allocation and prefix caching."
+    },
+    {
+      "expression": "int(request.num_computed_tokens % self.block_size == 0)",
+      "name": "needs_new_block",
+      "rationale": "For the workload's single-token decode steps, a block-aligned entry requires allocating another KV block."
+    },
+    {
+      "expression": "int((request.num_computed_tokens + 1) % self.block_size == 0)",
+      "name": "completes_full_block",
+      "rationale": "Identifies decode steps that complete a block and can trigger prefix-cache registration."
+    }
+  ]
+}

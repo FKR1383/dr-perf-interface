@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0f579-e2db-7a73-9ce5-af99864d9169",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 7.701604043067458,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Cost is dominated by incoming request count and source heap removal work, with additional comparisons when incoming and destination priorities coincide.",
+      "irregularity_percent": 7.701604043067458,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(requests)",
+          "name": "incoming_count",
+          "rationale": "Captures iteration, source heap copying, and one destination insertion per incoming request."
+        },
+        {
+          "expression": "len(requests) ** 2",
+          "name": "incoming_count_squared",
+          "rationale": "Approximates the increasing cost of source heap removals across the bounded incoming queue sizes."
+        },
+        {
+          "expression": "min(len(requests), len(self._heap))",
+          "name": "overlapping_priorities",
+          "rationale": "For this workload, captures incoming priorities shared with the destination, which require arrival-time comparisons."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-024",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "4c83c35c2c06a414d8444857a161b0758e81b9594046885c87150c301fb56068",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

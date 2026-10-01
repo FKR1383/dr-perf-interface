@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0ed89-c8ae-7470-8493-d0a3f08e137f",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 24.262399876684114,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction counts combine fixed overhead, token-linear projection and normalization costs, attention-pair costs, and fixed plus elementwise rotary costs.",
+      "irregularity_percent": 24.262399876684114,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])) * attn.inner_dim",
+          "name": "projection_elements",
+          "rationale": "Captures linear projection and normalization work across query and context tokens; model widths are fixed."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+          "name": "attention_pairs",
+          "rationale": "Captures attention matrix multiplication and softmax work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Captures elementwise rotary embedding work on the self-attention path."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed dispatch, slicing, allocation, and operator overhead from applying rotary embeddings."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 23.17231500963918,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The observed self-attention counts suggest a linear length cost plus a remainder penalty at nonmultiples of 16. Separate query and context slopes should also improve cross-attention predictions.",
+      "irregularity_percent": 23.17231500963918,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1]",
+          "name": "query_tokens",
+          "rationale": "Captures query projection, output projection, and attention work that grows with query length."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+          "name": "context_tokens",
+          "rationale": "Allows context projection and normalization costs to have a separate fitted slope."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures the substantial fixed overhead separating self-attention with rotary embeddings from cross-attention."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if rotary_emb is not None else 0",
+          "name": "rotary_tail",
+          "rationale": "Tests whether vectorized kernel remainder handling explains elevated self-attention costs at lengths 9, 18, and 27 relative to multiples of 16."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 25.702831588437757,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Independent self-attention and cross-attention work estimates may explain their different scaling better than shared token slopes. Combining linear and quadratic work also captures increasing marginal cost at larger sequence lengths.",
+      "irregularity_percent": 25.702831588437757,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Separates fixed rotary operator overhead from the cross-attention baseline."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + 2 * attn.inner_dim) if encoder_hidden_states is None else 0",
+          "name": "self_attention_work",
+          "rationale": "Combines quadratic attention work with linear projection work, giving self-attention an independent fitted coefficient."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] * encoder_hidden_states.shape[1] + attn.inner_dim * (hidden_states.shape[1] + encoder_hidden_states.shape[1])) if encoder_hidden_states is not None else 0",
+          "name": "cross_attention_work",
+          "rationale": "Captures cross-attention pair work and query/context projection work independently of self-attention."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if encoder_hidden_states is None else 0",
+          "name": "self_attention_tail",
+          "rationale": "Retains a separate feature for the apparent self-attention remainder cost."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 25.52090535404941,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Attention remainder work scales with query rows times the context-length remainder. Splitting vector blocks from scalar tails should better explain both short cross-attention contexts and the elevated self-attention count at length 27.",
+      "irregularity_percent": 25.52090535404941,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]))",
+          "name": "projection_tokens",
+          "rationale": "Captures projection and normalization work over query and context tokens."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) // 16)",
+          "name": "attention_vector_blocks",
+          "rationale": "Measures complete 16-element context blocks processed across attention rows."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+          "name": "attention_scalar_tail",
+          "rationale": "Measures remainder elements across every attention row, including short cross-attention contexts; scalar remainder costs can differ substantially from vectorized blocks."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed overhead from the rotary embedding path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.56382557316771,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Combining independent rotary elementwise work with attention remainder work may explain the residuals better than either previous model alone. For these short sequences, full vector-block attention work may be less important than these two costs.",
+      "irregularity_percent": 17.56382557316771,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * attn.inner_dim * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]))",
+          "name": "projection_elements",
+          "rationale": "Captures projection and normalization costs across query and context tokens."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Restores an independent linear cost for rotary operations, which the previous candidate omitted."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+          "name": "attention_tail_elements",
+          "rationale": "Captures scalar attention remainder work across all query rows, including short cross-attention contexts."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Separates fixed rotary dispatch and allocation overhead from its elementwise cost."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 21.34948594435258,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Combining query and context sizes may leave their independently scaling operations unexplained. Separate query, context, and rotary element counts should capture these costs, while the fixed rotary indicator accounts for branch overhead.",
+      "irregularity_percent": 21.34948594435258,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+          "name": "query_elements",
+          "rationale": "Separately exposes query and output projection work, rather than combining it with context length."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) * attn.inner_dim",
+          "name": "context_elements",
+          "rationale": "Separately exposes key/value projection and key normalization work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Captures the additional token-dependent work specific to rotary self-attention."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed rotary operator overhead independently of sequence length."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 13.585012865548398,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "The best previous remainder model combined query and context lengths, obscuring query-row costs. Using query size directly alongside attention tails and both rotary terms should explain more of the cross-attention residual while preserving self-attention scaling.",
+      "irregularity_percent": 13.585012865548398,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+          "name": "query_elements",
+          "rationale": "Exposes query-row work directly, including output projection and attention row overhead."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+          "name": "attention_tail_elements",
+          "rationale": "Captures attention remainder work, which was absent from the previous candidate and matters especially for short cross-attention contexts."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Captures additional elementwise work on the rotary path."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed rotary dispatch and allocation overhead."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.418227350557306,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Keeping direct query scaling while replacing remainder counts with complete attention-pair counts may explain additional matrix-multiplication work, particularly at length 48. This differs from iteration 1 by exposing query size independently of context size.",
+      "irregularity_percent": 20.418227350557306,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+          "name": "query_elements",
+          "rationale": "Retains direct query-row scaling, which improved the previous result."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+          "name": "attention_pairs",
+          "rationale": "Captures the complete attention matrix, including work on full context blocks omitted by the remainder-only feature."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Captures token-dependent rotary work separately from shared query processing."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed rotary overhead."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.478540900792662,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Neither full attention pairs nor scalar tails sufficiently explain the largest cross-attention residual. Counting eight-element context tiles tests whether blocked kernel work, particularly the additional tile at context length 9, accounts for it.",
+      "irregularity_percent": 20.478540900792662,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+          "name": "query_elements",
+          "rationale": "Captures query projection, output projection, and per-row attention work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) + 7) // 8)",
+          "name": "attention_context_tiles",
+          "rationale": "Tests attention work measured in eight-element context tiles, including partially filled tiles."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Captures token-dependent rotary work."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed rotary overhead."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 19.216821045951132,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Full attention-pair work and scalar remainder work may need simultaneous features. Replacing shared query size with the second attention feature tests whether their combined explanatory value outweighs the omitted query-linear costs.",
+      "irregularity_percent": 19.216821045951132,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+          "name": "attention_pairs",
+          "rationale": "Captures attention matrix work across the complete context."
+        },
+        {
+          "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+          "name": "attention_tail_elements",
+          "rationale": "Separately captures scalar remainder work that complete attention-pair counts do not explain."
+        },
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+          "name": "rotary_elements",
+          "rationale": "Retains independent linear scaling for the more expensive self-attention path."
+        },
+        {
+          "expression": "int(rotary_emb is not None)",
+          "name": "uses_rotary",
+          "rationale": "Captures fixed rotary overhead."
+        }
+      ]
+    }
+  ],
+  "case": "wan-017",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "5a88fdf3afe1d4609b190ce3d06e2b77ab3447299d9e116d33fc29528ab44145",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

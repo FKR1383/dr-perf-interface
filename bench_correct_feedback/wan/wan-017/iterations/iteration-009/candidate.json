@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Neither full attention pairs nor scalar tails sufficiently explain the largest cross-attention residual. Counting eight-element context tiles tests whether blocked kernel work, particularly the additional tile at context length 9, accounts for it.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+      "name": "query_elements",
+      "rationale": "Captures query projection, output projection, and per-row attention work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) + 7) // 8)",
+      "name": "attention_context_tiles",
+      "rationale": "Tests attention work measured in eight-element context tiles, including partially filled tiles."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+      "name": "rotary_elements",
+      "rationale": "Captures token-dependent rotary work."
+    },
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Captures fixed rotary overhead."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Loaded-module cardinality was constant. Model-local initialization may explain the elevated first prompt and repeated-state variability, so this candidate tests entry-state cardinality on the encoder and its stack.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Tracks linear encoder processing."
+    },
+    {
+      "expression": "sum((len(text) for text in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Approximates tokenizer work and separates prompts with equal tensor dimensions."
+    },
+    {
+      "expression": "len(self.text_encoder.__dict__) + len(self.text_encoder.encoder.__dict__)",
+      "name": "encoder_state_size",
+      "rationale": "Cheap cardinality of model runtime state may distinguish lazy per-instance initialization that loaded-module cardinality did not capture."
+    }
+  ]
+}

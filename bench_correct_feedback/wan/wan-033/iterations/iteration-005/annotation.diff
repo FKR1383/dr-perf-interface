@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/pipelines/wan/pipeline_wan.py
++++ candidate/src/diffusers/pipelines/wan/pipeline_wan.py
+@@ -171,7 +171,7 @@
+         prompt = [prompt_clean(u) for u in prompt]
+         batch_size = len(prompt)
+ 
+-        with perfmark.region("wan-033"):
++        with perfmark.region("wan-033", batch_size=(batch_size), padded_tokens=(batch_size * max_sequence_length), prompt_characters=(sum((len(text) for text in prompt))), source_cache_entries=(len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0)):
+             text_inputs = self.tokenizer(
+                 prompt,
+                 padding="max_length",

@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed iterator and call overhead plus a linear cost per incoming request; these small queues should not require additional deque blocks.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(requests)",
+      "name": "incoming_count",
+      "rationale": "Deque extendleft performs one iteration and insertion per incoming request. Cardinality is cheap and captures the variable work for the supplied FCFS queues."
+    }
+  ]
+}

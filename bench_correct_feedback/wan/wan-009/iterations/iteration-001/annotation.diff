@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -1123,7 +1123,7 @@
+ 
+     def clear_cache(self):
+         # Use cached conv counts for decoder and encoder to avoid re-iterating modules each call
+-        with perfmark.region("wan-009"):
++        with perfmark.region("wan-009", cache_slots=(self._cached_conv_counts['decoder'] + self._cached_conv_counts['encoder']), existing_cache_slots=(len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ())))):
+             self._conv_num = self._cached_conv_counts["decoder"]
+             self._conv_idx = [0]
+             self._feat_map = [None] * self._conv_num

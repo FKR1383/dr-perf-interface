@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/worker/gpu_input_batch.py
++++ candidate/vllm/v1/worker/gpu_input_batch.py
+@@ -352,7 +352,7 @@
+         self,
+         request: "CachedRequestState",
+     ) -> int:
+-        with perfmark.region("vllm-061"):
++        with perfmark.region("vllm-061", copied_token_count=((len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)), resident_requests=(len(self.req_id_to_index)), removed_slots=(len(self.batch_update_builder.removed)), uncached_sampling_type=(int(request.sampling_params is not None and 'sampling_type' not in request.sampling_params.__dict__))):
+             req_index = self._register_add_request(request)
+ 
+             req_id = request.req_id

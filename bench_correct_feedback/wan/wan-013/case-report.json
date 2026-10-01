@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ed71-c561-7243-95f4-8752eac79fce",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 5.097050518412278,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by encoder invocation overhead and processed tile area, with separate costs for first and subsequent temporal chunks.",
+      "irregularity_percent": 5.097050518412278,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width)",
+          "name": "spatial_tiles",
+          "rationale": "Counts first-chunk encoder calls and per-tile setup."
+        },
+        {
+          "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width) * ((x.shape[2] - 1) // 4)",
+          "name": "cached_tile_chunks",
+          "rationale": "Counts subsequent four-frame encoder calls with populated caches."
+        },
+        {
+          "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1)",
+          "name": "first_chunk_tile_area",
+          "rationale": "Total processed spatial area including overlap and clipped boundary tiles for the fixed workload; captures size-dependent first-chunk computation."
+        },
+        {
+          "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1) * ((x.shape[2] - 1) // 4)",
+          "name": "cached_chunk_tile_area",
+          "rationale": "Spatial work across subsequent chunks, whose temporal convolution and cache costs differ from the first chunk."
+        }
+      ]
+    }
+  ],
+  "case": "wan-013",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "2246d4fca046378abefd84441e43598ff5e152734d856f6c3f4008ba51fd0244",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

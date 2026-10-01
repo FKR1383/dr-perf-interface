@@ -1,0 +1,88 @@
+{
+  "agent_PCVs_thread": "01a0f680-b8b8-7b41-b85c-93daf6b57752",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.9750937403092,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is explained by batch size, the number of sampled requests, total context length, and fixed overhead when the batch proposer runs. Sampled requests approximate eligible requests when contexts remain below the model-length limit.",
+      "irregularity_percent": 99.9750937403092,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(sampled_token_ids)",
+          "name": "batch_size",
+          "rationale": "Captures filtering and output-list construction, including the empty warmup batch."
+        },
+        {
+          "expression": "sum((1 for ids in sampled_token_ids if len(ids) > 0))",
+          "name": "sampled_requests",
+          "rationale": "Approximates the number of requests needing proposal processing."
+        },
+        {
+          "expression": "int(sum(num_tokens_no_spec))",
+          "name": "context_tokens",
+          "rationale": "Approximates aggregate linear n-gram search work and the batch token-count reduction."
+        },
+        {
+          "expression": "int(sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+          "name": "has_sampled_requests",
+          "rationale": "Captures fixed thread-configuration and Numba dispatch overhead when proposal processing is enabled."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.0918548525667395,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The dominant outlier is lazy Numba compilation on the first active call. A compilation-state indicator should isolate that cost, while batch size, active request count, and the active-batch indicator explain initialization and steady-state execution.",
+      "irregularity_percent": 3.0918548525667395,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(sampled_token_ids)",
+          "name": "batch_size",
+          "rationale": "Captures filtering and output construction, particularly the 1024-entry empty initialization call."
+        },
+        {
+          "expression": "sum((1 for ids in sampled_token_ids if len(ids) > 0))",
+          "name": "sampled_requests",
+          "rationale": "Captures the approximately linear increase in steady-state proposal cost per active request."
+        },
+        {
+          "expression": "int(sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+          "name": "has_sampled_requests",
+          "rationale": "Separates fixed Numba dispatch and thread-management overhead from the empty initialization path."
+        },
+        {
+          "expression": "int(len(batch_propose_numba.signatures) == 0 and sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+          "name": "requires_initial_compilation",
+          "rationale": "Identifies the first active call using the dispatcher's entry-state compilation status, explaining its exceptional compilation cost."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-057",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "c50352bd875c09b50ae6d3c66bfc9eab31e058039abb8203dc98d6d70dca9f51",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

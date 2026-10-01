@@ -1,0 +1,11 @@
+--- baseline/vllm/entrypoints/offline_utils.py
++++ candidate/vllm/entrypoints/offline_utils.py
+@@ -578,7 +578,7 @@
+         use_tqdm: bool | Callable[..., tqdm] = True,
+     ) -> list[_O]:
+         # Initialize tqdm.
+-        with perfmark.region("vllm-003"):
++        with perfmark.region("vllm-003", request_count_proxy=(int(use_tqdm) + 1), decode_rounds_proxy=(2 * int(use_tqdm) + 1 if use_tqdm < 2 else 4), long_prompt_requests=(int(use_tqdm) + 1 if use_tqdm >= 4 else 0), initial_batch=(int(use_tqdm == 0))):
+             if use_tqdm:
+                 num_requests = self.llm_engine.get_num_unfinished_requests()
+                 tqdm_func = use_tqdm if callable(use_tqdm) else tqdm

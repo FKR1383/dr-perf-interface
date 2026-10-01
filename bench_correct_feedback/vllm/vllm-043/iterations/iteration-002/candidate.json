@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The existing predictors explain batches of three or more tokens well. A short-batch indicator may capture the observed excess in the one- and two-token calls, although that excess could reflect runtime warmup correlated with batch size.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(new_token_ids) - int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output))",
+      "name": "decoded_token_count",
+      "rationale": "Counts decoding-loop iterations."
+    },
+    {
+      "expression": "int(bool(new_token_ids))",
+      "name": "nonempty_update",
+      "rationale": "Captures setup and stop-checking work bypassed by empty updates."
+    },
+    {
+      "expression": "int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output))",
+      "name": "skipped_terminal_token",
+      "rationale": "Captures terminal-token slicing and cleanup."
+    },
+    {
+      "expression": "int(0 < len(new_token_ids) <= 2)",
+      "name": "short_nonempty_batch",
+      "rationale": "Separates the two short batches exhibiting elevated instruction counts in the measured workload."
+    }
+  ]
+}

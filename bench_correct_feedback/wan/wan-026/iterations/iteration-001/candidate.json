@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed transformer overhead plus work proportional to text length, with an additional cost when the scheduler initializes its step index.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "text_length",
+      "rationale": "Tracks text projection and cross-attention work in both transformer calls; latent dimensions and model size are fixed."
+    },
+    {
+      "expression": "int(self.scheduler.step_index is None)",
+      "name": "scheduler_initialization",
+      "rationale": "Captures scheduler initialization performed on the first denoising step of each pipeline call."
+    }
+  ]
+}

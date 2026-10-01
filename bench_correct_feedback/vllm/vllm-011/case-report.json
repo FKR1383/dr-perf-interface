@@ -1,0 +1,71 @@
+{
+  "agent_PCVs_thread": "01a0f563-be3b-7450-8666-1bf5e9e9279d",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily a fixed overhead plus work per released reference and additional work per block returned to the free queue.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "sum((len(mgr.req_to_blocks.get(request.request_id, ())) for mgr in self.coordinator.single_type_managers)) + len(self._partial_tail_pins.get(request.request_id, ()))",
+          "name": "blocks_released",
+          "rationale": "Counts block references visited and decremented when freeing the request, including off-table pins."
+        },
+        {
+          "expression": "sum((block.ref_cnt == 1 and (not block.is_null) for mgr in self.coordinator.single_type_managers for block in mgr.req_to_blocks.get(request.request_id, ()))) + sum((block.ref_cnt == 1 and (not block.is_null) for block in self._partial_tail_pins.get(request.request_id, ())))",
+          "name": "blocks_becoming_free",
+          "rationale": "Counts blocks eligible to return to the free queue, distinguishing their additional work from releasing shared cached blocks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.3314025115092831,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Block-release work was constant in the first measurement. Request-table cardinality captures varying bookkeeping state during batch completion and permits testing whether the nearly fixed release cost has residual dependence on table size.",
+      "irregularity_percent": 1.3314025115092831,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "sum((len(mgr.req_to_blocks.get(request.request_id, ())) for mgr in self.coordinator.single_type_managers)) + len(self._partial_tail_pins.get(request.request_id, ()))",
+          "name": "blocks_released",
+          "rationale": "Measures block-release work, although all observed calls released one block."
+        },
+        {
+          "expression": "sum((len(mgr.req_to_blocks) for mgr in self.coordinator.single_type_managers))",
+          "name": "tracked_requests",
+          "rationale": "Measures the size of request bookkeeping being modified by coordinator.free; batch completion should expose multiple entry states."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-011",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "97a92bd41431eaa53105d4c3c38f28bd2153fc9cd346abfc48ec51a1edf315b3",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

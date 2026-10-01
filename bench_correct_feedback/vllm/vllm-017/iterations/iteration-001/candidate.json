@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count should be approximately constant across the workload, independent of queue length and incoming request fields.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1",
+      "name": "constant_work",
+      "rationale": "The region performs one deque appendleft. All supplied queues contain only 1\u20134 elements and have unused space at the left end, so insertion requires no traversal or new deque block."
+    }
+  ]
+}

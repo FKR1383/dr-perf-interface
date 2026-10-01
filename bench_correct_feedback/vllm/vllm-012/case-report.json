@@ -1,0 +1,108 @@
+{
+  "agent_PCVs_thread": "01a0f568-15ec-7cd0-96ec-83cb1ee2331d",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count depends on lookup overhead, whether the first block misses, and the eligible prefix length when the first block hits.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache))",
+          "name": "lookup_enabled",
+          "rationale": "Separates the early return from cache lookup."
+        },
+        {
+          "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache) and (min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) > 0))",
+          "name": "has_lookup_blocks",
+          "rationale": "Distinguishes empty searches from searches requiring a hash lookup."
+        },
+        {
+          "expression": "int(self.enable_caching and (not request.skip_reading_prefix_cache) and bool(request.block_hashes) and (request.block_hashes[0] + b'\\x00\\x00\\x00\\x00' in self.block_pool.cached_block_hash_to_block._cache))",
+          "name": "first_block_cached",
+          "rationale": "Uses direct dictionary membership for the group-zero hash to distinguish immediate misses from reusable prefixes."
+        },
+        {
+          "expression": "min(len(request.block_hashes), (request.num_tokens - 1) // self.kv_cache_config.kv_cache_groups[0].kv_cache_spec.block_size) if self.enable_caching and (not request.skip_reading_prefix_cache) and request.block_hashes and (request.block_hashes[0] + b'\\x00\\x00\\x00\\x00' in self.block_pool.cached_block_hash_to_block._cache) else 0",
+          "name": "cached_prefix_search_extent",
+          "rationale": "Estimates shared-prefix traversal work using a bounded dictionary membership check and the eligible block count."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.771810132094643,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "All 36 calls followed the same empty-search regime, suggesting approximately constant instruction cost. Request length supplies distinct state points to test that hypothesis, with its coefficient expected to be small.",
+      "irregularity_percent": 27.771810132094643,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "request.num_tokens",
+          "name": "request_tokens",
+          "rationale": "Provides varying entry states across prompt lengths when every observed lookup has zero eligible cache blocks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The fixed workload has approximately constant empty-search cost except for the ten- and eleven-token observations. These indicators test that empirical distinction; prompt length may be a proxy for initialization effects rather than their cause.",
+      "irregularity_percent": 0.0,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "request.num_tokens",
+          "name": "request_tokens",
+          "rationale": "Retains eight distinct observed prompt-length states and models the baseline length dependence."
+        },
+        {
+          "expression": "int(request.num_tokens == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Separates the observed ten-token state, whose instruction cost was substantially above baseline."
+        },
+        {
+          "expression": "int(request.num_tokens == 11)",
+          "name": "eleven_token_prompt",
+          "rationale": "Separates the other observed high-cost short-prompt state."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-012",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e1acd78660be84b1b47a6d96d8d4c03c5fdd651749ce9623fed34c26dd704977",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

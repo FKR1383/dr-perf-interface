@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Remaining unexplained work may arise from sampling-parameter branches. Counting stochastic requests alongside initialization, batch size, and text volume should capture this independent source of variation.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates the initial call and its substantial initialization work."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks common rendering and engine-insertion work per request."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+      "name": "total_prompt_characters",
+      "rationale": "Measures batch text volume without consuming the rendering generator."
+    },
+    {
+      "expression": "sum((1 for p in params if p.temperature > 0))",
+      "name": "sampled_requests",
+      "rationale": "Counts requests using stochastic sampling, which require different sampling-parameter validation and preparation from greedy requests."
+    }
+  ]
+}

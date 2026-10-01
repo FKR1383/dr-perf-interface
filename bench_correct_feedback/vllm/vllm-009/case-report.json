@@ -1,0 +1,182 @@
+{
+  "agent_PCVs_thread": "01a0f553-3b6b-7041-b8de-bc6086d0a39c",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 2; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "For this full-attention workload, instruction count is explained by a baseline, per-block allocation work, and fixed overhead for groups that allocate at least one block.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+          "name": "new_block_count",
+          "rationale": "Counts remaining block allocations after computed blocks have been attached; allocation and block bookkeeping should scale with this count."
+        },
+        {
+          "expression": "sum(((num_tokens_need_slot + manager.block_size - 1) // manager.block_size > len(manager.req_to_blocks.get(request.request_id, ())) for manager in self.coordinator.single_type_managers))",
+          "name": "allocating_group_count",
+          "rationale": "Captures the fixed cost of entering the allocation path versus returning without allocating for each group."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 30.861884368308353,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Allocation count explains the dominant cost difference. Token extent distinguishes at least four entry states and tests whether residual cost varies with sequence length; the previous allocating-group feature was redundant in this workload.",
+      "irregularity_percent": 30.861884368308353,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+          "name": "new_block_count",
+          "rationale": "Separates the observed allocation and no-allocation paths, whose mean instruction counts differ substantially."
+        },
+        {
+          "expression": "num_tokens_need_slot",
+          "name": "num_tokens_need_slot",
+          "rationale": "Captures the requested token extent used in allocation arithmetic and supplies distinct entry states within each allocation path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 34.30729264308096,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The large deviations occur in early allocations. Request-table and prefix-cache occupancy may explain initialization or container-growth costs that allocation count and token extent miss.",
+      "irregularity_percent": 34.30729264308096,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+          "name": "new_block_count",
+          "rationale": "Retains the dominant distinction between allocation and no-allocation paths."
+        },
+        {
+          "expression": "num_tokens_need_slot",
+          "name": "num_tokens_need_slot",
+          "rationale": "Preserves sequence extent and sufficient distinct entry states."
+        },
+        {
+          "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+          "name": "tracked_requests",
+          "rationale": "Measures request-table occupancy, which can affect insertion and allocation bookkeeping costs."
+        },
+        {
+          "expression": "len(self.block_pool.cached_block_hash_to_block)",
+          "name": "cached_blocks",
+          "rationale": "Distinguishes initial pool use from warmed prefix-cache state and captures cache bookkeeping occupancy."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 24.94279883742502,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Logical table occupancy missed retained storage capacity. The interaction of an empty request table with its allocated storage may distinguish costly initial insertions from subsequent allocations; cached-block cardinality was constant and is removed.",
+      "irregularity_percent": 24.94279883742502,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+          "name": "new_block_count",
+          "rationale": "Captures the dominant per-block allocation work."
+        },
+        {
+          "expression": "self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__()",
+          "name": "request_table_bytes",
+          "rationale": "Cheap container-capacity state distinguishes newly created tables from tables retaining storage after previous requests."
+        },
+        {
+          "expression": "int(len(self.coordinator.single_type_managers[0].req_to_blocks) == 0)",
+          "name": "empty_request_table",
+          "rationale": "Both unusually expensive allocations entered with an empty request table; this models that branch separately."
+        },
+        {
+          "expression": "num_tokens_need_slot",
+          "name": "num_tokens_need_slot",
+          "rationale": "Retains allocation extent and distinguishes sequence lengths within table-storage regimes."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "A piecewise model separating short requests entering an empty table and the initial table allocation may explain the two remaining outliers. The short-request interaction is an empirical hypothesis, not an established causal mechanism.",
+      "irregularity_percent": 0.0,
+      "iteration": 5,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "sum((max(0, (num_tokens_need_slot + manager.block_size - 1) // manager.block_size - len(manager.req_to_blocks.get(request.request_id, ()))) for manager in self.coordinator.single_type_managers))",
+          "name": "new_block_count",
+          "rationale": "Explains the main allocation cost."
+        },
+        {
+          "expression": "self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__()",
+          "name": "request_table_bytes",
+          "rationale": "Retains the container-storage feature that reduced unexplained instruction shares."
+        },
+        {
+          "expression": "int(not self.coordinator.single_type_managers[0].req_to_blocks and num_tokens_need_slot < 16)",
+          "name": "empty_table_short_request",
+          "rationale": "Tests the interaction shared by the two persistently expensive entries; empty-table state alone did not distinguish them."
+        },
+        {
+          "expression": "int(self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__() == 56)",
+          "name": "unallocated_request_table",
+          "rationale": "Separates the initial table-storage allocation from insertions into retained storage."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-009",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "a2bd6ab320ddb1c6d266fbcf577808d4a57a5fd98b657a2e7c79f313dedc9c65",
+  "iterations": 5,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

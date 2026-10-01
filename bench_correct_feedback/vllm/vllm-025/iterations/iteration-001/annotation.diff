@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/request_queue.py
++++ candidate/vllm/v1/core/sched/request_queue.py
+@@ -175,7 +175,7 @@
+ 
+     def remove_request(self, request: Request) -> None:
+         """Remove a specific request from the queue."""
+-        with perfmark.region("vllm-025"):
++        with perfmark.region("vllm-025", queue_size=(len(self._heap)), heapify_internal_nodes=((len(self._heap) - 1) // 2), target_at_second_slot=(int(len(self._heap) > 1 and self._heap[1] is request))):
+             self._heap.remove(request)
+             heapq.heapify(self._heap)
+ 

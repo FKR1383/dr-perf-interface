@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Rescaling did not help. A quadratic length term and an interaction between special-token processing and truncation should better explain the ordinary-call costs while preserving the exceptional default-options state.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "int(tokenization_kwargs is None)",
+      "name": "default_options",
+      "rationale": "Separates the entry state containing the exceptional initialization cost."
+    },
+    {
+      "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+      "name": "prompt_chars",
+      "rationale": "Models tokenizer work that grows linearly with input length."
+    },
+    {
+      "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt']) ** 2",
+      "name": "prompt_chars_squared",
+      "rationale": "Allows curvature in text-processing cost that the previous linear model could not explain."
+    },
+    {
+      "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))",
+      "name": "special_tokens_without_truncation",
+      "rationale": "Captures the observed special-token cost increase before explicit truncation options are supplied."
+    }
+  ]
+}

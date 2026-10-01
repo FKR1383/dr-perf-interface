@@ -1,0 +1,11 @@
+{
+  "hypothesis": "The measured body should have approximately constant instruction count across all benchmark calls; the nonempty indicator represents its executed path.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(len(self) > 0)",
+      "name": "nonempty",
+      "rationale": "Captures the branch selecting front access versus raising IndexError. All benchmark queues are nonempty, and both the length check and deque front access take constant work independent of queue size."
+    }
+  ]
+}

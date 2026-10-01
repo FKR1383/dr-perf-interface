@@ -1,0 +1,41 @@
+{
+  "agent_PCVs_thread": "01a0ed9a-873e-76a0-ba86-6ca5fc3bdb3a",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.5920093747792505,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily fixed tensor-operation overhead plus work proportional to the materialized rotary embeddings, with a possible separate cost for singleton temporal layouts.",
+      "irregularity_percent": 1.5920093747792505,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[2] // self.patch_size[0] * (hidden_states.shape[3] // self.patch_size[1]) * (hidden_states.shape[4] // self.patch_size[2]) * self.attention_head_dim",
+          "name": "rotary_output_elements",
+          "rationale": "Tracks the elements materialized by each cosine and sine concatenation; slicing, views, and expansion otherwise have mostly fixed overhead."
+        },
+        {
+          "expression": "int(hidden_states.shape[2] // self.patch_size[0] == 1)",
+          "name": "singleton_temporal_axis",
+          "rationale": "Captures changes in broadcast strides and concatenation iteration when the temporal axis is a singleton."
+        }
+      ]
+    }
+  ],
+  "case": "wan-021",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "c411a85c82ed43a90b1121a15763975b8e28e430eaacb0efc01d9660b911c2e1",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

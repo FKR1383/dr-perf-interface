@@ -1,0 +1,26 @@
+{
+  "hypothesis": "CPU attention has substantial per-row scalar tail costs for key lengths not divisible by 16. Adding query-weighted remainder work should explain the nonlinear differences missed by total tensor sizes.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks total attention matrix arithmetic."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks per-query processing and output work."
+    },
+    {
+      "expression": "key.numel() + value.numel()",
+      "name": "key_value_elements",
+      "rationale": "Tracks key/value preparation and memory work."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "scalar_tail_pairs",
+      "rationale": "Captures scalar remainder processing after 16-element vector blocks; lengths 9 and 27 have disproportionately high instruction counts compared with aligned lengths."
+    }
+  ]
+}

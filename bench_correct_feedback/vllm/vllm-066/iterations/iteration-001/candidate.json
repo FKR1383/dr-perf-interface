@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is approximately an additive function of new, cached, and finished request counts, with additional fixed overhead for refreshing metadata when batch membership changes.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks request-state construction and insertion into the persistent batch."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_cached_reqs.req_ids)",
+      "name": "cached_requests",
+      "rationale": "Tracks the per-request loop updating running and resumed requests."
+    },
+    {
+      "expression": "len(scheduler_output.finished_req_ids)",
+      "name": "finished_requests",
+      "rationale": "Tracks cached-state cleanup and persistent-batch removal."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Captures fixed metadata-refresh overhead when batch membership changes."
+    }
+  ]
+}

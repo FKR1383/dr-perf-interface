@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0ed69-6f76-7a73-9826-2292c19328d3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.43880795921794663,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "The fixed workload always uses whole-tensor denormalization on contiguous CPU float tensors. Instruction count should be approximately a fixed dispatch cost plus a term proportional to the number of elements.",
+      "irregularity_percent": 0.43880795921794663,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "image.numel()",
+          "name": "elements",
+          "rationale": "Counts elements processed by the multiplication, addition, and clamp in denormalization; tensor metadata makes this cheap to obtain."
+        }
+      ]
+    }
+  ],
+  "case": "wan-002",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "daca1afc6d6b81837ee9a812a45efd985e9f010ece931819f1ae47b89be0f280",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

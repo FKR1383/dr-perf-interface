@@ -1,0 +1,3985 @@
+{
+  "aggregate": {
+    "cases": 41,
+    "exhausted": 4,
+    "iterations": 103,
+    "success": 37
+  },
+  "protocol": "full-drperf-feedback-scripted-measurement",
+  "results": [
+    {
+      "agent_PCVs_thread": "01a0ed69-12e7-7b50-a142-fa4ffc61dcaa",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 3.745956942350755,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "The fixed NumPy output path has approximately constant dispatch and conversion overhead plus denormalization instruction count proportional to the tensor element count.",
+          "irregularity_percent": 3.745956942350755,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "image.numel()",
+              "name": "elements",
+              "rationale": "Constant-time tensor metadata measures the elements processed by multiplication, addition, and clamping during denormalization."
+            }
+          ]
+        }
+      ],
+      "case": "wan-001",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "aeee59fc782c816949ca8bc1967883e3d2c33edf0d75598503721fd5f563b639",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed69-6f76-7a73-9826-2292c19328d3",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.43880795921794663,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "The fixed workload always uses whole-tensor denormalization on contiguous CPU float tensors. Instruction count should be approximately a fixed dispatch cost plus a term proportional to the number of elements.",
+          "irregularity_percent": 0.43880795921794663,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "image.numel()",
+              "name": "elements",
+              "rationale": "Counts elements processed by the multiplication, addition, and clamp in denormalization; tensor metadata makes this cheap to obtain."
+            }
+          ]
+        }
+      ],
+      "case": "wan-002",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "daca1afc6d6b81837ee9a812a45efd985e9f010ece931819f1ae47b89be0f280",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed69-c512-7790-a4b1-681737c2af87",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 1; need 3",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "For these fixed-rank CPU float32 inputs, the marked conversion has approximately constant instruction count across batch sizes and image dimensions.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "image.ndim",
+              "name": "tensor_rank",
+              "rationale": "The CPU float32 input needs no device transfer or dtype conversion. Permutation and NumPy conversion share storage, so work primarily handles tensor metadata and scales with rank rather than pixel count."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.42979302953850285,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Conversion primarily performs constant-cost metadata operations; element count should permit a nearly flat fitted model while supplying the required distinct states.",
+          "irregularity_percent": 0.42979302953850285,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "image.numel()",
+              "name": "elements",
+              "rationale": "Provides six distinct entry states across the fixed workload and captures any size-dependent storage or allocation overhead accompanying conversion."
+            }
+          ]
+        }
+      ],
+      "case": "wan-003",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "32416729259fb0230b59508c775f9ebf141f189bf9bdedf3e589d826df7d799b",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6a-60d2-7493-8954-425a9455d3f3",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 1.4495180483312224,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a fixed overhead plus per-image, per-element, and per-row costs for converting the NumPy batch into PIL images.",
+          "irregularity_percent": 1.4495180483312224,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "image.shape[0]",
+              "name": "batch_size",
+              "rationale": "Counts per-image PIL construction and list iteration overhead."
+            },
+            {
+              "expression": "image.size",
+              "name": "element_count",
+              "rationale": "Tracks multiplication, rounding, uint8 conversion, and pixel serialization work."
+            },
+            {
+              "expression": "image.shape[0] * image.shape[1]",
+              "name": "total_rows",
+              "rationale": "Captures per-row copying and RGB decoding overhead."
+            }
+          ]
+        }
+      ],
+      "case": "wan-004",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "1d74839dae42e4660c249b59263aece41b3890443921edd37e1196726c9b290f",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6a-cdfe-7100-90e7-789dc185d2e0",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 3.8307230920809574,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count combines per-frame overhead, distinct spatial costs for first and subsequent frames, and quadratic spatial attention work.",
+          "irregularity_percent": 3.8307230920809574,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "z.shape[2]",
+              "name": "latent_frames",
+              "rationale": "Tracks decoder invocations and per-frame cache-management overhead."
+            },
+            {
+              "expression": "z.shape[0] * z.shape[3] * z.shape[4]",
+              "name": "first_frame_area",
+              "rationale": "Tracks spatial work for the first frame, which skips cached temporal upsampling."
+            },
+            {
+              "expression": "z.shape[0] * (z.shape[2] - 1) * z.shape[3] * z.shape[4]",
+              "name": "subsequent_frame_area",
+              "rationale": "Tracks convolution, normalization, copying, and upsampling work for subsequent frames."
+            },
+            {
+              "expression": "z.shape[0] * z.shape[2] * (z.shape[3] * z.shape[4]) ** 2",
+              "name": "attention_work",
+              "rationale": "Tracks the quadratic spatial component of decoder attention."
+            }
+          ]
+        }
+      ],
+      "case": "wan-005",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "b34d534f6ef832cbab0df579c271bf69c121f030f01a79e4a5da3954c005a008",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6b-cc6c-7f22-a9d4-50b3b7d31d82",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 4.865577700645956,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a combination of per-chunk overhead, spatial work with distinct initial and subsequent chunk costs, and quadratic attention work.",
+          "irregularity_percent": 4.865577700645956,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "1 + (x.shape[2] - 1) // 4",
+              "name": "temporal_chunks",
+              "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+              "name": "spatial_area",
+              "rationale": "Captures spatial work specific to the initial single-frame chunk and fixed spatial costs."
+            },
+            {
+              "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+              "name": "chunk_spatial_work",
+              "rationale": "Models convolution, normalization, activation, and copying work across temporal chunks."
+            },
+            {
+              "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+              "name": "attention_pair_work",
+              "rationale": "Models quadratic spatial attention work at the encoder's compressed resolution."
+            }
+          ]
+        }
+      ],
+      "case": "wan-006",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "2a874d13baa67b6709ea37ebd897702edf1138939fc3b12f8bd70c3127b89c16",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6c-c642-71b3-8830-13e78bdbe6cc",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.17055844407553783,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately affine in the clamped nonnegative blend extent because column shapes and tensor dtype remain fixed across the measured workload.",
+          "irregularity_percent": 0.17055844407553783,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "max(0, min(a.shape[-1], b.shape[-1], blend_extent))",
+              "name": "blend_columns",
+              "rationale": "Counts executed loop iterations, each performing the same tensor slicing, arithmetic, and assignment on fixed-size columns in this workload."
+            }
+          ]
+        }
+      ],
+      "case": "wan-007",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "38c76dcd86618ec99585892e00a631adc40f4d97a2134bca645148f30efdae44",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6d-381b-7e22-8478-5224de60f856",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.16963386240548192,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately affine in the number of blended rows, with fixed entry overhead.",
+          "irregularity_percent": 0.16963386240548192,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "max(0, min(a.shape[-2], b.shape[-2], blend_extent))",
+              "name": "blended_rows",
+              "rationale": "Counts executed loop iterations. The fixed workload keeps row shape and dtype constant, so each iteration performs the same slicing, arithmetic, and assignment work."
+            }
+          ]
+        }
+      ],
+      "case": "wan-008",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "2b1bab1c694d5e317eac6f0f5042e9c3c63ccd14e8f1d4ba87d3ab1dba8d3e96",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6d-ad49-7af1-8b88-a5b94824d915",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 2; need 4",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by fixed attribute-assignment overhead, new cache-list construction, and disposal of previous cache lists. The varying index values should not materially affect reset cost.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "self._cached_conv_counts['decoder'] + self._cached_conv_counts['encoder']",
+              "name": "cache_slots",
+              "rationale": "Captures the work of allocating and filling the two feature-cache lists."
+            },
+            {
+              "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+              "name": "existing_cache_slots",
+              "rationale": "Captures disposal of existing cache lists and distinguishes initial cache creation from subsequent resets."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.13009869431504845,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The measured work is nearly constant across calls, with a small initial-creation effect. Including the supplied entry index exposes six distinct workload states; its fitted contribution should be near zero, while existing cache size captures the initialization difference.",
+          "irregularity_percent": 0.13009869431504845,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "self._conv_idx[0]",
+              "name": "entry_cache_index",
+              "rationale": "Identifies the six supplied entry index states whose index lists are reset by the region."
+            },
+            {
+              "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+              "name": "existing_cache_slots",
+              "rationale": "Distinguishes initial cache creation from replacement and disposal of existing cache lists."
+            }
+          ]
+        }
+      ],
+      "case": "wan-009",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "00e880d4388f88685d791b292ee8af2972bd74e76763acdabe15410a0c7c3290",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6e-781e-70b2-adac-a22b9a2bcb07",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 3.6189333773632932,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count combines per-frame overhead, spatial work with different costs for first and subsequent frames, and quadratic spatial attention work.",
+          "irregularity_percent": 3.6189333773632932,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "z.shape[2]",
+              "name": "latent_frames",
+              "rationale": "Tracks decoder invocations and per-frame Python and operator overhead."
+            },
+            {
+              "expression": "z.shape[0] * z.shape[3] * z.shape[4]",
+              "name": "first_frame_area",
+              "rationale": "Tracks spatial work for the first decoded frame, whose temporal expansion differs from later frames."
+            },
+            {
+              "expression": "z.shape[0] * (z.shape[2] - 1) * z.shape[3] * z.shape[4]",
+              "name": "subsequent_frame_area",
+              "rationale": "Tracks convolution, normalization, and copying work for subsequent frames with temporal upsampling and populated caches."
+            },
+            {
+              "expression": "z.shape[0] * z.shape[2] * (z.shape[3] * z.shape[4]) ** 2",
+              "name": "attention_pairs",
+              "rationale": "Tracks quadratic spatial attention work in the decoder middle block."
+            }
+          ]
+        }
+      ],
+      "case": "wan-010",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "78fe9fcc2e058c657f2e36b91775719579cfe7a0921829839ff4ba253ff743e2",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed6f-7620-7000-ad9b-73fb218ace5c",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 4.246781226331879,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is explained by per-chunk overhead, separate spatial costs for the initial and subsequent chunks, and quadratic attention work at the bottleneck.",
+          "irregularity_percent": 4.246781226331879,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "1 + (x.shape[2] - 1) // 4",
+              "name": "temporal_chunks",
+              "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+              "name": "spatial_area",
+              "rationale": "Captures spatial work for the initial frame, including convolution padding and normalization."
+            },
+            {
+              "expression": "x.shape[0] * ((x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+              "name": "subsequent_chunk_area",
+              "rationale": "Captures additional convolution, normalization, and cache-copy work for subsequent four-frame chunks."
+            },
+            {
+              "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+              "name": "attention_pairs",
+              "rationale": "Captures quadratic spatial attention work at the encoder's compressed resolution."
+            }
+          ]
+        }
+      ],
+      "case": "wan-011",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "e2d3b2126dab5e3a24c11b5b07727722b396754bb02f43e9191e09087b436fe9",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed70-7ac5-7f52-8ca6-185c9c8ececa",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 3.532305627214378,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by per-tile decoder overhead and tile-area-dependent computation, with different costs for initial and subsequent latent frames.",
+          "irregularity_percent": 3.532305627214378,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "((z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) + 1) * ((z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) + 1)",
+              "name": "tiles",
+              "rationale": "Counts spatial tiles, each requiring cache setup and an initial decoder call."
+            },
+            {
+              "expression": "(z.shape[2] - 1) * ((z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) + 1) * ((z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) + 1)",
+              "name": "cached_tile_frames",
+              "rationale": "Counts subsequent decoder calls, which activate temporal upsampling and populated-cache paths."
+            },
+            {
+              "expression": "z.shape[0] * (z.shape[3] + (z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) * ((self.tile_sample_min_height - self.tile_sample_stride_height) // self.spatial_compression_ratio)) * (z.shape[4] + (z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) * ((self.tile_sample_min_width - self.tile_sample_stride_width) // self.spatial_compression_ratio))",
+              "name": "initial_tile_area",
+              "rationale": "For the fixed workload, computes total latent tile area including overlaps and clipped boundary tiles; models spatial computation on initial frames."
+            },
+            {
+              "expression": "z.shape[0] * (z.shape[2] - 1) * (z.shape[3] + (z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) * ((self.tile_sample_min_height - self.tile_sample_stride_height) // self.spatial_compression_ratio)) * (z.shape[4] + (z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) * ((self.tile_sample_min_width - self.tile_sample_stride_width) // self.spatial_compression_ratio))",
+              "name": "cached_tile_area",
+              "rationale": "Models spatial computation for subsequent frames, whose temporal expansion increases convolution, normalization, and copying work."
+            }
+          ]
+        }
+      ],
+      "case": "wan-012",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "aa26d0182b759c61270e390980338bbcbcb298ebe0d51819aee2693dd7761dc2",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed71-c561-7243-95f4-8752eac79fce",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 5.097050518412278,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by encoder invocation overhead and processed tile area, with separate costs for first and subsequent temporal chunks.",
+          "irregularity_percent": 5.097050518412278,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width)",
+              "name": "spatial_tiles",
+              "rationale": "Counts first-chunk encoder calls and per-tile setup."
+            },
+            {
+              "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width) * ((x.shape[2] - 1) // 4)",
+              "name": "cached_tile_chunks",
+              "rationale": "Counts subsequent four-frame encoder calls with populated caches."
+            },
+            {
+              "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1)",
+              "name": "first_chunk_tile_area",
+              "rationale": "Total processed spatial area including overlap and clipped boundary tiles for the fixed workload; captures size-dependent first-chunk computation."
+            },
+            {
+              "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1) * ((x.shape[2] - 1) // 4)",
+              "name": "cached_chunk_tile_area",
+              "rationale": "Spatial work across subsequent chunks, whose temporal convolution and cache costs differ from the first chunk."
+            }
+          ]
+        }
+      ],
+      "case": "wan-013",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "2246d4fca046378abefd84441e43598ff5e152734d856f6c3f4008ba51fd0244",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed72-fb41-7c52-a84d-57af47a657bc",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 20.465773071375683,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is primarily affine in spatial volume, with distinct costs for initial and cached chunks and a smaller contribution from spatial boundaries.",
+          "irregularity_percent": 20.465773071375683,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Models spatially proportional convolution, normalization, activation, and copying work."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Allows a separate volume slope for subsequent chunks, which activate temporal convolutions and temporal upsampling."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures additional fixed dispatch, slicing, and concatenation overhead for subsequent chunks."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+              "name": "expanded_spatial_boundary",
+              "rationale": "Models convolution padding and boundary work, with greater temporal extent after cached temporal upsampling."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 42.38945295012842,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The persistent unexplained work across all six shape/cache states suggests runtime variability. Replacing the boundary correction with garbage-collector entry state tests whether allocation history explains that variation.",
+          "irregularity_percent": 42.38945295012842,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Captures the dominant spatial scaling of decoder operations."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Captures the additional volume-dependent work from temporal upsampling on cached chunks."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Separates fixed overhead for initial and cached chunks."
+            },
+            {
+              "expression": "__import__('gc').get_count()[0]",
+              "name": "gc_allocation_balance",
+              "rationale": "Cheap runtime entry state that may explain allocation and garbage-collection variability within otherwise identical decoder shapes."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 37.04521797397102,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "The allocation-state experiment did not explain the instruction counts. Explicitly gating both volume and fixed overhead by execution path should let Dr. Perf explain path-specific instructions without requiring cancellation between shared and cached features.",
+          "irregularity_percent": 37.04521797397102,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_volume",
+              "rationale": "Models volume-dependent work exclusively on the initial-chunk path."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_volume",
+              "rationale": "Models volume-dependent work exclusively on the cached path, including temporal upsampling."
+            },
+            {
+              "expression": "int(feat_cache is None or feat_cache[feat_idx[0]] is None)",
+              "name": "initial_path",
+              "rationale": "Provides a fixed-cost feature for operations specific to initial chunks."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "cached_path",
+              "rationale": "Provides a fixed-cost feature for cache handling and additional temporal operations."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 45.184684023119246,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "Removing the boundary feature substantially increased irregularity. Separate area and boundary terms for each cache regime should explain instruction patterns better than fixed path indicators or a boundary term with a prescribed temporal multiplier.",
+          "irregularity_percent": 45.184684023119246,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_volume",
+              "rationale": "Captures spatial-area work on the initial path."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_volume",
+              "rationale": "Captures spatial-area work after cached temporal upsampling."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_boundary",
+              "rationale": "Captures row traversal and padding work on the initial path."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_boundary",
+              "rationale": "Allows cached boundary work to scale independently across temporally expanded decoder stages."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 38.7747512573509,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "Return to the best-performing feature structure, but account for temporal padding in the boundary term. For this workload, padded temporal extent grows from three to six frames, whereas the original boundary feature assumed a fourfold increase.",
+          "irregularity_percent": 38.7747512573509,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Captures work proportional to the input spatial area."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Captures additional area-dependent work from cached temporal upsampling."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures the fixed overhead difference between initial and cached chunks."
+            },
+            {
+              "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) * (4 * x.shape[2] + 2 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else x.shape[2] + 2)",
+              "name": "temporally_padded_boundary",
+              "rationale": "Models spatial boundary work using temporal extent including the two padding frames required by causal convolutions."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 26.481878280154696,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "The best result used fourfold temporal scaling, but constraining boundary work to that ratio left substantial irregularity. Apply that scaling to dominant volume work while allowing independent boundary slopes and fixed overhead for each cache regime.",
+          "irregularity_percent": 26.481878280154696,
+          "iteration": 6,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+              "name": "expanded_volume",
+              "rationale": "Models the dominant decoder stages, whose temporal extent is four times larger for cached chunks."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+              "name": "spatial_boundary",
+              "rationale": "Captures spatial row and boundary work shared across both cache regimes."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_boundary",
+              "rationale": "Allows additional cached boundary work to have an independently fitted coefficient."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Preserves the fixed overhead difference between initial and cached execution."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-007/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 40.95791098431928,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+          "hypothesis": "Test whether the nonlinear spatial instruction patterns chiefly arise before temporal upsampling. Retain separate volume slopes and cache overhead, but use an unscaled boundary feature shared by both paths.",
+          "irregularity_percent": 40.95791098431928,
+          "iteration": 7,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Captures area-dependent work common to initial and cached chunks."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Allows an independently fitted area slope for cached temporal expansion."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures fixed cache-dependent execution overhead."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+              "name": "spatial_boundary",
+              "rationale": "Captures boundary and row work without imposing temporal expansion on its contribution."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-008/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 57.00006821623261,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+          "hypothesis": "A piecewise volume model may capture size-dependent kernel behavior better than boundary terms. This candidate retains fourfold temporal scaling for smaller inputs while allowing separate large-input corrections for both cache regimes.",
+          "irregularity_percent": 57.00006821623261,
+          "iteration": 8,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+              "name": "expanded_volume",
+              "rationale": "Captures the dominant volume work with fourfold temporal expansion for cached chunks."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures fixed overhead associated with cached execution."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_volume_above_16",
+              "rationale": "Allows the initial-path spatial slope to change beyond sixteen latent positions."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_volume_above_16",
+              "rationale": "Allows an independent spatial slope change for larger cached inputs."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-009/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 35.70149741396064,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+          "hypothesis": "The fourfold boundary weighting remains the best tested structure; onefold and twofold weighting performed substantially worse. Testing eightfold weighting determines whether the remaining nonlinear spatial work is more concentrated in cached execution.",
+          "irregularity_percent": 35.70149741396064,
+          "iteration": 9,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Captures spatial-volume work shared across decoder paths."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Allows additional cached volume work to be fitted independently."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures fixed cache-dependent overhead."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (8 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+              "name": "cache_weighted_boundary",
+              "rationale": "Tests stronger cache dependence in nonlinear spatial work, including temporal convolution and rearrangement operations."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-010/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 32.901084615959434,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+          "hypothesis": "Fourfold boundary weighting was better than onefold, twofold, or eightfold weighting. Threefold weighting tests whether combining intermediate and final temporal scales better explains the remaining spatial instruction patterns.",
+          "irregularity_percent": 32.901084615959434,
+          "iteration": 10,
+          "outcome": "exhausted",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "latent_volume",
+              "rationale": "Captures spatial-volume work common to both cache regimes."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_latent_volume",
+              "rationale": "Allows an independent volume slope for cached execution."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "has_cached_features",
+              "rationale": "Captures fixed overhead from cache handling and temporal operations."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (3 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+              "name": "mixed_stage_boundary",
+              "rationale": "Approximates combined boundary work across stages with onefold, twofold, and fourfold temporal extent."
+            }
+          ]
+        }
+      ],
+      "case": "wan-014",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "809da3f64a987bd3ba6f9e443583137895446b96414c5e0c2546f4abbd544401",
+      "iterations": 10,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "exhausted",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed7e-bfb9-7683-b332-61afede24844",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 28.749205918488673,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is explained by spatial work, temporal-volume work, bottleneck attention pairs, and the fixed overhead of processing a populated feature cache.",
+          "irregularity_percent": 28.749205918488673,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+              "name": "spatial_sites",
+              "rationale": "Captures spatial convolution, padding, normalization, and cached-frame copying costs."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "input_sites",
+              "rationale": "Captures convolution and elementwise work that scales with the input chunk's temporal length."
+            },
+            {
+              "expression": "x.shape[0] * (x.shape[3] // 8) ** 2 * (x.shape[4] // 8) ** 2",
+              "name": "attention_pairs",
+              "rationale": "Captures quadratic spatial attention work at the encoder bottleneck, which has one temporal frame in this workload."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "warm_cache",
+              "rationale": "Distinguishes initial chunks from subsequent chunks with cached concatenations and temporal downsampling."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 38.94279022713213,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The state means are approximately linear in spatial area and temporal volume. Large unexplained variation within those states may reflect differing input-view layouts; channel stride exposes that entry-state distinction.",
+          "irregularity_percent": 38.94279022713213,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+              "name": "spatial_sites",
+              "rationale": "Models spatial convolution, normalization, padding, and cache-copy work."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "input_sites",
+              "rationale": "Models work proportional to the temporal chunk volume."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "warm_cache",
+              "rationale": "Models the additional operations performed with populated convolution caches."
+            },
+            {
+              "expression": "x.stride(1)",
+              "name": "channel_stride",
+              "rationale": "Distinguishes input views with identical shapes but different channel strides, exposing layout variation hidden by the previous state grouping."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 23.44710442000314,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "Input layout did not explain the residual. Separating initial and cached spatial work supplies direct predictors for mutually exclusive execution paths, while temporal perimeter accounts for convolution boundary costs.",
+          "irregularity_percent": 23.44710442000314,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_spatial_work",
+              "rationale": "Separately models spatial work on the initial-cache execution path."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_spatial_work",
+              "rationale": "Separately models spatial work on the populated-cache path, including its larger temporal chunks."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "warm_cache",
+              "rationale": "Captures fixed overhead from cache concatenations and temporal downsampling."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+              "name": "spatial_boundary_work",
+              "rationale": "Captures convolution padding and boundary work that scales with spatial perimeter rather than area."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 26.64553829192972,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "Separating spatial execution paths reduced irregularity. Independent area and perimeter predictors for each path should better explain their different convolution shapes and padding costs than a shared temporal-perimeter term.",
+          "irregularity_percent": 26.64553829192972,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_area",
+              "rationale": "Captures area-dependent work exclusively on the initial-cache path."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_area",
+              "rationale": "Captures area-dependent work exclusively on the populated-cache path."
+            },
+            {
+              "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_perimeter",
+              "rationale": "Allows initial-chunk convolution boundaries and padding to have an independent spatial scaling."
+            },
+            {
+              "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_perimeter",
+              "rationale": "Allows cached-chunk boundary work to scale independently of initial chunks."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 41.7056086896743,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "Observed instruction means closely follow separate affine functions of area for initial and cached chunks. Removing perimeter and attention terms should give a better-conditioned fit with three predictors.",
+          "irregularity_percent": 41.7056086896743,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+              "name": "initial_area",
+              "rationale": "Models spatially proportional computation for initial chunks."
+            },
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+              "name": "cached_area",
+              "rationale": "Models the larger spatially proportional computation for cached chunks."
+            },
+            {
+              "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+              "name": "warm_cache",
+              "rationale": "Allows an independent fixed cost for cached execution."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 5; need 6",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "Explicit shape regimes may capture kernel-dependent instruction costs missed by polynomial work estimates. The two remaining regimes\u2014medium initial chunks and small temporal chunks\u2014have similar observed total costs and share the fitted baseline.",
+          "irregularity_percent": null,
+          "iteration": 6,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] < 1024)",
+              "name": "initial_small_spatial",
+              "rationale": "Separates initial chunks below the medium spatial size into their own execution regime."
+            },
+            {
+              "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] > 1024)",
+              "name": "initial_large_spatial",
+              "rationale": "Separates large initial chunks, whose instruction scaling remains poorly explained by area."
+            },
+            {
+              "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+              "name": "temporal_medium_spatial",
+              "rationale": "Allows an independent cost for medium spatial inputs with multiple temporal frames."
+            },
+            {
+              "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+              "name": "temporal_large_spatial",
+              "rationale": "Allows an independent cost for large spatial inputs with multiple temporal frames."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-007/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 38.8765622178793,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+          "hypothesis": "This candidate retains six distinct states, correcting the previous validity failure. It models initial chunks with spatial area while allowing independent costs for all three multi-frame spatial regimes.",
+          "irregularity_percent": 38.8765622178793,
+          "iteration": 7,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] if x.shape[2] == 1 else 0",
+              "name": "initial_area",
+              "rationale": "Preserves distinct initial-chunk spatial states and models their approximately affine instruction growth."
+            },
+            {
+              "expression": "int(x.shape[2] > 1)",
+              "name": "temporal_chunk",
+              "rationale": "Provides a separate baseline for multi-frame chunks."
+            },
+            {
+              "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+              "name": "temporal_medium_spatial",
+              "rationale": "Captures the medium multi-frame execution regime independently."
+            },
+            {
+              "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+              "name": "temporal_large_spatial",
+              "rationale": "Captures the large multi-frame execution regime independently."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-008/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 58.51451850931816,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+          "hypothesis": "A populated-cache flag hides differences between the first continuation and later continuations. Actual cached element and frame cardinalities may explain variation that remains even with explicit input-shape regimes.",
+          "irregularity_percent": 58.51451850931816,
+          "iteration": 8,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+              "name": "spatial_sites",
+              "rationale": "Models spatial computation shared by all chunks."
+            },
+            {
+              "expression": "x.numel()",
+              "name": "input_sites",
+              "rationale": "Models computation proportional to input temporal volume."
+            },
+            {
+              "expression": "sum((v.numel() for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+              "name": "cached_elements",
+              "rationale": "Measures cached tensor volume using metadata, distinguishing partially filled histories from mature histories."
+            },
+            {
+              "expression": "sum((v.shape[2] for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+              "name": "cached_frames",
+              "rationale": "Captures cache occupancy and temporal history lengths that affect concatenation, padding, and short-history branches."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-009/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 83.33835973317522,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+          "hypothesis": "Detailed cache and categorical predictors increased irregularity. A compact model with one combined spatial-temporal work term and one execution-path offset may fit more robustly; the combined term gives multi-frame chunks three times the spatial work of initial chunks.",
+          "irregularity_percent": 83.33835973317522,
+          "iteration": 9,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "x.shape[0] * x.shape[3] * x.shape[4] * (2 * x.shape[2] + 1)",
+              "name": "effective_spatiotemporal_work",
+              "rationale": "Combines temporal work in the early encoder stages with spatial work in later stages into one predictor."
+            },
+            {
+              "expression": "int(x.shape[2] > 1)",
+              "name": "temporal_chunk",
+              "rationale": "Captures the additional fixed overhead of cached multi-frame execution."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-010/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 28.821004730730586,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+          "hypothesis": "The combined work predictor lost most explanatory power, suggesting separate kernel loop bounds are necessary. Independent area, temporal volume, spatial perimeter, and frame count restore these bounds without imposing proportionality between their costs.",
+          "irregularity_percent": 28.821004730730586,
+          "iteration": 10,
+          "outcome": "exhausted",
+          "pcvs": [
+            {
+              "expression": "x.shape[3] * x.shape[4]",
+              "name": "spatial_area",
+              "rationale": "Provides the direct spatial loop bound for convolution and elementwise kernels."
+            },
+            {
+              "expression": "x.shape[2] * x.shape[3] * x.shape[4]",
+              "name": "temporal_volume",
+              "rationale": "Provides an independent temporal-volume bound rather than imposing a shared coefficient with spatial work."
+            },
+            {
+              "expression": "x.shape[3] + x.shape[4]",
+              "name": "spatial_perimeter",
+              "rationale": "Models row traversal and padding boundaries independently of temporal length."
+            },
+            {
+              "expression": "x.shape[2]",
+              "name": "chunk_frames",
+              "rationale": "Models temporal loop overhead and distinguishes initial from continuation chunks."
+            }
+          ]
+        }
+      ],
+      "case": "wan-015",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "133a62d4e4508720f10ab2bd19a05c8f0fbceeb046cf23196a9867b8656cc261",
+      "iterations": 10,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "exhausted",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed89-4e48-78c3-979f-f9c17e28fa98",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 4.63518034648104,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by fixed operator overhead plus elementwise work, with a separate overhead for the noncontiguous channel chunk in multi-batch inputs.",
+          "irregularity_percent": 4.63518034648104,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "parameters.numel() // 2",
+              "name": "distribution_elements",
+              "rationale": "Counts elements processed by clamp, multiplication, and both exponentials."
+            },
+            {
+              "expression": "int(parameters.shape[0] > 1)",
+              "name": "strided_channel_chunk",
+              "rationale": "Captures additional tensor iteration setup when channel splitting produces a noncontiguous log-variance view across batches."
+            }
+          ]
+        }
+      ],
+      "case": "wan-016",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "6de9014b23c67762d4b9abc6ffc6a86e2f0c65195c5b442156048af89d8cce2e",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed89-c8ae-7470-8493-d0a3f08e137f",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 24.262399876684114,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction counts combine fixed overhead, token-linear projection and normalization costs, attention-pair costs, and fixed plus elementwise rotary costs.",
+          "irregularity_percent": 24.262399876684114,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])) * attn.inner_dim",
+              "name": "projection_elements",
+              "rationale": "Captures linear projection and normalization work across query and context tokens; model widths are fixed."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+              "name": "attention_pairs",
+              "rationale": "Captures attention matrix multiplication and softmax work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Captures elementwise rotary embedding work on the self-attention path."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed dispatch, slicing, allocation, and operator overhead from applying rotary embeddings."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 23.17231500963918,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The observed self-attention counts suggest a linear length cost plus a remainder penalty at nonmultiples of 16. Separate query and context slopes should also improve cross-attention predictions.",
+          "irregularity_percent": 23.17231500963918,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1]",
+              "name": "query_tokens",
+              "rationale": "Captures query projection, output projection, and attention work that grows with query length."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+              "name": "context_tokens",
+              "rationale": "Allows context projection and normalization costs to have a separate fitted slope."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures the substantial fixed overhead separating self-attention with rotary embeddings from cross-attention."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if rotary_emb is not None else 0",
+              "name": "rotary_tail",
+              "rationale": "Tests whether vectorized kernel remainder handling explains elevated self-attention costs at lengths 9, 18, and 27 relative to multiples of 16."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 25.702831588437757,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "Independent self-attention and cross-attention work estimates may explain their different scaling better than shared token slopes. Combining linear and quadratic work also captures increasing marginal cost at larger sequence lengths.",
+          "irregularity_percent": 25.702831588437757,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Separates fixed rotary operator overhead from the cross-attention baseline."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + 2 * attn.inner_dim) if encoder_hidden_states is None else 0",
+              "name": "self_attention_work",
+              "rationale": "Combines quadratic attention work with linear projection work, giving self-attention an independent fitted coefficient."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] * encoder_hidden_states.shape[1] + attn.inner_dim * (hidden_states.shape[1] + encoder_hidden_states.shape[1])) if encoder_hidden_states is not None else 0",
+              "name": "cross_attention_work",
+              "rationale": "Captures cross-attention pair work and query/context projection work independently of self-attention."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if encoder_hidden_states is None else 0",
+              "name": "self_attention_tail",
+              "rationale": "Retains a separate feature for the apparent self-attention remainder cost."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 25.52090535404941,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "Attention remainder work scales with query rows times the context-length remainder. Splitting vector blocks from scalar tails should better explain both short cross-attention contexts and the elevated self-attention count at length 27.",
+          "irregularity_percent": 25.52090535404941,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]))",
+              "name": "projection_tokens",
+              "rationale": "Captures projection and normalization work over query and context tokens."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) // 16)",
+              "name": "attention_vector_blocks",
+              "rationale": "Measures complete 16-element context blocks processed across attention rows."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+              "name": "attention_scalar_tail",
+              "rationale": "Measures remainder elements across every attention row, including short cross-attention contexts; scalar remainder costs can differ substantially from vectorized blocks."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed overhead from the rotary embedding path."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 17.56382557316771,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "Combining independent rotary elementwise work with attention remainder work may explain the residuals better than either previous model alone. For these short sequences, full vector-block attention work may be less important than these two costs.",
+          "irregularity_percent": 17.56382557316771,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * attn.inner_dim * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]))",
+              "name": "projection_elements",
+              "rationale": "Captures projection and normalization costs across query and context tokens."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Restores an independent linear cost for rotary operations, which the previous candidate omitted."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+              "name": "attention_tail_elements",
+              "rationale": "Captures scalar attention remainder work across all query rows, including short cross-attention contexts."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Separates fixed rotary dispatch and allocation overhead from its elementwise cost."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 21.34948594435258,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "Combining query and context sizes may leave their independently scaling operations unexplained. Separate query, context, and rotary element counts should capture these costs, while the fixed rotary indicator accounts for branch overhead.",
+          "irregularity_percent": 21.34948594435258,
+          "iteration": 6,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+              "name": "query_elements",
+              "rationale": "Separately exposes query and output projection work, rather than combining it with context length."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) * attn.inner_dim",
+              "name": "context_elements",
+              "rationale": "Separately exposes key/value projection and key normalization work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Captures the additional token-dependent work specific to rotary self-attention."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed rotary operator overhead independently of sequence length."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-007/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 13.585012865548398,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+          "hypothesis": "The best previous remainder model combined query and context lengths, obscuring query-row costs. Using query size directly alongside attention tails and both rotary terms should explain more of the cross-attention residual while preserving self-attention scaling.",
+          "irregularity_percent": 13.585012865548398,
+          "iteration": 7,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+              "name": "query_elements",
+              "rationale": "Exposes query-row work directly, including output projection and attention row overhead."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+              "name": "attention_tail_elements",
+              "rationale": "Captures attention remainder work, which was absent from the previous candidate and matters especially for short cross-attention contexts."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Captures additional elementwise work on the rotary path."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed rotary dispatch and allocation overhead."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-008/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 20.418227350557306,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+          "hypothesis": "Keeping direct query scaling while replacing remainder counts with complete attention-pair counts may explain additional matrix-multiplication work, particularly at length 48. This differs from iteration 1 by exposing query size independently of context size.",
+          "irregularity_percent": 20.418227350557306,
+          "iteration": 8,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+              "name": "query_elements",
+              "rationale": "Retains direct query-row scaling, which improved the previous result."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+              "name": "attention_pairs",
+              "rationale": "Captures the complete attention matrix, including work on full context blocks omitted by the remainder-only feature."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Captures token-dependent rotary work separately from shared query processing."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed rotary overhead."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-009/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 20.478540900792662,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+          "hypothesis": "Neither full attention pairs nor scalar tails sufficiently explain the largest cross-attention residual. Counting eight-element context tiles tests whether blocked kernel work, particularly the additional tile at context length 9, accounts for it.",
+          "irregularity_percent": 20.478540900792662,
+          "iteration": 9,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+              "name": "query_elements",
+              "rationale": "Captures query projection, output projection, and per-row attention work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) + 7) // 8)",
+              "name": "attention_context_tiles",
+              "rationale": "Tests attention work measured in eight-element context tiles, including partially filled tiles."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Captures token-dependent rotary work."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed rotary overhead."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-010/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 19.216821045951132,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+          "hypothesis": "Full attention-pair work and scalar remainder work may need simultaneous features. Replacing shared query size with the second attention feature tests whether their combined explanatory value outweighs the omitted query-linear costs.",
+          "irregularity_percent": 19.216821045951132,
+          "iteration": 10,
+          "outcome": "exhausted",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+              "name": "attention_pairs",
+              "rationale": "Captures attention matrix work across the complete context."
+            },
+            {
+              "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+              "name": "attention_tail_elements",
+              "rationale": "Separately captures scalar remainder work that complete attention-pair counts do not explain."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+              "name": "rotary_elements",
+              "rationale": "Retains independent linear scaling for the more expensive self-attention path."
+            },
+            {
+              "expression": "int(rotary_emb is not None)",
+              "name": "uses_rotary",
+              "rationale": "Captures fixed rotary overhead."
+            }
+          ]
+        }
+      ],
+      "case": "wan-017",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "5a88fdf3afe1d4609b190ce3d06e2b77ab3447299d9e116d33fc29528ab44145",
+      "iterations": 10,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "exhausted",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed91-d3e1-7792-9158-f675de052a43",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 6.137135078500203,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With fixed projection dimensions and single-threaded CPU execution, instruction count should be approximately affine in query and key/value element counts, with a small path-dependent overhead.",
+          "irregularity_percent": 6.137135078500203,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+              "name": "query_elements",
+              "rationale": "Tracks query projection and query RMS normalization work; projection widths are fixed in this workload."
+            },
+            {
+              "expression": "(hidden_states.shape[0] * hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]) * attn.kv_inner_dim",
+              "name": "key_value_elements",
+              "rationale": "Tracks both key/value projections and key RMS normalization using the effective encoder sequence length."
+            },
+            {
+              "expression": "int(encoder_hidden_states is not None)",
+              "name": "cross_attention",
+              "rationale": "Captures fixed overhead differences between self-attention and cross-attention entry paths."
+            }
+          ]
+        }
+      ],
+      "case": "wan-018",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "73e3c08f5f6cb1353c89266ff0ba73f318c2b800aa45ec3e69370c0a74537160",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed92-631b-74e1-99cc-9250399cb1c3",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 47.08100953439883,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With fixed head width and CPU execution settings, instruction count should be explained by a fixed dispatch cost plus attention-pair work and linear query/key/value processing.",
+          "irregularity_percent": 47.08100953439883,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks attention-score and softmax work across batches, heads, and query-key pairs; head width is fixed in this workload."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks query processing, per-query overhead, and output writes."
+            },
+            {
+              "expression": "key.numel() + value.numel()",
+              "name": "key_value_elements",
+              "rationale": "Tracks key/value preparation and memory work as self-attention and cross-attention lengths vary."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.834629278066036,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "CPU attention has substantial per-row scalar tail costs for key lengths not divisible by 16. Adding query-weighted remainder work should explain the nonlinear differences missed by total tensor sizes.",
+          "irregularity_percent": 27.834629278066036,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks total attention matrix arithmetic."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks per-query processing and output work."
+            },
+            {
+              "expression": "key.numel() + value.numel()",
+              "name": "key_value_elements",
+              "rationale": "Tracks key/value preparation and memory work."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "scalar_tail_pairs",
+              "rationale": "Captures scalar remainder processing after 16-element vector blocks; lengths 9 and 27 have disproportionately high instruction counts compared with aligned lengths."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.400818086427627,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "The remaining underprediction grows with query length, including for aligned key lengths. A quadratic query term may capture this growth better than the linear key/value term while retaining the observed key-tail effect.",
+          "irregularity_percent": 27.400818086427627,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks attention matrix arithmetic."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear per-query processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] ** 2",
+              "name": "quadratic_query_work",
+              "rationale": "Tests the additional nonlinear growth with query length visible in both self-attention and cross-attention."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "scalar_tail_pairs",
+              "rationale": "Retains the remainder feature that reduced irregularity from 47.1% to 27.8%."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.099494514907445,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "The remaining growth may reflect discrete query blocking rather than quadratic query work. A 32-row tile count captures the extra block at length 48 while preserving linear, pairwise, and key-remainder costs.",
+          "irregularity_percent": 27.099494514907445,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks attention matrix arithmetic."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks per-query processing and output work."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "scalar_tail_pairs",
+              "rationale": "Tracks scalar remainder processing along the key dimension."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+              "name": "query_tiles",
+              "rationale": "Models per-tile overhead for 32-row CPU attention blocks, including the additional block at query length 48."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 28.04192353122017,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "The nearly zero fitted attention-pair coefficient suggests total pair count does not adequately describe individual matrix-kernel paths. Modeling remainders on both matrix axes may explain work that key remainders and query-tile overhead alone missed.",
+          "irregularity_percent": 28.04192353122017,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks total attention matrix work."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear query and output processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "key_tail_pairs",
+              "rationale": "Captures remainder work along the key dimension."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * (query.shape[1] % 16) * key.shape[1]",
+              "name": "query_tail_pairs",
+              "rationale": "Captures matrix-kernel remainder work along the query dimension, allowing full vector blocks and partial blocks to have different fitted costs."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.179076907066296,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "Matrix-kernel work may scale with the product of rounded tile counts. This captures a joint boundary effect that separate linear remainder terms cannot represent, while retaining scalar key-tail and query-block costs.",
+          "irregularity_percent": 27.179076907066296,
+          "iteration": 6,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear query and output processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "key_tail_pairs",
+              "rationale": "Retains the key-remainder feature that substantially reduced unexplained work."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 15) // 16) * ((key.shape[1] + 15) // 16)",
+              "name": "matrix_tiles",
+              "rationale": "Tests matrix multiplication work counted in full or partial 16-by-16 tiles instead of individual attention pairs."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+              "name": "query_tiles",
+              "rationale": "Tracks setup and dispatch work for 32-row query blocks."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-007/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.769655161272084,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+          "hypothesis": "The remaining work may follow products of block counts and remainders rather than rounded matrix area. These features distinguish complete query-block processing from per-row key-tail processing.",
+          "irregularity_percent": 27.769655161272084,
+          "iteration": 7,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear query and output processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "key_tail_pairs",
+              "rationale": "Tracks key-axis scalar remainder work across all query rows."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * key.shape[1]",
+              "name": "query_blocks_times_keys",
+              "rationale": "Tests matrix-kernel loops operating on complete eight-row query blocks."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * (key.shape[1] % 16)",
+              "name": "query_blocks_times_key_tail",
+              "rationale": "Captures the interaction between complete query blocks and partial key vectors, which separate remainder features cannot express."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-008/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 28.128221749343354,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+          "hypothesis": "A second key-axis blocking period may explain the work left unresolved by 16-element vector remainders. The six-column remainder tests this independently of the unsuccessful query-axis tiling features.",
+          "irregularity_percent": 28.128221749343354,
+          "iteration": 8,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+              "name": "attention_pairs",
+              "rationale": "Tracks total attention arithmetic."
+            },
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear query and output processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "key_vector_remainder",
+              "rationale": "Tracks the observed sensitivity to key lengths outside complete 16-element vectors."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 6)",
+              "name": "key_microkernel_remainder",
+              "rationale": "Tests a separate six-column matrix-multiplication blocking effect, allowing matrix kernels and softmax to use different block widths."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-009/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 28.165896532781854,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+          "hypothesis": "Two unresolved effects may be mixed: an eight-element cleanup path within 16-element vector remainders, and key processing repeated per query block. These features test both directly.",
+          "irregularity_percent": 28.165896532781854,
+          "iteration": 9,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "query.numel()",
+              "name": "query_elements",
+              "rationale": "Tracks linear query and output processing."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "key_remainder_16",
+              "rationale": "Tracks remainder processing after full 16-element key vectors."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 8)",
+              "name": "key_remainder_8",
+              "rationale": "Tests whether eight-element vectors handle part of the 16-element remainder, leaving a separate scalar tail."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32) * key.shape[1]",
+              "name": "keys_per_query_block",
+              "rationale": "Tracks key processing repeated for each 32-row query block, including the interaction omitted by a standalone query-block count."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-010/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 27.84440943268825,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+          "hypothesis": "Explicit loop-trip counts may explain instruction paths better than total pair counts. This candidate separates full-vector iterations, scalar remainder iterations, per-row work, and key/value preparation.",
+          "irregularity_percent": 27.84440943268825,
+          "iteration": 10,
+          "outcome": "exhausted",
+          "pcvs": [
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1]",
+              "name": "query_rows",
+              "rationale": "Counts per-head query rows directly."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] // 16)",
+              "name": "full_key_vectors",
+              "rationale": "Directly counts complete 16-element key-vector iterations instead of requiring their reconstruction from total pairs and remainders."
+            },
+            {
+              "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+              "name": "scalar_key_elements",
+              "rationale": "Counts remaining key elements processed for each query row."
+            },
+            {
+              "expression": "key.numel() + value.numel()",
+              "name": "key_value_elements",
+              "rationale": "Tracks key/value preparation independently of query-row processing."
+            }
+          ]
+        }
+      ],
+      "case": "wan-019",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "a74487487c642fe4275bdcfa02bb98f8966583ee5eac5e976522509b7e5751eb",
+      "iterations": 10,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "exhausted",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9a-07c1-7543-b4ab-ca347a471316",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 5.503519216784547,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a fixed per-call overhead plus a linear term in attention-output elements; the workload fixes projection width and disables image addition and dropout.",
+          "irregularity_percent": 5.503519216784547,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "hidden_states.numel()",
+              "name": "output_elements",
+              "rationale": "With fixed projection dimensions, tensor flattening or copying and the output linear projection scale with the number of attention-output elements. Evaluation-mode dropout adds only fixed overhead."
+            }
+          ]
+        }
+      ],
+      "case": "wan-020",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "923482999621e619de756443771491091d4247f7e1a8724ce007b5c0724aa10d",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9a-873e-76a0-ba86-6ca5fc3bdb3a",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 1.5920093747792505,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is primarily fixed tensor-operation overhead plus work proportional to the materialized rotary embeddings, with a possible separate cost for singleton temporal layouts.",
+          "irregularity_percent": 1.5920093747792505,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[2] // self.patch_size[0] * (hidden_states.shape[3] // self.patch_size[1]) * (hidden_states.shape[4] // self.patch_size[2]) * self.attention_head_dim",
+              "name": "rotary_output_elements",
+              "rationale": "Tracks the elements materialized by each cosine and sine concatenation; slicing, views, and expansion otherwise have mostly fixed overhead."
+            },
+            {
+              "expression": "int(hidden_states.shape[2] // self.patch_size[0] == 1)",
+              "name": "singleton_temporal_axis",
+              "rationale": "Captures changes in broadcast strides and concatenation iteration when the temporal axis is a singleton."
+            }
+          ]
+        }
+      ],
+      "case": "wan-021",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "c411a85c82ed43a90b1121a15763975b8e28e430eaacb0efc01d9660b911c2e1",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9b-06e6-7f62-9f5f-da1e3ad09631",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.9447182023998478,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a constant timestep and dispatch cost plus a linear term in text tensor size.",
+          "irregularity_percent": 0.9447182023998478,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "encoder_hidden_states.numel()",
+              "name": "text_elements",
+              "rationale": "Text projection and activation work scales with text elements because the model widths are fixed. Timestep processing is constant across this workload, and image embedding is absent."
+            }
+          ]
+        }
+      ],
+      "case": "wan-022",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "4ff3f27d7a79054f81f6b9070bf5f8e8e289af5383470984c3ba5f43eae0b967",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9b-8bc6-7863-b3d8-4ae8a1a6b5a0",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 14.992625431213302,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With model dimensions and layer count fixed, instruction count should follow constant overhead plus linear video and text processing, quadratic self-attention, and video-by-text cross-attention.",
+          "irregularity_percent": 14.992625431213302,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+              "name": "video_tokens",
+              "rationale": "Tracks patch embedding, projections, normalization, feed-forward operations, and output reconstruction for the fixed model."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+              "name": "self_attention_pairs",
+              "rationale": "Tracks quadratic self-attention work."
+            },
+            {
+              "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+              "name": "text_tokens",
+              "rationale": "Tracks text embedding and cross-attention key/value projections."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+              "name": "cross_attention_pairs",
+              "rationale": "Tracks cross-attention work over video queries and text keys."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 15.617066495321094,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The previous shape model leaves substantial unexplained work at every state. Runtime initialization may distinguish repetitions of identical shapes; loaded-module cardinality tests this while retaining the main computational scaling terms.",
+          "irregularity_percent": 15.617066495321094,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+              "name": "video_tokens",
+              "rationale": "Tracks linear video processing for the fixed model."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+              "name": "self_attention_pairs",
+              "rationale": "Tracks quadratic self-attention work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+              "name": "cross_attention_pairs",
+              "rationale": "Tracks attention work involving the variable text context."
+            },
+            {
+              "expression": "len(__import__('sys').modules)",
+              "name": "loaded_modules",
+              "rationale": "Cheap cardinality of existing runtime state that may distinguish lazy initialization from warmed execution across repeated shapes."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 6.725913991763874,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "Loaded-module cardinality was constant. This candidate tests whether separate temporal geometry explains costs omitted by total token count and attention-pair counts, while restoring the independent text-processing term.",
+          "irregularity_percent": 6.725913991763874,
+          "iteration": 3,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+              "name": "video_tokens",
+              "rationale": "Tracks linear projection, normalization, feed-forward, and reconstruction work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+              "name": "self_attention_pairs",
+              "rationale": "Tracks quadratic self-attention work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0])",
+              "name": "frame_planes",
+              "rationale": "Captures frame-dependent convolution and tensor traversal costs that total token count does not distinguish."
+            },
+            {
+              "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+              "name": "text_tokens",
+              "rationale": "Tracks variable text embedding and key/value projection work."
+            }
+          ]
+        }
+      ],
+      "case": "wan-023",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "12f7610a1b27e9e14262b3a170984e9b3395299b9cf48cd248beac0e979d56ba",
+      "iterations": 3,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9e-09da-7c00-8175-9bbcae3bc1bc",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 10.614283380361252,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With fixed model dimensions and execution branches, instruction count is approximately a constant overhead plus linear hidden and encoder processing and the self-attention and cross-attention interaction costs.",
+          "irregularity_percent": 10.614283380361252,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.numel()",
+              "name": "hidden_elements",
+              "rationale": "Captures tokenwise normalization, modulation, projections, and feed-forward work at fixed model dimensions."
+            },
+            {
+              "expression": "encoder_hidden_states.numel()",
+              "name": "encoder_elements",
+              "rationale": "Captures cross-attention key/value projections and key normalization."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] ** 2 * hidden_states.shape[2]",
+              "name": "self_attention_work",
+              "rationale": "Captures quadratic self-attention score and value aggregation work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * encoder_hidden_states.shape[1] * hidden_states.shape[2]",
+              "name": "cross_attention_work",
+              "rationale": "Captures cross-attention work proportional to video tokens times conditioning tokens."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 10.090402949748473,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The higher instruction count at 27 tokens than at 32 suggests CPU kernel alignment costs. Combining attention interactions frees a feature to capture token tile remainders and may reduce the previous 10.61% irregularity.",
+          "irregularity_percent": 10.090402949748473,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "hidden_states.numel()",
+              "name": "hidden_elements",
+              "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+            },
+            {
+              "expression": "encoder_hidden_states.numel()",
+              "name": "encoder_elements",
+              "rationale": "Captures conditioning key/value projections and normalization."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+              "name": "attention_work",
+              "rationale": "Combines self-attention and cross-attention interaction work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16)",
+              "name": "token_tile_remainder",
+              "rationale": "Models CPU kernel remainder handling that can make unaligned token counts more expensive than nearby aligned counts."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 9.162603023651688,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "The sixteen-token remainder feature reduced irregularity to 10.09%. Testing eight-token granularity may better explain CPU kernel tail costs, particularly the different behavior of 18 and 27 tokens, while retaining the main processing and attention terms.",
+          "irregularity_percent": 9.162603023651688,
+          "iteration": 3,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "hidden_states.numel()",
+              "name": "hidden_elements",
+              "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+            },
+            {
+              "expression": "encoder_hidden_states.numel()",
+              "name": "encoder_elements",
+              "rationale": "Captures conditioning key/value projections and normalization."
+            },
+            {
+              "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+              "name": "attention_work",
+              "rationale": "Captures combined self-attention and cross-attention interaction work."
+            },
+            {
+              "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 8)",
+              "name": "token_tile_remainder",
+              "rationale": "Captures remainder handling for eight-token CPU kernel tiles."
+            }
+          ]
+        }
+      ],
+      "case": "wan-024",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "9e9db6b65c85c9f5e43f7675aa549ef9f2429cf8375c73fd3ac84f6265d51ffe",
+      "iterations": 3,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0ed9f-f949-7b11-9fe4-02cc6fe2da05",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 17.040900640285034,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count should be approximately fixed setup cost plus per-step cost and per-step text-token cost, since this workload supplies embeddings directly and returns latents without VAE decoding.",
+          "irregularity_percent": 17.040900640285034,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "num_inference_steps",
+              "name": "denoising_steps",
+              "rationale": "Each step repeats two transformer calls, classifier-free guidance, and a scheduler update; latent dimensions and model configuration are fixed in this workload."
+            },
+            {
+              "expression": "num_inference_steps * prompt_embeds.shape[1]",
+              "name": "step_text_tokens",
+              "rationale": "Text projection and cross-attention work scale with the supplied embedding sequence length on every denoising step."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 8.96085906139225,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The substantial unexplained work across repeated identical input shapes suggests runtime initialization effects. Loaded-module cardinality and its interaction with step count may distinguish these regimes while retaining the main workload scaling terms.",
+          "irregularity_percent": 8.96085906139225,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "num_inference_steps",
+              "name": "denoising_steps",
+              "rationale": "Captures repeated transformer and scheduler work."
+            },
+            {
+              "expression": "num_inference_steps * prompt_embeds.shape[1]",
+              "name": "step_text_tokens",
+              "rationale": "Captures sequence-length-dependent work within each denoising step."
+            },
+            {
+              "expression": "len(__import__('sys').modules)",
+              "name": "loaded_modules",
+              "rationale": "Cheap runtime-state cardinality that may distinguish library initialization regimes across repeated pipeline runs."
+            },
+            {
+              "expression": "num_inference_steps * len(__import__('sys').modules)",
+              "name": "steps_loaded_modules",
+              "rationale": "Allows per-step instruction cost to vary with the observable library initialization regime."
+            }
+          ]
+        }
+      ],
+      "case": "wan-025",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "27359e61ef134af714c23c0befcb1d3a221123d691a7f2d9347de7190de65960",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda1-7f20-70e1-bbe3-cb1b2d4813bf",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 15.815992566985079,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by fixed transformer overhead plus work proportional to text length, with an additional cost when the scheduler initializes its step index.",
+          "irregularity_percent": 15.815992566985079,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "text_length",
+              "rationale": "Tracks text projection and cross-attention work in both transformer calls; latent dimensions and model size are fixed."
+            },
+            {
+              "expression": "int(self.scheduler.step_index is None)",
+              "name": "scheduler_initialization",
+              "rationale": "Captures scheduler initialization performed on the first denoising step of each pipeline call."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 39.33769590858765,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The similar unexplained instruction share across text lengths suggests runtime overhead beyond tensor dimensions. Cheap garbage-collector entry state may explain variation caused by collections during the marked region.",
+          "irregularity_percent": 39.33769590858765,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "text_length",
+              "rationale": "Tracks text projection and cross-attention work."
+            },
+            {
+              "expression": "int(self.scheduler.step_index is None)",
+              "name": "scheduler_initialization",
+              "rationale": "Separates scheduler initialization from subsequent steps."
+            },
+            {
+              "expression": "__import__('gc').get_count()[0]",
+              "name": "gc_allocation_pressure",
+              "rationale": "Measures entry-state allocation pressure that can affect collection work during transformer execution."
+            },
+            {
+              "expression": "__import__('gc').get_count()[1]",
+              "name": "gc_older_generation_pressure",
+              "rationale": "Tracks progress toward more costly older-generation garbage collection."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 5.531316917545084,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "Text length alone captures the repeatable workload variation. Scheduler initialization has a small fitted effect, while garbage-collector state did not explain the observed overhead; removing both may improve the measured irregularity.",
+          "irregularity_percent": 5.531316917545084,
+          "iteration": 3,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "text_length",
+              "rationale": "The three text lengths determine the varying text-projection and cross-attention workload; latent shape, model size, and guidance are fixed."
+            }
+          ]
+        }
+      ],
+      "case": "wan-026",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "39be52c5c8b8b33c748dd1ce77571405e796a315d8b13bdd0fa573c1ad6905ca",
+      "iterations": 3,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda3-dd82-7301-90f0-9acda3dd8061",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.555112631657252,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a fixed transformer and guidance cost plus a term linear in negative-prompt embedding size.",
+          "irregularity_percent": 0.555112631657252,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "negative_prompt_embeds.numel()",
+              "name": "negative_text_elements",
+              "rationale": "Cheap tensor metadata captures the varying text length and batch size driving unconditional text projections and cross-attention; latent dimensions and model architecture are fixed in this workload."
+            }
+          ]
+        }
+      ],
+      "case": "wan-027",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "19f33622f7a91384b10c007f734fa661c7d9db9b13e6cc1db1cb400706e579ca",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda4-7b72-7c91-bf2e-e256f490c72f",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 1; need 3",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Decoding and postprocessing dominate the region and perform approximately constant work for the identical latent shapes in this workload, independently of prompt length and denoising step count.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "latents.numel()",
+              "name": "latent_elements",
+              "rationale": "Cheap tensor metadata measures the input volume for latent normalization and VAE decoding. The fixed workload uses identical latent shapes and output formats across calls."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.8978128837409985,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The fixed latent shape and output format make region work nearly constant. Prompt sequence length distinguishes the required state points, with an expected near-zero fitted slope.",
+          "irregularity_percent": 0.8978128837409985,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "prompt_sequence_length",
+              "rationale": "Cheap entry-state metadata provides three distinct workload states (4, 8, and 12), allowing validation of whether decoding instruction counts remain constant across prompt configurations."
+            }
+          ]
+        }
+      ],
+      "case": "wan-028",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "1b581ee196a096aa7f87383abc9125d003ab08e909e34af5f987fd97b404fa6f",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda6-16c2-74b3-8a43-72f3f432b3ce",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 1; need 3",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately constant across this workload; text length and denoising step count do not change the work within each region invocation.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "latents.shape[0] * (latents.shape[2] * ((latents.shape[3] + 1) // 2) * ((latents.shape[4] + 1) // 2) if self.config.expand_timesteps else 1)",
+              "name": "timestep_elements",
+              "rationale": "The fixture keeps expansion disabled, batch size fixed, and latent dtype equal to transformer dtype, so the region performs a dtype-preserving conversion and a fixed-size expand with approximately constant instruction count."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The previous measurement pooled all 39 calls into one state. Grouping by prompt sequence length should provide sufficient state points while retaining an approximately constant instruction-count model.",
+          "irregularity_percent": 0.0,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "prompt_sequence_length",
+              "rationale": "Provides three distinct entry states (4, 8, and 12) for validating the approximately constant region cost across prompt configurations. Its fitted effect is expected to be small."
+            }
+          ]
+        }
+      ],
+      "case": "wan-029",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "9d32790b8cd59b63dd4bc6c3ba0f173e4fe2ad571dae306802a33f55ffaf1ab9",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda6-fab1-70d0-b7e0-1f831aa4d567",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 1; need 3",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately fixed dispatch and allocation overhead plus a linear term in tensor elements. The fixture uses a constant tensor shape, so counts should be nearly constant across entries.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "noise_pred.numel()",
+              "name": "noise_elements",
+              "rationale": "The region performs subtraction, scalar multiplication, and addition over the noise tensor; its element count captures the arithmetic work."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 3; need 4",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "The region's cost should remain approximately constant across conditioning lengths because its tensor sizes are unchanged. Conditioning length distinguishes existing workload states so Dr. Perf can evaluate that hypothesis.",
+          "irregularity_percent": null,
+          "iteration": 2,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "noise_pred.numel()",
+              "name": "noise_elements",
+              "rationale": "Captures the elementwise arithmetic workload, which is constant in this fixture."
+            },
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "conditioning_length",
+              "rationale": "Provides three distinct entry states from the conditioning lengths exercised by the fixed workload, allowing comparison of the otherwise constant arithmetic cost across execution contexts."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "With tensor size fixed, instruction count is approximately constant across conditioning lengths; observed state means differ by less than 0.2%. One predictor should satisfy the three-state requirement.",
+          "irregularity_percent": 0.0,
+          "iteration": 3,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "prompt_embeds.shape[1]",
+              "name": "conditioning_length",
+              "rationale": "Distinguishes three observed execution contexts with nearly constant instruction counts. Removing the constant tensor-size feature leaves three states for one predictor."
+            }
+          ]
+        }
+      ],
+      "case": "wan-030",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "c130dcedd92a3b272e4f896320f2a09cb12ec4516ca9d67ef9acf4383abc38ce",
+      "iterations": 3,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0eda8-272c-79a0-810e-f29df6f85f12",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 32.7203145289216,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is explained by per-prompt overhead, linear padded-token processing, quadratic attention work, and input text length.",
+          "irregularity_percent": 32.7203145289216,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt cleaning, tokenization, slicing, and padding overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Models encoder projections and elementwise work on padded tokens."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+              "name": "attention_pairs",
+              "rationale": "Models quadratic attention and relative-position processing."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Captures text-dependent cleaning and tokenizer work using cheap string lengths."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 34.1891213460479,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Runtime initialization contributes more variation than quadratic attention at these small sequence lengths. Loaded-module cardinality may distinguish initialization regimes that input dimensions alone cannot explain.",
+          "irregularity_percent": 34.1891213460479,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "len(__import__('sys').modules)",
+              "name": "loaded_modules",
+              "rationale": "Measures existing runtime initialization state cheaply; repeated calls with identical dimensions showed substantial unexplained variation consistent with warmup."
+            },
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer and embedding reconstruction overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Captures padded encoder processing and tensor operations."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Captures cleaning and tokenization work while retaining distinct prompt states."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 34.22149212202388,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "Loaded-module cardinality was constant and could not explain the variation. Existing source-cache cardinality tests a different runtime initialization state that can change without additional imports.",
+          "irregularity_percent": 34.22149212202388,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0",
+              "name": "source_cache_entries",
+              "rationale": "Tests whether populated runtime source caches distinguish warmup states; reads an existing cache without loading source files."
+            },
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Models per-prompt cleaning, tokenization, and embedding reconstruction."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Models encoder and tensor processing over padded sequences."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Models text processing and preserves distinctions between positive and negative prompts."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 12.147983827317264,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "Regex compilation cache state may explain prompt-cleaning warmup costs that module and source-cache cardinalities did not capture.",
+          "irregularity_percent": 12.147983827317264,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "len(re._main._cache)",
+              "name": "regex_cache_entries",
+              "rationale": "Reads existing regex compilation cache cardinality to distinguish cold and warmed text processing."
+            },
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt cleaning, tokenization, and embedding reconstruction overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Models encoder processing over padded sequences."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Captures input-dependent cleaning and tokenization work."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 12.031889733962473,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "Cache state substantially improved the previous result. Encoding its observed cold-to-warm transition as a binary feature should improve numerical conditioning while preserving the same explanatory information.",
+          "irregularity_percent": 12.031889733962473,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "int(len(re._main._cache) < 15)",
+              "name": "regex_cache_cold",
+              "rationale": "The observed cache grows from 14 to 15 entries during the first call. A binary cold-cache feature represents that transition without a large constant offset."
+            },
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt cleaning, tokenization, and embedding reconstruction overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Models encoder processing over padded sequences."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Captures input-dependent cleaning and tokenization work."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 3.369292539996445,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "Retaining the useful cold-cache feature while restoring quadratic attention work should better explain sequence-length costs. Text length had a small fitted contribution compared with encoder and runtime overhead.",
+          "irregularity_percent": 3.369292539996445,
+          "iteration": 6,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "int(len(re._main._cache) < 15)",
+              "name": "regex_cache_cold",
+              "rationale": "Captures the observed first-call regex compilation transition."
+            },
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Models per-prompt tokenization and embedding reconstruction overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "token_positions",
+              "rationale": "Models linear encoder and tensor processing over padded tokens."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+              "name": "attention_pairs",
+              "rationale": "Models quadratic attention work and sequence-length curvature omitted by the previous candidate."
+            }
+          ]
+        }
+      ],
+      "case": "wan-031",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "fddc047f7f9267b71c7fbce739fac243e934efaa850fcdec3c9c73e857561b14",
+      "iterations": 6,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edad-e0f0-7af3-af92-1007614b29e3",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 68.16837062608087,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately linear in the number of prompts, total characters, and whitespace substitutions.",
+          "irregularity_percent": 68.16837062608087,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "len(prompt)",
+              "name": "prompt_count",
+              "rationale": "Captures per-string cleaning calls and list construction overhead."
+            },
+            {
+              "expression": "sum((len(u) for u in prompt))",
+              "name": "total_characters",
+              "rationale": "Captures length-dependent scanning in text repair, HTML unescaping, and whitespace normalization."
+            },
+            {
+              "expression": "sum((u.count(' ') for u in prompt))",
+              "name": "space_count",
+              "rationale": "Captures whitespace matches and substitutions for the supplied ASCII prompts."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 2.6102841513693726,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Regex cache state may distinguish compilation and initialization costs from warmed calls, while prompt dimensions explain steady-state cleaning work.",
+          "irregularity_percent": 2.6102841513693726,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "len(prompt)",
+              "name": "prompt_count",
+              "rationale": "Captures fixed cleaning overhead per prompt."
+            },
+            {
+              "expression": "sum((len(u) for u in prompt))",
+              "name": "total_characters",
+              "rationale": "Captures text scanning work."
+            },
+            {
+              "expression": "sum((u.count(' ') for u in prompt))",
+              "name": "space_count",
+              "rationale": "Captures whitespace substitution work."
+            },
+            {
+              "expression": "len(getattr(re, '_main', getattr(re, 'regex', None))._cache)",
+              "name": "regex_cache_size",
+              "rationale": "Captures entry-time regex cache state without accessing dunder attributes."
+            }
+          ]
+        }
+      ],
+      "case": "wan-032",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "d8e444a7f6e029976e7efb808a0ee2fe1c891b05f96c311dda65eae8a9f34b6d",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edae-ecab-7610-908d-af6e94e6e697",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 5; need 6",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by fixed encoder overhead, per-prompt tokenization, linear padded-token processing, and quadratic attention and relative-position operations.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer operations and batch-dependent encoder overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Tracks linear encoder, padding, and mask work."
+            },
+            {
+              "expression": "batch_size * max_sequence_length ** 2",
+              "name": "attention_elements",
+              "rationale": "Tracks quadratic self-attention work."
+            },
+            {
+              "expression": "max_sequence_length ** 2",
+              "name": "position_pairs",
+              "rationale": "Captures relative-position bias construction shared across the batch."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 18.343258652438738,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Adding prompt character count separates enough entry states for validation while retaining the dominant batch and sequence-size predictors. The previous measurements suggest shape-dependent variation is small relative to fixed encoder overhead.",
+          "irregularity_percent": 18.343258652438738,
+          "iteration": 2,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer and encoder overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Tracks linear tensor processing."
+            },
+            {
+              "expression": "batch_size * max_sequence_length ** 2",
+              "name": "attention_elements",
+              "rationale": "Tracks quadratic attention processing."
+            },
+            {
+              "expression": "sum((len(text) for text in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Cheap string lengths approximate tokenizer input processing and distinguish prompts sharing the same padded tensor shape."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-003/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 19.62697602507666,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+          "hypothesis": "The substantial unexplained work across repeated identical input states suggests runtime initialization contributes beyond tensor dimensions. Loaded-module cardinality may distinguish initialization regimes, including the unusually costly red-kite state.",
+          "irregularity_percent": 19.62697602507666,
+          "iteration": 3,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer and encoder overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Tracks encoder tensor-processing volume."
+            },
+            {
+              "expression": "sum((len(text) for text in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Approximates tokenizer input work and distinguishes prompts with identical padded shapes."
+            },
+            {
+              "expression": "len(__import__('sys').modules)",
+              "name": "loaded_modules",
+              "rationale": "Cheap runtime entry state that can distinguish library initialization regimes involving lazy imports."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-004/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 19.45057052025854,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+          "hypothesis": "Loaded-module cardinality was constant. Model-local initialization may explain the elevated first prompt and repeated-state variability, so this candidate tests entry-state cardinality on the encoder and its stack.",
+          "irregularity_percent": 19.45057052025854,
+          "iteration": 4,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Tracks linear encoder processing."
+            },
+            {
+              "expression": "sum((len(text) for text in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Approximates tokenizer work and separates prompts with equal tensor dimensions."
+            },
+            {
+              "expression": "len(self.text_encoder.__dict__) + len(self.text_encoder.encoder.__dict__)",
+              "name": "encoder_state_size",
+              "rationale": "Cheap cardinality of model runtime state may distinguish lazy per-instance initialization that loaded-module cardinality did not capture."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-005/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 19.320960226490776,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+          "hypothesis": "Source-cache cardinality may distinguish cache-warming regimes that module count and encoder attribute count could not separate.",
+          "irregularity_percent": 19.320960226490776,
+          "iteration": 5,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenizer and encoder overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Tracks linear tensor-processing work."
+            },
+            {
+              "expression": "sum((len(text) for text in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Approximates tokenizer input work and distinguishes equal-shape prompts."
+            },
+            {
+              "expression": "len(__import__('sys').modules['linecache'].cache) if 'linecache' in __import__('sys').modules else 0",
+              "name": "source_cache_entries",
+              "rationale": "Reads existing runtime cache cardinality without importing linecache or accessing files."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-006/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 8.947147771802642,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+          "hypothesis": "A simpler two-feature model avoids redundant predictors and requires fewer distinct states. The five observed batch-and-length configurations should support validation, while prompt-content costs appear small for most measurements.",
+          "irregularity_percent": 8.947147771802642,
+          "iteration": 6,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Captures tokenizer operations repeated for each prompt and batch-dependent encoder overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Captures the principal variable tensor-processing work for this small fixed encoder."
+            }
+          ]
+        }
+      ],
+      "case": "wan-033",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "a9b5db5abd9f157a11666922e5bfb352229008463251da0d1d8b6d9004cad2de",
+      "iterations": 6,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb4-4a0e-75d3-9b49-c8d6351a154d",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.2950369206684584,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is dominated by fixed operation overhead, per-prompt tensor operations, and a smaller contribution proportional to the padded embedding volume.",
+          "irregularity_percent": 0.2950369206684584,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "batch_size",
+              "name": "batch_size",
+              "rationale": "Tracks per-prompt slicing, zero allocation, concatenation, and tensor iteration overhead."
+            },
+            {
+              "expression": "batch_size * max_sequence_length * prompt_embeds.shape[2]",
+              "name": "embedding_elements",
+              "rationale": "Tracks the tensor volume processed by padding, concatenation, stacking, and repetition in the fixed workload."
+            }
+          ]
+        }
+      ],
+      "case": "wan-034",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "d390b68f4721e5cc5f81b9f6b1a8a4fb2f2725329ac62c7f3f084221f9e4ef85",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb4-ca68-7e81-9aa0-637b31d6faea",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": null,
+            "reasons": [
+              "insufficient state points: 5; need 6",
+              "Dr. Perf did not produce an irregularity value"
+            ],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": false
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With two encoder calls per invocation and fixed model dimensions, instruction count is primarily explained by per-prompt overhead, padded token volume, batched attention size, and shared relative-position work.",
+          "irregularity_percent": null,
+          "iteration": 1,
+          "outcome": "invalid",
+          "pcvs": [
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt cleaning, tokenization, slicing, and padding overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Models encoder projections, feed-forward computation, and embedding copies."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+              "name": "attention_elements",
+              "rationale": "Models quadratic attention computation across the batch."
+            },
+            {
+              "expression": "max_sequence_length ** 2",
+              "name": "position_pairs",
+              "rationale": "Captures relative-position bias construction shared across batch elements."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 7.9844312815755725,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Measured instruction counts vary only modestly with tensor dimensions. Per-prompt overhead, padded token volume, and input text length should explain that variation while distinguishing all six workload states with three features.",
+          "irregularity_percent": 7.9844312815755725,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "1 if isinstance(prompt, str) else len(prompt)",
+              "name": "batch_size",
+              "rationale": "Captures per-prompt tokenization, cleaning, and tensor assembly overhead."
+            },
+            {
+              "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+              "name": "padded_tokens",
+              "rationale": "Captures encoder and embedding work proportional to padded token volume."
+            },
+            {
+              "expression": "len(prompt) if isinstance(prompt, str) else sum((len(text) for text in prompt))",
+              "name": "prompt_characters",
+              "rationale": "Captures text-processing work and distinguishes the two workloads with identical batch size and sequence length."
+            }
+          ]
+        }
+      ],
+      "case": "wan-035",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "4feecb9cffd2264d9024147562469be33918af9922ef0218791ad864e5b41715",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb6-2819-7041-a10a-4dda4780d633",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 14.268704431649512,
+            "reasons": [],
+            "success": false,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately a fixed setup cost plus a linear cost per generated float32 element.",
+          "irregularity_percent": 14.268704431649512,
+          "iteration": 1,
+          "outcome": "retry",
+          "pcvs": [
+            {
+              "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+              "name": "generated_elements",
+              "rationale": "CPU Gaussian sampling work scales with the number of generated latent elements; the remaining shape construction and dispatch work is approximately constant for this workload."
+            }
+          ]
+        },
+        {
+          "annotation_diff": "iterations/iteration-002/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+          "hypothesis": "Sampling has linear elementwise cost plus discrete RNG state-refresh costs. The unexplained counts of 5832, 11664, and 17496 correspond to ceil(generated_elements / 624).",
+          "irregularity_percent": 0.0,
+          "iteration": 2,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+              "name": "generated_elements",
+              "rationale": "Captures elementwise Gaussian sampling work."
+            },
+            {
+              "expression": "(batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) + 623) // 624 if latents is None else 0",
+              "name": "rng_state_refreshes",
+              "rationale": "For the freshly seeded CPU generators in this workload, captures MT19937 state refreshes per 624 generated values. Reported unexplained instructions follow exactly one, two, and three such blocks."
+            }
+          ]
+        }
+      ],
+      "case": "wan-036",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "32dbb465c78f01e116af8d7fca057e59845fce7f90efdd5f069280106b1cf723",
+      "iterations": 2,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb6-f4b9-75d1-b882-38425cc1903a",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Fixed tensor dispatch overhead plus schedule-length-dependent scanning and a singleton adjustment should explain instruction counts for these short CPU schedules.",
+          "irregularity_percent": 0.0,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "(self.timesteps if schedule_timesteps is None else schedule_timesteps).numel()",
+              "name": "schedule_size",
+              "rationale": "Equality comparison and nonzero scan traverse the schedule, so their instruction counts scale with its element count."
+            },
+            {
+              "expression": "int((self.timesteps if schedule_timesteps is None else schedule_timesteps).numel() == 1)",
+              "name": "singleton_schedule",
+              "rationale": "Captures special handling of singleton tensors in comparison and tensor iteration."
+            }
+          ]
+        }
+      ],
+      "case": "wan-037",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "5915f48b2d8b350fec3f0ffbf812e7171c7d3872b8934bf9084868b8027e4645",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb7-5277-7e43-8159-ee6db31f6a1f",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count follows a fixed overhead plus linear schedule work, with a separate offset for singleton schedules.",
+          "irregularity_percent": 0.0,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)",
+              "name": "schedule_length",
+              "rationale": "Schedule construction, array arithmetic, tensor conversion, and concatenation scale with the number of steps."
+            },
+            {
+              "expression": "int((num_inference_steps if num_inference_steps is not None else len(sigmas) if sigmas is not None else len(timesteps)) == 1)",
+              "name": "singleton_schedule",
+              "rationale": "A single-step schedule takes a distinct NumPy linspace branch."
+            }
+          ]
+        }
+      ],
+      "case": "wan-038",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "f506703147a9440cb8e2de6b94b8f61b0f6308777744c8461fac9328dde3ca4a",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb7-c398-78a0-a778-682867ec5c01",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "With fixed dtype and execution branches, instruction count should be approximately a constant dispatch overhead plus work linear in sample.numel().",
+          "irregularity_percent": 0.0,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "sample.numel()",
+              "name": "sample_elements",
+              "rationale": "Tracks elementwise multiplication and addition. In this workload it also scales proportionally with the schedule length scanned during step-index initialization."
+            }
+          ]
+        }
+      ],
+      "case": "wan-039",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "9075fdc655a1ccc39859a7df7892995753d677e86a67da8e88db74d5614f6448",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb8-27ce-7a03-9dd3-12b657a9108e",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 1.0105490014422336,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Instruction count is approximately an affine combination of batch count, total frame count, and total tensor elements for the fixed CPU tensor-output workload.",
+          "irregularity_percent": 1.0105490014422336,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "video.shape[0]",
+              "name": "batches",
+              "rationale": "Captures per-video indexing, permutation, postprocessing calls, and output collection."
+            },
+            {
+              "expression": "video.shape[0] * video.shape[2]",
+              "name": "total_frames",
+              "rationale": "Captures per-frame denormalization and tensor handling within image postprocessing."
+            },
+            {
+              "expression": "video.numel()",
+              "name": "total_elements",
+              "rationale": "Captures elementwise normalization, clamping, and stacking costs."
+            }
+          ]
+        }
+      ],
+      "case": "wan-040",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "c2b0510410182fbb005e831801754ce357d5ffebfefcc775d7563d6044f62a52",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    },
+    {
+      "agent_PCVs_thread": "01a0edb8-8c9a-7d53-a773-d5f043520f48",
+      "attempts": [
+        {
+          "annotation_diff": "iterations/iteration-001/annotation.diff",
+          "assessment": {
+            "irregularity_percent": 0.0,
+            "reasons": [],
+            "success": true,
+            "threshold_percent": 10.0,
+            "valid": true
+          },
+          "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+          "hypothesis": "Stacking instruction count consists of fixed overhead, per-input array handling, and copying costs governed by total bytes and frame-channel blocks.",
+          "irregularity_percent": 0.0,
+          "iteration": 1,
+          "outcome": "success",
+          "pcvs": [
+            {
+              "expression": "len(outputs)",
+              "name": "array_count",
+              "rationale": "Captures per-array validation, view creation, and concatenation setup in np.stack."
+            },
+            {
+              "expression": "len(outputs) * outputs[0].nbytes",
+              "name": "copy_bytes",
+              "rationale": "Captures the total data copied into the stacked array."
+            },
+            {
+              "expression": "len(outputs) * outputs[0].shape[0] * outputs[0].shape[3]",
+              "name": "frame_channel_blocks",
+              "rationale": "Captures copy-loop overhead associated with frame and channel planes in the transposed NumPy arrays."
+            }
+          ]
+        }
+      ],
+      "case": "wan-041",
+      "comparison": "strictly-less-than",
+      "fixed_workload_digest": "a716242edc10ca2f3eb60c2cb206c33e9ba13ecbbadc12d2dfbd0c1a68b0a301",
+      "iterations": 1,
+      "measurement_agent": null,
+      "measurement_and_scoring": "trusted deterministic script",
+      "schema_version": 1,
+      "status": "success",
+      "threshold_percent": 10.0
+    }
+  ],
+  "suite": "wan",
+  "threshold_percent": 10.0
+}

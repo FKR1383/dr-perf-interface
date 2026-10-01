@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/transformers/transformer_wan.py
++++ candidate/src/diffusers/models/transformers/transformer_wan.py
+@@ -91,7 +91,7 @@
+             encoder_hidden_states_img = encoder_hidden_states[:, :image_context_length]
+             encoder_hidden_states = encoder_hidden_states[:, image_context_length:]
+ 
+-        with perfmark.region("wan-018"):
++        with perfmark.region("wan-018", query_elements=(hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim), key_value_elements=((hidden_states.shape[0] * hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]) * attn.kv_inner_dim), cross_attention=(int(encoder_hidden_states is not None))):
+             query, key, value = _get_qkv_projections(attn, hidden_states, encoder_hidden_states)
+ 
+             query = attn.norm_q(query)

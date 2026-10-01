@@ -1,0 +1,41 @@
+{
+  "agent_PCVs_thread": "01a0ed89-4e48-78c3-979f-f9c17e28fa98",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 4.63518034648104,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed operator overhead plus elementwise work, with a separate overhead for the noncontiguous channel chunk in multi-batch inputs.",
+      "irregularity_percent": 4.63518034648104,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "parameters.numel() // 2",
+          "name": "distribution_elements",
+          "rationale": "Counts elements processed by clamp, multiplication, and both exponentials."
+        },
+        {
+          "expression": "int(parameters.shape[0] > 1)",
+          "name": "strided_channel_chunk",
+          "rationale": "Captures additional tensor iteration setup when channel splitting produces a noncontiguous log-variance view across batches."
+        }
+      ]
+    }
+  ],
+  "case": "wan-016",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "6de9014b23c67762d4b9abc6ffc6a86e2f0c65195c5b442156048af89d8cce2e",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Detailed cache and categorical predictors increased irregularity. A compact model with one combined spatial-temporal work term and one execution-path offset may fit more robustly; the combined term gives multi-frame chunks three times the spatial work of initial chunks.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] * (2 * x.shape[2] + 1)",
+      "name": "effective_spatiotemporal_work",
+      "rationale": "Combines temporal work in the early encoder stages with spatial work in later stages into one predictor."
+    },
+    {
+      "expression": "int(x.shape[2] > 1)",
+      "name": "temporal_chunk",
+      "rationale": "Captures the additional fixed overhead of cached multi-frame execution."
+    }
+  ]
+}

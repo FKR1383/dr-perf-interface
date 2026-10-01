@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Cost is dominated by incoming request count and source heap removal work, with additional comparisons when incoming and destination priorities coincide.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(requests)",
+      "name": "incoming_count",
+      "rationale": "Captures iteration, source heap copying, and one destination insertion per incoming request."
+    },
+    {
+      "expression": "len(requests) ** 2",
+      "name": "incoming_count_squared",
+      "rationale": "Approximates the increasing cost of source heap removals across the bounded incoming queue sizes."
+    },
+    {
+      "expression": "min(len(requests), len(self._heap))",
+      "name": "overlapping_priorities",
+      "rationale": "For this workload, captures incoming priorities shared with the destination, which require arrival-time comparisons."
+    }
+  ]
+}

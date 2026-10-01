@@ -1,0 +1,26 @@
+{
+  "hypothesis": "This candidate retains six distinct states, correcting the previous validity failure. It models initial chunks with spatial area while allowing independent costs for all three multi-frame spatial regimes.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4] if x.shape[2] == 1 else 0",
+      "name": "initial_area",
+      "rationale": "Preserves distinct initial-chunk spatial states and models their approximately affine instruction growth."
+    },
+    {
+      "expression": "int(x.shape[2] > 1)",
+      "name": "temporal_chunk",
+      "rationale": "Provides a separate baseline for multi-frame chunks."
+    },
+    {
+      "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+      "name": "temporal_medium_spatial",
+      "rationale": "Captures the medium multi-frame execution regime independently."
+    },
+    {
+      "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+      "name": "temporal_large_spatial",
+      "rationale": "Captures the large multi-frame execution regime independently."
+    }
+  ]
+}

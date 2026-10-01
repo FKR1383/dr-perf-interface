@@ -1,0 +1,21 @@
+{
+  "hypothesis": "The previous measurements show only zero or one allocated block and no full-block caching or prefix reuse. Initial-allocation overhead is therefore the main cost driver; token counts should expose enough distinct entry states to evaluate residual variation within the two observed paths.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(request.num_computed_tokens == 0)",
+      "name": "initial_allocation",
+      "rationale": "Captures the observed cost difference between initial allocation and incremental decoding."
+    },
+    {
+      "expression": "num_new_tokens",
+      "name": "new_tokens",
+      "rationale": "Distinguishes prompt sizes and measures any token-dependent work during allocation."
+    },
+    {
+      "expression": "request.num_computed_tokens",
+      "name": "computed_tokens",
+      "rationale": "Distinguishes decoding positions and captures work depending on the existing computed prefix."
+    }
+  ]
+}

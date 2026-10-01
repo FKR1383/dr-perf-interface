@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The initial default-options call includes substantial initialization cost. Subsequent costs depend on request count and text volume, with smaller contributions from tokenization options.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks rendering and engine insertion work repeated for each request."
+    },
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates the default-options entry state, which coincides with the unusually expensive initial call in this workload."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) * len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0])",
+      "name": "prompt_character_work",
+      "rationale": "Estimates batch text volume from the first prompt and batch cardinality without consuming the generator; prompts within each batch have similar lengths."
+    },
+    {
+      "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+      "name": "tokenization_option_work",
+      "rationale": "Tracks per-request option processing."
+    }
+  ]
+}

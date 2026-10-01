@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0f575-846b-72a3-ac25-b463595cf531",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.1800113571834183,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed iterator and call overhead plus a linear cost per incoming request; these small queues should not require additional deque blocks.",
+      "irregularity_percent": 3.1800113571834183,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(requests)",
+          "name": "incoming_count",
+          "rationale": "Deque extendleft performs one iteration and insertion per incoming request. Cardinality is cheap and captures the variable work for the supplied FCFS queues."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-018",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "3173291b9472f35f4b3d56d3f0098009448235f6161d381f0d3d99fa648d31ac",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

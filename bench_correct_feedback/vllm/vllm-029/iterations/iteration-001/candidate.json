@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately affine in the number of scheduled requests; token counts do not change the loop's work, and routed-expert snapshots are disabled in this workload.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Counts iterations of the request-update loop, which performs approximately constant work per scheduled request."
+    }
+  ]
+}

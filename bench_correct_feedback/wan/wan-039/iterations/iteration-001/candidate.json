@@ -1,0 +1,11 @@
+{
+  "hypothesis": "With fixed dtype and execution branches, instruction count should be approximately a constant dispatch overhead plus work linear in sample.numel().",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "sample.numel()",
+      "name": "sample_elements",
+      "rationale": "Tracks elementwise multiplication and addition. In this workload it also scales proportionally with the schedule length scanned during step-index initialization."
+    }
+  ]
+}

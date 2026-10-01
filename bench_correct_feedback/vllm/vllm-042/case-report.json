@@ -1,0 +1,369 @@
+{
+  "agent_PCVs_thread": "01a0f5d5-d436-7d02-9dfd-181f232f669e",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 58.59021115473065,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily fixed request-construction overhead plus prompt-length-dependent copying and hashing of complete cache blocks.",
+      "irregularity_percent": 58.59021115473065,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Captures prompt copying and token-dependent work during Request construction."
+        },
+        {
+          "expression": "len(request.prompt_token_ids) // self.vllm_config.cache_config.block_size if self.request_block_hasher is not None and request.prompt_token_ids is not None else 0",
+          "name": "full_hash_blocks",
+          "rationale": "Captures per-block prefix-cache hashing work for the fixed OPT workload."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 57.63762943895162,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Complete-block hashing contributes no variation in this workload. Sampling configuration may explain the substantial instruction differences remaining after accounting for prompt length.",
+      "irregularity_percent": 57.63762943895162,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Models prompt copying during request construction."
+        },
+        {
+          "expression": "int(request.sampling_params is not None and request.sampling_params.temperature > 0)",
+          "name": "random_sampling",
+          "rationale": "Distinguishes greedy and random sampling configuration paths."
+        },
+        {
+          "expression": "int(request.sampling_params is not None and (request.sampling_params.presence_penalty != 0 or request.sampling_params.frequency_penalty != 0 or request.sampling_params.repetition_penalty != 1))",
+          "name": "penalties_enabled",
+          "rationale": "Separates requests with active penalty settings from baseline requests."
+        },
+        {
+          "expression": "request.sampling_params.max_tokens if request.sampling_params is not None else 0",
+          "name": "max_tokens",
+          "rationale": "Exposes the independently varied generation limit transferred into the constructed request."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.202131569276002,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "A piecewise prompt-length model may explain the observed cost regimes better than sampling settings. The short-prompt indicators may proxy startup effects in this fixed workload; they do not establish prompt length as their cause.",
+      "irregularity_percent": 10.202131569276002,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Retains the prompt-copying size term."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Separates the observed nine-token state, whose cost substantially exceeds the general baseline."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Separates the highest-cost observed prompt-length state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Tests the elevated instruction-cost regime observed for medium prompts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 15.089387016650827,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Replacing the flat medium-prompt indicator with a ramp should better explain the difference between 21- and 22-token requests and reduce the remaining model error. Short-prompt indicators remain proxies for workload-specific startup effects.",
+      "irregularity_percent": 15.089387016650827,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Retains the prompt-size term and distinguishes eight observed lengths."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Retains the indicator for the elevated nine-token state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Retains the indicator for the highest-cost observed state."
+        },
+        {
+          "expression": "max(0, len(request.prompt_token_ids) - 20) if request.prompt_token_ids is not None and len(request.prompt_token_ids) < 23 else 0",
+          "name": "medium_prompt_excess",
+          "rationale": "Allows greater excess cost for 22-token prompts than for 21-token prompts, matching the observed medium-prompt variation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 11.720526630760023,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The flat medium-prompt indicator performed better than its ramp replacement. Combining it with a decreasing prompt-length basis may capture cost components that the previous positive length term could not explain, while retaining the startup proxies.",
+      "irregularity_percent": 11.720526630760023,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "max(0, self.vllm_config.model_config.max_model_len - len(request.prompt_token_ids)) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_headroom",
+          "rationale": "Tests a decreasing length basis, allowing fitted cost components to be larger for shorter prompts."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Separates the elevated nine-token state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Separates the highest-cost observed state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Restores the flat medium-prompt indicator from the best-performing candidate."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 21.833113359730167,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The fitted prompt-length slope is small. Replacing it with scheduler request cardinality may explain batch-position variation that length-only models leave unresolved, while retaining the observed startup and medium-prompt regimes.",
+      "irregularity_percent": 21.833113359730167,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.scheduler.requests)",
+          "name": "resident_requests",
+          "rationale": "Exposes request population at entry, distinguishing positions within each submitted batch and possible batch-start effects."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Retains the indicator for the elevated nine-token state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Retains the indicator for the highest-cost observed state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Retains the medium-prompt regime from the best-performing candidate."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.30578069043511,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "The strongest candidate used prompt length and three regime indicators. A length-weighted medium regime preserves that structure while allowing a small cost increase from 21 to 22 tokens.",
+      "irregularity_percent": 10.30578069043511,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Restores prompt length, which explained more variation than scheduler cardinality."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+          "name": "nine_token_prompt",
+          "rationale": "Separates the elevated nine-token state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Separates the highest-cost observed state."
+        },
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23 else 0",
+          "name": "medium_prompt_tokens",
+          "rationale": "Models medium-prompt overhead with modest length dependence, avoiding the previous ramp's doubling between 21 and 22 tokens."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 35.733241375174295,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "A three-feature model may fit more reliably by sharing a coefficient between the two startup-associated states. Their observed excess costs are approximately proportional to this combined feature.",
+      "irregularity_percent": 35.733241375174295,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Retains the prompt-size term."
+        },
+        {
+          "expression": "len(request.prompt_token_ids) - 8 if request.prompt_token_ids is not None and 9 <= len(request.prompt_token_ids) <= 10 else 0",
+          "name": "short_prompt_regime",
+          "rationale": "Combines the two elevated short-prompt states into one feature, reflecting their approximately twofold difference in excess cost."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Retains the medium-prompt regime from the best-performing candidate."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 10.138771710354057,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "A shared short-prompt indicator plus an independent ten-token increment preserves separate fitting freedom without imposing the unsuccessful fixed ratio. This tests whether a hierarchical basis better explains shared startup-associated work.",
+      "irregularity_percent": 10.138771710354057,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens",
+          "rationale": "Retains the prompt-size term from the strongest candidates."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 9 <= len(request.prompt_token_ids) <= 10)",
+          "name": "early_short_prompt",
+          "rationale": "Provides a shared indicator for both elevated short-prompt states."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Allows an independently fitted increment for the highest-cost state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Restores the flat medium-prompt regime."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 11.855055832634505,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "The best model narrowly misses the threshold. Replacing its small linear length term with a quadratic term tests whether residual length dependence is nonlinear; the successful regime structure remains intact.",
+      "irregularity_percent": 11.855055832634505,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(request.prompt_token_ids) ** 2 if request.prompt_token_ids is not None else 0",
+          "name": "prompt_tokens_squared",
+          "rationale": "Tests curvature in the residual length dependence while preserving all eight observed states."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 9 <= len(request.prompt_token_ids) <= 10)",
+          "name": "early_short_prompt",
+          "rationale": "Retains the shared indicator for the two elevated short-prompt states."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+          "name": "ten_token_prompt",
+          "rationale": "Retains an independent increment for the highest-cost state."
+        },
+        {
+          "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+          "name": "medium_prompt",
+          "rationale": "Retains the medium-prompt regime."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-042",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "1b8b3d9f8a6c6fcdc3494ea8a067ba9f7c094e89ccdfadcbf2ab097cea08083a",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/spec_decode/ngram_proposer.py
++++ candidate/vllm/v1/spec_decode/ngram_proposer.py
+@@ -89,7 +89,7 @@
+                 A list where each element is a list of proposed
+                 token IDs for the corresponding request.
+         """
+-        with perfmark.region("vllm-056"):
++        with perfmark.region("vllm-056", request_count=(num_requests), ngram_request_count=(len(valid_ngram_requests)), searched_tokens=(sum((int(num_tokens_no_spec[i]) for i in valid_ngram_requests))), requires_numba_compilation=(int(bool(valid_ngram_requests) and len(batch_propose_numba.signatures) == 0))):
+             draft_token_ids: list[list[int]] = []
+ 
+             # Only run batch propose if there are requests needing ngram proposals.

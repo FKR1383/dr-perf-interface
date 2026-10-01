@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The exceptional early admissions may reflect runtime initialization rather than queue size. Module-registry cardinality tests that explanation directly and may distinguish initialization states that request counts alone miss.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures per-request decode scheduling work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures per-request admission work."
+    },
+    {
+      "expression": "int(bool(self.waiting or self.skipped_waiting))",
+      "name": "has_waiting_requests",
+      "rationale": "Separates admission setup from decode setup."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Reads the cardinality of the existing runtime module registry as a cheap indicator of initialization state."
+    }
+  ]
+}

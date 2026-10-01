@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Adding prompt character count separates enough entry states for validation while retaining the dominant batch and sequence-size predictors. The previous measurements suggest shape-dependent variation is small relative to fixed encoder overhead.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer and encoder overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Tracks linear tensor processing."
+    },
+    {
+      "expression": "batch_size * max_sequence_length ** 2",
+      "name": "attention_elements",
+      "rationale": "Tracks quadratic attention processing."
+    },
+    {
+      "expression": "sum((len(text) for text in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Cheap string lengths approximate tokenizer input processing and distinguish prompts sharing the same padded tensor shape."
+    }
+  ]
+}

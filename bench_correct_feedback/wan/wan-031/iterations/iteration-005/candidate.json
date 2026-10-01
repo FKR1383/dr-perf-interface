@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Cache state substantially improved the previous result. Encoding its observed cold-to-warm transition as a binary feature should improve numerical conditioning while preserving the same explanatory information.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "int(len(re._main._cache) < 15)",
+      "name": "regex_cache_cold",
+      "rationale": "The observed cache grows from 14 to 15 entries during the first call. A binary cold-cache feature represents that transition without a large constant offset."
+    },
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt cleaning, tokenization, and embedding reconstruction overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "token_positions",
+      "rationale": "Models encoder processing over padded sequences."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Captures input-dependent cleaning and tokenization work."
+    }
+  ]
+}

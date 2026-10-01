@@ -1,0 +1,21 @@
+{
+  "hypothesis": "The previous report confirms a single execution path across all 28 calls. Cost should remain approximately constant across varying running-batch cardinalities, with a near-zero fitted coefficient for running_count.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_count",
+      "rationale": "Provides varying entry-state cardinality across batch sizes, allowing the expected constant region cost to be tested across at least five states."
+    },
+    {
+      "expression": "len(step_skipped_waiting)",
+      "name": "skipped_count",
+      "rationale": "Captures prepend work if skipped requests are present."
+    },
+    {
+      "expression": "int(not defer_prefills)",
+      "name": "update_capacity_bound",
+      "rationale": "Captures the optional capacity-bound assignment."
+    }
+  ]
+}

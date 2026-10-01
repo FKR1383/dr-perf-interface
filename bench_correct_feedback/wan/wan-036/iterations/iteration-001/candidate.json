@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed setup cost plus a linear cost per generated float32 element.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+      "name": "generated_elements",
+      "rationale": "CPU Gaussian sampling work scales with the number of generated latent elements; the remaining shape construction and dispatch work is approximately constant for this workload."
+    }
+  ]
+}

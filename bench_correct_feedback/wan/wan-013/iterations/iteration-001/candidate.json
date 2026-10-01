@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is dominated by encoder invocation overhead and processed tile area, with separate costs for first and subsequent temporal chunks.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width)",
+      "name": "spatial_tiles",
+      "rationale": "Counts first-chunk encoder calls and per-tile setup."
+    },
+    {
+      "expression": "(x.shape[3] + self.tile_sample_stride_height - 1) // self.tile_sample_stride_height * ((x.shape[4] + self.tile_sample_stride_width - 1) // self.tile_sample_stride_width) * ((x.shape[2] - 1) // 4)",
+      "name": "cached_tile_chunks",
+      "rationale": "Counts subsequent four-frame encoder calls with populated caches."
+    },
+    {
+      "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1)",
+      "name": "first_chunk_tile_area",
+      "rationale": "Total processed spatial area including overlap and clipped boundary tiles for the fixed workload; captures size-dependent first-chunk computation."
+    },
+    {
+      "expression": "x.shape[0] * ((x.shape[3] - 1) // self.tile_sample_stride_height * self.tile_sample_min_height + (x.shape[3] - 1) % self.tile_sample_stride_height + 1) * ((x.shape[4] - 1) // self.tile_sample_stride_width * self.tile_sample_min_width + (x.shape[4] - 1) % self.tile_sample_stride_width + 1) * ((x.shape[2] - 1) // 4)",
+      "name": "cached_chunk_tile_area",
+      "rationale": "Spatial work across subsequent chunks, whose temporal convolution and cache costs differ from the first chunk."
+    }
+  ]
+}

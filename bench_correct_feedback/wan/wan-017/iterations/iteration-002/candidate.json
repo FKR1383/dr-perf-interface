@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The observed self-attention counts suggest a linear length cost plus a remainder penalty at nonmultiples of 16. Separate query and context slopes should also improve cross-attention predictions.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1]",
+      "name": "query_tokens",
+      "rationale": "Captures query projection, output projection, and attention work that grows with query length."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1])",
+      "name": "context_tokens",
+      "rationale": "Allows context projection and normalization costs to have a separate fitted slope."
+    },
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Captures the substantial fixed overhead separating self-attention with rotary embeddings from cross-attention."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if rotary_emb is not None else 0",
+      "name": "rotary_tail",
+      "rationale": "Tests whether vectorized kernel remainder handling explains elevated self-attention costs at lengths 9, 18, and 27 relative to multiples of 16."
+    }
+  ]
+}

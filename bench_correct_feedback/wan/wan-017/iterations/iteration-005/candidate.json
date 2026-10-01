@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Combining independent rotary elementwise work with attention remainder work may explain the residuals better than either previous model alone. For these short sequences, full vector-block attention work may be less important than these two costs.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * attn.inner_dim * (hidden_states.shape[1] + (hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]))",
+      "name": "projection_elements",
+      "rationale": "Captures projection and normalization costs across query and context tokens."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim if rotary_emb is not None else 0",
+      "name": "rotary_elements",
+      "rationale": "Restores an independent linear cost for rotary operations, which the previous candidate omitted."
+    },
+    {
+      "expression": "hidden_states.shape[0] * attn.heads * hidden_states.shape[1] * ((hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[1]) % 16)",
+      "name": "attention_tail_elements",
+      "rationale": "Captures scalar attention remainder work across all query rows, including short cross-attention contexts."
+    },
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Separates fixed rotary dispatch and allocation overhead from its elementwise cost."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "hypothesis": "The fixed workload always uses whole-tensor denormalization on contiguous CPU float tensors. Instruction count should be approximately a fixed dispatch cost plus a term proportional to the number of elements.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "image.numel()",
+      "name": "elements",
+      "rationale": "Counts elements processed by the multiplication, addition, and clamp in denormalization; tensor metadata makes this cheap to obtain."
+    }
+  ]
+}

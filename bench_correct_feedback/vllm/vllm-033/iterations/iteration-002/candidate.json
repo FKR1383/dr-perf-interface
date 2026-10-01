@@ -1,0 +1,16 @@
+{
+  "hypothesis": "All 52 observed calls stayed within one KV block without completing or allocating a block. Their costs may therefore be approximately constant; sequence length and running-request count distinguish workload states while allowing Dr. Perf to fit any residual dependence.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "request.num_computed_tokens",
+      "name": "sequence_tokens",
+      "rationale": "Provides varying entry states and captures any sequence-length-dependent allocation bookkeeping within the single-block regime."
+    },
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures batch-size-dependent scheduler and container costs."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Movement count, removal count, and the condensation branch explain the structural cost. The fitted generator contribution was negligible, so removing that feature should retain the useful explanatory state without unnecessary fragmentation.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+      "name": "moved_requests",
+      "rationale": "Counts complete request-state moves, the dominant repeated work."
+    },
+    {
+      "expression": "len(self.batch_update_builder.removed)",
+      "name": "removed_requests",
+      "rationale": "Captures removal-dependent scanning and list trimming."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+      "name": "nonempty_condensation",
+      "rationale": "Separates full condensation from early-return paths."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "With fixed head width and CPU execution settings, instruction count should be explained by a fixed dispatch cost plus attention-pair work and linear query/key/value processing.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks attention-score and softmax work across batches, heads, and query-key pairs; head width is fixed in this workload."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks query processing, per-query overhead, and output writes."
+    },
+    {
+      "expression": "key.numel() + value.numel()",
+      "name": "key_value_elements",
+      "rationale": "Tracks key/value preparation and memory work as self-attention and cross-attention lengths vary."
+    }
+  ]
+}

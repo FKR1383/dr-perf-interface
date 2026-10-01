@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The remaining admission residuals include fixed work shared across nonempty batches. Replacing the weak running-count feature with a nonempty indicator should explain this work while preserving the successful linear and small-batch terms. Empty-queue residuals were already below 10 percent.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures approximately linear per-request admission work."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "single_waiting_request",
+      "rationale": "Retains the distinct singleton admission regime supported by previous measurements."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "two_waiting_requests",
+      "rationale": "Retains the distinct two-request admission regime."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) > 0)",
+      "name": "nonempty_waiting",
+      "rationale": "Captures fixed admission-path costs shared by all nonempty batches, independently of the empty-queue baseline."
+    }
+  ]
+}

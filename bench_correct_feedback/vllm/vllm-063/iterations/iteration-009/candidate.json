@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Separating penalty preparation from other metadata work permits independent fitted scales for their different instruction paths. Rescaling alone did not help; this candidate changes the decomposition.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (3 + int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + int(not self.no_allowed_token_ids))",
+      "name": "sampling_metadata_work",
+      "rationale": "Groups metadata setup with sampling copies while separating penalty-specific work."
+    },
+    {
+      "expression": "14 + self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0",
+      "name": "penalty_metadata_work",
+      "rationale": "Represents fixed penalty tensor preparation and the per-request prompt-padding loop."
+    },
+    {
+      "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+      "name": "minimum_token_transition",
+      "rationale": "Captures the fixed cost associated with initializing or expiring minimum-token masks."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added) + 2 * int(bool(self.batch_update_builder.added)) + 8 * int(bool(self.batch_update_builder.added) and self.all_greedy)",
+      "name": "admission_work",
+      "rationale": "Combines per-request initialization, admission setup, and the observed additional cost of all-greedy admission."
+    }
+  ]
+}

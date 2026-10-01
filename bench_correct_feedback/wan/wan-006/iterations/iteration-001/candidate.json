@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is approximately a combination of per-chunk overhead, spatial work with distinct initial and subsequent chunk costs, and quadratic attention work.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1 + (x.shape[2] - 1) // 4",
+      "name": "temporal_chunks",
+      "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+      "name": "spatial_area",
+      "rationale": "Captures spatial work specific to the initial single-frame chunk and fixed spatial costs."
+    },
+    {
+      "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+      "name": "chunk_spatial_work",
+      "rationale": "Models convolution, normalization, activation, and copying work across temporal chunks."
+    },
+    {
+      "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+      "name": "attention_pair_work",
+      "rationale": "Models quadratic spatial attention work at the encoder's compressed resolution."
+    }
+  ]
+}

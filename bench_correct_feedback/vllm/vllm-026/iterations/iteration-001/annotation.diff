@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/scheduler.py
++++ candidate/vllm/v1/core/sched/scheduler.py
+@@ -2389,7 +2389,7 @@
+     def _free_request(
+         self, request: Request, delay_free_blocks: bool = False
+     ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+-        with perfmark.region("vllm-026"):
++        with perfmark.region("vllm-026", allocated_blocks=(sum((len(manager.req_to_blocks.get(request.request_id, ())) for manager in self.kv_cache_manager.coordinator.single_type_managers)) if not delay_free_blocks else 0), last_reference_blocks=(sum((block.ref_cnt == 1 for manager in self.kv_cache_manager.coordinator.single_type_managers for block in manager.req_to_blocks.get(request.request_id, ()))) if not delay_free_blocks else 0)):
+             assert request.is_finished()
+ 
+             self._inflight_prefills.discard(request)

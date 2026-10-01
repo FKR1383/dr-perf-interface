@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Explicitly separating long-prompt processing may allow per-request option cardinality to explain the remaining variation more effectively than it did alongside a continuous character-count feature.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates initialization work in the initial default-options call."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks common per-request processing."
+    },
+    {
+      "expression": "len(params) * len(prompts.gi_frame.f_locals.get('tokenization_kwargs') or {})",
+      "name": "tokenization_option_work",
+      "rationale": "Tracks option processing repeated for each request."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((1 for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable if len(p['prompt'] if 'prompt' in p else p) >= 128))",
+      "name": "long_prompt_requests",
+      "rationale": "Separates the additional tokenization and input-processing work of long prompts using inexpensive length checks."
+    }
+  ]
+}

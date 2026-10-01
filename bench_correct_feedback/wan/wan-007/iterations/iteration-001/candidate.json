@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately affine in the clamped nonnegative blend extent because column shapes and tensor dtype remain fixed across the measured workload.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, min(a.shape[-1], b.shape[-1], blend_extent))",
+      "name": "blend_columns",
+      "rationale": "Counts executed loop iterations, each performing the same tensor slicing, arithmetic, and assignment on fixed-size columns in this workload."
+    }
+  ]
+}

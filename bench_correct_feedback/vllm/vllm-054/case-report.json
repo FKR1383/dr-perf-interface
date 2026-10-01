@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0f648-2df4-70a3-adcd-1cad5890468d",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 27.435987979504624,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Penalty cost combines fixed invocation overhead, dense batch-by-vocabulary operations, prompt-token processing, and generated-history conversion.",
+      "irregularity_percent": 27.435987979504624,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty invocation overhead."
+        },
+        {
+          "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_logits_elements",
+          "rationale": "Models dense vocabulary operations and per-request penalty processing."
+        },
+        {
+          "expression": "sampling_metadata.prompt_token_ids.numel() if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_prompt_elements",
+          "rationale": "Models processing of padded prompt tokens."
+        },
+        {
+          "expression": "sum((len(row) for row in sampling_metadata.output_token_ids)) if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_output_tokens",
+          "rationale": "Models conversion and counting of generated token histories using list cardinalities."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 35.684362765877864,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "A well-scaled gated batch-size model should capture the nearly affine penalty cost. Unpenalized batch size and empty-history cardinality should explain variation hidden by the previous all-zero unpenalized state.",
+      "irregularity_percent": 35.684362765877864,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed overhead from invoking penalty operations."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Penalty instruction counts grow nearly linearly with batch size at the fixed vocabulary size; this avoids large feature magnitudes."
+        },
+        {
+          "expression": "logits.shape[0] if sampling_metadata.no_penalties else 0",
+          "name": "unpenalized_batch_size",
+          "rationale": "Separates batch-dependent processor work in the previously collapsed unpenalized observations."
+        },
+        {
+          "expression": "sum((int(len(row) == 0) for row in sampling_metadata.output_token_ids))",
+          "name": "requests_without_output",
+          "rationale": "Tracks requests on their first sampling step, when minimum-token processing can suppress stopping tokens."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 44.46423078791019,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Remaining irregularity is concentrated in inexpensive unpenalized calls. Minimum-token processor entry state should distinguish their tracking and masking work more directly than batch size or penalty output histories.",
+      "irregularity_percent": 44.46423078791019,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty invocation overhead."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Retains the feature that explained penalized calls to within 4 percent."
+        },
+        {
+          "expression": "sum((len(getattr(processor, 'min_toks', {})) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+          "name": "minimum_token_tracked_requests",
+          "rationale": "Measures minimum-token processor tracking state, which can vary even when penalty metadata contains no output histories."
+        },
+        {
+          "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+          "name": "minimum_token_mask_entries",
+          "rationale": "Measures cached masking-index cardinality associated with minimum-token enforcement."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.29683934553576,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Minimum-token masking has substantial fixed overhead rather than cost proportional to tracked requests. Replacing the two dependent cardinalities with activation and singleton indicators should separate the expensive unpenalized cases while retaining the affine penalty model.",
+      "irregularity_percent": 38.29683934553576,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty invocation overhead."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Models the dominant linear growth of penalty operations."
+        },
+        {
+          "expression": "int(sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 0)",
+          "name": "minimum_token_mask_active",
+          "rationale": "Captures the fixed cost of executing masking operations when minimum-token enforcement is active."
+        },
+        {
+          "expression": "int(sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+          "name": "single_entry_minimum_token_mask",
+          "rationale": "Distinguishes the observed single-entry masking case, whose cost exceeds the multi-entry case."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 42.427758891213394,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Iteration 2 substantially improved penalty attribution when both penalized and unpenalized batch sizes were available. Retaining equivalent batch information while replacing empty output histories with actual masking cardinality should improve the remaining processor attribution.",
+      "irregularity_percent": 42.427758891213394,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty invocation overhead."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Models batch-dependent penalty operations."
+        },
+        {
+          "expression": "logits.shape[0]",
+          "name": "batch_size",
+          "rationale": "Exposes batch size independently of the penalty branch, restoring the information present in iteration 2."
+        },
+        {
+          "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+          "name": "minimum_token_mask_entries",
+          "rationale": "Distinguishes active minimum-token masking from the inexpensive unmasked calls using actual processor state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 42.80918011515692,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Disjoint penalized and unpenalized batch features produced substantially better attribution in iteration 2. Combining that exact basis with actual minimum-token masking state tests whether both sources of variation can be explained together.",
+      "irregularity_percent": 42.80918011515692,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty invocation overhead."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Preserves the penalty feature used in the best-performing penalty fit."
+        },
+        {
+          "expression": "logits.shape[0] if sampling_metadata.no_penalties else 0",
+          "name": "unpenalized_batch_size",
+          "rationale": "Restores the disjoint batch features from iteration 2 so their fitted contributions remain specific to each branch."
+        },
+        {
+          "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+          "name": "minimum_token_mask_entries",
+          "rationale": "Separates masked and unmasked unpenalized calls, which empty penalty histories could not distinguish."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 25.039058763511147,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Shared masking features coupled small unpenalized costs to much larger penalized costs. Branch-specific masking indicators should isolate the three observed unpenalized behaviors while leaving penalty costs affine in batch size.",
+      "irregularity_percent": 25.039058763511147,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed overhead specific to penalty execution."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Models the nearly linear penalty cost across batch sizes."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+          "name": "unpenalized_single_mask",
+          "rationale": "Separately models the expensive single-entry masking path without coupling its coefficient to penalized calls."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 1)",
+          "name": "unpenalized_multiple_masks",
+          "rationale": "Separates multi-entry masking from the inexpensive unpenalized baseline."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 24.765124670849453,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Reparameterizing penalty work as a first-row baseline plus additional rows, and masking as shared activation plus singleton overhead, may improve the black-box fitter's attribution while preserving the observed cost regimes.",
+      "irregularity_percent": 24.765124670849453,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Models the complete single-request penalty path."
+        },
+        {
+          "expression": "logits.shape[0] - 1 if not sampling_metadata.no_penalties else 0",
+          "name": "additional_penalty_rows",
+          "rationale": "Models incremental penalty work beyond the first request, separating it from the single-request baseline."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 0)",
+          "name": "unpenalized_mask_active",
+          "rationale": "Captures masking overhead shared by both observed unpenalized masking cases."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+          "name": "unpenalized_single_mask",
+          "rationale": "Captures the additional cost observed for singleton masking."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 41.06094187306877,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Empty-history state may be essential to the successful penalty attribution in iteration 2. Restoring it while using a compact batch-sensitive masking feature should address both penalized and unpenalized variation within four expressions.",
+      "irregularity_percent": 41.06094187306877,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not sampling_metadata.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed penalty overhead."
+        },
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Models dense penalty work proportional to batch size."
+        },
+        {
+          "expression": "sum((int(len(row) == 0) for row in sampling_metadata.output_token_ids))",
+          "name": "requests_without_output",
+          "rationale": "Restores the empty-history feature from iteration 2, which achieved less than 4 percent unexplained work on penalized calls."
+        },
+        {
+          "expression": "sum((int(len(getattr(processor, 'logits_slice', ([], []))[0]) > 0) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) * (1 + 2 // logits.shape[0]) if sampling_metadata.no_penalties else 0",
+          "name": "unpenalized_mask_batch_factor",
+          "rationale": "Combines masking activation with a larger singleton-batch factor, approximating the observed masking overhead in one feature."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 69.77222987760395,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Dropping the fixed penalty indicator frees a feature for independently fitting singleton masking. Batch size and empty-history cardinality retain the dominant penalty predictors, while separate masking indicators avoid imposing an inaccurate cost ratio.",
+      "irregularity_percent": 69.77222987760395,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+          "name": "penalty_batch_size",
+          "rationale": "Captures the dominant batch-dependent penalty cost."
+        },
+        {
+          "expression": "sum((int(len(row) == 0) for row in sampling_metadata.output_token_ids))",
+          "name": "requests_without_output",
+          "rationale": "Retains the feature consistently associated with substantially better penalty attribution."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 0)",
+          "name": "unpenalized_mask_active",
+          "rationale": "Separately captures activation of masking in unpenalized calls."
+        },
+        {
+          "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+          "name": "unpenalized_single_mask",
+          "rationale": "Allows an independent contribution for the more expensive singleton masking case."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-054",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e4fa03508e373c9a42701d2acc9ab03530118e537f0e53059f73b1f095a2a7ef",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

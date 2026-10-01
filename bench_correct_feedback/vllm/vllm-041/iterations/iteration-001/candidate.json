@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Cost is predominantly fixed scheduler admission overhead, with variation from priority-queue insertion and container growth.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.scheduler.waiting)",
+      "name": "waiting_depth",
+      "rationale": "Captures queue-size-dependent insertion and container growth costs."
+    },
+    {
+      "expression": "int(len(self.scheduler.waiting) > 0) + int(len(self.scheduler.waiting) > 1) + int(len(self.scheduler.waiting) > 3) + int(len(self.scheduler.waiting) > 7)",
+      "name": "heap_height",
+      "rationale": "Computes heap height over the bounded workload using comparisons."
+    },
+    {
+      "expression": "int(request.priority == 0)",
+      "name": "highest_priority",
+      "rationale": "Highest-priority requests can traverse more heap levels during insertion."
+    },
+    {
+      "expression": "int(len(self.scheduler.waiting) == 0)",
+      "name": "empty_waiting_queue",
+      "rationale": "Distinguishes initial admission into an empty queue."
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "agent_PCVs_thread": "01a0ef89-b422-7c00-a8b5-92241d9495b9",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 2; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "For the single-group OPT workload, instruction count should be explained primarily by fixed initial-admission overhead plus the numbers of newly allocated, newly cached, and reused prefix blocks.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "max(0, (min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens + num_new_tokens + num_lookahead_tokens, self.max_model_len) + self.coordinator.single_type_managers[0].block_size - 1) // self.coordinator.single_type_managers[0].block_size - max(len(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())), len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0))",
+          "name": "new_blocks",
+          "rationale": "Estimates newly allocated blocks, which drive block-pool allocation and request-table updates."
+        },
+        {
+          "expression": "max(0, min(min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens, self.max_model_len) + num_new_tokens, request.num_tokens) // self.coordinator.single_type_managers[0].block_size - (request.num_computed_tokens + num_new_computed_tokens) // self.coordinator.single_type_managers[0].block_size) if self.enable_caching and (not delay_cache_blocks) else 0",
+          "name": "new_full_cached_blocks",
+          "rationale": "Estimates newly completed blocks requiring hash assignment and prefix-cache insertion."
+        },
+        {
+          "expression": "len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0",
+          "name": "prefix_hit_blocks",
+          "rationale": "Captures work attaching and touching reused prefix blocks."
+        },
+        {
+          "expression": "int(request.num_computed_tokens == 0)",
+          "name": "initial_allocation",
+          "rationale": "Separates initial request admission and bookkeeping from incremental decoding."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 46.624265405707554,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The previous measurements show only zero or one allocated block and no full-block caching or prefix reuse. Initial-allocation overhead is therefore the main cost driver; token counts should expose enough distinct entry states to evaluate residual variation within the two observed paths.",
+      "irregularity_percent": 46.624265405707554,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(request.num_computed_tokens == 0)",
+          "name": "initial_allocation",
+          "rationale": "Captures the observed cost difference between initial allocation and incremental decoding."
+        },
+        {
+          "expression": "num_new_tokens",
+          "name": "new_tokens",
+          "rationale": "Distinguishes prompt sizes and measures any token-dependent work during allocation."
+        },
+        {
+          "expression": "request.num_computed_tokens",
+          "name": "computed_tokens",
+          "rationale": "Distinguishes decoding positions and captures work depending on the existing computed prefix."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 50.110234788735596,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "An explicit constant feature may explain the persistent fixed-work residual that remained within both allocation paths. Request-table occupancy may additionally explain variation during early allocations.",
+      "irregularity_percent": 50.110234788735596,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1",
+          "name": "fixed_work",
+          "rationale": "Provides an explicit basis for fixed bookkeeping and call overhead across internal execution paths."
+        },
+        {
+          "expression": "int(request.num_computed_tokens == 0)",
+          "name": "initial_allocation",
+          "rationale": "Separates initial allocation from the substantially cheaper decoding path."
+        },
+        {
+          "expression": "num_new_tokens",
+          "name": "new_tokens",
+          "rationale": "Captures token-dependent work and distinguishes observed prompt sizes."
+        },
+        {
+          "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+          "name": "active_request_tables",
+          "rationale": "Captures request-table occupancy, which can affect dictionary insertion and allocation bookkeeping."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.12445752669912,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Token counts did not explain the residuals. The unusually expensive early allocations suggest runtime initialization and container warmup, so dictionary capacity and loaded-module cardinality may explain costs missing from the allocation-path indicator.",
+      "irregularity_percent": 38.12445752669912,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(request.num_computed_tokens == 0)",
+          "name": "initial_allocation",
+          "rationale": "Captures the main allocation-versus-decoding cost difference."
+        },
+        {
+          "expression": "self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__()",
+          "name": "request_table_storage",
+          "rationale": "Observes dictionary storage capacity, including retained capacity after requests are removed, to distinguish fresh and reused allocation state."
+        },
+        {
+          "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+          "name": "active_request_tables",
+          "rationale": "Distinguishes empty-table admission and occupancy-dependent dictionary operations."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Cheap runtime-state cardinality that may distinguish lazy-initialization phases responsible for the unusually expensive early allocations; sys is already loaded."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.42608750328257516,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Startup overhead is conditional rather than linear in module count or dictionary capacity. Separate indicators for fresh dictionary storage and empty admissions before runtime initialization should explain the two large early costs while retaining the main allocation-versus-decoding distinction.",
+      "irregularity_percent": 0.42608750328257516,
+      "iteration": 5,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(request.num_computed_tokens == 0)",
+          "name": "initial_allocation",
+          "rationale": "Separates initial block allocation from incremental decoding."
+        },
+        {
+          "expression": "int(self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__() == 56)",
+          "name": "fresh_request_table",
+          "rationale": "Identifies the observed minimal dictionary capacity before its first insertion, capturing first-use initialization costs."
+        },
+        {
+          "expression": "int(request.num_computed_tokens == 0 and len(self.coordinator.single_type_managers[0].req_to_blocks) == 0 and (len(__import__('sys').modules) < 5944))",
+          "name": "cold_empty_admission",
+          "rationale": "Identifies empty-table admissions before the observed runtime module-loading transition, separating the two expensive startup calls from later admissions."
+        },
+        {
+          "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+          "name": "active_request_tables",
+          "rationale": "Captures occupancy-dependent bookkeeping and preserves distinct states within steady execution."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-006",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "cd8431f9c844bce8867d4cb27e203f229e5dadc4fb6f98790440f14218aa0995",
+  "iterations": 5,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

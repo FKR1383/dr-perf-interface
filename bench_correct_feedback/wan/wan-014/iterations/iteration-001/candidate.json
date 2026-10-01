@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily affine in spatial volume, with distinct costs for initial and cached chunks and a smaller contribution from spatial boundaries.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Models spatially proportional convolution, normalization, activation, and copying work."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Allows a separate volume slope for subsequent chunks, which activate temporal convolutions and temporal upsampling."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures additional fixed dispatch, slicing, and concatenation overhead for subsequent chunks."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+      "name": "expanded_spatial_boundary",
+      "rationale": "Models convolution padding and boundary work, with greater temporal extent after cached temporal upsampling."
+    }
+  ]
+}

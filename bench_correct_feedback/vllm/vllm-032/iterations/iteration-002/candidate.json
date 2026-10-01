@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Admission and decode require different fixed costs, while admission cost also depends on prompt length. Replacing the two uninformative block features with an admission indicator and prompt-token total should explain substantially more variation.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Models the repeated decode scheduling and cached-request output work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Models per-request admission and new-request output work."
+    },
+    {
+      "expression": "int(bool(self.waiting or self.skipped_waiting))",
+      "name": "has_waiting_requests",
+      "rationale": "Allows admission steps to have a different fixed cost from decode-only steps."
+    },
+    {
+      "expression": "sum((r.num_tokens for r in self.waiting))",
+      "name": "waiting_prompt_tokens",
+      "rationale": "Captures prompt-dependent admission costs hidden by block counts, which were identical to waiting request counts in every measured state."
+    }
+  ]
+}

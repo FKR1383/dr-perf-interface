@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/scheduler.py
++++ candidate/vllm/v1/core/sched/scheduler.py
+@@ -1159,7 +1159,7 @@
+                             self.ec_connector.update_state_after_alloc(request, i)
+ 
+             # re-queue requests skipped in this pass ahead of older skipped items.
+-            with perfmark.region("vllm-037"):
++            with perfmark.region("vllm-037", skipped_count=(len(step_skipped_waiting)), has_skipped=(int(bool(step_skipped_waiting))), update_capacity_bound=(int(not defer_prefills))):
+                 if step_skipped_waiting:
+                     self.skipped_waiting.prepend_requests(step_skipped_waiting)
+ 

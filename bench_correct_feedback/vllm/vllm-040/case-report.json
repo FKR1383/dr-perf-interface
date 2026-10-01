@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0f5d1-21fb-7ff1-94ae-15e81aec0eaa",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by shared-prefix traversal. Constant-time block-list cardinality and endpoint reference-count checks should distinguish immediate exits, partial sharing, and full traversal.",
+      "irregularity_percent": 0.0,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self.req_to_blocks[running_request_id])",
+          "name": "request_blocks",
+          "rationale": "Bounds the number of loop iterations."
+        },
+        {
+          "expression": "int(bool(self.req_to_blocks[running_request_id]) and self.req_to_blocks[running_request_id][0].ref_cnt == len(self.req_to_blocks))",
+          "name": "first_block_shared",
+          "rationale": "Distinguishes immediate termination from traversal of a shared prefix."
+        },
+        {
+          "expression": "len(self.req_to_blocks[running_request_id]) if self.req_to_blocks[running_request_id] and self.req_to_blocks[running_request_id][-1].ref_cnt == len(self.req_to_blocks) else 0",
+          "name": "fully_shared_length",
+          "rationale": "A shared final block indicates likely full traversal, including the single-request case."
+        },
+        {
+          "expression": "len(self.req_to_blocks)",
+          "name": "active_requests",
+          "rationale": "Captures changes in sharing conditions across request batches."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-040",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "b4dc7a44446129a390f3562813f437f232c27e68c2333430dd1919c735e0629a",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

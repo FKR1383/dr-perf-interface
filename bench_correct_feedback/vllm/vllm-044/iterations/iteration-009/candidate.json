@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Input collection sizes and previously tested caches did not explain the initial excess. Logging and platform-validation state provide additional cheap observations of potentially deferred initialization.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures linear token-ID validation work."
+    },
+    {
+      "expression": "len(logger.manager.loggerDict)",
+      "name": "logging_registry_size",
+      "rationale": "Tests whether lazy logger registration distinguishes initial request processing."
+    },
+    {
+      "expression": "len(getattr(logger, '_cache', {}))",
+      "name": "logger_level_cache_size",
+      "rationale": "Observes cached logging-level decisions without issuing logs or changing logger state."
+    },
+    {
+      "expression": "len(getattr(current_platform, '__dict__', {}))",
+      "name": "platform_state_size",
+      "rationale": "Tests for lazy platform state initialized by request validation."
+    }
+  ]
+}

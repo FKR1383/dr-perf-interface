@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Seeded sampling can perform additional vocabulary-sized work for individual generators. Its entry-state cardinality may explain costs missed by batch size alone.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures batch-wide tensor operations."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide penalty processing."
+    },
+    {
+      "expression": "logits.numel() + logits.shape[1] * len(sampling_metadata.generators) if not sampling_metadata.all_greedy else 0",
+      "name": "random_draw_elements",
+      "rationale": "Accounts for batch-wide random sampling plus per-request seeded generator work."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Separates the observed initial compilation cost."
+    }
+  ]
+}

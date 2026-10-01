@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Token-copy volume showed little positive relationship with cost. Generator transfers may explain the remaining variation among calls with equal movement and removal counts.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+      "name": "moved_requests",
+      "rationale": "Counts complete request-state moves."
+    },
+    {
+      "expression": "len(self.batch_update_builder.removed)",
+      "name": "removed_requests",
+      "rationale": "Captures removal scanning and list trimming."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+      "name": "nonempty_condensation",
+      "rationale": "Distinguishes full condensation from early returns."
+    },
+    {
+      "expression": "sum((i in self.generators for i in range(self.num_reqs, len(self._req_ids)) if self._req_ids[i] is not None))",
+      "name": "moved_generators",
+      "rationale": "Counts moved requests taking the additional generator-transfer branch, which varies with sampling configuration."
+    }
+  ]
+}

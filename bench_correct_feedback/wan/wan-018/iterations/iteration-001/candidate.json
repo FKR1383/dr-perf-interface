@@ -1,0 +1,21 @@
+{
+  "hypothesis": "With fixed projection dimensions and single-threaded CPU execution, instruction count should be approximately affine in query and key/value element counts, with a small path-dependent overhead.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+      "name": "query_elements",
+      "rationale": "Tracks query projection and query RMS normalization work; projection widths are fixed in this workload."
+    },
+    {
+      "expression": "(hidden_states.shape[0] * hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]) * attn.kv_inner_dim",
+      "name": "key_value_elements",
+      "rationale": "Tracks both key/value projections and key RMS normalization using the effective encoder sequence length."
+    },
+    {
+      "expression": "int(encoder_hidden_states is not None)",
+      "name": "cross_attention",
+      "rationale": "Captures fixed overhead differences between self-attention and cross-attention entry paths."
+    }
+  ]
+}

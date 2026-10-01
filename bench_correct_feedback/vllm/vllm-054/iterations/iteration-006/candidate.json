@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Disjoint penalized and unpenalized batch features produced substantially better attribution in iteration 2. Combining that exact basis with actual minimum-token masking state tests whether both sources of variation can be explained together.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed penalty invocation overhead."
+    },
+    {
+      "expression": "logits.shape[0] if not sampling_metadata.no_penalties else 0",
+      "name": "penalty_batch_size",
+      "rationale": "Preserves the penalty feature used in the best-performing penalty fit."
+    },
+    {
+      "expression": "logits.shape[0] if sampling_metadata.no_penalties else 0",
+      "name": "unpenalized_batch_size",
+      "rationale": "Restores the disjoint batch features from iteration 2 so their fitted contributions remain specific to each branch."
+    },
+    {
+      "expression": "sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant))",
+      "name": "minimum_token_mask_entries",
+      "rationale": "Separates masked and unmasked unpenalized calls, which empty penalty histories could not distinguish."
+    }
+  ]
+}

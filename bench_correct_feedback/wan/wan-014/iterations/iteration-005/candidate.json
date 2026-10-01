@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Return to the best-performing feature structure, but account for temporal padding in the boundary term. For this workload, padded temporal extent grows from three to six frames, whereas the original boundary feature assumed a fourfold increase.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Captures work proportional to the input spatial area."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Captures additional area-dependent work from cached temporal upsampling."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures the fixed overhead difference between initial and cached chunks."
+    },
+    {
+      "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) * (4 * x.shape[2] + 2 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else x.shape[2] + 2)",
+      "name": "temporally_padded_boundary",
+      "rationale": "Models spatial boundary work using temporal extent including the two padding frames required by causal convolutions."
+    }
+  ]
+}

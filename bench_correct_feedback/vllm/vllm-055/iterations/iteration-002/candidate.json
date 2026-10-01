@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The enormous cost concentrated in the unpenalized two-row stochastic state suggests initial compilation. A cold-cache indicator may isolate that cost and allow the remaining features to fit steady-state instructions.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Models batch-dependent baseline tensor processing."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Models steady-state stochastic sampling and top-k/top-p work."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Models vocabulary-wide penalty processing."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not torch._inductor.codecache.PyCodeCache.cache))",
+      "name": "cold_random_compilation",
+      "rationale": "Uses runtime cache emptiness to distinguish potentially expensive initial compilation from warm stochastic sampling."
+    }
+  ]
+}

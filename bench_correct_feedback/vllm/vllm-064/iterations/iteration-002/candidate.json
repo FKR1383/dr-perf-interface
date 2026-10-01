@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Direct container observations capture cleanup branches and batch structure. The previous run failed after one observation, so it provides insufficient evidence to assess instruction-count fit or diagnose the workload failure.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(req_id in self.req_id_to_index)",
+      "name": "request_present",
+      "rationale": "Separates the early return from full cleanup."
+    },
+    {
+      "expression": "len(self.req_id_to_index)",
+      "name": "active_requests",
+      "rationale": "Observes batch cardinality directly without accessing removal-builder properties."
+    },
+    {
+      "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+      "name": "sampling_entries_removed",
+      "rationale": "Captures variation in successful sampling-state deletions."
+    },
+    {
+      "expression": "self.req_id_to_index.get(req_id, -1)",
+      "name": "request_index",
+      "rationale": "Captures the removed row's position, which may affect removal registration."
+    }
+  ]
+}

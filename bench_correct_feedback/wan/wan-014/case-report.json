@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0ed72-fb41-7c52-a84d-57af47a657bc",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.465773071375683,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily affine in spatial volume, with distinct costs for initial and cached chunks and a smaller contribution from spatial boundaries.",
+      "irregularity_percent": 20.465773071375683,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Models spatially proportional convolution, normalization, activation, and copying work."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Allows a separate volume slope for subsequent chunks, which activate temporal convolutions and temporal upsampling."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures additional fixed dispatch, slicing, and concatenation overhead for subsequent chunks."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+          "name": "expanded_spatial_boundary",
+          "rationale": "Models convolution padding and boundary work, with greater temporal extent after cached temporal upsampling."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 42.38945295012842,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The persistent unexplained work across all six shape/cache states suggests runtime variability. Replacing the boundary correction with garbage-collector entry state tests whether allocation history explains that variation.",
+      "irregularity_percent": 42.38945295012842,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Captures the dominant spatial scaling of decoder operations."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Captures the additional volume-dependent work from temporal upsampling on cached chunks."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Separates fixed overhead for initial and cached chunks."
+        },
+        {
+          "expression": "__import__('gc').get_count()[0]",
+          "name": "gc_allocation_balance",
+          "rationale": "Cheap runtime entry state that may explain allocation and garbage-collection variability within otherwise identical decoder shapes."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 37.04521797397102,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The allocation-state experiment did not explain the instruction counts. Explicitly gating both volume and fixed overhead by execution path should let Dr. Perf explain path-specific instructions without requiring cancellation between shared and cached features.",
+      "irregularity_percent": 37.04521797397102,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_volume",
+          "rationale": "Models volume-dependent work exclusively on the initial-chunk path."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_volume",
+          "rationale": "Models volume-dependent work exclusively on the cached path, including temporal upsampling."
+        },
+        {
+          "expression": "int(feat_cache is None or feat_cache[feat_idx[0]] is None)",
+          "name": "initial_path",
+          "rationale": "Provides a fixed-cost feature for operations specific to initial chunks."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "cached_path",
+          "rationale": "Provides a fixed-cost feature for cache handling and additional temporal operations."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 45.184684023119246,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Removing the boundary feature substantially increased irregularity. Separate area and boundary terms for each cache regime should explain instruction patterns better than fixed path indicators or a boundary term with a prescribed temporal multiplier.",
+      "irregularity_percent": 45.184684023119246,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_volume",
+          "rationale": "Captures spatial-area work on the initial path."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_volume",
+          "rationale": "Captures spatial-area work after cached temporal upsampling."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_boundary",
+          "rationale": "Captures row traversal and padding work on the initial path."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_boundary",
+          "rationale": "Allows cached boundary work to scale independently across temporally expanded decoder stages."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 38.7747512573509,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Return to the best-performing feature structure, but account for temporal padding in the boundary term. For this workload, padded temporal extent grows from three to six frames, whereas the original boundary feature assumed a fourfold increase.",
+      "irregularity_percent": 38.7747512573509,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Captures work proportional to the input spatial area."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Captures additional area-dependent work from cached temporal upsampling."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures the fixed overhead difference between initial and cached chunks."
+        },
+        {
+          "expression": "x.shape[0] * (x.shape[3] + x.shape[4]) * (4 * x.shape[2] + 2 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else x.shape[2] + 2)",
+          "name": "temporally_padded_boundary",
+          "rationale": "Models spatial boundary work using temporal extent including the two padding frames required by causal convolutions."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 26.481878280154696,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The best result used fourfold temporal scaling, but constraining boundary work to that ratio left substantial irregularity. Apply that scaling to dominant volume work while allowing independent boundary slopes and fixed overhead for each cache regime.",
+      "irregularity_percent": 26.481878280154696,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+          "name": "expanded_volume",
+          "rationale": "Models the dominant decoder stages, whose temporal extent is four times larger for cached chunks."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+          "name": "spatial_boundary",
+          "rationale": "Captures spatial row and boundary work shared across both cache regimes."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_boundary",
+          "rationale": "Allows additional cached boundary work to have an independently fitted coefficient."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Preserves the fixed overhead difference between initial and cached execution."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 40.95791098431928,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Test whether the nonlinear spatial instruction patterns chiefly arise before temporal upsampling. Retain separate volume slopes and cache overhead, but use an unscaled boundary feature shared by both paths.",
+      "irregularity_percent": 40.95791098431928,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Captures area-dependent work common to initial and cached chunks."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Allows an independently fitted area slope for cached temporal expansion."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures fixed cache-dependent execution overhead."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])",
+          "name": "spatial_boundary",
+          "rationale": "Captures boundary and row work without imposing temporal expansion on its contribution."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 57.00006821623261,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "A piecewise volume model may capture size-dependent kernel behavior better than boundary terms. This candidate retains fourfold temporal scaling for smaller inputs while allowing separate large-input corrections for both cache regimes.",
+      "irregularity_percent": 57.00006821623261,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+          "name": "expanded_volume",
+          "rationale": "Captures the dominant volume work with fourfold temporal expansion for cached chunks."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures fixed overhead associated with cached execution."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+          "name": "initial_volume_above_16",
+          "rationale": "Allows the initial-path spatial slope to change beyond sixteen latent positions."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * max(0, x.shape[3] * x.shape[4] - 16) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_volume_above_16",
+          "rationale": "Allows an independent spatial slope change for larger cached inputs."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 35.70149741396064,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "The fourfold boundary weighting remains the best tested structure; onefold and twofold weighting performed substantially worse. Testing eightfold weighting determines whether the remaining nonlinear spatial work is more concentrated in cached execution.",
+      "irregularity_percent": 35.70149741396064,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Captures spatial-volume work shared across decoder paths."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Allows additional cached volume work to be fitted independently."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures fixed cache-dependent overhead."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (8 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+          "name": "cache_weighted_boundary",
+          "rationale": "Tests stronger cache dependence in nonlinear spatial work, including temporal convolution and rearrangement operations."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 32.901084615959434,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Fourfold boundary weighting was better than onefold, twofold, or eightfold weighting. Threefold weighting tests whether combining intermediate and final temporal scales better explains the remaining spatial instruction patterns.",
+      "irregularity_percent": 32.901084615959434,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+          "name": "latent_volume",
+          "rationale": "Captures spatial-volume work common to both cache regimes."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+          "name": "cached_latent_volume",
+          "rationale": "Allows an independent volume slope for cached execution."
+        },
+        {
+          "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+          "name": "has_cached_features",
+          "rationale": "Captures fixed overhead from cache handling and temporal operations."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (3 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+          "name": "mixed_stage_boundary",
+          "rationale": "Approximates combined boundary work across stages with onefold, twofold, and fourfold temporal extent."
+        }
+      ]
+    }
+  ],
+  "case": "wan-014",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "809da3f64a987bd3ba6f9e443583137895446b96414c5e0c2546f4abbd544401",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

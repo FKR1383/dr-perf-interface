@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Independent prefill count and prompt length may be necessary for attribution. Combining the exceptional completion regime with ordinary completion work frees a feature for prefill count while retaining an approximation of the exceptional cost.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs)) + 5 * int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "completion_work",
+      "rationale": "Combines ordinary completion work with the observed additional cost when the entire batch completes on its first output."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].is_prefilling for o in engine_core_outputs if o.request_id in self.request_states))",
+      "name": "prefilling_requests",
+      "rationale": "Restores an independent measure of fixed initialization work per first output."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_prompt_tokens",
+      "rationale": "Separately measures prompt-dependent initialization work."
+    }
+  ]
+}

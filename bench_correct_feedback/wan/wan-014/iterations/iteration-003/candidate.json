@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The allocation-state experiment did not explain the instruction counts. Explicitly gating both volume and fixed overhead by execution path should let Dr. Perf explain path-specific instructions without requiring cancellation between shared and cached features.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is None or feat_cache[feat_idx[0]] is None else 0",
+      "name": "initial_volume",
+      "rationale": "Models volume-dependent work exclusively on the initial-chunk path."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_volume",
+      "rationale": "Models volume-dependent work exclusively on the cached path, including temporal upsampling."
+    },
+    {
+      "expression": "int(feat_cache is None or feat_cache[feat_idx[0]] is None)",
+      "name": "initial_path",
+      "rationale": "Provides a fixed-cost feature for operations specific to initial chunks."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "cached_path",
+      "rationale": "Provides a fixed-cost feature for cache handling and additional temporal operations."
+    }
+  ]
+}

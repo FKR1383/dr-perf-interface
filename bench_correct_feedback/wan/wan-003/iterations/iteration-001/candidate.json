@@ -1,0 +1,11 @@
+{
+  "hypothesis": "For these fixed-rank CPU float32 inputs, the marked conversion has approximately constant instruction count across batch sizes and image dimensions.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "image.ndim",
+      "name": "tensor_rank",
+      "rationale": "The CPU float32 input needs no device transfer or dtype conversion. Permutation and NumPy conversion share storage, so work primarily handles tensor metadata and scales with rank rather than pixel count."
+    }
+  ]
+}

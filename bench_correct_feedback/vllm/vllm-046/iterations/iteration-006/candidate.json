@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The combined feature failed despite matching aggregate cost ratios, suggesting attribution needs separate primitive work dimensions. Retaining raw request and token counts while adding the exact batch-size-by-sampling interaction may explain sampling paths that sampled-request counts and shifted features missed.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+      "name": "active_requests",
+      "rationale": "Preserves the raw request cardinality needed to explain common per-request work."
+    },
+    {
+      "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+      "name": "pending_tokens",
+      "rationale": "Preserves the raw token count that successfully explained most model execution work."
+    },
+    {
+      "expression": "len(self.engine_core.engine_core.scheduler.requests) * int(sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0)",
+      "name": "sampling_batch_size",
+      "rationale": "Measures the entire batch processed by sampling kernels, with exactly zero work for all-greedy batches and no added setup term."
+    },
+    {
+      "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+      "name": "two_request_admission",
+      "rationale": "Retains the workload-specific indicator for the isolated expensive first mixed-sampling admission."
+    }
+  ]
+}

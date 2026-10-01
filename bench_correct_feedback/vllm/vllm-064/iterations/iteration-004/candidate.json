@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The two large outliers occupy different entry-state regimes: fewer loaded modules, and unpenalized greedy removal from a multi-request batch. An explicit interaction tests whether these regimes explain the excess cost; their causal relationship remains unverified.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Distinguishes observed runtime initialization states."
+    },
+    {
+      "expression": "int(len(self.req_id_to_index) > 1 and req_id in self.greedy_reqs and (req_id not in self.frequency_penalties_reqs) and (req_id not in self.presence_penalties_reqs) and (req_id not in self.repetition_penalties_reqs))",
+      "name": "unpenalized_greedy_multi_request",
+      "rationale": "Tests the interaction between batch occupancy and the sampling configuration associated with the remaining high-cost observation."
+    },
+    {
+      "expression": "len(self.req_id_to_index)",
+      "name": "active_requests",
+      "rationale": "Captures batch cardinality across cleanup states."
+    },
+    {
+      "expression": "int(req_id in self.greedy_reqs) + int(req_id in self.random_reqs) + int(req_id in self.top_p_reqs) + int(req_id in self.top_k_reqs) + int(req_id in self.frequency_penalties_reqs) + int(req_id in self.presence_penalties_reqs) + int(req_id in self.repetition_penalties_reqs)",
+      "name": "sampling_entries_removed",
+      "rationale": "Captures successful sampling-state removals."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Steady-state instruction count is approximately affine in tensor size. Singleton specialization and compilation of the first nonsingleton shape may account for large deviations in the first two calls.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Filtering, softmax, noise generation, and selection scale with the number of logits; vocabulary width is fixed in this workload."
+    },
+    {
+      "expression": "int(logits.shape[0] == 1)",
+      "name": "singleton_batch",
+      "rationale": "Singleton dimensions receive special treatment in torch.compile and can incur a distinct compilation and execution cost."
+    },
+    {
+      "expression": "int(logits.shape[0] == 2)",
+      "name": "first_nonsingleton_shape",
+      "rationale": "The first nonsingleton batch may trigger compilation of the dynamic batch graph, producing a separate cost regime."
+    }
+  ]
+}

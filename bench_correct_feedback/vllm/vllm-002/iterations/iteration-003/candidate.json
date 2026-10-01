@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Separating initialization from warm request processing should improve attribution. Warm costs depend on request count, prompt length, and special-token handling more directly than on option cardinality.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates the initial default-options call and its substantial initialization work."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params)",
+      "name": "warm_request_count",
+      "rationale": "Models per-request work in subsequent calls independently of initialization."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) * len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0])",
+      "name": "prompt_character_work",
+      "rationale": "Estimates text-processing work using constant-time access to a representative prompt."
+    },
+    {
+      "expression": "len(params) if (prompts.gi_frame.f_locals.get('tokenization_kwargs') or {}).get('add_special_tokens', False) else 0",
+      "name": "special_token_requests",
+      "rationale": "Captures the tokenization branch that inserts special tokens, which alternates across subsequent batches."
+    }
+  ]
+}

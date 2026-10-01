@@ -1,0 +1,11 @@
+--- baseline/vllm/entrypoints/offline_utils.py
++++ candidate/vllm/entrypoints/offline_utils.py
+@@ -149,7 +149,7 @@
+         tokenization_kwargs: dict[str, Any] | None = None,
+         mm_processor_kwargs: dict[str, Any] | None = None,
+     ) -> EngineInput:
+-        with perfmark.region("vllm-001"):
++        with perfmark.region("vllm-001", default_options=(int(tokenization_kwargs is None)), prompt_chars=(len(prompt if isinstance(prompt, str) else prompt['prompt'])), prompt_chars_squared=(len(prompt if isinstance(prompt, str) else prompt['prompt']) ** 2), special_tokens_without_truncation=(int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {})))):
+             (engine_input,) = self._preprocess_cmpl(
+                 [prompt],
+                 tokenization_kwargs,

@@ -1,0 +1,83 @@
+{
+  "agent_PCVs_thread": "01a0edad-e0f0-7af3-af92-1007614b29e3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 68.16837062608087,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately linear in the number of prompts, total characters, and whitespace substitutions.",
+      "irregularity_percent": 68.16837062608087,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt)",
+          "name": "prompt_count",
+          "rationale": "Captures per-string cleaning calls and list construction overhead."
+        },
+        {
+          "expression": "sum((len(u) for u in prompt))",
+          "name": "total_characters",
+          "rationale": "Captures length-dependent scanning in text repair, HTML unescaping, and whitespace normalization."
+        },
+        {
+          "expression": "sum((u.count(' ') for u in prompt))",
+          "name": "space_count",
+          "rationale": "Captures whitespace matches and substitutions for the supplied ASCII prompts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 2.6102841513693726,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Regex cache state may distinguish compilation and initialization costs from warmed calls, while prompt dimensions explain steady-state cleaning work.",
+      "irregularity_percent": 2.6102841513693726,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(prompt)",
+          "name": "prompt_count",
+          "rationale": "Captures fixed cleaning overhead per prompt."
+        },
+        {
+          "expression": "sum((len(u) for u in prompt))",
+          "name": "total_characters",
+          "rationale": "Captures text scanning work."
+        },
+        {
+          "expression": "sum((u.count(' ') for u in prompt))",
+          "name": "space_count",
+          "rationale": "Captures whitespace substitution work."
+        },
+        {
+          "expression": "len(getattr(re, '_main', getattr(re, 'regex', None))._cache)",
+          "name": "regex_cache_size",
+          "rationale": "Captures entry-time regex cache state without accessing dunder attributes."
+        }
+      ]
+    }
+  ],
+  "case": "wan-032",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "d8e444a7f6e029976e7efb808a0ee2fe1c891b05f96c311dda65eae8a9f34b6d",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

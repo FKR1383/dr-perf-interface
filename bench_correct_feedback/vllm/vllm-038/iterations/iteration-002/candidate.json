@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Request count, finishing count, and new-request count explain the dominant work. Removing redundant block estimation and repeated indexed scans should substantially reduce observation overhead, which appears to dominate the previous unexplained instructions.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Measures the main request-processing loop with constant-time observation."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Predicts cleanup for the workload's single-token outputs using one short scan."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Provides a constant-time proxy for prefill completion and first-output statistics."
+    }
+  ]
+}

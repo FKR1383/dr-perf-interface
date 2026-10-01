@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The reports suggest a roughly linear token-copying baseline plus pronounced early short-prompt admission costs. Conditional interactions between prompt size, empty-batch state, and slot reuse may capture these regimes; they are empirical proxies rather than established causes.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)",
+      "name": "copied_token_count",
+      "rationale": "Tracks the approximately linear copying cost across medium and long prompts."
+    },
+    {
+      "expression": "int(request.num_prompt_tokens <= 11)",
+      "name": "short_prompt",
+      "rationale": "Tests a separate baseline for the short-prompt regime, where the largest deviations occurred."
+    },
+    {
+      "expression": "int(request.num_prompt_tokens <= 11 and len(self.req_id_to_index) == 0)",
+      "name": "short_prompt_empty_batch",
+      "rationale": "Separates the two expensive short-prompt admissions from the cheaper short-prompt admission into an occupied batch."
+    },
+    {
+      "expression": "int(request.num_prompt_tokens <= 11 and len(self.req_id_to_index) == 0 and (len(self.batch_update_builder.removed) == 0))",
+      "name": "short_prompt_empty_batch_append",
+      "rationale": "Distinguishes the initial append from the subsequent reuse of a removed slot within the expensive short-prompt regime."
+    }
+  ]
+}

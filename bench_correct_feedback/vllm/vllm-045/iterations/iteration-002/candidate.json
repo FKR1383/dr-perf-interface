@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The measurements suggest exceptional initialization costs in two distinct short-prompt states, followed by relatively uniform admission costs. Explicit indicators isolate these exceptions while prompt sizes model steady-state variation.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+      "name": "prompt_tokens",
+      "rationale": "Models token-dependent admission work across the observed prompt sizes."
+    },
+    {
+      "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+      "name": "prompt_characters",
+      "rationale": "Models text-dependent request and detokenizer setup."
+    },
+    {
+      "expression": "int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 10)",
+      "name": "ten_token_prompt",
+      "rationale": "Separates the observed ten-token state with exceptionally high cost; this is a workload-specific proxy for initialization, not an assumed general token-length effect."
+    },
+    {
+      "expression": "int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 9)",
+      "name": "nine_token_prompt",
+      "rationale": "Separates the other short-prompt state, whose cost exceeds the steady-state calls."
+    }
+  ]
+}

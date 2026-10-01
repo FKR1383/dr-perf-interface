@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The measurements suggest nearly linear decode and admission costs, with exceptional overhead in singleton and two-request admission states. Explicit cardinality indicators may isolate those deviations and prevent them from degrading the fit across all states.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures the approximately linear cost of decode scheduling and cached-request output construction."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures the approximately linear admission cost evident for batches of three through eight requests."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "singleton_admission",
+      "rationale": "Separates singleton admission, whose measured cost substantially exceeds the larger-batch linear trend."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "pair_admission",
+      "rationale": "Separates two-request admission, which also shows excess cost relative to the larger-batch trend."
+    }
+  ]
+}

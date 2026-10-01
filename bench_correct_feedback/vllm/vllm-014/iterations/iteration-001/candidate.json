@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is approximately constant across queue depths 0\u201311, with a possible first-call overhead captured by the empty-queue indicator.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "1",
+      "name": "append_operation",
+      "rationale": "Deque append performs constant work while the existing block has capacity; all twelve calls fit within the initial block."
+    },
+    {
+      "expression": "int(len(self) == 0)",
+      "name": "empty_queue",
+      "rationale": "Distinguishes the first append, which may incur initial method-dispatch overhead, from subsequent appends."
+    }
+  ]
+}

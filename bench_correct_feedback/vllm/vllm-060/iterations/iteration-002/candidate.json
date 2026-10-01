@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The largest irregularity comes from grouping empty initialization with active greedy batches. Separating that entry state should improve the worst state while retaining the dominant copy and prompt-processing predictors.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)",
+      "name": "sampling_copy_count",
+      "rationale": "Tracks conditional tensor-copy overhead."
+    },
+    {
+      "expression": "int(not self.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures fixed overhead from constructing prompt token metadata."
+    },
+    {
+      "expression": "self.num_reqs if not self.no_penalties else 0",
+      "name": "prompt_rows",
+      "rationale": "Tracks the per-request prompt padding loop."
+    },
+    {
+      "expression": "int(self.num_reqs == 0)",
+      "name": "empty_batch",
+      "rationale": "Separates empty initialization from active greedy batches, which previously shared the state with the largest unexplained share."
+    }
+  ]
+}

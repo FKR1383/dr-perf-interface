@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The quadratic request-count term added little explanatory power. Pending tokens times maximum context length tests attention and padding costs omitted by the successful request-count and token-count features.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+      "name": "active_requests",
+      "rationale": "Explains shared per-request work."
+    },
+    {
+      "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+      "name": "pending_tokens",
+      "rationale": "Explains the dominant token-processing cost."
+    },
+    {
+      "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests)) * max((self.engine_core.engine_core.scheduler.requests[k].num_tokens for k in self.engine_core.engine_core.scheduler.requests), default=0)",
+      "name": "padded_attention_extent",
+      "rationale": "Estimates attention work using pending query tokens and the batch's maximum context length, allowing for padded processing."
+    },
+    {
+      "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+      "name": "two_request_admission",
+      "rationale": "Retains the workload-specific proxy for the costly first mixed-sampling admission."
+    }
+  ]
+}

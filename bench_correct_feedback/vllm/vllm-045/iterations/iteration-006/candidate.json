@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Complementary indicators reduced unexplained cost, suggesting sensitivity to baseline attribution. Shifting the block and regime features away from zero preserves their information while testing whether short-state cost attribution improves.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent admission work and preserves eight observed states."
+    },
+    {
+      "expression": "1 + len(prompt['prompt_token_ids']) // 16",
+      "name": "token_block_extent",
+      "rationale": "Represents fixed setup plus complete token blocks, remaining nonzero for short prompts."
+    },
+    {
+      "expression": "1 + int(len(prompt['prompt_token_ids']) != 10)",
+      "name": "ten_token_regime_basis",
+      "rationale": "Separates the exceptional ten-token state with a nonzero baseline."
+    },
+    {
+      "expression": "1 + int(len(prompt['prompt_token_ids']) != 9)",
+      "name": "nine_token_regime_basis",
+      "rationale": "Separates the elevated nine-token state with a nonzero baseline."
+    }
+  ]
+}

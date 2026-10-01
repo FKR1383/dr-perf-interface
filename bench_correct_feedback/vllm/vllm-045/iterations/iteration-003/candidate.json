@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous features isolated the exceptional states but still underpredicted their costs. Scaling the sparse regime indicators tests whether fitting regularization contributes to the remaining irregularity.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent admission work."
+    },
+    {
+      "expression": "len(prompt_text or '') if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt', '') or '') if isinstance(prompt, dict) else len(prompt) if isinstance(prompt, str) else 0",
+      "name": "prompt_characters",
+      "rationale": "Captures text-dependent initialization work."
+    },
+    {
+      "expression": "1024 * int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 10)",
+      "name": "ten_token_regime",
+      "rationale": "Retains the observed initialization proxy, scaled to reduce possible fitting shrinkage of a sparse indicator."
+    },
+    {
+      "expression": "1024 * int((len(prompt.prompt_token_ids or []) if isinstance(prompt, EngineCoreRequest) else len(prompt.get('prompt_token_ids', [])) if isinstance(prompt, dict) else 0) == 9)",
+      "name": "nine_token_regime",
+      "rationale": "Retains the second exceptional short-prompt regime with the same numerical scaling."
+    }
+  ]
+}

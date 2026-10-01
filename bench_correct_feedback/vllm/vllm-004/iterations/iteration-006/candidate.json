@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Each workload state aggregates twelve layer calls. Persistent underprediction despite several plausible size models may reflect first-layer costs hidden within those aggregates; layer-conditioned predictors test that possibility.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+      "name": "query_tokens",
+      "rationale": "Retains the principal token-dependent work predictor."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len + 31) // 32)",
+      "name": "request_blocks",
+      "rationale": "Captures request overhead and block-rounded decode work."
+    },
+    {
+      "expression": "0 if attn_metadata is None or '.0.' not in layer.layer_name else attn_metadata.num_actual_tokens",
+      "name": "first_layer_query_tokens",
+      "rationale": "Tests whether the first decoder layer incurs additional token-dependent initialization or dispatch work."
+    },
+    {
+      "expression": "0 if attn_metadata is None or '.0.' not in layer.layer_name else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len + 31) // 32)",
+      "name": "first_layer_request_blocks",
+      "rationale": "Separates possible first-layer request and kernel setup costs from subsequent layers."
+    }
+  ]
+}

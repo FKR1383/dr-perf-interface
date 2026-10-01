@@ -1,0 +1,21 @@
+{
+  "hypothesis": "The workload adds new requests to a priority queue; insertion depth and incoming priority should explain its main instruction-count variation.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting)",
+      "name": "waiting_depth",
+      "rationale": "Queue size captures variation in priority-queue insertion and allocation costs."
+    },
+    {
+      "expression": "0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 3 else 2 if len(self.waiting) < 7 else 3",
+      "name": "heap_height",
+      "rationale": "Gives the maximum sift-up distance for the fixed workload's queue sizes of zero through seven."
+    },
+    {
+      "expression": "request.priority",
+      "name": "incoming_priority",
+      "rationale": "Incoming priority influences comparisons and movement during heap insertion."
+    }
+  ]
+}

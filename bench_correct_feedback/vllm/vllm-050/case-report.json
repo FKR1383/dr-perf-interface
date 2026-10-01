@@ -1,0 +1,83 @@
+{
+  "agent_PCVs_thread": "01a0f644-3b97-7d42-8feb-898a13a7d4f1",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 24.246592300180186,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately fixed overhead plus linear costs in row count, existing token count, and padded tensor size.",
+      "irregularity_percent": 24.246592300180186,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(output_token_ids)",
+          "name": "row_count",
+          "rationale": "Captures per-row traversal and tensor conversion overhead."
+        },
+        {
+          "expression": "sum((len(row) for row in output_token_ids))",
+          "name": "token_count",
+          "rationale": "Captures work reading and converting existing token IDs."
+        },
+        {
+          "expression": "len(output_token_ids) * max((len(row) for row in output_token_ids), default=0)",
+          "name": "padded_elements",
+          "rationale": "Captures rectangular tensor allocation, padding, and initialization work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.7795022745517795,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "A separate single-element regime plus linear row, token, and padding costs explains the observations. The current measurements cannot distinguish a shape effect from first-call initialization.",
+      "irregularity_percent": 1.7795022745517795,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(output_token_ids)",
+          "name": "row_count",
+          "rationale": "Captures per-row traversal and conversion overhead."
+        },
+        {
+          "expression": "sum((len(row) for row in output_token_ids))",
+          "name": "token_count",
+          "rationale": "Captures conversion of existing token IDs."
+        },
+        {
+          "expression": "len(output_token_ids) * max((len(row) for row in output_token_ids), default=0)",
+          "name": "padded_elements",
+          "rationale": "Captures tensor allocation and padding work."
+        },
+        {
+          "expression": "int(len(output_token_ids) * max((len(row) for row in output_token_ids), default=0) == 1)",
+          "name": "single_element_tensor",
+          "rationale": "Separates the unusually costly single-element input observed in the report."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-050",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "23126f93fb758a60ed74e567656725c800a637463bfe11482575f0418b628cc4",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

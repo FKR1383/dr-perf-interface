@@ -1,0 +1,11 @@
+--- baseline/vllm/entrypoints/offline_utils.py
++++ candidate/vllm/entrypoints/offline_utils.py
+@@ -529,7 +529,7 @@
+         lora_requests: Sequence[LoRARequest | None] | None = None,
+         priorities: Sequence[int] | None = None,
+     ) -> list[str]:
+-        with perfmark.region("vllm-002"):
++        with perfmark.region("vllm-002", default_tokenization=(1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0), warm_request_count=(0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params)), prompt_character_work=(0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) * len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0])), special_token_requests=(len(params) if (prompts.gi_frame.f_locals.get('tokenization_kwargs') or {}).get('add_special_tokens', False) else 0)):
+             added_request_ids: list[str] = []
+ 
+             try:

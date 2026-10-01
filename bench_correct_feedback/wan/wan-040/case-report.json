@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0edb8-27ce-7a03-9dd3-12b657a9108e",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.0105490014422336,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately an affine combination of batch count, total frame count, and total tensor elements for the fixed CPU tensor-output workload.",
+      "irregularity_percent": 1.0105490014422336,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "video.shape[0]",
+          "name": "batches",
+          "rationale": "Captures per-video indexing, permutation, postprocessing calls, and output collection."
+        },
+        {
+          "expression": "video.shape[0] * video.shape[2]",
+          "name": "total_frames",
+          "rationale": "Captures per-frame denormalization and tensor handling within image postprocessing."
+        },
+        {
+          "expression": "video.numel()",
+          "name": "total_elements",
+          "rationale": "Captures elementwise normalization, clamping, and stacking costs."
+        }
+      ]
+    }
+  ],
+  "case": "wan-040",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "c2b0510410182fbb005e831801754ce357d5ffebfefcc775d7563d6044f62a52",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

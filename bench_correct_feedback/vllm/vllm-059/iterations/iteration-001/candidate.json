@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed per-group commit overhead on the CPU execution path, with possible additional dependence on the number of active requests.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(self.block_tables)",
+      "name": "num_groups",
+      "rationale": "Counts loop iterations and per-buffer commit overhead, including CPU paths where no transfer is needed."
+    },
+    {
+      "expression": "num_reqs",
+      "name": "num_reqs",
+      "rationale": "Captures the active row count passed to each buffer copy and any row-dependent work."
+    }
+  ]
+}

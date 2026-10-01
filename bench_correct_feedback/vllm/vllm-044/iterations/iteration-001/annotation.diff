@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/input_processor.py
++++ candidate/vllm/v1/engine/input_processor.py
+@@ -268,7 +268,7 @@
+         resumable: bool = False,
+         session_id: str | None = None,
+     ) -> EngineCoreRequest:
+-        with perfmark.region("vllm-044"):
++        with perfmark.region("vllm-044", prompt_token_count=(len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0), raw_prompt_characters=(len(prompt) if isinstance(prompt, str) else len(prompt.get('prompt', '')) if isinstance(prompt, dict) and 'type' not in prompt else 0), sampling_enabled=(int(isinstance(params, SamplingParams) and params.temperature > 0))):
+             self._validate_params(params, supported_tasks)
+             self._validate_lora(lora_request)
+ 

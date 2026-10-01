@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Entry batch size and sampling composition may explain costs that final batch size and condensation counts miss. Random-sampling metadata work varies independently of total request count as requests finish.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks request construction and insertion."
+    },
+    {
+      "expression": "self.input_batch.num_reqs",
+      "name": "entry_batch_size",
+      "rationale": "Measures the persistent batch before removals, including rows inspected and reorganized."
+    },
+    {
+      "expression": "len(scheduler_output.finished_req_ids)",
+      "name": "finished_requests",
+      "rationale": "Tracks state cleanup and removal work."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids)) * (sum((1 for req in scheduler_output.scheduled_new_reqs if req.sampling_params is not None and req.sampling_params.temperature > 0)) + sum((1 for req_id in scheduler_output.scheduled_cached_reqs.req_ids if self.requests[req_id].sampling_params is not None and self.requests[req_id].sampling_params.temperature > 0)))",
+      "name": "random_sampling_refresh",
+      "rationale": "Tracks random-sampling requests participating in metadata reconstruction, distinguishing batches with different temperature and sampling requirements."
+    }
+  ]
+}

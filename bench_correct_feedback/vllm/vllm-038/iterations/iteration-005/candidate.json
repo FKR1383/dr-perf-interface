@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Cleanup has a fixed branch cost in addition to its per-finishing-request cost. Combining that branch indicator with the small-prefill term tests both effects within four expressions.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures per-request processing."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures per-request completion and resource release."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures prefill completion work."
+    },
+    {
+      "expression": "2 * (len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens]) > 0) + (3 * max(0, 3 - len(scheduler_output.scheduled_new_reqs)) if scheduler_output.scheduled_new_reqs else 0)",
+      "name": "cleanup_and_small_prefill",
+      "rationale": "Combines the fixed cost of stopped-request queue cleanup with the observed excess cost of small prefill batches."
+    }
+  ]
+}

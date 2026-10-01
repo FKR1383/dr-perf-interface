@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/llm_engine.py
++++ candidate/vllm/v1/engine/llm_engine.py
+@@ -297,7 +297,7 @@
+         return req_id
+ 
+     def step(self) -> list[RequestOutput | PoolingRequestOutput]:
+-        with perfmark.region("vllm-046"):
++        with perfmark.region("vllm-046", decode_requests=(len(self.engine_core.engine_core.scheduler.requests) if len(self.engine_core.engine_core.scheduler.waiting) == 0 else 0), prefill_tokens=(sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests)) if len(self.engine_core.engine_core.scheduler.waiting) > 0 else 0), decode_requests_with_sampling=(len(self.engine_core.engine_core.scheduler.requests) if len(self.engine_core.engine_core.scheduler.waiting) == 0 and sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0 else 0), two_request_admission=(int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0))):
+             if self.should_execute_dummy_batch:
+                 self.should_execute_dummy_batch = False
+                 self.engine_core.execute_dummy_batch()

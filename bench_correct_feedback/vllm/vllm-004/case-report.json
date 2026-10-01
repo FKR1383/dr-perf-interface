@@ -1,0 +1,369 @@
+{
+  "agent_PCVs_thread": "01a0ef70-5c54-7ff1-ad04-fe302401a764",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 78.41777549394126,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count combines fixed wrapper overhead, per-request setup, token processing, and attention arithmetic with block rounding.",
+      "irregularity_percent": 78.41777549394126,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * self.num_heads * self.head_size",
+          "name": "query_elements",
+          "rationale": "Captures query and output processing proportional to actual token count."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * attn_metadata.max_seq_len * self.num_heads * self.head_size",
+          "name": "attention_work",
+          "rationale": "Approximates query-key and attention-value arithmetic using constant-time entry metadata."
+        },
+        {
+          "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_query_len + 31) // 32) * ((attn_metadata.max_seq_len + 31) // 32) * self.num_heads",
+          "name": "attention_tiles",
+          "rationale": "Captures block-rounded attention work and differences between prefill and decode."
+        },
+        {
+          "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * self.num_heads",
+          "name": "request_heads",
+          "rationale": "Captures per-request, per-head setup and scheduling overhead; warm-up calls yield zero."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 76.2624572736417,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The observed costs follow token and request counts interacting with 32-token KV block boundaries. Smaller-scale features should also avoid the numerical imbalance of the previous candidate.",
+      "irregularity_percent": 76.2624572736417,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+          "name": "query_tokens",
+          "rationale": "Captures token-dependent work without large, constant head-dimension multipliers that can impair numerical fitting."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len + 31) // 32)",
+          "name": "token_kv_blocks",
+          "rationale": "Models token processing across rounded KV blocks; measurements show a substantial cost step beyond sequence length 32."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.query_start_loc.numel() - 1",
+          "name": "requests",
+          "rationale": "Captures per-request setup in both prefill and decode."
+        },
+        {
+          "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len + 31) // 32)",
+          "name": "request_kv_blocks",
+          "rationale": "Captures per-request KV block overhead, including the observed decode cost increase for longer contexts."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 78.86545868866651,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Explicitly separating prefill and decode removes overlapping token/request predictors. Each regime appears approximately linear, with an additional cost when context exceeds 32 tokens; this tests whether regime mixing caused the persistent underprediction.",
+      "irregularity_percent": 78.86545868866651,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.query_start_loc.numel() - 1",
+          "name": "decode_requests",
+          "rationale": "Separates decode setup from prefill processing so their coefficients can differ."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "decode_extra_kv_blocks",
+          "rationale": "Models the approximately 15,000 additional instructions per decode request when context crosses 32 tokens."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens",
+          "name": "prefill_tokens",
+          "rationale": "Models the dominant prefill cost independently of decode."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "prefill_extra_kv_blocks",
+          "rationale": "Allows a separate prefill cost increase for additional KV blocks."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 96.6285556687804,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Short-context costs approximately follow tokens plus requests. A reduced three-column model tests whether sharing their baseline coefficient resolves unstable attribution while retaining separate token and request costs for additional KV blocks.",
+      "irregularity_percent": 96.6285556687804,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens + attn_metadata.query_start_loc.numel() - 1",
+          "name": "query_and_request_units",
+          "rationale": "Combines token processing and request setup into a single predictor, reducing overlap between fitted columns."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "additional_token_blocks",
+          "rationale": "Captures additional token-dependent work when the KV context spans multiple blocks."
+        },
+        {
+          "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "additional_request_blocks",
+          "rationale": "Captures additional per-request block overhead, particularly visible during decode."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 77.81944286029712,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Native tensor dimensions and scheduler metadata cardinality may expose kernel work missing from earlier predictors. All expressions use constant-time scalar or shape access.",
+      "irregularity_percent": 77.81944286029712,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "query.shape[0]",
+          "name": "query_rows",
+          "rationale": "Observes the query tensor's native row count directly."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.scheduler_metadata is None else attn_metadata.scheduler_metadata.numel()",
+          "name": "scheduler_elements",
+          "rationale": "Tests whether scheduler metadata cardinality captures native task partitioning."
+        },
+        {
+          "expression": "0 if attn_metadata is None else query.shape[0] * ((attn_metadata.max_seq_len + 31) // 32)",
+          "name": "query_context_blocks",
+          "rationale": "Captures query work across rounded context blocks using tensor dimensions."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+          "name": "sequence_count",
+          "rationale": "Measures per-sequence overhead from the native kernel's sequence-length tensor."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 80.02077583541902,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Each workload state aggregates twelve layer calls. Persistent underprediction despite several plausible size models may reflect first-layer costs hidden within those aggregates; layer-conditioned predictors test that possibility.",
+      "irregularity_percent": 80.02077583541902,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+          "name": "query_tokens",
+          "rationale": "Retains the principal token-dependent work predictor."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len + 31) // 32)",
+          "name": "request_blocks",
+          "rationale": "Captures request overhead and block-rounded decode work."
+        },
+        {
+          "expression": "0 if attn_metadata is None or '.0.' not in layer.layer_name else attn_metadata.num_actual_tokens",
+          "name": "first_layer_query_tokens",
+          "rationale": "Tests whether the first decoder layer incurs additional token-dependent initialization or dispatch work."
+        },
+        {
+          "expression": "0 if attn_metadata is None or '.0.' not in layer.layer_name else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len + 31) // 32)",
+          "name": "first_layer_request_blocks",
+          "rationale": "Separates possible first-layer request and kernel setup costs from subsequent layers."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 79.31735444742917,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Layer identity did not explain the persistent discrepancy. Rounded query tiles and causal tile traversal may capture native loop counts more accurately than unrounded token-context products.",
+      "irregularity_percent": 79.31735444742917,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+          "name": "query_tokens",
+          "rationale": "Captures processing proportional to actual query rows."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_query_len + 15) // 16)",
+          "name": "query_tiles",
+          "rationale": "Models query work rounded to 16-row tiles."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * (((attn_metadata.max_query_len + 15) // 16 + 1) ** 2 // 4 if attn_metadata.causal and attn_metadata.max_query_len == attn_metadata.max_seq_len else (attn_metadata.max_query_len + 15) // 16 * ((attn_metadata.max_seq_len + 31) // 32))",
+          "name": "causal_attention_tiles",
+          "rationale": "Approximates triangular tile traversal for full causal prefill and rectangular traversal for cached queries."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+          "name": "requests",
+          "rationale": "Separates per-request setup from tiled kernel work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 79.39630581548646,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "The derived workload predictors have consistently failed. Testing the four raw workload dimensions may reveal dependence on per-request query and context lengths that aggregation and rounding concealed.",
+      "irregularity_percent": 79.39630581548646,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+          "name": "query_tokens",
+          "rationale": "Measures total query rows processed."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.max_query_len",
+          "name": "max_query_length",
+          "rationale": "Exposes per-request query length directly, which aggregate token counts and rounded tiles obscure."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.max_seq_len",
+          "name": "max_context_length",
+          "rationale": "Exposes the unrounded context dimension used by attention loops."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+          "name": "requests",
+          "rationale": "Separates batch cardinality from per-request dimensions."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 98.59059598858899,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Observed mean costs approximately follow a shared token-plus-request cost with a smaller block-dependent increment. This constrained two-feature model tests whether fitting fewer overlapping terms improves attribution.",
+      "irregularity_percent": 98.59059598858899,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None else (attn_metadata.num_actual_tokens + attn_metadata.seq_lens.numel()) * (4 + (attn_metadata.max_seq_len + 31) // 32)",
+          "name": "combined_query_work",
+          "rationale": "Combines token and request work with a modest increase for additional context blocks, reducing the number of independently fitted terms."
+        },
+        {
+          "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "additional_request_blocks",
+          "rationale": "Preserves the stronger context-block effect observed during decode."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 76.00579264674609,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Previous block products overcounted causal prefill work: only query rows beyond position 32 visit a second KV block. Counting those rows directly may explain the missing native kernel work.",
+      "irregularity_percent": 76.00579264674609,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens",
+          "name": "prefill_tokens",
+          "rationale": "Captures baseline prefill processing."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else max(0, attn_metadata.num_actual_tokens - 32 * attn_metadata.seq_lens.numel())",
+          "name": "prefill_second_block_rows",
+          "rationale": "For the observed full causal prefills, counts query rows extending beyond the first 32-token context block instead of charging every row for the maximum context."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.seq_lens.numel()",
+          "name": "decode_requests",
+          "rationale": "Captures baseline decode work independently of prefill."
+        },
+        {
+          "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len - 1) // 32)",
+          "name": "decode_extra_blocks",
+          "rationale": "Counts additional context blocks traversed during decode."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-004",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "8d28eaa0f80112e4370cf9be1174b36e2fbf1692710b5768c08fef9143446f6a",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily a fixed request-registration cost plus token and block copying, with additional costs from random sampling and penalty bookkeeping.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)",
+      "name": "copied_token_count",
+      "rationale": "Tracks list-to-array conversion and copying for prompt and output token IDs."
+    },
+    {
+      "expression": "sum((len(block_ids) for block_ids in request.block_ids))",
+      "name": "block_count",
+      "rationale": "Tracks block IDs copied when adding the request's block-table row."
+    },
+    {
+      "expression": "int(request.sampling_params is not None and request.sampling_params.temperature != 0.0)",
+      "name": "random_sampling",
+      "rationale": "Distinguishes the random sampling path, which also enables top-k and top-p bookkeeping in this workload."
+    },
+    {
+      "expression": "int(request.sampling_params.frequency_penalty != 0.0) + int(request.sampling_params.presence_penalty != 0.0) + int(request.sampling_params.repetition_penalty != 1.0) if request.sampling_params is not None else 0",
+      "name": "penalty_count",
+      "rationale": "Counts conditional penalty-set insertions."
+    }
+  ]
+}

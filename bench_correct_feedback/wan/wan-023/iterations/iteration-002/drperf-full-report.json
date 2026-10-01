@@ -1,0 +1,115 @@
+{
+  "case": "wan-023",
+  "validity_warnings": [],
+  "pcv_names": [
+    "video_tokens",
+    "self_attention_pairs",
+    "cross_attention_pairs",
+    "loaded_modules"
+  ],
+  "distinct_states": 6,
+  "required_states": 6,
+  "calls": 18,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "video_tokens": 9,
+        "self_attention_pairs": 81,
+        "cross_attention_pairs": 36,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4083412.6666666665,
+      "unexplained_instructions_per_call": 358679.33333333343,
+      "unexplained_share": 0.08783813016530784
+    },
+    {
+      "state": {
+        "video_tokens": 16,
+        "self_attention_pairs": 256,
+        "cross_attention_pairs": 96,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4050250.3333333335,
+      "unexplained_instructions_per_call": 330237.6666666667,
+      "unexplained_share": 0.0815351248659445
+    },
+    {
+      "state": {
+        "video_tokens": 18,
+        "self_attention_pairs": 324,
+        "cross_attention_pairs": 162,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4182669.0,
+      "unexplained_instructions_per_call": 432137.3333333333,
+      "unexplained_share": 0.10331616805760468
+    },
+    {
+      "state": {
+        "video_tokens": 27,
+        "self_attention_pairs": 729,
+        "cross_attention_pairs": 162,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4446134.666666667,
+      "unexplained_instructions_per_call": 610355.6666666666,
+      "unexplained_share": 0.13727781824572113
+    },
+    {
+      "state": {
+        "video_tokens": 32,
+        "self_attention_pairs": 1024,
+        "cross_attention_pairs": 128,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4370080.0,
+      "unexplained_instructions_per_call": 496243.0,
+      "unexplained_share": 0.11355467176802256
+    },
+    {
+      "state": {
+        "video_tokens": 48,
+        "self_attention_pairs": 2304,
+        "cross_attention_pairs": 432,
+        "loaded_modules": 3495
+      },
+      "calls": 3,
+      "instructions_per_call": 4810032.666666667,
+      "unexplained_instructions_per_call": 751185.9999999998,
+      "unexplained_share": 0.15617066495321094
+    }
+  ],
+  "max_unexplained_share": 0.15617066495321094,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "video_tokens": 1677.1922218217626,
+      "self_attention_pairs": 148.822107334381,
+      "cross_attention_pairs": -101.83704020342317,
+      "loaded_modules": 0.0
+    },
+    "constant": 3685580.8717504954,
+    "dependent_columns": [
+      3
+    ]
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 24.972883617971092,
+  "raw_files": [
+    "run.1571626.json"
+  ]
+}

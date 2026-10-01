@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Token-processing loops may follow prompt plus incoming token counts rather than gated prompt length alone. This natural combined cardinality could explain work shared between prefill and subsequent decoding calls.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures completion statistics and cleanup."
+    },
+    {
+      "expression": "sum((len(o.new_token_ids) + (self.request_states[o.request_id].prompt_len if self.request_states[o.request_id].is_prefilling else 0) for o in engine_core_outputs if o.request_id in self.request_states))",
+      "name": "detokenization_tokens",
+      "rationale": "Counts incoming tokens on every update and prompt tokens on initial updates, matching the combined token-processing workload."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Separates the exceptional first-output completion regime."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/kv_cache_manager.py
++++ candidate/vllm/v1/core/kv_cache_manager.py
+@@ -443,7 +443,7 @@
+         """
+         # When loading KV data asynchronously, we may have zero new tokens to
+         # compute while still allocating slots for externally computed tokens.
+-        with perfmark.region("vllm-006"):
++        with perfmark.region("vllm-006", fixed_work=(1), initial_allocation=(int(request.num_computed_tokens == 0)), new_tokens=(num_new_tokens), active_request_tables=(len(self.coordinator.single_type_managers[0].req_to_blocks))):
+             if num_new_tokens == 0 and num_external_computed_tokens == 0:
+                 raise ValueError(
+                     "num_new_tokens must be greater than 0 when there are no "

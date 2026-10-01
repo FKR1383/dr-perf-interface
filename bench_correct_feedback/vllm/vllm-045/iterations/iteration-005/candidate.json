@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Token-block boundaries may explain steady-state variation better than text length. Complementary indicators preserve separation of the two exceptional states while testing sensitivity to how the fitted model allocates baseline costs.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures work proportional to prompt token count."
+    },
+    {
+      "expression": "len(prompt['prompt_token_ids']) // 16",
+      "name": "complete_token_blocks",
+      "rationale": "Tests whether block-based hashing and cache setup explain variation better than character count."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) != 10)",
+      "name": "outside_ten_token_regime",
+      "rationale": "Separates the exceptional ten-token initialization state using the steady-state regime as the active indicator."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) != 9)",
+      "name": "outside_nine_token_regime",
+      "rationale": "Separates the elevated nine-token state using a complementary indicator."
+    }
+  ]
+}

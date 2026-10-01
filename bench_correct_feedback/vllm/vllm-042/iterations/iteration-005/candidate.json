@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The flat medium-prompt indicator performed better than its ramp replacement. Combining it with a decreasing prompt-length basis may capture cost components that the previous positive length term could not explain, while retaining the startup proxies.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "max(0, self.vllm_config.model_config.max_model_len - len(request.prompt_token_ids)) if request.prompt_token_ids is not None else 0",
+      "name": "prompt_headroom",
+      "rationale": "Tests a decreasing length basis, allowing fitted cost components to be larger for shorter prompts."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+      "name": "nine_token_prompt",
+      "rationale": "Separates the elevated nine-token state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+      "name": "ten_token_prompt",
+      "rationale": "Separates the highest-cost observed state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+      "name": "medium_prompt",
+      "rationale": "Restores the flat medium-prompt indicator from the best-performing candidate."
+    }
+  ]
+}

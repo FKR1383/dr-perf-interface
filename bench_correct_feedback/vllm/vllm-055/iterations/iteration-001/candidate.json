@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily explained by batch size, the fixed and batch-dependent costs of stochastic sampling, and whether vocabulary-wide penalties are applied.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures batch-dependent greedy sampling and tensor processing."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy)",
+      "name": "random_sampling",
+      "rationale": "Captures fixed overhead from entering temperature scaling and stochastic sampling."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Captures vocabulary-wide top-k/top-p processing and random sampling across the batch."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide repetition, presence, and frequency penalty processing."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous shape model leaves substantial unexplained work at every state. Runtime initialization may distinguish repetitions of identical shapes; loaded-module cardinality tests this while retaining the main computational scaling terms.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+      "name": "video_tokens",
+      "rationale": "Tracks linear video processing for the fixed model."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+      "name": "self_attention_pairs",
+      "rationale": "Tracks quadratic self-attention work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+      "name": "cross_attention_pairs",
+      "rationale": "Tracks attention work involving the variable text context."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Cheap cardinality of existing runtime state that may distinguish lazy initialization from warmed execution across repeated shapes."
+    }
+  ]
+}

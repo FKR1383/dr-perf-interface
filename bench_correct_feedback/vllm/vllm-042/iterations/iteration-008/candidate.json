@@ -1,0 +1,21 @@
+{
+  "hypothesis": "A three-feature model may fit more reliably by sharing a coefficient between the two startup-associated states. Their observed excess costs are approximately proportional to this combined feature.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+      "name": "prompt_tokens",
+      "rationale": "Retains the prompt-size term."
+    },
+    {
+      "expression": "len(request.prompt_token_ids) - 8 if request.prompt_token_ids is not None and 9 <= len(request.prompt_token_ids) <= 10 else 0",
+      "name": "short_prompt_regime",
+      "rationale": "Combines the two elevated short-prompt states into one feature, reflecting their approximately twofold difference in excess cost."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and 12 <= len(request.prompt_token_ids) < 23)",
+      "name": "medium_prompt",
+      "rationale": "Retains the medium-prompt regime from the best-performing candidate."
+    }
+  ]
+}

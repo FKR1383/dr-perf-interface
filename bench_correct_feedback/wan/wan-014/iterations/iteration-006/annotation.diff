@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
++++ candidate/src/diffusers/models/autoencoders/autoencoder_kl_wan.py
+@@ -879,7 +879,7 @@
+ 
+     def forward(self, x, feat_cache=None, feat_idx=[0], first_chunk=False):
+         ## conv1
+-        with perfmark.region("wan-014"):
++        with perfmark.region("wan-014", expanded_volume=(x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] * (4 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)), spatial_boundary=(x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4])), cached_boundary=(x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0), has_cached_features=(int(feat_cache is not None and feat_cache[feat_idx[0]] is not None))):
+             if feat_cache is not None:
+                 idx = feat_idx[0]
+                 cache_x = x[:, :, -CACHE_T:, :, :].clone()

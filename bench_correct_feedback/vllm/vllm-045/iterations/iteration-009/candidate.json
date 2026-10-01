@@ -1,0 +1,26 @@
+{
+  "hypothesis": "An explicit constant worsened attribution. Active request cardinality adds an independent entry-state dimension that may explain initialization and container-growth costs hidden within the previous prompt-size states.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent input and detokenizer setup."
+    },
+    {
+      "expression": "1 + len(self.output_processor.request_states)",
+      "name": "active_request_extent",
+      "rationale": "Captures admission-state size, including empty-to-nonempty transitions and request-table growth."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+      "name": "ten_token_regime_basis",
+      "rationale": "Retains the exceptional ten-token regime using the previously better-performing positive basis."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+      "name": "nine_token_regime_basis",
+      "rationale": "Retains separation of the elevated nine-token state."
+    }
+  ]
+}

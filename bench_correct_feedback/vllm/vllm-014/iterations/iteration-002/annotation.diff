@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/request_queue.py
++++ candidate/vllm/v1/core/sched/request_queue.py
+@@ -78,7 +78,7 @@
+ 
+     def add_request(self, request: Request) -> None:
+         """Add a request to the queue according to FCFS policy."""
+-        with perfmark.region("vllm-014"):
++        with perfmark.region("vllm-014", queue_depth=(len(self)), empty_queue=(int(len(self) == 0))):
+             self.append(request)
+ 
+     def pop_request(self) -> Request:

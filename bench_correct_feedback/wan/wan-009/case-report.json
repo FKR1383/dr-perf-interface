@@ -1,0 +1,71 @@
+{
+  "agent_PCVs_thread": "01a0ed6d-ad49-7af1-8b88-a5b94824d915",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 2; need 4",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed attribute-assignment overhead, new cache-list construction, and disposal of previous cache lists. The varying index values should not materially affect reset cost.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "self._cached_conv_counts['decoder'] + self._cached_conv_counts['encoder']",
+          "name": "cache_slots",
+          "rationale": "Captures the work of allocating and filling the two feature-cache lists."
+        },
+        {
+          "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+          "name": "existing_cache_slots",
+          "rationale": "Captures disposal of existing cache lists and distinguishes initial cache creation from subsequent resets."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.13009869431504845,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The measured work is nearly constant across calls, with a small initial-creation effect. Including the supplied entry index exposes six distinct workload states; its fitted contribution should be near zero, while existing cache size captures the initialization difference.",
+      "irregularity_percent": 0.13009869431504845,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "self._conv_idx[0]",
+          "name": "entry_cache_index",
+          "rationale": "Identifies the six supplied entry index states whose index lists are reset by the region."
+        },
+        {
+          "expression": "len(self.__dict__.get('_feat_map', ())) + len(self.__dict__.get('_enc_feat_map', ()))",
+          "name": "existing_cache_slots",
+          "rationale": "Distinguishes initial cache creation from replacement and disposal of existing cache lists."
+        }
+      ]
+    }
+  ],
+  "case": "wan-009",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "00e880d4388f88685d791b292ee8af2972bd74e76763acdabe15410a0c7c3290",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

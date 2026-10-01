@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The remaining growth may reflect discrete query blocking rather than quadratic query work. A 32-row tile count captures the extra block at length 48 while preserving linear, pairwise, and key-remainder costs.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * key.shape[1]",
+      "name": "attention_pairs",
+      "rationale": "Tracks attention matrix arithmetic."
+    },
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks per-query processing and output work."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "scalar_tail_pairs",
+      "rationale": "Tracks scalar remainder processing along the key dimension."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * ((query.shape[1] + 31) // 32)",
+      "name": "query_tiles",
+      "rationale": "Models per-tile overhead for 32-row CPU attention blocks, including the additional block at query length 48."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Module cardinality did not distinguish the exceptionally expensive first request. Tokenizer-local lazy vocabulary initialization may explain that cost; tokenizer dictionary state can expose this independently of prompt length.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures the token-ID scans performed during input validation."
+    },
+    {
+      "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+      "name": "sampling_enabled",
+      "rationale": "Distinguishes greedy and sampling parameter paths."
+    },
+    {
+      "expression": "len(getattr(self.tokenizer, '__dict__', {})) if self.tokenizer is not None else 0",
+      "name": "tokenizer_state_size",
+      "rationale": "Observes tokenizer initialization and cached-property state through a cheap dictionary cardinality."
+    },
+    {
+      "expression": "int(self.tokenizer is not None and 'max_token_id' not in getattr(self.tokenizer, '__dict__', {}))",
+      "name": "uncached_max_token_id",
+      "rationale": "Tests whether the vocabulary-bound property used by validation still requires initialization, without evaluating that property."
+    }
+  ]
+}

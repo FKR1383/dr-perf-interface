@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Peeking performs approximately constant work across heap sizes. A fitted intercept with a near-zero heap-size coefficient should explain instruction counts across the twelve distinct states.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(self._heap)",
+      "name": "heap_size",
+      "rationale": "Cheap entry-state cardinality supplies twelve distinct states, satisfying the minimum state-point requirement while allowing Dr. Perf to fit the expected constant cost."
+    }
+  ]
+}

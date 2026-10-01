@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Short-context costs approximately follow tokens plus requests. A reduced three-column model tests whether sharing their baseline coefficient resolves unstable attribution while retaining separate token and request costs for additional KV blocks.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens + attn_metadata.query_start_loc.numel() - 1",
+      "name": "query_and_request_units",
+      "rationale": "Combines token processing and request setup into a single predictor, reducing overlap between fitted columns."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "additional_token_blocks",
+      "rationale": "Captures additional token-dependent work when the KV context spans multiple blocks."
+    },
+    {
+      "expression": "0 if attn_metadata is None else (attn_metadata.query_start_loc.numel() - 1) * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "additional_request_blocks",
+      "rationale": "Captures additional per-request block overhead, particularly visible during decode."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Explicit shape regimes may capture kernel-dependent instruction costs missed by polynomial work estimates. The two remaining regimes\u2014medium initial chunks and small temporal chunks\u2014have similar observed total costs and share the fitted baseline.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] < 1024)",
+      "name": "initial_small_spatial",
+      "rationale": "Separates initial chunks below the medium spatial size into their own execution regime."
+    },
+    {
+      "expression": "int(x.shape[2] == 1 and x.shape[3] * x.shape[4] > 1024)",
+      "name": "initial_large_spatial",
+      "rationale": "Separates large initial chunks, whose instruction scaling remains poorly explained by area."
+    },
+    {
+      "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] == 1024)",
+      "name": "temporal_medium_spatial",
+      "rationale": "Allows an independent cost for medium spatial inputs with multiple temporal frames."
+    },
+    {
+      "expression": "int(x.shape[2] > 1 and x.shape[3] * x.shape[4] > 1024)",
+      "name": "temporal_large_spatial",
+      "rationale": "Allows an independent cost for large spatial inputs with multiple temporal frames."
+    }
+  ]
+}

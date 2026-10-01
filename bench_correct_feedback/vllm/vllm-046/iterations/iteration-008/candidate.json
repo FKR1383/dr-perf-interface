@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Sampling-option predictors explain little additional instruction work. A quadratic batch-size term tests whether the persistent residual instead reflects nonlinear batch processing; retaining raw request and token counts preserves the strongest existing attribution.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+      "name": "active_requests",
+      "rationale": "Retains the request cardinality that explains substantial per-request work."
+    },
+    {
+      "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+      "name": "pending_tokens",
+      "rationale": "Retains the successful predictor for model token execution."
+    },
+    {
+      "expression": "len(self.engine_core.engine_core.scheduler.requests) ** 2",
+      "name": "request_pairs",
+      "rationale": "Tests nonlinear batch-size effects in execution and sampling that the previous sampling-option features did not explain."
+    },
+    {
+      "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+      "name": "two_request_admission",
+      "rationale": "Separates the expensive first mixed-sampling admission using the established workload-specific proxy."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The fourfold boundary weighting remains the best tested structure; onefold and twofold weighting performed substantially worse. Testing eightfold weighting determines whether the remaining nonlinear spatial work is more concentrated in cached execution.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "latent_volume",
+      "rationale": "Captures spatial-volume work shared across decoder paths."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4] if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 0",
+      "name": "cached_latent_volume",
+      "rationale": "Allows additional cached volume work to be fitted independently."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "has_cached_features",
+      "rationale": "Captures fixed cache-dependent overhead."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * (x.shape[3] + x.shape[4]) * (8 if feat_cache is not None and feat_cache[feat_idx[0]] is not None else 1)",
+      "name": "cache_weighted_boundary",
+      "rationale": "Tests stronger cache dependence in nonlinear spatial work, including temporal convolution and rearrangement operations."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately fixed overhead plus linear costs in row count, existing token count, and padded tensor size.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(output_token_ids)",
+      "name": "row_count",
+      "rationale": "Captures per-row traversal and tensor conversion overhead."
+    },
+    {
+      "expression": "sum((len(row) for row in output_token_ids))",
+      "name": "token_count",
+      "rationale": "Captures work reading and converting existing token IDs."
+    },
+    {
+      "expression": "len(output_token_ids) * max((len(row) for row in output_token_ids), default=0)",
+      "name": "padded_elements",
+      "rationale": "Captures rectangular tensor allocation, padding, and initialization work."
+    }
+  ]
+}

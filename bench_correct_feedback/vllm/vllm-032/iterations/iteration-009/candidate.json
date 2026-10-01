@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Admission-only singleton and pair indicators produced the best result so far but left systematic unexplained work. Applying those cardinality distinctions to the entire active population tests whether the missing behavior follows container size across both scheduling paths.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures per-request decode work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures per-request admission work."
+    },
+    {
+      "expression": "int(len(self.running) + len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "singleton_population",
+      "rationale": "Tests whether singleton-specific container and allocation behavior also occurs during decode, rather than only admission."
+    },
+    {
+      "expression": "int(len(self.running) + len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "pair_population",
+      "rationale": "Tests whether two-request container and allocation behavior is shared across admission and decode."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count follows the number of sift-up comparisons and swaps, with separate overhead for list growth and initial insertion.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(len(self._heap) >= 1) + int(len(self._heap) >= 3) + int(len(self._heap) >= 7)",
+      "name": "sift_depth",
+      "rationale": "Computes the insertion depth for the exercised heap sizes 0 through 11. Decreasing incoming priorities cause each insertion to traverse this entire depth."
+    },
+    {
+      "expression": "int(len(self._heap) == 4 or len(self._heap) == 8)",
+      "name": "list_growth",
+      "rationale": "Identifies subsequent list capacity growth points for this initially empty heap under standard CPython allocation."
+    },
+    {
+      "expression": "int(len(self._heap) == 0)",
+      "name": "empty_heap",
+      "rationale": "Captures initial allocation and the distinct first-insertion path."
+    }
+  ]
+}

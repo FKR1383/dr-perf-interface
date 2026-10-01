@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed operator overhead plus elementwise work, with a separate overhead for the noncontiguous channel chunk in multi-batch inputs.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "parameters.numel() // 2",
+      "name": "distribution_elements",
+      "rationale": "Counts elements processed by clamp, multiplication, and both exponentials."
+    },
+    {
+      "expression": "int(parameters.shape[0] > 1)",
+      "name": "strided_channel_chunk",
+      "rationale": "Captures additional tensor iteration setup when channel splitting produces a noncontiguous log-variance view across batches."
+    }
+  ]
+}

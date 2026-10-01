@@ -1,0 +1,26 @@
+{
+  "hypothesis": "For the single-group OPT workload, instruction count should be explained primarily by fixed initial-admission overhead plus the numbers of newly allocated, newly cached, and reused prefix blocks.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, (min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens + num_new_tokens + num_lookahead_tokens, self.max_model_len) + self.coordinator.single_type_managers[0].block_size - 1) // self.coordinator.single_type_managers[0].block_size - max(len(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())), len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0))",
+      "name": "new_blocks",
+      "rationale": "Estimates newly allocated blocks, which drive block-pool allocation and request-table updates."
+    },
+    {
+      "expression": "max(0, min(min(request.num_computed_tokens + num_new_computed_tokens + num_external_computed_tokens, self.max_model_len) + num_new_tokens, request.num_tokens) // self.coordinator.single_type_managers[0].block_size - (request.num_computed_tokens + num_new_computed_tokens) // self.coordinator.single_type_managers[0].block_size) if self.enable_caching and (not delay_cache_blocks) else 0",
+      "name": "new_full_cached_blocks",
+      "rationale": "Estimates newly completed blocks requiring hash assignment and prefix-cache insertion."
+    },
+    {
+      "expression": "len(new_computed_blocks.blocks[0]) if new_computed_blocks is not None else 0",
+      "name": "prefix_hit_blocks",
+      "rationale": "Captures work attaching and touching reused prefix blocks."
+    },
+    {
+      "expression": "int(request.num_computed_tokens == 0)",
+      "name": "initial_allocation",
+      "rationale": "Separates initial request admission and bookkeeping from incremental decoding."
+    }
+  ]
+}

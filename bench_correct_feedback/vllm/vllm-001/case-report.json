@@ -1,0 +1,236 @@
+{
+  "agent_PCVs_thread": "01a0ef48-97f2-7f91-be9d-56fe98c88e42",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 97.24041142621516,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily a fixed preprocessing cost plus text-length-dependent tokenization, with additional costs for structured prompts, option handling, and explicit truncation.",
+      "irregularity_percent": 97.24041142621516,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+          "name": "prompt_chars",
+          "rationale": "Text length predicts tokenizer scanning and token construction work."
+        },
+        {
+          "expression": "int(isinstance(prompt, dict))",
+          "name": "structured_prompt",
+          "rationale": "Dictionary prompts take a distinct prompt parsing path."
+        },
+        {
+          "expression": "len(tokenization_kwargs or {})",
+          "name": "tokenization_option_count",
+          "rationale": "Option merging and validation depend on the number of supplied tokenization options."
+        },
+        {
+          "expression": "int('truncate_prompt_tokens' in (tokenization_kwargs or {}))",
+          "name": "explicit_truncation",
+          "rationale": "Explicit truncation can introduce additional tokenization configuration and token processing work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 25.06422264584457,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Separating the exceptional default-options state should prevent its cost from distorting the fit. Remaining costs should largely follow text length and special-token processing, with smaller option-handling costs.",
+      "irregularity_percent": 25.06422264584457,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+          "name": "prompt_chars",
+          "rationale": "Captures text-length-dependent tokenization work."
+        },
+        {
+          "expression": "int(tokenization_kwargs is None)",
+          "name": "default_tokenization_options",
+          "rationale": "Separates the default-options entry state, which contains the observed exceptionally expensive call."
+        },
+        {
+          "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True))",
+          "name": "add_special_tokens",
+          "rationale": "Special-token processing plausibly explains the higher costs in alternating batches with similar text lengths."
+        },
+        {
+          "expression": "len(tokenization_kwargs or {})",
+          "name": "tokenization_option_count",
+          "rationale": "Captures option merging and validation while preserving distinctions among entry states."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 26.1098656736017,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The previous formula systematically underpredicts ordinary calls despite separating the exceptional call. Rescaling the same explanatory features tests whether numerical conditioning or coefficient regularization causes this bias.",
+      "irregularity_percent": 26.1098656736017,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "1000 * len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+          "name": "prompt_chars_scaled",
+          "rationale": "Retains text-length dependence while increasing feature scale for numerical fitting."
+        },
+        {
+          "expression": "1000 * int(tokenization_kwargs is None)",
+          "name": "default_options_scaled",
+          "rationale": "Separates the exceptionally expensive default-options state without requiring a multimillion-sized fitted coefficient."
+        },
+        {
+          "expression": "1000 * int((tokenization_kwargs or {}).get('add_special_tokens', True))",
+          "name": "special_tokens_scaled",
+          "rationale": "Retains the special-token processing distinction at the same enlarged feature scale."
+        },
+        {
+          "expression": "1000 * len(tokenization_kwargs or {})",
+          "name": "option_count_scaled",
+          "rationale": "Retains option-handling dependence and the observed state distinctions."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 21.344115481990393,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Rescaling did not help. A quadratic length term and an interaction between special-token processing and truncation should better explain the ordinary-call costs while preserving the exceptional default-options state.",
+      "irregularity_percent": 21.344115481990393,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(tokenization_kwargs is None)",
+          "name": "default_options",
+          "rationale": "Separates the entry state containing the exceptional initialization cost."
+        },
+        {
+          "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+          "name": "prompt_chars",
+          "rationale": "Models tokenizer work that grows linearly with input length."
+        },
+        {
+          "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt']) ** 2",
+          "name": "prompt_chars_squared",
+          "rationale": "Allows curvature in text-processing cost that the previous linear model could not explain."
+        },
+        {
+          "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))",
+          "name": "special_tokens_without_truncation",
+          "rationale": "Captures the observed special-token cost increase before explicit truncation options are supplied."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.438265631954792,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "The remaining unexplained work may scale with lexical units rather than a polynomial of character length. Combining word count and character count should better represent tokenizer and token-list processing costs.",
+      "irregularity_percent": 17.438265631954792,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(tokenization_kwargs is None)",
+          "name": "default_options",
+          "rationale": "Separates the entry state containing the exceptional initialization cost."
+        },
+        {
+          "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+          "name": "prompt_chars",
+          "rationale": "Captures character scanning and text conversion work."
+        },
+        {
+          "expression": "(prompt if isinstance(prompt, str) else prompt['prompt']).count(' ') + 1",
+          "name": "prompt_word_count",
+          "rationale": "Provides a cheap lexical-unit count to distinguish token-dependent work from character-dependent work."
+        },
+        {
+          "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))",
+          "name": "special_tokens_without_truncation",
+          "rationale": "Captures the higher observed cost of special-token processing without explicit truncation."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 1.069787904401032,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "Observed costs form short, medium, and long prompt groups with small within-group variation. Explicit length regimes may explain these costs better than continuous character and word-count models while retaining six distinct states.",
+      "irregularity_percent": 1.069787904401032,
+      "iteration": 6,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(tokenization_kwargs is None)",
+          "name": "default_options",
+          "rationale": "Separates the entry state containing the exceptional initialization cost."
+        },
+        {
+          "expression": "int(len(prompt if isinstance(prompt, str) else prompt['prompt']) > 40)",
+          "name": "longer_than_40_chars",
+          "rationale": "Separates short prompts from the medium and long prompts with substantially higher observed processing costs."
+        },
+        {
+          "expression": "int(len(prompt if isinstance(prompt, str) else prompt['prompt']) > 100)",
+          "name": "longer_than_100_chars",
+          "rationale": "Allows an independent cost increment for long prompts instead of forcing a continuous length relationship."
+        },
+        {
+          "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))",
+          "name": "special_tokens_without_truncation",
+          "rationale": "Separates the observed additional cost when special tokens are enabled without explicit truncation."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-001",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "feed43640d9c3baa7e78ff9f5757681d2cde3dbb2df0ef27eb7e1143a6d55e29",
+  "iterations": 6,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

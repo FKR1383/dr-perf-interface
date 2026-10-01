@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily a fixed preprocessing cost plus text-length-dependent tokenization, with additional costs for structured prompts, option handling, and explicit truncation.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+      "name": "prompt_chars",
+      "rationale": "Text length predicts tokenizer scanning and token construction work."
+    },
+    {
+      "expression": "int(isinstance(prompt, dict))",
+      "name": "structured_prompt",
+      "rationale": "Dictionary prompts take a distinct prompt parsing path."
+    },
+    {
+      "expression": "len(tokenization_kwargs or {})",
+      "name": "tokenization_option_count",
+      "rationale": "Option merging and validation depend on the number of supplied tokenization options."
+    },
+    {
+      "expression": "int('truncate_prompt_tokens' in (tokenization_kwargs or {}))",
+      "name": "explicit_truncation",
+      "rationale": "Explicit truncation can introduce additional tokenization configuration and token processing work."
+    }
+  ]
+}

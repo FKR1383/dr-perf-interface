@@ -1,0 +1,11 @@
+{
+  "hypothesis": "The previous measurement pooled all 39 calls into one state. Grouping by prompt sequence length should provide sufficient state points while retaining an approximately constant instruction-count model.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "prompt_sequence_length",
+      "rationale": "Provides three distinct entry states (4, 8, and 12) for validating the approximately constant region cost across prompt configurations. Its fitted effect is expected to be small."
+    }
+  ]
+}

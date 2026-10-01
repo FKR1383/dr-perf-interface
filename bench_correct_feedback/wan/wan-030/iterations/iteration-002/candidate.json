@@ -1,0 +1,16 @@
+{
+  "hypothesis": "The region's cost should remain approximately constant across conditioning lengths because its tensor sizes are unchanged. Conditioning length distinguishes existing workload states so Dr. Perf can evaluate that hypothesis.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "noise_pred.numel()",
+      "name": "noise_elements",
+      "rationale": "Captures the elementwise arithmetic workload, which is constant in this fixture."
+    },
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "conditioning_length",
+      "rationale": "Provides three distinct entry states from the conditioning lengths exercised by the fixed workload, allowing comparison of the otherwise constant arithmetic cost across execution contexts."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Independent self-attention and cross-attention work estimates may explain their different scaling better than shared token slopes. Combining linear and quadratic work also captures increasing marginal cost at larger sequence lengths.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "int(rotary_emb is not None)",
+      "name": "uses_rotary",
+      "rationale": "Separates fixed rotary operator overhead from the cross-attention baseline."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + 2 * attn.inner_dim) if encoder_hidden_states is None else 0",
+      "name": "self_attention_work",
+      "rationale": "Combines quadratic attention work with linear projection work, giving self-attention an independent fitted coefficient."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] * encoder_hidden_states.shape[1] + attn.inner_dim * (hidden_states.shape[1] + encoder_hidden_states.shape[1])) if encoder_hidden_states is not None else 0",
+      "name": "cross_attention_work",
+      "rationale": "Captures cross-attention pair work and query/context projection work independently of self-attention."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 16) if encoder_hidden_states is None else 0",
+      "name": "self_attention_tail",
+      "rationale": "Retains a separate feature for the apparent self-attention remainder cost."
+    }
+  ]
+}

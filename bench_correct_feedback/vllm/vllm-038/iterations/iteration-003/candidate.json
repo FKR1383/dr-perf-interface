@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The stable unexplained fraction did not decrease with cheaper observations. Explicit sampled-token cardinality may account for nested token-processing work that scheduled-request cardinality alone leaves unexplained.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures iteration over scheduled requests."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures request completion and cleanup."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures first-output processing and prefill statistics."
+    },
+    {
+      "expression": "sum((len(token_ids) for token_ids in model_runner_output.sampled_token_ids))",
+      "name": "sampled_tokens",
+      "rationale": "Measures the token-processing loops inside request updates, including token appends and stop checks."
+    }
+  ]
+}

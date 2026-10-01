@@ -1,0 +1,86 @@
+{
+  "agent_PCVs_thread": "01a0edb4-ca68-7e81-9aa0-637b31d6faea",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 5; need 6",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "With two encoder calls per invocation and fixed model dimensions, instruction count is primarily explained by per-prompt overhead, padded token volume, batched attention size, and shared relative-position work.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "1 if isinstance(prompt, str) else len(prompt)",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt cleaning, tokenization, slicing, and padding overhead."
+        },
+        {
+          "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Models encoder projections, feed-forward computation, and embedding copies."
+        },
+        {
+          "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length ** 2",
+          "name": "attention_elements",
+          "rationale": "Models quadratic attention computation across the batch."
+        },
+        {
+          "expression": "max_sequence_length ** 2",
+          "name": "position_pairs",
+          "rationale": "Captures relative-position bias construction shared across batch elements."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 7.9844312815755725,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Measured instruction counts vary only modestly with tensor dimensions. Per-prompt overhead, padded token volume, and input text length should explain that variation while distinguishing all six workload states with three features.",
+      "irregularity_percent": 7.9844312815755725,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "1 if isinstance(prompt, str) else len(prompt)",
+          "name": "batch_size",
+          "rationale": "Captures per-prompt tokenization, cleaning, and tensor assembly overhead."
+        },
+        {
+          "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+          "name": "padded_tokens",
+          "rationale": "Captures encoder and embedding work proportional to padded token volume."
+        },
+        {
+          "expression": "len(prompt) if isinstance(prompt, str) else sum((len(text) for text in prompt))",
+          "name": "prompt_characters",
+          "rationale": "Captures text-processing work and distinguishes the two workloads with identical batch size and sequence length."
+        }
+      ]
+    }
+  ],
+  "case": "wan-035",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "4feecb9cffd2264d9024147562469be33918af9922ef0218791ad864e5b41715",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

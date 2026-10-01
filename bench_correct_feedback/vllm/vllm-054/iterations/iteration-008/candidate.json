@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Reparameterizing penalty work as a first-row baseline plus additional rows, and masking as shared activation plus singleton overhead, may improve the black-box fitter's attribution while preserving the observed cost regimes.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "int(not sampling_metadata.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Models the complete single-request penalty path."
+    },
+    {
+      "expression": "logits.shape[0] - 1 if not sampling_metadata.no_penalties else 0",
+      "name": "additional_penalty_rows",
+      "rationale": "Models incremental penalty work beyond the first request, separating it from the single-request baseline."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) > 0)",
+      "name": "unpenalized_mask_active",
+      "rationale": "Captures masking overhead shared by both observed unpenalized masking cases."
+    },
+    {
+      "expression": "int(sampling_metadata.no_penalties and sum((len(getattr(processor, 'logits_slice', ([], []))[0]) for processor in sampling_metadata.logitsprocs.non_argmax_invariant)) == 1)",
+      "name": "unpenalized_single_mask",
+      "rationale": "Captures the additional cost observed for singleton masking."
+    }
+  ]
+}

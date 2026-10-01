@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The dominant unexplained cost is lazy runtime initialization. Module cardinality and its square may separate cold and warmed execution, while token count and sampling mode explain steady-state differences.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Captures the linear minimum and maximum token-ID validation scans."
+    },
+    {
+      "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+      "name": "sampling_enabled",
+      "rationale": "Captures differences between greedy and sampling parameter processing."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_module_count",
+      "rationale": "Runtime import state can distinguish expensive lazy initialization from subsequent requests; the first report contains one exceptionally expensive call."
+    },
+    {
+      "expression": "len(__import__('sys').modules) ** 2",
+      "name": "loaded_module_count_squared",
+      "rationale": "Allows nonlinear dependence on runtime initialization state as different sets of dependencies become loaded."
+    }
+  ]
+}

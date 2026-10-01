@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately linear in the number of prompts, total characters, and whitespace substitutions.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(prompt)",
+      "name": "prompt_count",
+      "rationale": "Captures per-string cleaning calls and list construction overhead."
+    },
+    {
+      "expression": "sum((len(u) for u in prompt))",
+      "name": "total_characters",
+      "rationale": "Captures length-dependent scanning in text repair, HTML unescaping, and whitespace normalization."
+    },
+    {
+      "expression": "sum((u.count(' ') for u in prompt))",
+      "name": "space_count",
+      "rationale": "Captures whitespace matches and substitutions for the supplied ASCII prompts."
+    }
+  ]
+}

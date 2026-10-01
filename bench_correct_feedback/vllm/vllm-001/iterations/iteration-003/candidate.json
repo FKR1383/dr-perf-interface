@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous formula systematically underpredicts ordinary calls despite separating the exceptional call. Rescaling the same explanatory features tests whether numerical conditioning or coefficient regularization causes this bias.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "1000 * len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+      "name": "prompt_chars_scaled",
+      "rationale": "Retains text-length dependence while increasing feature scale for numerical fitting."
+    },
+    {
+      "expression": "1000 * int(tokenization_kwargs is None)",
+      "name": "default_options_scaled",
+      "rationale": "Separates the exceptionally expensive default-options state without requiring a multimillion-sized fitted coefficient."
+    },
+    {
+      "expression": "1000 * int((tokenization_kwargs or {}).get('add_special_tokens', True))",
+      "name": "special_tokens_scaled",
+      "rationale": "Retains the special-token processing distinction at the same enlarged feature scale."
+    },
+    {
+      "expression": "1000 * len(tokenization_kwargs or {})",
+      "name": "option_count_scaled",
+      "rationale": "Retains option-handling dependence and the observed state distinctions."
+    }
+  ]
+}

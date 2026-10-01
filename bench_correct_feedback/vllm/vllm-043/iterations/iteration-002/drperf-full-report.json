@@ -1,0 +1,185 @@
+{
+  "case": "vllm-043",
+  "validity_warnings": [],
+  "pcv_names": [
+    "decoded_token_count",
+    "nonempty_update",
+    "skipped_terminal_token",
+    "short_nonempty_batch"
+  ],
+  "distinct_states": 12,
+  "required_states": 6,
+  "calls": 12,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "decoded_token_count": 0,
+        "nonempty_update": 0,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 1925.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 1,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 15586.0,
+      "unexplained_instructions_per_call": 1545.0,
+      "unexplained_share": 0.09912742204542538
+    },
+    {
+      "state": {
+        "decoded_token_count": 2,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 16226.0,
+      "unexplained_instructions_per_call": 1197.0,
+      "unexplained_share": 0.07377049180327869
+    },
+    {
+      "state": {
+        "decoded_token_count": 3,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 12452.0,
+      "unexplained_instructions_per_call": 54.0,
+      "unexplained_share": 0.004336652746546739
+    },
+    {
+      "state": {
+        "decoded_token_count": 4,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 14056.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 5,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 16436.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 5,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 1,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 18361.0,
+      "unexplained_instructions_per_call": 243.0,
+      "unexplained_share": 0.013234573280322423
+    },
+    {
+      "state": {
+        "decoded_token_count": 7,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 20039.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 8,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 21835.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 9,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 23985.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 10,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 25754.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    },
+    {
+      "state": {
+        "decoded_token_count": 11,
+        "nonempty_update": 1,
+        "skipped_terminal_token": 0,
+        "short_nonempty_batch": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 27751.0,
+      "unexplained_instructions_per_call": 0.0,
+      "unexplained_share": 0.0
+    }
+  ],
+  "max_unexplained_share": 0.09912742204542538,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "decoded_token_count": 1675.0736842105264,
+      "nonempty_update": 2794.2199999999993,
+      "skipped_terminal_token": 819.5978947368421,
+      "short_nonempty_batch": 1411.0210526315793
+    },
+    "constant": 5675.762543859652,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 11.533427837770432,
+  "raw_files": [
+    "run.2298308.json"
+  ]
+}

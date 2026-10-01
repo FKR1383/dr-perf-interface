@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The small-batch excess costs are approximately in a three-to-two ratio. Combining their indicators frees a feature for the admission-path fixed cost, which the previous candidate could not model independently.",
+  "iteration": 6,
+  "pcvs": [
+    {
+      "expression": "len(self.running)",
+      "name": "running_requests",
+      "rationale": "Captures per-request decode scheduling work."
+    },
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Captures per-request admission work."
+    },
+    {
+      "expression": "int(bool(self.waiting or self.skipped_waiting))",
+      "name": "has_waiting_requests",
+      "rationale": "Separates fixed admission-path costs from decode-path costs."
+    },
+    {
+      "expression": "4 - len(self.waiting) - len(self.skipped_waiting) if 0 < len(self.waiting) + len(self.skipped_waiting) <= 2 else 0",
+      "name": "small_admission_adjustment",
+      "rationale": "Combines the two exceptional small-admission states into one feature, assigning singleton and pair batches values of three and two."
+    }
+  ]
+}

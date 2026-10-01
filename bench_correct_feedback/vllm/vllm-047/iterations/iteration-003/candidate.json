@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Batch size, completions, and first-output prompt length explain ordinary work. A separate regime for batches that finish entirely on their first output may isolate the largest residual; this remains a hypothesis rather than an established cause.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures completion statistics and cleanup."
+    },
+    {
+      "expression": "sum((self.request_states[o.request_id].prompt_len for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_prompt_tokens",
+      "rationale": "Captures prompt-dependent first-output detokenization work."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Separates batches completed entirely on their first output, including the exceptional high-cost observation."
+    }
+  ]
+}

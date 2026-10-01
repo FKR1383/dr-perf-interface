@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately affine in the number of blended rows, with fixed entry overhead.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, min(a.shape[-2], b.shape[-2], blend_extent))",
+      "name": "blended_rows",
+      "rationale": "Counts executed loop iterations. The fixed workload keeps row shape and dtype constant, so each iteration performs the same slicing, arithmetic, and assignment work."
+    }
+  ]
+}

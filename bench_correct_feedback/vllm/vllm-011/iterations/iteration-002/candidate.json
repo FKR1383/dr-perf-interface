@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Block-release work was constant in the first measurement. Request-table cardinality captures varying bookkeeping state during batch completion and permits testing whether the nearly fixed release cost has residual dependence on table size.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "sum((len(mgr.req_to_blocks.get(request.request_id, ())) for mgr in self.coordinator.single_type_managers)) + len(self._partial_tail_pins.get(request.request_id, ()))",
+      "name": "blocks_released",
+      "rationale": "Measures block-release work, although all observed calls released one block."
+    },
+    {
+      "expression": "sum((len(mgr.req_to_blocks) for mgr in self.coordinator.single_type_managers))",
+      "name": "tracked_requests",
+      "rationale": "Measures the size of request bookkeeping being modified by coordinator.free; batch completion should expose multiple entry states."
+    }
+  ]
+}

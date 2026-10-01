@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Positive feature offsets reduced maximum irregularity from 12.26% to 11.47%. A larger offset tests whether improved baseline attribution can bring the remaining nine-token residual below 10%, while preserving the same explanatory state distinctions.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent work and distinguishes the observed prompt lengths."
+    },
+    {
+      "expression": "16 + len(prompt['prompt_token_ids']) // 16",
+      "name": "token_block_basis",
+      "rationale": "Captures block-dependent work with a positive baseline."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 10)",
+      "name": "ten_token_regime_basis",
+      "rationale": "Preserves separation of the exceptionally costly ten-token state."
+    },
+    {
+      "expression": "16 + int(len(prompt['prompt_token_ids']) != 9)",
+      "name": "nine_token_regime_basis",
+      "rationale": "Preserves separation of the elevated nine-token state."
+    }
+  ]
+}

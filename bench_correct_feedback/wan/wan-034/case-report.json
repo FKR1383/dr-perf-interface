@@ -1,0 +1,41 @@
+{
+  "agent_PCVs_thread": "01a0edb4-4a0e-75d3-9b49-c8d6351a154d",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.2950369206684584,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is dominated by fixed operation overhead, per-prompt tensor operations, and a smaller contribution proportional to the padded embedding volume.",
+      "irregularity_percent": 0.2950369206684584,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "batch_size",
+          "name": "batch_size",
+          "rationale": "Tracks per-prompt slicing, zero allocation, concatenation, and tensor iteration overhead."
+        },
+        {
+          "expression": "batch_size * max_sequence_length * prompt_embeds.shape[2]",
+          "name": "embedding_elements",
+          "rationale": "Tracks the tensor volume processed by padding, concatenation, stacking, and repetition in the fixed workload."
+        }
+      ]
+    }
+  ],
+  "case": "wan-034",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "d390b68f4721e5cc5f81b9f6b1a8a4fb2f2725329ac62c7f3f084221f9e4ef85",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

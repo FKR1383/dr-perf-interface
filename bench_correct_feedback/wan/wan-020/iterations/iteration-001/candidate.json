@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed per-call overhead plus a linear term in attention-output elements; the workload fixes projection width and disables image addition and dropout.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "hidden_states.numel()",
+      "name": "output_elements",
+      "rationale": "With fixed projection dimensions, tensor flattening or copying and the output linear projection scale with the number of attention-output elements. Evaluation-mode dropout adds only fixed overhead."
+    }
+  ]
+}

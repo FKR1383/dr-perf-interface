@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous expression likely failed because compilation-cache attributes were unavailable before first use. Guarded lookup preserves the cold-compilation hypothesis without requiring those attributes to exist at entry.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures batch-dependent baseline tensor processing."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Captures steady-state stochastic sampling and top-k/top-p processing."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide penalty processing."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_inductor', None), 'codecache', None), 'PyCodeCache', None), 'cache', {})))",
+      "name": "cold_random_compilation",
+      "rationale": "Observes compilation-cache emptiness while safely handling lazily initialized runtime attributes."
+    }
+  ]
+}

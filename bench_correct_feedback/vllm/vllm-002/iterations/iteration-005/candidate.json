@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A shared request-count feature should explain common execution paths more directly than disjoint counts, while medium- and long-prompt features explain their additional work.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Captures the initial default-options call and its additional initialization work."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Explains common per-request work across every prompt-length regime."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if 64 <= len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) < 128 else 0",
+      "name": "medium_prompt_requests",
+      "rationale": "Captures additional processing associated with medium-length prompts."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else len(params) if len(prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]['prompt'] if 'prompt' in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0] else prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable[0]) >= 128 else 0",
+      "name": "long_prompt_requests",
+      "rationale": "Captures additional processing associated with long prompts."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Native tensor dimensions and scheduler metadata cardinality may expose kernel work missing from earlier predictors. All expressions use constant-time scalar or shape access.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "query.shape[0]",
+      "name": "query_rows",
+      "rationale": "Observes the query tensor's native row count directly."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.scheduler_metadata is None else attn_metadata.scheduler_metadata.numel()",
+      "name": "scheduler_elements",
+      "rationale": "Tests whether scheduler metadata cardinality captures native task partitioning."
+    },
+    {
+      "expression": "0 if attn_metadata is None else query.shape[0] * ((attn_metadata.max_seq_len + 31) // 32)",
+      "name": "query_context_blocks",
+      "rationale": "Captures query work across rounded context blocks using tensor dimensions."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+      "name": "sequence_count",
+      "rationale": "Measures per-sequence overhead from the native kernel's sequence-length tensor."
+    }
+  ]
+}

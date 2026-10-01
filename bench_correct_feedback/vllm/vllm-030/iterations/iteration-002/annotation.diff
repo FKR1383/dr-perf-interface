@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/core/sched/scheduler.py
++++ candidate/vllm/v1/core/sched/scheduler.py
+@@ -2300,7 +2300,7 @@
+         return self.kv_cache_manager.usage
+ 
+     def add_request(self, request: Request) -> None:
+-        with perfmark.region("vllm-030"):
++        with perfmark.region("vllm-030", waiting_depth=(len(self.waiting)), heap_height=(0 if len(self.waiting) == 0 else 1 if len(self.waiting) < 3 else 2 if len(self.waiting) < 7 else 3), incoming_priority=(request.priority), prompt_tokens=(request.num_prompt_tokens)):
+             existing = self.requests.get(request.request_id)
+             if existing is not None:
+                 update = StreamingUpdate.from_request(request)

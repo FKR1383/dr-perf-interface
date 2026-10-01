@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Cached block updates were always absent. Penalty-enabled request counts may instead explain metadata work that varies independently of batch size; ungated prompt matrix size did not isolate this branch.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Tracks request construction and insertion."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_cached_reqs.req_ids)",
+      "name": "cached_requests",
+      "rationale": "Tracks updates to running requests."
+    },
+    {
+      "expression": "int(bool(scheduler_output.scheduled_new_reqs) or bool(scheduler_output.finished_req_ids) or bool(scheduler_output.scheduled_cached_reqs.resumed_req_ids))",
+      "name": "batch_changed",
+      "rationale": "Captures fixed metadata reconstruction overhead."
+    },
+    {
+      "expression": "sum((1 for req in scheduler_output.scheduled_new_reqs if req.sampling_params is not None and (req.sampling_params.presence_penalty != 0 or req.sampling_params.frequency_penalty != 0 or req.sampling_params.repetition_penalty != 1))) + sum((1 for req_id in scheduler_output.scheduled_cached_reqs.req_ids if self.requests[req_id].sampling_params is not None and (self.requests[req_id].sampling_params.presence_penalty != 0 or self.requests[req_id].sampling_params.frequency_penalty != 0 or self.requests[req_id].sampling_params.repetition_penalty != 1))) if scheduler_output.scheduled_new_reqs or scheduler_output.finished_req_ids or scheduler_output.scheduled_cached_reqs.resumed_req_ids else 0",
+      "name": "penalized_refresh_rows",
+      "rationale": "Counts requests requiring penalty-related prompt and output-token metadata during refresh."
+    }
+  ]
+}

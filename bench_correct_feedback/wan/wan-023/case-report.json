@@ -1,0 +1,125 @@
+{
+  "agent_PCVs_thread": "01a0ed9b-8bc6-7863-b3d8-4ae8a1a6b5a0",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 14.992625431213302,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "With model dimensions and layer count fixed, instruction count should follow constant overhead plus linear video and text processing, quadratic self-attention, and video-by-text cross-attention.",
+      "irregularity_percent": 14.992625431213302,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+          "name": "video_tokens",
+          "rationale": "Tracks patch embedding, projections, normalization, feed-forward operations, and output reconstruction for the fixed model."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+          "name": "self_attention_pairs",
+          "rationale": "Tracks quadratic self-attention work."
+        },
+        {
+          "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+          "name": "text_tokens",
+          "rationale": "Tracks text embedding and cross-attention key/value projections."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+          "name": "cross_attention_pairs",
+          "rationale": "Tracks cross-attention work over video queries and text keys."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 15.617066495321094,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The previous shape model leaves substantial unexplained work at every state. Runtime initialization may distinguish repetitions of identical shapes; loaded-module cardinality tests this while retaining the main computational scaling terms.",
+      "irregularity_percent": 15.617066495321094,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+          "name": "video_tokens",
+          "rationale": "Tracks linear video processing for the fixed model."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+          "name": "self_attention_pairs",
+          "rationale": "Tracks quadratic self-attention work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+          "name": "cross_attention_pairs",
+          "rationale": "Tracks attention work involving the variable text context."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Cheap cardinality of existing runtime state that may distinguish lazy initialization from warmed execution across repeated shapes."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 6.725913991763874,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Loaded-module cardinality was constant. This candidate tests whether separate temporal geometry explains costs omitted by total token count and attention-pair counts, while restoring the independent text-processing term.",
+      "irregularity_percent": 6.725913991763874,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+          "name": "video_tokens",
+          "rationale": "Tracks linear projection, normalization, feed-forward, and reconstruction work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+          "name": "self_attention_pairs",
+          "rationale": "Tracks quadratic self-attention work."
+        },
+        {
+          "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0])",
+          "name": "frame_planes",
+          "rationale": "Captures frame-dependent convolution and tensor traversal costs that total token count does not distinguish."
+        },
+        {
+          "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+          "name": "text_tokens",
+          "rationale": "Tracks variable text embedding and key/value projection work."
+        }
+      ]
+    }
+  ],
+  "case": "wan-023",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "12f7610a1b27e9e14262b3a170984e9b3395299b9cf48cd248beac0e979d56ba",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

@@ -1,0 +1,137 @@
+{
+  "case": "vllm-002",
+  "validity_warnings": [],
+  "pcv_names": [
+    "default_tokenization",
+    "request_count",
+    "medium_prompt_requests",
+    "long_prompt_requests"
+  ],
+  "distinct_states": 8,
+  "required_states": 6,
+  "calls": 8,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 2,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 2317122.0,
+      "unexplained_instructions_per_call": 327678.0,
+      "unexplained_share": 0.14141594616079775
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 3,
+        "medium_prompt_requests": 3,
+        "long_prompt_requests": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 3674169.0,
+      "unexplained_instructions_per_call": 486290.0,
+      "unexplained_share": 0.13235373767510422
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 4,
+        "medium_prompt_requests": 4,
+        "long_prompt_requests": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 4561976.0,
+      "unexplained_instructions_per_call": 480151.0,
+      "unexplained_share": 0.1052506633090573
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 5,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 5
+      },
+      "calls": 1,
+      "instructions_per_call": 6895801.0,
+      "unexplained_instructions_per_call": 833080.0,
+      "unexplained_share": 0.12080975074541739
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 6,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 6
+      },
+      "calls": 1,
+      "instructions_per_call": 7934494.0,
+      "unexplained_instructions_per_call": 841561.0,
+      "unexplained_share": 0.10606360027495138
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 7,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 7
+      },
+      "calls": 1,
+      "instructions_per_call": 9258540.0,
+      "unexplained_instructions_per_call": 980348.0,
+      "unexplained_share": 0.10588580920965941
+    },
+    {
+      "state": {
+        "default_tokenization": 0,
+        "request_count": 8,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 8
+      },
+      "calls": 1,
+      "instructions_per_call": 10506494.0,
+      "unexplained_instructions_per_call": 1090809.0,
+      "unexplained_share": 0.103822359771014
+    },
+    {
+      "state": {
+        "default_tokenization": 1,
+        "request_count": 1,
+        "medium_prompt_requests": 0,
+        "long_prompt_requests": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 59684046.0,
+      "unexplained_instructions_per_call": 4118405.0,
+      "unexplained_share": 0.06900344859328068
+    }
+  ],
+  "max_unexplained_share": 0.14141594616079775,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "default_tokenization": 54352262.5830859,
+      "request_count": 760821.9065281916,
+      "medium_prompt_requests": 113297.15727002789,
+      "long_prompt_requests": 324246.7922848643
+    },
+    "constant": 588621.5102002799,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 145.37000281410292,
+  "raw_files": [
+    "run.1784362.json"
+  ]
+}

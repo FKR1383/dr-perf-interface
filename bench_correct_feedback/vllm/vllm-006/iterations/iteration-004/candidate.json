@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Token counts did not explain the residuals. The unusually expensive early allocations suggest runtime initialization and container warmup, so dictionary capacity and loaded-module cardinality may explain costs missing from the allocation-path indicator.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "int(request.num_computed_tokens == 0)",
+      "name": "initial_allocation",
+      "rationale": "Captures the main allocation-versus-decoding cost difference."
+    },
+    {
+      "expression": "self.coordinator.single_type_managers[0].req_to_blocks.__sizeof__()",
+      "name": "request_table_storage",
+      "rationale": "Observes dictionary storage capacity, including retained capacity after requests are removed, to distinguish fresh and reused allocation state."
+    },
+    {
+      "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+      "name": "active_request_tables",
+      "rationale": "Distinguishes empty-table admission and occupancy-dependent dictionary operations."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Cheap runtime-state cardinality that may distinguish lazy-initialization phases responsible for the unusually expensive early allocations; sys is already loaded."
+    }
+  ]
+}

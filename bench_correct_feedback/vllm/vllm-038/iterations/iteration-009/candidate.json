@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Queue removal introduces a batch-size-by-completion interaction. Earlier additive predictors and combined regime terms did not represent this conditional scan independently; this candidate tests that structural cost directly.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens)",
+      "name": "scheduled_requests",
+      "rationale": "Captures the main request-processing loop."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures completion and resource release."
+    },
+    {
+      "expression": "len(scheduler_output.scheduled_new_reqs)",
+      "name": "new_requests",
+      "rationale": "Captures prefill completion work."
+    },
+    {
+      "expression": "len(self.running) if len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens]) > 0 else 0",
+      "name": "cleanup_scan_requests",
+      "rationale": "Measures the full running-queue scan performed only when at least one request stops."
+    }
+  ]
+}

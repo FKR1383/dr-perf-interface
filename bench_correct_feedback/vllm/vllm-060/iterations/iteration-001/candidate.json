@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Conditional tensor copies and penalty-triggered prompt construction dominate instruction count, with prompt construction scaling with row count and tensor size.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)",
+      "name": "sampling_copy_count",
+      "rationale": "Counts conditional sampling tensor copies and their fixed library overhead."
+    },
+    {
+      "expression": "int(not self.no_penalties)",
+      "name": "penalties_enabled",
+      "rationale": "Captures the fixed prompt tensor construction overhead triggered by penalties in this workload."
+    },
+    {
+      "expression": "self.num_reqs if not self.no_penalties else 0",
+      "name": "prompt_rows",
+      "rationale": "Tracks iterations of the prompt padding loop."
+    },
+    {
+      "expression": "self.num_reqs * int(max(self.num_prompt_tokens[:self.num_reqs])) if self.num_reqs and (not self.no_penalties) else 0",
+      "name": "prompt_elements",
+      "rationale": "Tracks the rectangular prompt tensor size using a bounded entry-state reduction."
+    }
+  ]
+}

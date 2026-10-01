@@ -1,0 +1,209 @@
+{
+  "case": "vllm-032",
+  "validity_warnings": [],
+  "pcv_names": [
+    "running_requests",
+    "waiting_requests",
+    "singleton_admission",
+    "pair_admission"
+  ],
+  "distinct_states": 14,
+  "required_states": 6,
+  "calls": 28,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 1,
+        "singleton_admission": 1,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 392604.0,
+      "unexplained_instructions_per_call": 68273.0,
+      "unexplained_share": 0.1738978716467484
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 2,
+        "singleton_admission": 0,
+        "pair_admission": 1
+      },
+      "calls": 1,
+      "instructions_per_call": 485265.0,
+      "unexplained_instructions_per_call": 75641.0,
+      "unexplained_share": 0.1558756555696372
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 3,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 525152.0,
+      "unexplained_instructions_per_call": 38908.0,
+      "unexplained_share": 0.07408902565352507
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 4,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 662783.0,
+      "unexplained_instructions_per_call": 41269.0,
+      "unexplained_share": 0.06226623193413229
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 5,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 816739.0,
+      "unexplained_instructions_per_call": 52522.0,
+      "unexplained_share": 0.06430695730214915
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 6,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 963284.0,
+      "unexplained_instructions_per_call": 58313.0,
+      "unexplained_share": 0.06053562604590131
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 7,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 1113100.0,
+      "unexplained_instructions_per_call": 67570.0,
+      "unexplained_share": 0.06070433923277334
+    },
+    {
+      "state": {
+        "running_requests": 0,
+        "waiting_requests": 8,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 1260698.0,
+      "unexplained_instructions_per_call": 74616.0,
+      "unexplained_share": 0.059186260309764906
+    },
+    {
+      "state": {
+        "running_requests": 1,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 5,
+      "instructions_per_call": 146190.8,
+      "unexplained_instructions_per_call": 10703.199999999997,
+      "unexplained_share": 0.07321390949362065
+    },
+    {
+      "state": {
+        "running_requests": 2,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 7,
+      "instructions_per_call": 222064.85714285713,
+      "unexplained_instructions_per_call": 16938.142857142855,
+      "unexplained_share": 0.07627565691876376
+    },
+    {
+      "state": {
+        "running_requests": 3,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 3,
+      "instructions_per_call": 287015.6666666667,
+      "unexplained_instructions_per_call": 18931.666666666664,
+      "unexplained_share": 0.06596039472874302
+    },
+    {
+      "state": {
+        "running_requests": 4,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 2,
+      "instructions_per_call": 359170.5,
+      "unexplained_instructions_per_call": 23993.0,
+      "unexplained_share": 0.06680114318965505
+    },
+    {
+      "state": {
+        "running_requests": 5,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 2,
+      "instructions_per_call": 430312.5,
+      "unexplained_instructions_per_call": 27878.5,
+      "unexplained_share": 0.06478663761801016
+    },
+    {
+      "state": {
+        "running_requests": 6,
+        "waiting_requests": 0,
+        "singleton_admission": 0,
+        "pair_admission": 0
+      },
+      "calls": 1,
+      "instructions_per_call": 500981.0,
+      "unexplained_instructions_per_call": 31627.0,
+      "unexplained_share": 0.06313013866793352
+    }
+  ],
+  "max_unexplained_share": 0.1738978716467484,
+  "threshold": 0.05,
+  "sufficient_points": true,
+  "gate_pass": false,
+  "gate_reasons": [
+    "unexplained share exceeds 5% at an observed state"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "formula": {
+    "coefficients": {
+      "running_requests": 65677.80534600043,
+      "waiting_requests": 138399.77459770103,
+      "singleton_admission": 109077.38544061291,
+      "pair_admission": 58890.766934865904
+    },
+    "constant": 73470.20458049898,
+    "dependent_columns": []
+  },
+  "returncode": 0,
+  "instrumented_wall_seconds": 126.2634957912378,
+  "raw_files": [
+    "run.2259711.json"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Complete-block hashing contributes no variation in this workload. Sampling configuration may explain the substantial instruction differences remaining after accounting for prompt length.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+      "name": "prompt_tokens",
+      "rationale": "Models prompt copying during request construction."
+    },
+    {
+      "expression": "int(request.sampling_params is not None and request.sampling_params.temperature > 0)",
+      "name": "random_sampling",
+      "rationale": "Distinguishes greedy and random sampling configuration paths."
+    },
+    {
+      "expression": "int(request.sampling_params is not None and (request.sampling_params.presence_penalty != 0 or request.sampling_params.frequency_penalty != 0 or request.sampling_params.repetition_penalty != 1))",
+      "name": "penalties_enabled",
+      "rationale": "Separates requests with active penalty settings from baseline requests."
+    },
+    {
+      "expression": "request.sampling_params.max_tokens if request.sampling_params is not None else 0",
+      "name": "max_tokens",
+      "rationale": "Exposes the independently varied generation limit transferred into the constructed request."
+    }
+  ]
+}

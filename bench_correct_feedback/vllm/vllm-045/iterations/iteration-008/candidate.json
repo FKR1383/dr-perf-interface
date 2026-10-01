@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Offset changes have plateaued. Replacing the block feature with an explicit constant tests whether Dr. Perf can attribute more of the dominant fixed request-setup work, while retaining token scaling and both exceptional-state indicators.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "1",
+      "name": "request_setup",
+      "rationale": "Explicitly represents fixed per-request setup, which dominates steady-state instruction counts."
+    },
+    {
+      "expression": "len(prompt['prompt_token_ids'])",
+      "name": "prompt_tokens",
+      "rationale": "Captures token-dependent work and preserves the eight observed states."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) == 10)",
+      "name": "ten_token_regime",
+      "rationale": "Separates the exceptional initialization cost observed in the ten-token state."
+    },
+    {
+      "expression": "int(len(prompt['prompt_token_ids']) == 9)",
+      "name": "nine_token_regime",
+      "rationale": "Separates the additional setup cost observed in the nine-token state."
+    }
+  ]
+}

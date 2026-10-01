@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The substantial unexplained work across repeated identical input shapes suggests runtime initialization effects. Loaded-module cardinality and its interaction with step count may distinguish these regimes while retaining the main workload scaling terms.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "num_inference_steps",
+      "name": "denoising_steps",
+      "rationale": "Captures repeated transformer and scheduler work."
+    },
+    {
+      "expression": "num_inference_steps * prompt_embeds.shape[1]",
+      "name": "step_text_tokens",
+      "rationale": "Captures sequence-length-dependent work within each denoising step."
+    },
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Cheap runtime-state cardinality that may distinguish library initialization regimes across repeated pipeline runs."
+    },
+    {
+      "expression": "num_inference_steps * len(__import__('sys').modules)",
+      "name": "steps_loaded_modules",
+      "rationale": "Allows per-step instruction cost to vary with the observable library initialization regime."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/sample/sampler.py
++++ candidate/vllm/v1/sample/sampler.py
+@@ -78,7 +78,7 @@
+         predict_bonus_token: bool = False,
+         logprobs_mode_override: LogprobsMode | None = None,
+     ) -> SamplerOutput:
+-        with perfmark.region("vllm-055"):
++        with perfmark.region("vllm-055", logit_elements=(logits.numel()), random_logit_elements=(logits.numel() if not sampling_metadata.all_greedy else 0), penalized_logit_elements=(logits.numel() if not sampling_metadata.no_penalties else 0), cold_dynamo_elements=(logits.numel() if not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})) else 0)):
+             logprobs_mode = logprobs_mode_override or self.logprobs_mode
+             # NOTE(woosuk): Use the original logits (before any penalties or
+             # temperature scaling) for the top-k logprobs.

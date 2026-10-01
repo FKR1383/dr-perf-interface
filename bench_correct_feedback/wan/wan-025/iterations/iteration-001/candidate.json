@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Instruction count should be approximately fixed setup cost plus per-step cost and per-step text-token cost, since this workload supplies embeddings directly and returns latents without VAE decoding.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "num_inference_steps",
+      "name": "denoising_steps",
+      "rationale": "Each step repeats two transformer calls, classifier-free guidance, and a scheduler update; latent dimensions and model configuration are fixed in this workload."
+    },
+    {
+      "expression": "num_inference_steps * prompt_embeds.shape[1]",
+      "name": "step_text_tokens",
+      "rationale": "Text projection and cross-attention work scale with the supplied embedding sequence length on every denoising step."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous regime term constrained singleton and paired excess costs to one coefficient. Combining the similar base request and prefill costs frees a dimension to fit those two regimes independently.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "len(scheduler_output.num_scheduled_tokens) + len(scheduler_output.scheduled_new_reqs)",
+      "name": "request_processing_units",
+      "rationale": "Combines ordinary request processing and additional first-output work, whose observed marginal costs are similar."
+    },
+    {
+      "expression": "len([r for r in self.running if r.num_output_tokens + 1 >= r.max_tokens])",
+      "name": "finishing_requests",
+      "rationale": "Captures completion and resource release."
+    },
+    {
+      "expression": "int(len(scheduler_output.scheduled_new_reqs) == 1 and self.running[0].num_prompt_tokens < 20)",
+      "name": "singleton_short_prefill",
+      "rationale": "Allows an independent coefficient for the elevated singleton short-prefill cost."
+    },
+    {
+      "expression": "int(len(scheduler_output.num_scheduled_tokens) == 2 and max((r.num_prompt_tokens for r in self.running)) < 20)",
+      "name": "paired_short_batch",
+      "rationale": "Separates elevated paired short-prompt processing during both prefill and decode."
+    }
+  ]
+}

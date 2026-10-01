@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The derived workload predictors have consistently failed. Testing the four raw workload dimensions may reveal dependence on per-request query and context lengths that aggregation and rounding concealed.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.num_actual_tokens",
+      "name": "query_tokens",
+      "rationale": "Measures total query rows processed."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.max_query_len",
+      "name": "max_query_length",
+      "rationale": "Exposes per-request query length directly, which aggregate token counts and rounded tiles obscure."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.max_seq_len",
+      "name": "max_context_length",
+      "rationale": "Exposes the unrounded context dimension used by attention loops."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel()",
+      "name": "requests",
+      "rationale": "Separates batch cardinality from per-request dimensions."
+    }
+  ]
+}

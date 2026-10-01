@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is primarily explained by metadata reconstruction, its enabled tensor copies, per-request prompt preparation for penalties, and logits-processor initialization for added requests.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed)",
+      "name": "batch_changed",
+      "rationale": "Separates metadata reconstruction from the unchanged-batch path."
+    },
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+      "name": "metadata_tensor_copies",
+      "rationale": "Counts conditional tensor-copy operations during metadata reconstruction."
+    },
+    {
+      "expression": "self.num_reqs if self.batch_update_builder.batch_changed and (not self.no_penalties) else 0",
+      "name": "penalized_batch_size",
+      "rationale": "Captures the per-request loop that constructs and pads prompt token tensors when penalties are enabled."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added)",
+      "name": "added_requests",
+      "rationale": "Captures request initialization work performed by logits processors when applying batch updates."
+    }
+  ]
+}

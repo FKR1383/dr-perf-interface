@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The state means are approximately linear in spatial area and temporal volume. Large unexplained variation within those states may reflect differing input-view layouts; channel stride exposes that entry-state distinction.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+      "name": "spatial_sites",
+      "rationale": "Models spatial convolution, normalization, padding, and cache-copy work."
+    },
+    {
+      "expression": "x.shape[0] * x.shape[2] * x.shape[3] * x.shape[4]",
+      "name": "input_sites",
+      "rationale": "Models work proportional to the temporal chunk volume."
+    },
+    {
+      "expression": "int(feat_cache is not None and feat_cache[feat_idx[0]] is not None)",
+      "name": "warm_cache",
+      "rationale": "Models the additional operations performed with populated convolution caches."
+    },
+    {
+      "expression": "x.stride(1)",
+      "name": "channel_stride",
+      "rationale": "Distinguishes input views with identical shapes but different channel strides, exposing layout variation hidden by the previous state grouping."
+    }
+  ]
+}

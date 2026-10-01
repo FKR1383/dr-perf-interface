@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count combines per-frame overhead, distinct spatial costs for first and subsequent frames, and quadratic spatial attention work.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "z.shape[2]",
+      "name": "latent_frames",
+      "rationale": "Tracks decoder invocations and per-frame cache-management overhead."
+    },
+    {
+      "expression": "z.shape[0] * z.shape[3] * z.shape[4]",
+      "name": "first_frame_area",
+      "rationale": "Tracks spatial work for the first frame, which skips cached temporal upsampling."
+    },
+    {
+      "expression": "z.shape[0] * (z.shape[2] - 1) * z.shape[3] * z.shape[4]",
+      "name": "subsequent_frame_area",
+      "rationale": "Tracks convolution, normalization, copying, and upsampling work for subsequent frames."
+    },
+    {
+      "expression": "z.shape[0] * z.shape[2] * (z.shape[3] * z.shape[4]) ** 2",
+      "name": "attention_work",
+      "rationale": "Tracks the quadratic spatial component of decoder attention."
+    }
+  ]
+}

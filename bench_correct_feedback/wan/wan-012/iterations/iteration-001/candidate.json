@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is dominated by per-tile decoder overhead and tile-area-dependent computation, with different costs for initial and subsequent latent frames.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "((z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) + 1) * ((z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) + 1)",
+      "name": "tiles",
+      "rationale": "Counts spatial tiles, each requiring cache setup and an initial decoder call."
+    },
+    {
+      "expression": "(z.shape[2] - 1) * ((z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) + 1) * ((z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) + 1)",
+      "name": "cached_tile_frames",
+      "rationale": "Counts subsequent decoder calls, which activate temporal upsampling and populated-cache paths."
+    },
+    {
+      "expression": "z.shape[0] * (z.shape[3] + (z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) * ((self.tile_sample_min_height - self.tile_sample_stride_height) // self.spatial_compression_ratio)) * (z.shape[4] + (z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) * ((self.tile_sample_min_width - self.tile_sample_stride_width) // self.spatial_compression_ratio))",
+      "name": "initial_tile_area",
+      "rationale": "For the fixed workload, computes total latent tile area including overlaps and clipped boundary tiles; models spatial computation on initial frames."
+    },
+    {
+      "expression": "z.shape[0] * (z.shape[2] - 1) * (z.shape[3] + (z.shape[3] - 1) // (self.tile_sample_stride_height // self.spatial_compression_ratio) * ((self.tile_sample_min_height - self.tile_sample_stride_height) // self.spatial_compression_ratio)) * (z.shape[4] + (z.shape[4] - 1) // (self.tile_sample_stride_width // self.spatial_compression_ratio) * ((self.tile_sample_min_width - self.tile_sample_stride_width) // self.spatial_compression_ratio))",
+      "name": "cached_tile_area",
+      "rationale": "Models spatial computation for subsequent frames, whose temporal expansion increases convolution, normalization, and copying work."
+    }
+  ]
+}

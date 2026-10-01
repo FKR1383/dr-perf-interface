@@ -1,0 +1,26 @@
+{
+  "hypothesis": "An empty Dynamo generated-code registry may identify initial compilation independently of whether the backend uses Inductor.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "logits.numel()",
+      "name": "logit_elements",
+      "rationale": "Captures baseline work proportional to batch and vocabulary size."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.all_greedy else 0",
+      "name": "random_logit_elements",
+      "rationale": "Captures steady-state stochastic sampling work."
+    },
+    {
+      "expression": "logits.numel() if not sampling_metadata.no_penalties else 0",
+      "name": "penalized_logit_elements",
+      "rationale": "Captures vocabulary-wide penalty processing."
+    },
+    {
+      "expression": "int(not sampling_metadata.all_greedy and (not getattr(getattr(getattr(getattr(torch, '_dynamo', None), 'convert_frame', None), 'output_codes', None), 'seen', {})))",
+      "name": "cold_dynamo_sampling",
+      "rationale": "Reads whether Dynamo's generated-code registry is empty, without invoking compilation or cache inspection methods."
+    }
+  ]
+}

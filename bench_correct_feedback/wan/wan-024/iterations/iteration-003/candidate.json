@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The sixteen-token remainder feature reduced irregularity to 10.09%. Testing eight-token granularity may better explain CPU kernel tail costs, particularly the different behavior of 18 and 27 tokens, while retaining the main processing and attention terms.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "hidden_states.numel()",
+      "name": "hidden_elements",
+      "rationale": "Captures tokenwise projections, normalization, modulation, and feed-forward work."
+    },
+    {
+      "expression": "encoder_hidden_states.numel()",
+      "name": "encoder_elements",
+      "rationale": "Captures conditioning key/value projections and normalization."
+    },
+    {
+      "expression": "hidden_states.shape[0] * hidden_states.shape[1] * (hidden_states.shape[1] + encoder_hidden_states.shape[1]) * hidden_states.shape[2]",
+      "name": "attention_work",
+      "rationale": "Captures combined self-attention and cross-attention interaction work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[1] % 8)",
+      "name": "token_tile_remainder",
+      "rationale": "Captures remainder handling for eight-token CPU kernel tiles."
+    }
+  ]
+}

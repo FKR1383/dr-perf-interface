@@ -1,0 +1,12 @@
+# vllm-001 full-feedback result
+
+Status: `success`; iterations: 6; fixed workload: `feed43640d9c3baa7e78ff9f5757681d2cde3dbb2df0ef27eb7e1143a6d55e29`.
+
+| iteration | exact PCVs | irregularity | outcome |
+| ---: | --- | ---: | --- |
+| 1 | `prompt_chars = len(prompt if isinstance(prompt, str) else prompt['prompt'])`; `structured_prompt = int(isinstance(prompt, dict))`; `tokenization_option_count = len(tokenization_kwargs or {})`; `explicit_truncation = int('truncate_prompt_tokens' in (tokenization_kwargs or {}))` | 97.2404% | retry |
+| 2 | `prompt_chars = len(prompt if isinstance(prompt, str) else prompt['prompt'])`; `default_tokenization_options = int(tokenization_kwargs is None)`; `add_special_tokens = int((tokenization_kwargs or {}).get('add_special_tokens', True))`; `tokenization_option_count = len(tokenization_kwargs or {})` | 25.0642% | retry |
+| 3 | `prompt_chars_scaled = 1000 * len(prompt if isinstance(prompt, str) else prompt['prompt'])`; `default_options_scaled = 1000 * int(tokenization_kwargs is None)`; `special_tokens_scaled = 1000 * int((tokenization_kwargs or {}).get('add_special_tokens', True))`; `option_count_scaled = 1000 * len(tokenization_kwargs or {})` | 26.1099% | retry |
+| 4 | `default_options = int(tokenization_kwargs is None)`; `prompt_chars = len(prompt if isinstance(prompt, str) else prompt['prompt'])`; `prompt_chars_squared = len(prompt if isinstance(prompt, str) else prompt['prompt']) ** 2`; `special_tokens_without_truncation = int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))` | 21.3441% | retry |
+| 5 | `default_options = int(tokenization_kwargs is None)`; `prompt_chars = len(prompt if isinstance(prompt, str) else prompt['prompt'])`; `prompt_word_count = (prompt if isinstance(prompt, str) else prompt['prompt']).count(' ') + 1`; `special_tokens_without_truncation = int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))` | 17.4383% | retry |
+| 6 | `default_options = int(tokenization_kwargs is None)`; `longer_than_40_chars = int(len(prompt if isinstance(prompt, str) else prompt['prompt']) > 40)`; `longer_than_100_chars = int(len(prompt if isinstance(prompt, str) else prompt['prompt']) > 100)`; `special_tokens_without_truncation = int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))` | 1.06979% | success |

@@ -1,0 +1,374 @@
+{
+  "agent_PCVs_thread": "01a0f619-0dc7-7963-8def-cf227a75c2c3",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 89.97943941339906,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Pending token count and attention interactions explain model execution costs, while active and waiting request counts explain scheduling and output overhead. Prefix-cache hits may reduce pending-token estimation accuracy.",
+      "irregularity_percent": 89.97943941339906,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Captures per-request scheduling, sampling, and output processing costs."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Estimates token positions requiring model execution, distinguishing prefill from decoding."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) * (self.engine_core.engine_core.scheduler.requests[k].num_tokens + self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens + 1) // 2 for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "attention_work",
+          "rationale": "Estimates causal attention interactions for pending tokens."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures admission, prefix-cache lookup, and prefill setup costs."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 22.443777774984486,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Most calls follow a linear token-and-request cost model with an additional sampling cost. The extreme residual occurs at the first mixed-sampling prefill; a workload-specific entry-state indicator separates that likely initialization event.",
+      "irregularity_percent": 22.443777774984486,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Models the approximately linear per-request decoding and output cost."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens - 1) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "additional_pending_tokens",
+          "rationale": "Separates additional prefill positions from the baseline one-token cost per active request."
+        },
+        {
+          "expression": "sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "sampled_requests",
+          "rationale": "Captures extra random-sampling work that can explain differences between equally sized decoding batches."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Isolates the observed costly two-request admission, which is the fixed workload's first batch containing random sampling and may incur lazy initialization. This is a workload-specific proxy."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.76187376117602,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "Separate prefill and decode regressors should remove systematic decoding underprediction. Random sampling activates batch-wide work, so its decoding cost should scale with total batch size rather than sampled-request count.",
+      "irregularity_percent": 99.76187376117602,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests) if len(self.engine_core.engine_core.scheduler.waiting) == 0 else 0",
+          "name": "decode_requests",
+          "rationale": "Fits per-request decoding cost independently of prefill token costs."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests)) if len(self.engine_core.engine_core.scheduler.waiting) > 0 else 0",
+          "name": "prefill_tokens",
+          "rationale": "Captures pending model tokens during admission and prefill."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests) if len(self.engine_core.engine_core.scheduler.waiting) == 0 and sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0 else 0",
+          "name": "decode_requests_with_sampling",
+          "rationale": "Models batch-wide sampling overhead whenever at least one decoding request requires random sampling."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Retains the workload-specific proxy for the unusually expensive first mixed-sampling prefill."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 22.236551037385652,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "Shared token and request features avoid the fitting failure of disjoint prefill/decode features. Batch-wide sampling extent should explain the residual that sampled-request count missed; positive-baseline regime features test whether sparse feature support contributed to unstable attribution.",
+      "irregularity_percent": 22.236551037385652,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Restores the shared request-count feature, which explained most decoding work in iteration 2."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Represents model token work in both prefill and decoding without mutually exclusive regime features."
+        },
+        {
+          "expression": "1 + (len(self.engine_core.engine_core.scheduler.requests) + 1) * int(sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0)",
+          "name": "sampling_batch_extent",
+          "rationale": "Represents a fixed sampling setup cost plus batch-wide work when random sampling is enabled; the positive baseline avoids a feature supported only on sampling calls."
+        },
+        {
+          "expression": "1 + int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "admission_regime",
+          "rationale": "Distinguishes the observed costly first mixed-sampling admission using the established workload-specific proxy, with a positive baseline."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 99.98974816787643,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Separate correlated regressors consistently leave sampling and decoding work unexplained. A combined work measure should stabilize attribution while preserving the observed cost ratios; the admission indicator accounts for the isolated initialization event.",
+      "irregularity_percent": 99.98974816787643,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "6 * sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests)) + 3 * len(self.engine_core.engine_core.scheduler.requests) + (len(self.engine_core.engine_core.scheduler.requests) + 1) * int(sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0)",
+          "name": "effective_token_work",
+          "rationale": "Combines token execution, per-request overhead, and batch-wide sampling into one integer work measure. Relative weights approximate the observed prefill, greedy-decode, and sampled-decode cost ratios."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Separates the unusually expensive first mixed-sampling prefill using the established workload-specific entry-state proxy."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 20.399431683840675,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The combined feature failed despite matching aggregate cost ratios, suggesting attribution needs separate primitive work dimensions. Retaining raw request and token counts while adding the exact batch-size-by-sampling interaction may explain sampling paths that sampled-request counts and shifted features missed.",
+      "irregularity_percent": 20.399431683840675,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Preserves the raw request cardinality needed to explain common per-request work."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Preserves the raw token count that successfully explained most model execution work."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests) * int(sum((self.engine_core.engine_core.scheduler.requests[k].sampling_params.temperature > 0 for k in self.engine_core.engine_core.scheduler.requests)) > 0)",
+          "name": "sampling_batch_size",
+          "rationale": "Measures the entire batch processed by sampling kernels, with exactly zero work for all-greedy batches and no added setup term."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Retains the workload-specific indicator for the isolated expensive first mixed-sampling admission."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 22.594566726142055,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "The remaining sampled-decode residual may come from selection work whose extent depends on top-k. Preserve the successful primitive model-work features and replace sampling presence with batch size times maximum top-k.",
+      "irregularity_percent": 22.594566726142055,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Explains shared per-request model and output work."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Explains the dominant model execution work across prefill and decoding."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests) * max((self.engine_core.engine_core.scheduler.requests[k].sampling_params.top_k for k in self.engine_core.engine_core.scheduler.requests), default=0)",
+          "name": "batch_top_k_extent",
+          "rationale": "Tests whether bounded selection work depends on the batch's largest top-k setting as well as batch size, which sampling presence alone omitted."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Retains the workload-specific proxy for the expensive first mixed-sampling admission."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.64013967678844,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "Sampling-option predictors explain little additional instruction work. A quadratic batch-size term tests whether the persistent residual instead reflects nonlinear batch processing; retaining raw request and token counts preserves the strongest existing attribution.",
+      "irregularity_percent": 17.64013967678844,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Retains the request cardinality that explains substantial per-request work."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Retains the successful predictor for model token execution."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests) ** 2",
+          "name": "request_pairs",
+          "rationale": "Tests nonlinear batch-size effects in execution and sampling that the previous sampling-option features did not explain."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Separates the expensive first mixed-sampling admission using the established workload-specific proxy."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 22.826116739652328,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "The quadratic request-count term added little explanatory power. Pending tokens times maximum context length tests attention and padding costs omitted by the successful request-count and token-count features.",
+      "irregularity_percent": 22.826116739652328,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Explains shared per-request work."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Explains the dominant token-processing cost."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests)) * max((self.engine_core.engine_core.scheduler.requests[k].num_tokens for k in self.engine_core.engine_core.scheduler.requests), default=0)",
+          "name": "padded_attention_extent",
+          "rationale": "Estimates attention work using pending query tokens and the batch's maximum context length, allowing for padded processing."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Retains the workload-specific proxy for the costly first mixed-sampling admission."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.694387665487003,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "Decoding consistently has a larger unexplained fraction than prefill. Running-request cardinality may explain decode-specific execution paths that raw total requests and pending tokens cannot distinguish. Unlike iteration 3, this candidate preserves both successful shared predictors.",
+      "irregularity_percent": 17.694387665487003,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.requests)",
+          "name": "active_requests",
+          "rationale": "Retains the strongest predictor for shared per-request work."
+        },
+        {
+          "expression": "sum((max(0, self.engine_core.engine_core.scheduler.requests[k].num_tokens - self.engine_core.engine_core.scheduler.requests[k].num_computed_tokens) for k in self.engine_core.engine_core.scheduler.requests))",
+          "name": "pending_tokens",
+          "rationale": "Retains the strongest predictor for model token processing."
+        },
+        {
+          "expression": "len(self.engine_core.engine_core.scheduler.running)",
+          "name": "running_requests",
+          "rationale": "Adds the number of established requests, separating recurring decoding work from newly admitted prefill work while retaining both shared predictors."
+        },
+        {
+          "expression": "int(len(self.engine_core.engine_core.scheduler.waiting) == 2 and len(self.engine_core.engine_core.scheduler.running) == 0)",
+          "name": "two_request_admission",
+          "rationale": "Retains the workload-specific proxy for the expensive first mixed-sampling admission."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-046",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "dfef55f0f21210de71ec794366ba638d7970a0b8d018046c1e519fb63d4d117a",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

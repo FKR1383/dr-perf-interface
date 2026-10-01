@@ -1,0 +1,11 @@
+--- baseline/vllm/v1/engine/detokenizer.py
++++ candidate/vllm/v1/engine/detokenizer.py
+@@ -102,7 +102,7 @@
+ 
+         Return matched stop string or None.
+         """
+-        with perfmark.region("vllm-043"):
++        with perfmark.region("vllm-043", decoded_token_count=(len(new_token_ids) - int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output))), nonempty_update=(int(bool(new_token_ids))), skipped_terminal_token=(int(bool(new_token_ids) and stop_terminated and (not self.include_stop_str_in_output)))):
+             if not new_token_ids:
+                 # Skip detokenization if no new token ids.
+                 return None

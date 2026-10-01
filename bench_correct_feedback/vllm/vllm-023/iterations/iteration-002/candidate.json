@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The measurements support separate costs for upward movement, shallow root insertion, and list growth. Replacing the tie feature with incoming priority provides sufficient distinct states while retaining the dominant measured cost distinctions.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "int(bool(self._heap) and (request.priority, request.arrival_time) < (self._heap[(len(self._heap) - 1) // 2].priority, self._heap[(len(self._heap) - 1) // 2].arrival_time))",
+      "name": "first_sift_swap",
+      "rationale": "Separates insertions that move upward from those that stop at the first parent."
+    },
+    {
+      "expression": "int(0 < len(self._heap) < 3 and (request.priority, request.arrival_time) < (self._heap[0].priority, self._heap[0].arrival_time))",
+      "name": "shallow_root_insertion",
+      "rationale": "Distinguishes the shallow root insertions, which had higher measured costs than the deeper sift."
+    },
+    {
+      "expression": "int(self._heap.__sizeof__() == [].__sizeof__() + 8 * len(self._heap))",
+      "name": "list_capacity_exhausted",
+      "rationale": "Captures the observed extra cost of backing-list growth on 64-bit Python."
+    },
+    {
+      "expression": "request.priority",
+      "name": "incoming_priority",
+      "rationale": "Retains the raw ordering key and supplies twelve distinct entry states, resolving the previous state-count failure."
+    }
+  ]
+}

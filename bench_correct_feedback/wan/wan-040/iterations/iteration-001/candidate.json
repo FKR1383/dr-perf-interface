@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately an affine combination of batch count, total frame count, and total tensor elements for the fixed CPU tensor-output workload.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "video.shape[0]",
+      "name": "batches",
+      "rationale": "Captures per-video indexing, permutation, postprocessing calls, and output collection."
+    },
+    {
+      "expression": "video.shape[0] * video.shape[2]",
+      "name": "total_frames",
+      "rationale": "Captures per-frame denormalization and tensor handling within image postprocessing."
+    },
+    {
+      "expression": "video.numel()",
+      "name": "total_elements",
+      "rationale": "Captures elementwise normalization, clamping, and stacking costs."
+    }
+  ]
+}

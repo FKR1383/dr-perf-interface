@@ -1,0 +1,36 @@
+{
+  "agent_PCVs_thread": "01a0eda3-dd82-7301-90f0-9acda3dd8061",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.555112631657252,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is approximately a fixed transformer and guidance cost plus a term linear in negative-prompt embedding size.",
+      "irregularity_percent": 0.555112631657252,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "negative_prompt_embeds.numel()",
+          "name": "negative_text_elements",
+          "rationale": "Cheap tensor metadata captures the varying text length and batch size driving unconditional text projections and cross-attention; latent dimensions and model architecture are fixed in this workload."
+        }
+      ]
+    }
+  ],
+  "case": "wan-027",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "19f33622f7a91384b10c007f734fa661c7d9db9b13e6cc1db1cb400706e579ca",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

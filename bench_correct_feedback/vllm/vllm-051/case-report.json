@@ -1,0 +1,88 @@
+{
+  "agent_PCVs_thread": "01a0f645-3df5-74e2-b7aa-d42dd3c6dd89",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 34.18194729619805,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count combines fixed overhead with per-row work and work proportional to logits, prompt tokens, and padded output tokens.",
+      "irregularity_percent": 34.18194729619805,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(output_token_ids)",
+          "name": "batch_size",
+          "rationale": "Captures per-row conversion, padding, and penalty setup."
+        },
+        {
+          "expression": "logits.numel()",
+          "name": "logit_elements",
+          "rationale": "Measures vocabulary-wide penalty work."
+        },
+        {
+          "expression": "prompt_token_ids.numel()",
+          "name": "prompt_elements",
+          "rationale": "Captures prompt-token processing for repetition penalties."
+        },
+        {
+          "expression": "len(output_token_ids) * max((len(row) for row in output_token_ids), default=0)",
+          "name": "padded_output_elements",
+          "rationale": "Measures the padded output tensor size governing conversion, placeholder replacement, and scatter work."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 3.9454550001965134,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "A singleton-state indicator captures the observed cost discontinuity, while batch size and tensor cardinalities explain the remaining scaling. The current measurements cannot distinguish singleton-specific overhead from first-call initialization.",
+      "irregularity_percent": 3.9454550001965134,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(output_token_ids)",
+          "name": "batch_size",
+          "rationale": "Captures per-row conversion and penalty setup."
+        },
+        {
+          "expression": "logits.numel()",
+          "name": "logit_elements",
+          "rationale": "Captures dense vocabulary-wide penalty work."
+        },
+        {
+          "expression": "prompt_token_ids.numel()",
+          "name": "prompt_elements",
+          "rationale": "Captures prompt-token scatter work."
+        },
+        {
+          "expression": "int(len(output_token_ids) == 1)",
+          "name": "singleton_batch",
+          "rationale": "Separates the singleton entry state, which exhibited substantially higher instruction count than the remaining batches."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-051",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "898bc885f8f6d43363d31072795bcb148c6df7406bcd4d64a115da0b3e9bae5f",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

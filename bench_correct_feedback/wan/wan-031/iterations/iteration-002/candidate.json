@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Runtime initialization contributes more variation than quadratic attention at these small sequence lengths. Loaded-module cardinality may distinguish initialization regimes that input dimensions alone cannot explain.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(__import__('sys').modules)",
+      "name": "loaded_modules",
+      "rationale": "Measures existing runtime initialization state cheaply; repeated calls with identical dimensions showed substantial unexplained variation consistent with warmup."
+    },
+    {
+      "expression": "1 if isinstance(prompt, str) else len(prompt)",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer and embedding reconstruction overhead."
+    },
+    {
+      "expression": "(1 if isinstance(prompt, str) else len(prompt)) * max_sequence_length",
+      "name": "token_positions",
+      "rationale": "Captures padded encoder processing and tensor operations."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else sum((len(p) for p in prompt))",
+      "name": "prompt_characters",
+      "rationale": "Captures cleaning and tokenization work while retaining distinct prompt states."
+    }
+  ]
+}

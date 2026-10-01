@@ -1,0 +1,81 @@
+{
+  "case": "wan-033",
+  "validity_warnings": [],
+  "pcv_names": [
+    "batch_size",
+    "padded_tokens",
+    "attention_elements",
+    "position_pairs"
+  ],
+  "distinct_states": 5,
+  "required_states": 6,
+  "calls": 36,
+  "dropped_calls": 0,
+  "nested_calls_per_call": 0.0,
+  "states": [
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 8,
+        "attention_elements": 64,
+        "position_pairs": 64
+      },
+      "calls": 12,
+      "instructions_per_call": 3155559.0
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 12,
+        "attention_elements": 144,
+        "position_pairs": 144
+      },
+      "calls": 6,
+      "instructions_per_call": 3175173.1666666665
+    },
+    {
+      "state": {
+        "batch_size": 1,
+        "padded_tokens": 16,
+        "attention_elements": 256,
+        "position_pairs": 256
+      },
+      "calls": 6,
+      "instructions_per_call": 3153500.6666666665
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 16,
+        "attention_elements": 128,
+        "position_pairs": 64
+      },
+      "calls": 6,
+      "instructions_per_call": 3275749.5
+    },
+    {
+      "state": {
+        "batch_size": 2,
+        "padded_tokens": 32,
+        "attention_elements": 512,
+        "position_pairs": 256
+      },
+      "calls": 6,
+      "instructions_per_call": 3342918.0
+    }
+  ],
+  "max_unexplained_share": null,
+  "threshold": 0.05,
+  "sufficient_points": false,
+  "gate_pass": false,
+  "gate_reasons": [
+    "insufficient state points: 5; need 6"
+  ],
+  "automatic_regime_splitting": false,
+  "instruction_scope": "target own work, excluding configured runtime waiting modules; marker overhead included",
+  "returncode": 0,
+  "instrumented_wall_seconds": 25.33323260396719,
+  "raw_files": [
+    "run.1585416.json"
+  ]
+}

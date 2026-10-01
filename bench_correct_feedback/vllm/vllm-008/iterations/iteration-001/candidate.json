@@ -1,0 +1,26 @@
+{
+  "hypothesis": "For this single-group full-attention workload, instruction count is driven by cached-prefix traversal and fixed branch costs for existing versus newly needed blocks.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(new_computed_block_list[0])",
+      "name": "prefix_blocks",
+      "rationale": "Counts cached prefix blocks potentially inspected when determining allocation requirements."
+    },
+    {
+      "expression": "int(bool(new_computed_block_list[0]))",
+      "name": "has_prefix_blocks",
+      "rationale": "Captures fixed overhead of handling a nonempty cached prefix."
+    },
+    {
+      "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+      "name": "has_existing_blocks",
+      "rationale": "Distinguishes initial allocation from requests with an existing block table."
+    },
+    {
+      "expression": "int((num_tokens_need_slot + self.coordinator.single_type_managers[0].block_size - 1) // self.coordinator.single_type_managers[0].block_size > len(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())) + len(new_computed_block_list[0]))",
+      "name": "needs_additional_blocks",
+      "rationale": "Captures the branch where existing and prefix blocks cannot cover the requested token slots."
+    }
+  ]
+}

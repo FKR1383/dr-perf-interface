@@ -1,0 +1,21 @@
+{
+  "hypothesis": "The previous block-count feature was redundant with request count. Removing its queue traversal reduces observation overhead, while a nonempty indicator captures the substantial difference between admission and empty decode steps. A quadratic term accommodates remaining batch-size effects.",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "len(self.waiting) + len(self.skipped_waiting)",
+      "name": "waiting_requests",
+      "rationale": "Models per-request admission and allocation work without traversing either queue."
+    },
+    {
+      "expression": "int(len(self.waiting) + len(self.skipped_waiting) > 0)",
+      "name": "nonempty_waiting",
+      "rationale": "Separates admission-path setup from the inexpensive empty-queue path."
+    },
+    {
+      "expression": "(len(self.waiting) + len(self.skipped_waiting)) ** 2",
+      "name": "waiting_requests_squared",
+      "rationale": "Allows nonlinear queue and allocation costs across the bounded batch sizes."
+    }
+  ]
+}

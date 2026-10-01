@@ -1,0 +1,88 @@
+{
+  "agent_PCVs_thread": "01a0f68e-58ab-7a31-bab5-e9c48e574540",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 13.89048716630521,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Conditional tensor copies and penalty-triggered prompt construction dominate instruction count, with prompt construction scaling with row count and tensor size.",
+      "irregularity_percent": 13.89048716630521,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)",
+          "name": "sampling_copy_count",
+          "rationale": "Counts conditional sampling tensor copies and their fixed library overhead."
+        },
+        {
+          "expression": "int(not self.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures the fixed prompt tensor construction overhead triggered by penalties in this workload."
+        },
+        {
+          "expression": "self.num_reqs if not self.no_penalties else 0",
+          "name": "prompt_rows",
+          "rationale": "Tracks iterations of the prompt padding loop."
+        },
+        {
+          "expression": "self.num_reqs * int(max(self.num_prompt_tokens[:self.num_reqs])) if self.num_reqs and (not self.no_penalties) else 0",
+          "name": "prompt_elements",
+          "rationale": "Tracks the rectangular prompt tensor size using a bounded entry-state reduction."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 6.476995883621293,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The largest irregularity comes from grouping empty initialization with active greedy batches. Separating that entry state should improve the worst state while retaining the dominant copy and prompt-processing predictors.",
+      "irregularity_percent": 6.476995883621293,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties)",
+          "name": "sampling_copy_count",
+          "rationale": "Tracks conditional tensor-copy overhead."
+        },
+        {
+          "expression": "int(not self.no_penalties)",
+          "name": "penalties_enabled",
+          "rationale": "Captures fixed overhead from constructing prompt token metadata."
+        },
+        {
+          "expression": "self.num_reqs if not self.no_penalties else 0",
+          "name": "prompt_rows",
+          "rationale": "Tracks the per-request prompt padding loop."
+        },
+        {
+          "expression": "int(self.num_reqs == 0)",
+          "name": "empty_batch",
+          "rationale": "Separates empty initialization from active greedy batches, which previously shared the state with the largest unexplained share."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-060",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "2df2d18b6ac71d6f2ee680067f6e7b6f5a7b3f697e7551ca5a1a9c067886b8ff",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

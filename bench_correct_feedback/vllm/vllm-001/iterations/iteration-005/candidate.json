@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The remaining unexplained work may scale with lexical units rather than a polynomial of character length. Combining word count and character count should better represent tokenizer and token-list processing costs.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "int(tokenization_kwargs is None)",
+      "name": "default_options",
+      "rationale": "Separates the entry state containing the exceptional initialization cost."
+    },
+    {
+      "expression": "len(prompt if isinstance(prompt, str) else prompt['prompt'])",
+      "name": "prompt_chars",
+      "rationale": "Captures character scanning and text conversion work."
+    },
+    {
+      "expression": "(prompt if isinstance(prompt, str) else prompt['prompt']).count(' ') + 1",
+      "name": "prompt_word_count",
+      "rationale": "Provides a cheap lexical-unit count to distinguish token-dependent work from character-dependent work."
+    },
+    {
+      "expression": "int((tokenization_kwargs or {}).get('add_special_tokens', True) and 'truncate_prompt_tokens' not in (tokenization_kwargs or {}))",
+      "name": "special_tokens_without_truncation",
+      "rationale": "Captures the higher observed cost of special-token processing without explicit truncation."
+    }
+  ]
+}

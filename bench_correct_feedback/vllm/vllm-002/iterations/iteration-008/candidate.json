@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Token-processing volume may explain the text-dependent execution paths better than character counts. A lexical token estimate leaves a separate feature available for the alternating special-token branch.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates the initial call and its initialization work."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks common work per request."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((t.count(' ') + 1 + t.count('.') + t.count(',') + t.count('-') + 2 * t.count('epsilon') + t.count('zeta') + t.count(' eta') + 2 * t.count('Distinguish') + t.count('Explain') for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable for t in [p['prompt'] if 'prompt' in p else p]))",
+      "name": "estimated_prompt_tokens",
+      "rationale": "Estimates token-processing volume using word boundaries, punctuation, and likely subword splits in the supplied texts, without running the tokenizer."
+    },
+    {
+      "expression": "len(params) if (prompts.gi_frame.f_locals.get('tokenization_kwargs') or {}).get('add_special_tokens', False) else 0",
+      "name": "special_token_requests",
+      "rationale": "Captures additional processing when tokenization inserts special tokens."
+    }
+  ]
+}

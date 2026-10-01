@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Direct cardinalities may explain instruction-level variation better than compressed cost estimates. This candidate exposes batch size and minimum-token request count independently, including on unchanged-batch calls.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "self.num_reqs",
+      "name": "active_requests",
+      "rationale": "Exposes batch cardinality directly for processor updates, tensor operations, and prompt-padding loops."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added)",
+      "name": "added_requests",
+      "rationale": "Separately measures per-request admission processing."
+    },
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (1 + int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 4 * int(not self.no_penalties) + int(not self.no_allowed_token_ids))",
+      "name": "metadata_paths",
+      "rationale": "Counts metadata reconstruction plus enabled copy and prompt-construction paths."
+    },
+    {
+      "expression": "len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1])",
+      "name": "minimum_token_requests",
+      "rationale": "Measures requests involved in minimum-token initialization or expiration rather than recording only transition presence."
+    }
+  ]
+}

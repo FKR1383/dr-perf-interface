@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Replacing the flat medium-prompt indicator with a ramp should better explain the difference between 21- and 22-token requests and reduce the remaining model error. Short-prompt indicators remain proxies for workload-specific startup effects.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0",
+      "name": "prompt_tokens",
+      "rationale": "Retains the prompt-size term and distinguishes eight observed lengths."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 9)",
+      "name": "nine_token_prompt",
+      "rationale": "Retains the indicator for the elevated nine-token state."
+    },
+    {
+      "expression": "int(request.prompt_token_ids is not None and len(request.prompt_token_ids) == 10)",
+      "name": "ten_token_prompt",
+      "rationale": "Retains the indicator for the highest-cost observed state."
+    },
+    {
+      "expression": "max(0, len(request.prompt_token_ids) - 20) if request.prompt_token_ids is not None and len(request.prompt_token_ids) < 23 else 0",
+      "name": "medium_prompt_excess",
+      "rationale": "Allows greater excess cost for 22-token prompts than for 21-token prompts, matching the observed medium-prompt variation."
+    }
+  ]
+}

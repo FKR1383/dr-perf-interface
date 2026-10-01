@@ -1,0 +1,384 @@
+{
+  "agent_PCVs_thread": "01a0f58c-9fca-7be2-b855-05dae0a5213a",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 63.52974086934652,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily an affine combination of running and waiting request counts, with additional work proportional to waiting prompt blocks and new blocks required by running requests.",
+      "irregularity_percent": 63.52974086934652,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures per-request scheduling, allocation checks, cached output construction, and state updates."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures admission, prefix lookup, queue operations, and new-request output construction."
+        },
+        {
+          "expression": "sum(((r.num_tokens + self.block_size - 1) // self.block_size for r in self.waiting))",
+          "name": "waiting_prompt_blocks",
+          "rationale": "Approximates block-dependent prefix lookup, allocation, and block-ID materialization during admission."
+        },
+        {
+          "expression": "sum(((r.num_tokens_with_spec + self.block_size - 1) // self.block_size - (r.num_computed_tokens + self.block_size - 1) // self.block_size for r in self.running))",
+          "name": "running_block_boundaries",
+          "rationale": "Captures additional KV-block allocation when running requests cross block boundaries."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 55.82010378430512,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Admission and decode require different fixed costs, while admission cost also depends on prompt length. Replacing the two uninformative block features with an admission indicator and prompt-token total should explain substantially more variation.",
+      "irregularity_percent": 55.82010378430512,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Models the repeated decode scheduling and cached-request output work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Models per-request admission and new-request output work."
+        },
+        {
+          "expression": "int(bool(self.waiting or self.skipped_waiting))",
+          "name": "has_waiting_requests",
+          "rationale": "Allows admission steps to have a different fixed cost from decode-only steps."
+        },
+        {
+          "expression": "sum((r.num_tokens for r in self.waiting))",
+          "name": "waiting_prompt_tokens",
+          "rationale": "Captures prompt-dependent admission costs hidden by block counts, which were identical to waiting request counts in every measured state."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.38978716467484,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The measurements suggest nearly linear decode and admission costs, with exceptional overhead in singleton and two-request admission states. Explicit cardinality indicators may isolate those deviations and prevent them from degrading the fit across all states.",
+      "irregularity_percent": 17.38978716467484,
+      "iteration": 3,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures the approximately linear cost of decode scheduling and cached-request output construction."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures the approximately linear admission cost evident for batches of three through eight requests."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "singleton_admission",
+          "rationale": "Separates singleton admission, whose measured cost substantially exceeds the larger-batch linear trend."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "pair_admission",
+          "rationale": "Separates two-request admission, which also shows excess cost relative to the larger-batch trend."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-004/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.349253427360328,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-004/drperf-full-report.json",
+      "hypothesis": "The previous features isolated the observed cost regimes, but the fitted model systematically underpredicted them, especially the sparse admission indicators. Uniform feature scaling tests whether numerical conditioning or regularization causes this remaining error without changing the information represented.",
+      "irregularity_percent": 17.349253427360328,
+      "iteration": 4,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "16 * len(self.running)",
+          "name": "running_requests_scaled",
+          "rationale": "Preserves the decode-work predictor while increasing its numerical scale for fitting."
+        },
+        {
+          "expression": "16 * (len(self.waiting) + len(self.skipped_waiting))",
+          "name": "waiting_requests_scaled",
+          "rationale": "Preserves the admission-work predictor on the same numerical scale."
+        },
+        {
+          "expression": "16 * int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "singleton_admission_scaled",
+          "rationale": "Preserves the singleton admission indicator while reducing potential attenuation of this sparsely observed feature."
+        },
+        {
+          "expression": "16 * int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "pair_admission_scaled",
+          "rationale": "Preserves the pair admission indicator while reducing potential attenuation of this sparsely observed feature."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-005/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 18.006355184182652,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-005/drperf-full-report.json",
+      "hypothesis": "Scaling did not help. Making admission predictors mutually exclusive may allow Dr. Perf to attribute distinct execution paths without subtractive corrections between the general request-count feature and small-batch indicators.",
+      "irregularity_percent": 18.006355184182652,
+      "iteration": 5,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Models repeated decode scheduling work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting) if len(self.waiting) + len(self.skipped_waiting) >= 3 else 0",
+          "name": "larger_admission_requests",
+          "rationale": "Models larger admission batches independently of the exceptional singleton and pair states."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "singleton_admission",
+          "rationale": "Provides a separate predictor for the full singleton admission cost."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "pair_admission",
+          "rationale": "Provides a separate predictor for the full pair admission cost."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-006/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 53.99583524367411,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-006/drperf-full-report.json",
+      "hypothesis": "The small-batch excess costs are approximately in a three-to-two ratio. Combining their indicators frees a feature for the admission-path fixed cost, which the previous candidate could not model independently.",
+      "irregularity_percent": 53.99583524367411,
+      "iteration": 6,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures per-request decode scheduling work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures per-request admission work."
+        },
+        {
+          "expression": "int(bool(self.waiting or self.skipped_waiting))",
+          "name": "has_waiting_requests",
+          "rationale": "Separates fixed admission-path costs from decode-path costs."
+        },
+        {
+          "expression": "4 - len(self.waiting) - len(self.skipped_waiting) if 0 < len(self.waiting) + len(self.skipped_waiting) <= 2 else 0",
+          "name": "small_admission_adjustment",
+          "rationale": "Combines the two exceptional small-admission states into one feature, assigning singleton and pair batches values of three and two."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-007/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 17.69124488217921,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-007/drperf-full-report.json",
+      "hypothesis": "Separate singleton and pair indicators proved necessary. Including setup units within the mutually exclusive decode and larger-admission predictors tests whether phase-specific fixed work explains the remaining error without requiring a fifth feature.",
+      "irregularity_percent": 17.69124488217921,
+      "iteration": 7,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running) + 1 if self.running else 0",
+          "name": "decode_work",
+          "rationale": "Represents decode processing with one setup unit plus one unit per running request."
+        },
+        {
+          "expression": "2 * (len(self.waiting) + len(self.skipped_waiting)) + 1 if len(self.waiting) + len(self.skipped_waiting) >= 3 else 0",
+          "name": "larger_admission_work",
+          "rationale": "Combines admission setup and per-request work, using the observed approximate two-to-one ratio between admission and decode slopes."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "singleton_admission",
+          "rationale": "Retains an independent feature for the exceptional singleton admission path."
+        },
+        {
+          "expression": "int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "pair_admission",
+          "rationale": "Retains an independent feature for the exceptional pair admission path."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-008/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 57.12307700168095,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-008/drperf-full-report.json",
+      "hypothesis": "The first two admission states may share fixed initialization paths whose execution counts are equal even though their total excess costs differ. A binary small-admission feature preserves that shared behavior while retaining separate admission and decode costs.",
+      "irregularity_percent": 57.12307700168095,
+      "iteration": 8,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures per-request decode scheduling work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures per-request admission work."
+        },
+        {
+          "expression": "int(bool(self.waiting or self.skipped_waiting))",
+          "name": "has_waiting_requests",
+          "rationale": "Captures fixed work specific to admission steps."
+        },
+        {
+          "expression": "int(0 < len(self.waiting) + len(self.skipped_waiting) <= 2)",
+          "name": "small_admission",
+          "rationale": "Identifies overhead shared by singleton and pair admissions, without imposing the unsuccessful three-to-two weighting."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-009/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 60.18404673717973,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-009/drperf-full-report.json",
+      "hypothesis": "Admission-only singleton and pair indicators produced the best result so far but left systematic unexplained work. Applying those cardinality distinctions to the entire active population tests whether the missing behavior follows container size across both scheduling paths.",
+      "irregularity_percent": 60.18404673717973,
+      "iteration": 9,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures per-request decode work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures per-request admission work."
+        },
+        {
+          "expression": "int(len(self.running) + len(self.waiting) + len(self.skipped_waiting) == 1)",
+          "name": "singleton_population",
+          "rationale": "Tests whether singleton-specific container and allocation behavior also occurs during decode, rather than only admission."
+        },
+        {
+          "expression": "int(len(self.running) + len(self.waiting) + len(self.skipped_waiting) == 2)",
+          "name": "pair_population",
+          "rationale": "Tests whether two-request container and allocation behavior is shared across admission and decode."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-010/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 57.392601037218746,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-010/drperf-full-report.json",
+      "hypothesis": "The exceptional early admissions may reflect runtime initialization rather than queue size. Module-registry cardinality tests that explanation directly and may distinguish initialization states that request counts alone miss.",
+      "irregularity_percent": 57.392601037218746,
+      "iteration": 10,
+      "outcome": "exhausted",
+      "pcvs": [
+        {
+          "expression": "len(self.running)",
+          "name": "running_requests",
+          "rationale": "Captures per-request decode scheduling work."
+        },
+        {
+          "expression": "len(self.waiting) + len(self.skipped_waiting)",
+          "name": "waiting_requests",
+          "rationale": "Captures per-request admission work."
+        },
+        {
+          "expression": "int(bool(self.waiting or self.skipped_waiting))",
+          "name": "has_waiting_requests",
+          "rationale": "Separates admission setup from decode setup."
+        },
+        {
+          "expression": "len(__import__('sys').modules)",
+          "name": "loaded_modules",
+          "rationale": "Reads the cardinality of the existing runtime module registry as a cheap indicator of initialization state."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-032",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "6a0c7537f99a70cc7bdb701ff6957e5f8fe2e5f9cd35c0635fe9301617c26251",
+  "iterations": 10,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "exhausted",
+  "threshold_percent": 10.0
+}

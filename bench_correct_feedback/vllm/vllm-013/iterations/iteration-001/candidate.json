@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is approximately a fixed entry cost plus active-path overhead, per-block work, and per-token hashing preparation.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes))",
+      "name": "new_full_blocks",
+      "rationale": "Counts loop iterations, each generating extra keys, slicing tokens, and computing one chained hash."
+    },
+    {
+      "expression": "int(request.num_tokens // hash_block_size > len(request.block_hashes))",
+      "name": "hashing_active",
+      "rationale": "Captures setup and termination costs skipped by the early return."
+    },
+    {
+      "expression": "max(0, request.num_tokens // hash_block_size - len(request.block_hashes)) * hash_block_size",
+      "name": "new_full_block_tokens",
+      "rationale": "Captures token slicing, tuple construction, and serialization work proportional to the number of tokens hashed."
+    }
+  ]
+}

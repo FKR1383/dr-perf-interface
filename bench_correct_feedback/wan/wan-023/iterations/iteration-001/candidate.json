@@ -1,0 +1,26 @@
+{
+  "hypothesis": "With model dimensions and layer count fixed, instruction count should follow constant overhead plus linear video and text processing, quadratic self-attention, and video-by-text cross-attention.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+      "name": "video_tokens",
+      "rationale": "Tracks patch embedding, projections, normalization, feed-forward operations, and output reconstruction for the fixed model."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+      "name": "self_attention_pairs",
+      "rationale": "Tracks quadratic self-attention work."
+    },
+    {
+      "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+      "name": "text_tokens",
+      "rationale": "Tracks text embedding and cross-attention key/value projections."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2]) * encoder_hidden_states.shape[1]",
+      "name": "cross_attention_pairs",
+      "rationale": "Tracks cross-attention work over video queries and text keys."
+    }
+  ]
+}

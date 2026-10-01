@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Instruction count is approximately affine in the number of cached requests. The fixed CPU workload should keep pipeline and runner branches stable, with little variation in per-request block conversion cost.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(running_reqs) + len(resumed_reqs)",
+      "name": "cached_request_count",
+      "rationale": "Counts loop iterations that gather request IDs, block IDs, and token metadata; both lengths are constant-time entry-state queries."
+    }
+  ]
+}

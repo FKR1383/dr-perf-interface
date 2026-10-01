@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is dominated by the number of request-state moves, with smaller contributions from removal handling, entering the condensation path, and copying active token prefixes.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "sum((i < self.num_reqs for i in self.batch_update_builder.removed))",
+      "name": "moved_requests",
+      "rationale": "Each hole below the final batch size requires one complete request-state move."
+    },
+    {
+      "expression": "len(self.batch_update_builder.removed)",
+      "name": "removed_requests",
+      "rationale": "Captures removal-dependent scanning and list trimming."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.removed) and self.num_reqs > 0)",
+      "name": "nonempty_condensation",
+      "rationale": "Separates the full condensation path from the early-return paths."
+    },
+    {
+      "expression": "sum((int(self.num_tokens_no_spec[i]) + len(self.spec_token_ids[i]) for i in range(self.num_reqs, len(self._req_ids)) if self._req_ids[i] is not None))",
+      "name": "moved_tokens",
+      "rationale": "Active requests beyond the final batch boundary are moved; their token counts determine the copied token-prefix volume."
+    }
+  ]
+}

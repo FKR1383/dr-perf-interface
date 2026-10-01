@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The combined token-count feature worsened attribution. Initial decoding may instead scale with prompt characters processed by the tokenizer; this candidate tests that alternative while preserving the other workload dimensions.",
+  "iteration": 5,
+  "pcvs": [
+    {
+      "expression": "len(engine_core_outputs)",
+      "name": "batch_size",
+      "rationale": "Captures per-request processing and output construction."
+    },
+    {
+      "expression": "sum((o.finish_reason is not None for o in engine_core_outputs))",
+      "name": "finished_requests",
+      "rationale": "Captures completion statistics and cleanup."
+    },
+    {
+      "expression": "sum((len(self.request_states[o.request_id].prompt or '') for o in engine_core_outputs if o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling))",
+      "name": "prefill_prompt_characters",
+      "rationale": "Tests whether initial tokenizer work follows text length more closely than token count."
+    },
+    {
+      "expression": "int(len(engine_core_outputs) > 0 and sum((o.finish_reason is not None and o.request_id in self.request_states and self.request_states[o.request_id].is_prefilling for o in engine_core_outputs)) == len(engine_core_outputs))",
+      "name": "entire_batch_finishes_on_first_output",
+      "rationale": "Retains separation of the exceptional first-output completion regime."
+    }
+  ]
+}

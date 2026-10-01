@@ -1,0 +1,11 @@
+--- baseline/src/diffusers/image_processor.py
++++ candidate/src/diffusers/image_processor.py
+@@ -784,7 +784,7 @@
+             return image
+ 
+         if output_type == "pil":
+-            with perfmark.region("wan-004"):
++            with perfmark.region("wan-004", batch_size=(image.shape[0]), element_count=(image.size), total_rows=(image.shape[0] * image.shape[1])):
+                 return self.numpy_to_pil(image)
+ 
+     def apply_overlay(

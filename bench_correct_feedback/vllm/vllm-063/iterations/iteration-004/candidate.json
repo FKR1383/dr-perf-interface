@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A compressed metadata-work predictor permits separate modeling of minimum-token transitions, admission work, and the unusually expensive all-greedy admission regime.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "int(self.batch_update_builder.batch_changed) * (12 + 4 * (int(not self.all_greedy) + int(not self.no_top_p) + int(not self.no_top_k) + 3 * int(not self.no_penalties) + int(not self.no_allowed_token_ids)) + (4 + self.num_reqs if not self.no_penalties else 0))",
+      "name": "metadata_work_units",
+      "rationale": "Combines metadata setup, tensor copies, and penalty prompt construction into approximate work units, freeing features for processor transitions."
+    },
+    {
+      "expression": "int(len([ids for ids in self.req_output_token_ids if ids is not None and len(ids) <= 1]) > 0)",
+      "name": "minimum_token_transition",
+      "rationale": "Separates minimum-token mask transitions, which the previous report associates with roughly 60000 additional instructions."
+    },
+    {
+      "expression": "len(self.batch_update_builder.added) + int(bool(self.batch_update_builder.added))",
+      "name": "addition_work",
+      "rationale": "Represents both fixed admission setup and per-request processor initialization."
+    },
+    {
+      "expression": "int(bool(self.batch_update_builder.added) and self.all_greedy)",
+      "name": "greedy_admission",
+      "rationale": "Separates admission into an all-greedy batch, which showed substantially greater residual cost than other admissions."
+    }
+  ]
+}

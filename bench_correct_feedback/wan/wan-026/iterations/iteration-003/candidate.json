@@ -1,0 +1,11 @@
+{
+  "hypothesis": "Text length alone captures the repeatable workload variation. Scheduler initialization has a small fitted effect, while garbage-collector state did not explain the observed overhead; removing both may improve the measured irregularity.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "prompt_embeds.shape[1]",
+      "name": "text_length",
+      "rationale": "The three text lengths determine the varying text-projection and cross-attention workload; latent shape, model size, and guidance are fixed."
+    }
+  ]
+}

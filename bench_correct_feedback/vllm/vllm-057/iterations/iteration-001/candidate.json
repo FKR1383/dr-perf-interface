@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is explained by batch size, the number of sampled requests, total context length, and fixed overhead when the batch proposer runs. Sampled requests approximate eligible requests when contexts remain below the model-length limit.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(sampled_token_ids)",
+      "name": "batch_size",
+      "rationale": "Captures filtering and output-list construction, including the empty warmup batch."
+    },
+    {
+      "expression": "sum((1 for ids in sampled_token_ids if len(ids) > 0))",
+      "name": "sampled_requests",
+      "rationale": "Approximates the number of requests needing proposal processing."
+    },
+    {
+      "expression": "int(sum(num_tokens_no_spec))",
+      "name": "context_tokens",
+      "rationale": "Approximates aggregate linear n-gram search work and the batch token-count reduction."
+    },
+    {
+      "expression": "int(sum((1 for ids in sampled_token_ids if len(ids) > 0)) > 0)",
+      "name": "has_sampled_requests",
+      "rationale": "Captures fixed thread-configuration and Numba dispatch overhead when proposal processing is enabled."
+    }
+  ]
+}

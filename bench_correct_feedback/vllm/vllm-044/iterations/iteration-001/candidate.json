@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed request processing plus linear token validation, with additional variation from raw-prompt preprocessing and sampling-specific branches.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(prompt.get('prompt_token_ids', ())) if isinstance(prompt, dict) else 0",
+      "name": "prompt_token_count",
+      "rationale": "Token validation scans prompt IDs for minimum and maximum values, producing cost proportional to token count."
+    },
+    {
+      "expression": "len(prompt) if isinstance(prompt, str) else len(prompt.get('prompt', '')) if isinstance(prompt, dict) and 'type' not in prompt else 0",
+      "name": "raw_prompt_characters",
+      "rationale": "If raw prompts reach this boundary, their character count approximates tokenization and preprocessing work."
+    },
+    {
+      "expression": "int(isinstance(params, SamplingParams) and params.temperature > 0)",
+      "name": "sampling_enabled",
+      "rationale": "Separates sampling parameter validation and processing paths from greedy generation."
+    }
+  ]
+}

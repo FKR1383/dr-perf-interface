@@ -1,0 +1,21 @@
+{
+  "hypothesis": "Stacking instruction count consists of fixed overhead, per-input array handling, and copying costs governed by total bytes and frame-channel blocks.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "len(outputs)",
+      "name": "array_count",
+      "rationale": "Captures per-array validation, view creation, and concatenation setup in np.stack."
+    },
+    {
+      "expression": "len(outputs) * outputs[0].nbytes",
+      "name": "copy_bytes",
+      "rationale": "Captures the total data copied into the stacked array."
+    },
+    {
+      "expression": "len(outputs) * outputs[0].shape[0] * outputs[0].shape[3]",
+      "name": "frame_channel_blocks",
+      "rationale": "Captures copy-loop overhead associated with frame and channel planes in the transposed NumPy arrays."
+    }
+  ]
+}

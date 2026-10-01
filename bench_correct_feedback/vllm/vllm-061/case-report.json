@@ -1,0 +1,125 @@
+{
+  "agent_PCVs_thread": "01a0f693-cb0c-7a53-92b5-ec8a8394846c",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 43.009848951181404,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is primarily a fixed request-registration cost plus token and block copying, with additional costs from random sampling and penalty bookkeeping.",
+      "irregularity_percent": 43.009848951181404,
+      "iteration": 1,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)",
+          "name": "copied_token_count",
+          "rationale": "Tracks list-to-array conversion and copying for prompt and output token IDs."
+        },
+        {
+          "expression": "sum((len(block_ids) for block_ids in request.block_ids))",
+          "name": "block_count",
+          "rationale": "Tracks block IDs copied when adding the request's block-table row."
+        },
+        {
+          "expression": "int(request.sampling_params is not None and request.sampling_params.temperature != 0.0)",
+          "name": "random_sampling",
+          "rationale": "Distinguishes the random sampling path, which also enables top-k and top-p bookkeeping in this workload."
+        },
+        {
+          "expression": "int(request.sampling_params.frequency_penalty != 0.0) + int(request.sampling_params.presence_penalty != 0.0) + int(request.sampling_params.repetition_penalty != 1.0) if request.sampling_params is not None else 0",
+          "name": "penalty_count",
+          "rationale": "Counts conditional penalty-set insertions."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 44.73861899854295,
+        "reasons": [],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "The constant block count and small penalty effects did not explain variation. Batch container state, removed-slot handling, and sampling-type cache state may explain the substantial registration overhead and early-call outliers.",
+      "irregularity_percent": 44.73861899854295,
+      "iteration": 2,
+      "outcome": "retry",
+      "pcvs": [
+        {
+          "expression": "(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)",
+          "name": "copied_token_count",
+          "rationale": "Tracks token conversion and copying."
+        },
+        {
+          "expression": "len(self.req_id_to_index)",
+          "name": "resident_requests",
+          "rationale": "Exposes batch occupancy and associated container growth during registration."
+        },
+        {
+          "expression": "len(self.batch_update_builder.removed)",
+          "name": "removed_slots",
+          "rationale": "Tracks pending removals affecting slot selection and append-versus-replacement behavior."
+        },
+        {
+          "expression": "int(request.sampling_params is not None and 'sampling_type' not in request.sampling_params.__dict__)",
+          "name": "uncached_sampling_type",
+          "rationale": "Distinguishes initial sampling-type computation from access to its cached value."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-003/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 8.023614825149531,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-003/drperf-full-report.json",
+      "hypothesis": "The reports suggest a roughly linear token-copying baseline plus pronounced early short-prompt admission costs. Conditional interactions between prompt size, empty-batch state, and slot reuse may capture these regimes; they are empirical proxies rather than established causes.",
+      "irregularity_percent": 8.023614825149531,
+      "iteration": 3,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "(len(request.prompt_token_ids) if request.prompt_token_ids is not None else 0) + len(request.output_token_ids)",
+          "name": "copied_token_count",
+          "rationale": "Tracks the approximately linear copying cost across medium and long prompts."
+        },
+        {
+          "expression": "int(request.num_prompt_tokens <= 11)",
+          "name": "short_prompt",
+          "rationale": "Tests a separate baseline for the short-prompt regime, where the largest deviations occurred."
+        },
+        {
+          "expression": "int(request.num_prompt_tokens <= 11 and len(self.req_id_to_index) == 0)",
+          "name": "short_prompt_empty_batch",
+          "rationale": "Separates the two expensive short-prompt admissions from the cheaper short-prompt admission into an occupied batch."
+        },
+        {
+          "expression": "int(request.num_prompt_tokens <= 11 and len(self.req_id_to_index) == 0 and (len(self.batch_update_builder.removed) == 0))",
+          "name": "short_prompt_empty_batch_append",
+          "rationale": "Distinguishes the initial append from the subsequent reuse of a removed slot within the expensive short-prompt regime."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-061",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "399da689197cc16ffaca73281333878aac35304057e6e7648a84e503296af96f",
+  "iterations": 3,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

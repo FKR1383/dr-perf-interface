@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Character volume and token volume drive distinct execution paths. Retaining both while incorporating special tokens into the token estimate should improve on the earlier character-and-word model.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "1 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else 0",
+      "name": "default_tokenization",
+      "rationale": "Separates initialization work in the initial default-options call."
+    },
+    {
+      "expression": "len(params)",
+      "name": "request_count",
+      "rationale": "Tracks common per-request processing."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((len(p['prompt'] if 'prompt' in p else p) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable))",
+      "name": "total_prompt_characters",
+      "rationale": "Tracks character-dependent rendering and tokenization work independently of token volume."
+    },
+    {
+      "expression": "0 if prompts.gi_frame.f_locals.get('tokenization_kwargs') is None else sum((t.count(' ') + 1 + t.count('.') + t.count(',') + t.count('-') + 2 * t.count('epsilon') + t.count('zeta') + t.count(' eta') + 2 * t.count('Distinguish') + t.count('Explain') + (1 if prompts.gi_frame.f_locals['tokenization_kwargs'].get('add_special_tokens', False) else 0) for p in prompts.gi_frame.f_locals['.0'].gi_frame.f_locals['self'].iterable for t in [p['prompt'] if 'prompt' in p else p]))",
+      "name": "estimated_prompt_tokens",
+      "rationale": "Estimates token-dependent processing, including punctuation, likely subword splits, and explicitly requested special tokens."
+    }
+  ]
+}

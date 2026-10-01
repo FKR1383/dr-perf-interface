@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Token extent had a fitted coefficient of zero. Request-table cardinality is a more relevant source of distinct states for this nearly constant-cost query, potentially explaining bookkeeping variation alongside initial-versus-existing allocation.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "len(self.coordinator.single_type_managers[0].req_to_blocks)",
+      "name": "tracked_requests",
+      "rationale": "Measures the request-table size governing dictionary lookup and possible insertion or resizing costs."
+    },
+    {
+      "expression": "int(bool(self.coordinator.single_type_managers[0].req_to_blocks.get(request.request_id, ())))",
+      "name": "has_existing_blocks",
+      "rationale": "Distinguishes initial allocation queries from queries for requests already holding blocks."
+    }
+  ]
+}

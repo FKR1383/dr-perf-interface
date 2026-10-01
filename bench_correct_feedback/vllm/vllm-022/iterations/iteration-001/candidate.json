@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is driven primarily by heap depth and request comparisons, with separate overhead for singleton removal and restoration of a nontrivial heap.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "int(len(self._heap) > 2) + int(len(self._heap) > 4) + int(len(self._heap) > 8)",
+      "name": "remaining_heap_depth",
+      "rationale": "Computes the remaining heap depth for the exercised entry sizes of 1 through 12 using cheap comparisons."
+    },
+    {
+      "expression": "len(self._heap)",
+      "name": "queue_size",
+      "rationale": "Captures residual size-dependent heap maintenance and list storage costs."
+    },
+    {
+      "expression": "int(len(self._heap) > 1)",
+      "name": "requires_restoration",
+      "rationale": "Distinguishes singleton removal from replacement and heap restoration."
+    },
+    {
+      "expression": "int(len(self._heap) > 2)",
+      "name": "requires_comparisons",
+      "rationale": "Distinguishes removals that invoke request comparisons from the smallest heaps."
+    }
+  ]
+}

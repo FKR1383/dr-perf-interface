@@ -1,0 +1,61 @@
+{
+  "agent_PCVs_thread": "01a0f573-7135-7101-9e51-c0a6c266b28a",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": null,
+        "reasons": [
+          "insufficient state points: 1; need 3",
+          "Dr. Perf did not produce an irregularity value"
+        ],
+        "success": false,
+        "threshold_percent": 10.0,
+        "valid": false
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "The measured body should have approximately constant instruction count across all benchmark calls; the nonempty indicator represents its executed path.",
+      "irregularity_percent": null,
+      "iteration": 1,
+      "outcome": "invalid",
+      "pcvs": [
+        {
+          "expression": "int(len(self) > 0)",
+          "name": "nonempty",
+          "rationale": "Captures the branch selecting front access versus raising IndexError. All benchmark queues are nonempty, and both the length check and deque front access take constant work independent of queue size."
+        }
+      ]
+    },
+    {
+      "annotation_diff": "iterations/iteration-002/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 0.0,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-002/drperf-full-report.json",
+      "hypothesis": "Peeking at the deque front has approximately constant instruction count across queue sizes; a fitted intercept with a near-zero size coefficient should explain the observations.",
+      "irregularity_percent": 0.0,
+      "iteration": 2,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "len(self)",
+          "name": "queue_size",
+          "rationale": "Cheap entry-state cardinality supplies twelve distinct states, satisfying the measurement gate while allowing the fit to detect approximately constant cost."
+        }
+      ]
+    }
+  ],
+  "case": "vllm-015",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "3c955f642a2575b739cbbb0636e18e1c98355a9fbdb29c2aec0921e8d096540c",
+  "iterations": 2,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

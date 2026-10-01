@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Loaded-module cardinality was constant. This candidate tests whether separate temporal geometry explains costs omitted by total token count and attention-pair counts, while restoring the independent text-processing term.",
+  "iteration": 3,
+  "pcvs": [
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0]) * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])",
+      "name": "video_tokens",
+      "rationale": "Tracks linear projection, normalization, feed-forward, and reconstruction work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0] * (hidden_states.shape[3] // self.config.patch_size[1]) * (hidden_states.shape[4] // self.config.patch_size[2])) ** 2",
+      "name": "self_attention_pairs",
+      "rationale": "Tracks quadratic self-attention work."
+    },
+    {
+      "expression": "hidden_states.shape[0] * (hidden_states.shape[2] // self.config.patch_size[0])",
+      "name": "frame_planes",
+      "rationale": "Captures frame-dependent convolution and tensor traversal costs that total token count does not distinguish."
+    },
+    {
+      "expression": "encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]",
+      "name": "text_tokens",
+      "rationale": "Tracks variable text embedding and key/value projection work."
+    }
+  ]
+}

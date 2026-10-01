@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Instruction count is dominated by fixed encoder overhead, per-prompt tokenization, linear padded-token processing, and quadratic attention and relative-position operations.",
+  "iteration": 1,
+  "pcvs": [
+    {
+      "expression": "batch_size",
+      "name": "batch_size",
+      "rationale": "Captures per-prompt tokenizer operations and batch-dependent encoder overhead."
+    },
+    {
+      "expression": "batch_size * max_sequence_length",
+      "name": "padded_tokens",
+      "rationale": "Tracks linear encoder, padding, and mask work."
+    },
+    {
+      "expression": "batch_size * max_sequence_length ** 2",
+      "name": "attention_elements",
+      "rationale": "Tracks quadratic self-attention work."
+    },
+    {
+      "expression": "max_sequence_length ** 2",
+      "name": "position_pairs",
+      "rationale": "Captures relative-position bias construction shared across the batch."
+    }
+  ]
+}

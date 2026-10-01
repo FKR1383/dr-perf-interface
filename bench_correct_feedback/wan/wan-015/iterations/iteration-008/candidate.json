@@ -1,0 +1,26 @@
+{
+  "hypothesis": "A populated-cache flag hides differences between the first continuation and later continuations. Actual cached element and frame cardinalities may explain variation that remains even with explicit input-shape regimes.",
+  "iteration": 8,
+  "pcvs": [
+    {
+      "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+      "name": "spatial_sites",
+      "rationale": "Models spatial computation shared by all chunks."
+    },
+    {
+      "expression": "x.numel()",
+      "name": "input_sites",
+      "rationale": "Models computation proportional to input temporal volume."
+    },
+    {
+      "expression": "sum((v.numel() for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+      "name": "cached_elements",
+      "rationale": "Measures cached tensor volume using metadata, distinguishing partially filled histories from mature histories."
+    },
+    {
+      "expression": "sum((v.shape[2] for v in feat_cache if v is not None)) if feat_cache is not None else 0",
+      "name": "cached_frames",
+      "rationale": "Captures cache occupancy and temporal history lengths that affect concatenation, padding, and short-history branches."
+    }
+  ]
+}

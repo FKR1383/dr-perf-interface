@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The previous features isolated the observed cost regimes, but the fitted model systematically underpredicted them, especially the sparse admission indicators. Uniform feature scaling tests whether numerical conditioning or regularization causes this remaining error without changing the information represented.",
+  "iteration": 4,
+  "pcvs": [
+    {
+      "expression": "16 * len(self.running)",
+      "name": "running_requests_scaled",
+      "rationale": "Preserves the decode-work predictor while increasing its numerical scale for fitting."
+    },
+    {
+      "expression": "16 * (len(self.waiting) + len(self.skipped_waiting))",
+      "name": "waiting_requests_scaled",
+      "rationale": "Preserves the admission-work predictor on the same numerical scale."
+    },
+    {
+      "expression": "16 * int(len(self.waiting) + len(self.skipped_waiting) == 1)",
+      "name": "singleton_admission_scaled",
+      "rationale": "Preserves the singleton admission indicator while reducing potential attenuation of this sparsely observed feature."
+    },
+    {
+      "expression": "16 * int(len(self.waiting) + len(self.skipped_waiting) == 2)",
+      "name": "pair_admission_scaled",
+      "rationale": "Preserves the pair admission indicator while reducing potential attenuation of this sparsely observed feature."
+    }
+  ]
+}

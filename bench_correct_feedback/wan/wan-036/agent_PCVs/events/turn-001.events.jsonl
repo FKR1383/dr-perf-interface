@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a0edb6-2819-7041-a10a-4dda4780d633"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"iteration\":1,\"pcvs\":[{\"name\":\"generated_elements\",\"expression\":\"batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0\",\"rationale\":\"CPU Gaussian sampling work scales with the number of generated latent elements; the remaining shape construction and dispatch work is approximately constant for this workload.\"}],\"hypothesis\":\"Instruction count is approximately a fixed setup cost plus a linear cost per generated float32 element.\"}"}}
+{"type":"turn.completed","usage":{"input_tokens":20610,"cached_input_tokens":7552,"cache_write_input_tokens":0,"output_tokens":144,"reasoning_output_tokens":0}}

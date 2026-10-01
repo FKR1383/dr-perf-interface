@@ -1,0 +1,46 @@
+{
+  "agent_PCVs_thread": "01a0ed91-d3e1-7792-9158-f675de052a43",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 6.137135078500203,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "With fixed projection dimensions and single-threaded CPU execution, instruction count should be approximately affine in query and key/value element counts, with a small path-dependent overhead.",
+      "irregularity_percent": 6.137135078500203,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "hidden_states.shape[0] * hidden_states.shape[1] * attn.inner_dim",
+          "name": "query_elements",
+          "rationale": "Tracks query projection and query RMS normalization work; projection widths are fixed in this workload."
+        },
+        {
+          "expression": "(hidden_states.shape[0] * hidden_states.shape[1] if encoder_hidden_states is None else encoder_hidden_states.shape[0] * encoder_hidden_states.shape[1]) * attn.kv_inner_dim",
+          "name": "key_value_elements",
+          "rationale": "Tracks both key/value projections and key RMS normalization using the effective encoder sequence length."
+        },
+        {
+          "expression": "int(encoder_hidden_states is not None)",
+          "name": "cross_attention",
+          "rationale": "Captures fixed overhead differences between self-attention and cross-attention entry paths."
+        }
+      ]
+    }
+  ],
+  "case": "wan-018",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "73e3c08f5f6cb1353c89266ff0ba73f318c2b800aa45ec3e69370c0a74537160",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

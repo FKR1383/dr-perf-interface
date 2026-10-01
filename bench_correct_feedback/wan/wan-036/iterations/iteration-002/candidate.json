@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Sampling has linear elementwise cost plus discrete RNG state-refresh costs. The unexplained counts of 5832, 11664, and 17496 correspond to ceil(generated_elements / 624).",
+  "iteration": 2,
+  "pcvs": [
+    {
+      "expression": "batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) if latents is None else 0",
+      "name": "generated_elements",
+      "rationale": "Captures elementwise Gaussian sampling work."
+    },
+    {
+      "expression": "(batch_size * num_channels_latents * ((num_frames - 1) // self.vae_scale_factor_temporal + 1) * (int(height) // self.vae_scale_factor_spatial) * (int(width) // self.vae_scale_factor_spatial) + 623) // 624 if latents is None else 0",
+      "name": "rng_state_refreshes",
+      "rationale": "For the freshly seeded CPU generators in this workload, captures MT19937 state refreshes per 624 generated values. Reported unexplained instructions follow exactly one, two, and three such blocks."
+    }
+  ]
+}

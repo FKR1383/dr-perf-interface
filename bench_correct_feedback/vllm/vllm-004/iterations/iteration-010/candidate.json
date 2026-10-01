@@ -1,0 +1,26 @@
+{
+  "hypothesis": "Previous block products overcounted causal prefill work: only query rows beyond position 32 visit a second KV block. Counting those rows directly may explain the missing native kernel work.",
+  "iteration": 10,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else attn_metadata.num_actual_tokens",
+      "name": "prefill_tokens",
+      "rationale": "Captures baseline prefill processing."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len <= 1 else max(0, attn_metadata.num_actual_tokens - 32 * attn_metadata.seq_lens.numel())",
+      "name": "prefill_second_block_rows",
+      "rationale": "For the observed full causal prefills, counts query rows extending beyond the first 32-token context block instead of charging every row for the maximum context."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.seq_lens.numel()",
+      "name": "decode_requests",
+      "rationale": "Captures baseline decode work independently of prefill."
+    },
+    {
+      "expression": "0 if attn_metadata is None or attn_metadata.max_query_len > 1 else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "decode_extra_blocks",
+      "rationale": "Counts additional context blocks traversed during decode."
+    }
+  ]
+}

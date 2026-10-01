@@ -1,0 +1,51 @@
+{
+  "agent_PCVs_thread": "01a0ed6f-7620-7000-ad9b-73fb218ace5c",
+  "attempts": [
+    {
+      "annotation_diff": "iterations/iteration-001/annotation.diff",
+      "assessment": {
+        "irregularity_percent": 4.246781226331879,
+        "reasons": [],
+        "success": true,
+        "threshold_percent": 10.0,
+        "valid": true
+      },
+      "drperf_full_report": "iterations/iteration-001/drperf-full-report.json",
+      "hypothesis": "Instruction count is explained by per-chunk overhead, separate spatial costs for the initial and subsequent chunks, and quadratic attention work at the bottleneck.",
+      "irregularity_percent": 4.246781226331879,
+      "iteration": 1,
+      "outcome": "success",
+      "pcvs": [
+        {
+          "expression": "1 + (x.shape[2] - 1) // 4",
+          "name": "temporal_chunks",
+          "rationale": "Tracks encoder invocations and per-chunk Python, dispatch, and cache-management overhead."
+        },
+        {
+          "expression": "x.shape[0] * x.shape[3] * x.shape[4]",
+          "name": "spatial_area",
+          "rationale": "Captures spatial work for the initial frame, including convolution padding and normalization."
+        },
+        {
+          "expression": "x.shape[0] * ((x.shape[2] - 1) // 4) * x.shape[3] * x.shape[4]",
+          "name": "subsequent_chunk_area",
+          "rationale": "Captures additional convolution, normalization, and cache-copy work for subsequent four-frame chunks."
+        },
+        {
+          "expression": "x.shape[0] * (1 + (x.shape[2] - 1) // 4) * (x.shape[3] // 8 * (x.shape[4] // 8)) ** 2",
+          "name": "attention_pairs",
+          "rationale": "Captures quadratic spatial attention work at the encoder's compressed resolution."
+        }
+      ]
+    }
+  ],
+  "case": "wan-011",
+  "comparison": "strictly-less-than",
+  "fixed_workload_digest": "e2d3b2126dab5e3a24c11b5b07727722b396754bb02f43e9191e09087b436fe9",
+  "iterations": 1,
+  "measurement_agent": null,
+  "measurement_and_scoring": "trusted deterministic script",
+  "schema_version": 1,
+  "status": "success",
+  "threshold_percent": 10.0
+}

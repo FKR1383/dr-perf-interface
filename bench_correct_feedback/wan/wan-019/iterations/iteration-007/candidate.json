@@ -1,0 +1,26 @@
+{
+  "hypothesis": "The remaining work may follow products of block counts and remainders rather than rounded matrix area. These features distinguish complete query-block processing from per-row key-tail processing.",
+  "iteration": 7,
+  "pcvs": [
+    {
+      "expression": "query.numel()",
+      "name": "query_elements",
+      "rationale": "Tracks linear query and output processing."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * query.shape[1] * (key.shape[1] % 16)",
+      "name": "key_tail_pairs",
+      "rationale": "Tracks key-axis scalar remainder work across all query rows."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * key.shape[1]",
+      "name": "query_blocks_times_keys",
+      "rationale": "Tests matrix-kernel loops operating on complete eight-row query blocks."
+    },
+    {
+      "expression": "query.shape[0] * query.shape[2] * (query.shape[1] // 8) * (key.shape[1] % 16)",
+      "name": "query_blocks_times_key_tail",
+      "rationale": "Captures the interaction between complete query blocks and partial key vectors, which separate remainder features cannot express."
+    }
+  ]
+}

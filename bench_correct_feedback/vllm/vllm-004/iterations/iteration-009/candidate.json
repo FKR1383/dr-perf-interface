@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Observed mean costs approximately follow a shared token-plus-request cost with a smaller block-dependent increment. This constrained two-feature model tests whether fitting fewer overlapping terms improves attribution.",
+  "iteration": 9,
+  "pcvs": [
+    {
+      "expression": "0 if attn_metadata is None else (attn_metadata.num_actual_tokens + attn_metadata.seq_lens.numel()) * (4 + (attn_metadata.max_seq_len + 31) // 32)",
+      "name": "combined_query_work",
+      "rationale": "Combines token and request work with a modest increase for additional context blocks, reducing the number of independently fitted terms."
+    },
+    {
+      "expression": "0 if attn_metadata is None else attn_metadata.seq_lens.numel() * ((attn_metadata.max_seq_len - 1) // 32)",
+      "name": "additional_request_blocks",
+      "rationale": "Preserves the stronger context-block effect observed during decode."
+    }
+  ]
+}
